@@ -1,0 +1,7 @@
+Mantener un registro de cambios usando herramientas como Git es fundamental para cualquier proyecto de software porque permite rastrear la evolución del código de forma ordenada y transparente.
+
+Primero, Git documenta quién hizo cada cambio, cuándo y por qué, creando una trazabilidad completa que facilita la auditoría y la resolución de problemas. Si aparece un bug, los desarrolladores pueden revisar el historial para identificar exactamente qué commit introdujo el error.
+
+Segundo, el control de versiones permite trabajar en paralelo sin conflictos. Varios programadores pueden modificar archivos distintos o incluso el mismo archivo, y Git ayuda a fusionar esos cambios de manera controlada, evitando pérdida de trabajo.
+
+Finalmente, tener un historial de commits genera confianza y profesionalismo. Un proyecto con buena trazabilidad es más fácil de mantener, escalar y transferir a otros equipos, reduciendo la deuda técnica y los riesgos asociados al desarrollo colaborativo.
