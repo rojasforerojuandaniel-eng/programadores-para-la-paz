@@ -1,0 +1,7 @@
+Para un desarrollador, saber usar la terminal para navegar y organizar archivos dentro de un proyecto es una habilidad fundamental que impacta directamente en su productividad y profesionalismo.
+
+Primero, la terminal permite ejecutar tareas de forma mucho más rápida que una interfaz gráfica, especialmente cuando se trabaja con múltiples carpetas, archivos o proyectos complejos. Los comandos como cd, ls, mkdir y touch se convierten en extensiones naturales del flujo de trabajo diario.
+
+Segundo, el control de versiones con Git se realiza casi exclusivamente desde la terminal. Un desarrollador que domina la línea de comandos puede crear ramas, hacer commits, resolver conflictos y desplegar cambios sin depender de herramientas visuales que a veces limitan el control total del proceso.
+
+Finalmente, organizar bien los archivos desde la terminal promueve una estructura limpia y profesional del proyecto, facilitando que otros desarrolladores puedan entender, colaborar y mantener el código en el futuro.
