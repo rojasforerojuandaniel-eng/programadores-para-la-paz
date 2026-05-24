@@ -1,0 +1,7 @@
+El uso responsable de la información en internet, la participación ciudadana y la organización del trabajo técnico con herramientas como Git guardan una relación fundamental basada en la responsabilidad y el orden.
+
+Primero, verificar la información antes de compartirla es un acto de ciudadanía digital que evita la propagación de noticias falsas y fortalece la democracia informada. Una ciudadanía activa requiere ciudadanos que no solo consumen, sino que producen y difunden contenido veraz.
+
+Segundo, Git permite documentar cada cambio en un proyecto, rastrear quién hizo qué y cuándo, y revertir errores si es necesario. Esta disciplina de versionado refleja directamente el principio de verificación: al igual que no se comparte información sin confirmar su fuente, en desarrollo no se publica código sin revisarlo ni documentarlo.
+
+Finalmente, tanto la ciudadanía digital como el control de versiones promueven la colaboración transparente y la rendición de cuentas. Ambos exigen que las acciones queden registradas, sean accesibles y puedan auditarse, construyendo así comunidades más sólidas y confiables.
