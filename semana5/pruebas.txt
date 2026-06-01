@@ -1,0 +1,8 @@
+Ruta: http://localhost:3000
+Resultado: Muestra el mensaje "Servidor activo". Es la ruta raíz que confirma que el servidor está funcionando.
+
+Ruta: http://localhost:3000/saludo
+Resultado: Muestra el mensaje "Hola comunidad". Es una ruta estática que devuelve un saludo general.
+
+Ruta: http://localhost:3000/mensaje/juan
+Resultado: Muestra el mensaje "Hola juan". Es una ruta dinámica que recibe el nombre del usuario como parámetro en la URL y lo usa para personalizar la respuesta.

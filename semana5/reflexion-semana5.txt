@@ -1,0 +1,7 @@
+Las APIs podrían ayudar enormemente a que las comunidades compartan información, reportes o alertas de manera organizada al establecer canales estandarizados de comunicación entre sistemas.
+
+Gracias a una API, diferentes aplicaciones y plataformas pueden intercambiar datos automáticamente. Por ejemplo, una comunidad podría tener una app móvil donde los ciudadanos reportan problemas locales mediante una ruta POST, y esa información se almacena centralmente para que las autoridades la consulten mediante rutas GET.
+
+Esto elimina la fragmentación de la información, reduce los tiempos de respuesta y permite integrar múltiples fuentes de datos en un solo sistema. Además, las APIs facilitan la escalabilidad, ya que cualquier herramienta nueva puede conectarse al ecosistema existente sin reconstruirlo desde cero.
+
+En definitiva, las APIs democratizan el acceso a la información comunitaria, promoviendo la transparencia, la colaboración y la toma de decisiones basada en datos reales y actualizados.
