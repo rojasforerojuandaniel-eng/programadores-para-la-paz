@@ -1,0 +1,34 @@
+# Memory Index
+
+- [Feedback Preferences](feedback-preferences.md) — Spanish, direct, auto-activate everything, senior code quality. Zero friction.
+- [Auto-Activation Audit](auto-activation-audit.md) — ALL skills/plugins/agents configured for auto-activation
+- [Open Design](open-design-setup.md) — 108 skills, 151 design systems, `/data/open-design`, `open-design start-bg`
+- [Lazyweb](lazyweb-setup.md) — Design reference plugin: MCP + 6 skills. Auto-activate for UI/design.
+- [Claude Code Opt](claude-code-optimization.md) — 13 permissions, 6 MCPs, keybindings, shell aliases, git config, project CLAUDE.md
+- [Superpowers](superpowers-framework.md) — v5.1.0, 14 agentic skills, auto-triggers
+- [Data Partition](data-partition.md) — /data (222GB) for large projects
+- [AdPulse](adpulse-overview.md) — AI ad manager, Next.js 16 + Clerk + Prisma + Stripe
+- [AdPulse Production](adpulse-production-setup.md) — Neon DB, Clerk auth, demo user, deployment details
+- [MARC v2](marc-v2-overview.md) — AI assistant: Next.js 16 + grammY + Drizzle + LangGraph
+- [MARC v3 Status](marc-v3-status-2026-06-01.md) — Estado post-auditoria 2026-06-01: 16 fixes criticos aplicados, todos los servicios running
+- [MARC v3 Status Jun 4](marc-v3-status-2026-06-04.md) — 8 fases del plan de perfeccionamiento implementadas. Chat funcional, datos reales, auth local, diseno pulido, integraciones guiadas.
+- [MARC v3 Status Jun 5](marc-v3-status-2026-06-05.md) — Mega-sesion continua: 4 managers, 4 legacy agents, tsvector RAG, Redis cache, health checks, 17 tests, build 0 errores.
+- [MARC v3 Fase 1 Completada](marc-v3-fase1-completada-2026-06-06.md) — Revisión exhaustiva código: 28 bugs fixeados, merge conflicts, memory leaks, non-null assertions, console.logs, build 0 errores TS.
+- [MARC v3 Fase 2 Completada](marc-v3-fase2-completada-2026-06-06.md) — Sistema de Tool Calls nativas: 5 tools (weather, calculator, web_search, set_reminder, get_time) + registry + integración en chat pipeline + 18 tests.
+- [MARC v3 Fase 3 Completada](marc-v3-fase3-completada-2026-06-06.md) — 5 tool calls avanzadas (file_read, db_query, send_email, image_generate, code_execute) + auth context + seguridad sandboxed + 26 tests.
+- [MARC v3 Fase 4 Completada](marc-v3-fase4-completada-2026-06-06.md) — Autonomous agent loop: max 3 iteraciones de tool calls automáticas + tool_start/tool_result stream events + ToolUseBlock UI visualization en chat.
+- [MARC v3 Fase 5 Completada](marc-v3-fase5-completada-2026-06-06.md) — Cost tracker: latencia, success rate, cost estimates por tool + API `/api/tools/metrics` + dashboard UI.
+- [MARC v3 Fase 6 Completada](marc-v3-fase6-completada-2026-06-06.md) — Tool Reflection & Self-Improvement: análisis de patrones de ejecución, detección de errores/lentitud/costos + insights API + UI dashboard.
+- [MARC v3 Perfeccionamiento Jun 13](marc-v3-perfeccionamiento-2026-06-13.md) — Sesion nocturna autonoma: 60 errores TS → 0, 15 tests → 0, RAM dashboard 5.1GB → 288MB, next.config optimizado, WebVitals RUM, standalone build en systemd.
+- [MARC v3 Design Sync Jun 13](marc-v3-design-sync-2026-06-13.md) — Rediseño completo: 181 archivos, design system v2 sincronizado, 0 tokens rotos, a11y WCAG 2.2 AA, build 0 errores.
+- [MARC v3 Mega Plan](marc-v3-mega-plan.md) — Mega plan de implementacion: 8 fases, 40+ sub-agentes, roadmap Q3 2026-Q1 2027
+- [Rhynode Shop](rhynode-shop-overview.md) — E-commerce, 98 products, Wompi + Supabase
+- [Rhynode Shop v3 Status](rhynode-shop-v3-status-2026-06-07.md) — v3.0 implementado: catálogo dinámico Supabase, checkout Wompi, admin suite, AI-ready. Build 0 errores. Pendiente: env vars + deploy.
+- [GitHub Private Repos](github-private-repos.md) — Todos los repos deben ser privados por defecto.
+- [ATELIER](atelier.md) — Orquestador definitivo de UI/UX v2. Con memory persistente, auto-critique loop, motion tokens, lazyweb references, asset generation, y responsive-first architecture. Auto-activa sub-agentes especializados y sintetiza outputs en design system coherente con código React/Tailwind production-ready.
+- [RAM Safety Feedback](ram-safety-feedback.md) — PC colapsó por RAM, limitar paralelismo.
+- [Rhynode Finance Auth Fixes](rhynode-finance-auth-fixes-2026-06-13.md) — Auth/onboarding completamente arreglado: middleware Clerk, onboardingCompleted en DB, componentes unificados, build 0 errores.
+- [Rhynode Finance v2 Plan](rhynode-finance-v2-plan.md) — Plan definitivo 8 fases: fundación, dashboard, finanzas personales/empresariales, inteligencia AI, inversión, social, polish.
+- [Rhynode Finance Mega Session](rhynode-finance-mega-session-2026-06-13.md) — Post-analisis competitivo: 10 gaps criticos implementados (PWA, AI categorizacion, subscription detection, encriptacion, escenarios, Open Banking prep, Stripe checkout real, onboarding simplificado). Build 0 errores, deploy produccion.
+- [MARC v3 Documentación Técnica](marc-v3-documentacion-tecnica.md) — Documentación completa post-sesión 2026-06-15: 8 modelos en tiers, env vars críticas, optimizaciones, troubleshooting, checklist de cambios. REGLA DE ORO: siempre revisar antes de tocar nada.
+- [MARC v3 Real Agent Graph + Self-Healing](marc-v3-real-agent-graph-2026-06-15.md) — Grafo multiagente REAL de 8 nodos LangGraph + sistema self-healing completo con sandbox tsc+vitest, allowlist path-traversal-safe, rollback automático, 765 tests pasan.
