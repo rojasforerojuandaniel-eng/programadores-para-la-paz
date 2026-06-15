@@ -1,0 +1,5 @@
+1. No exponer datos personales de los usuarios en areas publicas de la plataforma.
+2. Proteger credenciales de administradores y usuarios con cifrado y politicas de contraseñas seguras.
+3. Usar conexiones seguras (HTTPS/TLS) para todas las comunicaciones entre usuarios y el servidor.
+4. Registrar accesos y actividades para detectar comportamientos anomalos o intentos de intrusion.
+5. Limitar el acceso a informacion sensible solo a usuarios autorizados mediante roles y permisos definidos.

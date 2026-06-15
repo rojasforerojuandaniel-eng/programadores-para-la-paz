@@ -1,0 +1,5 @@
+La seguridad digital es fundamental para proteger plataformas tecnologicas que utilizan comunidades o procesos participativos porque estas plataformas manejan datos personales, opiniones y credenciales de multiples usuarios. Una brecha de seguridad puede comprometer la privacidad de los participantes, deslegitimar los procesos comunitarios y generar desconfianza entre los miembros.
+
+Ademas, en entornos participativos la integridad de la informacion es clave: si un atacante manipula votos, comentarios o registros, el resultado del proceso democratico o comunitario se vuelve invalido. Por eso, proteger los datos no es solo una cuestion tecnica, sino tambien etica y social.
+
+Implementar buenas practicas de seguridad, como cifrado, control de accesos y auditoria de logs, garantiza que la plataforma sea un espacio confiable donde las personas puedan expresarse y participar sin riesgo de exposicion o manipulacion. En definitiva, la seguridad digital es la base de la confianza en cualquier plataforma comunitaria.

@@ -1,0 +1,17 @@
+Comando uname -a
+Muestra: Linux juan-daniel-Aspire-A315-510P 7.0.0-22-generic #22-Ubuntu SMP PREEMPT_DYNAMIC Mon May 25 15:54:34 UTC 2026 x86_64 GNU/Linux
+
+Este comando muestra informacion completa del sistema operativo: el nombre del kernel (Linux), el nombre del host (juan-daniel-Aspire-A315-510P), la version del kernel (7.0.0-22-generic), el numero de compilacion (#22-Ubuntu SMP PREEMPT_DYNAMIC), la fecha de compilacion del kernel, la arquitectura del procesador (x86_64) y el tipo de sistema operativo (GNU/Linux).
+
+Comando whoami
+Muestra: juan-daniel
+
+Este comando muestra el nombre del usuario actual que esta ejecutando la terminal.
+
+Por que es util conocer informacion del sistema cuando se administra un servidor:
+Conocer la version del kernel, la arquitectura y el usuario actual es fundamental para:
+- Asegurar compatibilidad de software y actualizaciones de seguridad.
+- Diagnosticar problemas tecnicos y reportar bugs con informacion precisa.
+- Gestionar permisos y accesos de usuarios adecuadamente.
+- Verificar que el servidor esta ejecutando una version estable y actualizada del sistema operativo.
+- Identificar la identidad del usuario antes de ejecutar comandos administrativos.
