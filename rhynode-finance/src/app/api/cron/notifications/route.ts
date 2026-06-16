@@ -1,12 +1,15 @@
-import { decimalToNumber } from "@/lib/decimal";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { sendPushNotification } from "@/lib/notifications";
-import { addDays, startOfDay, endOfDay } from "date-fns";
+import { getPrisma } from "@/lib/prisma";
+import { addDays, startOfDay } from "date-fns";
+import {
+  sendBudgetAlert,
+  sendGoalProgressAlert,
+  sendSubscriptionReminder,
+  sendInvoiceOverdueReminder,
+} from "@/lib/push-events";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
-  // Verify cron secret
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response("Unauthorized", { status: 401 });
@@ -14,96 +17,97 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    const threeDaysLater = addDays(now, 3);
+    const prisma = getPrisma();
 
     const results = {
       budgetAlerts: 0,
+      goalAlerts: 0,
       subscriptionReminders: 0,
+      invoiceOverdueReminders: 0,
       totalSent: 0,
-      errors: 0,
+      totalErrors: 0,
     };
 
-    // Fetch all push subscriptions with their users and notification preferences
-    const allSubscriptions = await prisma.pushSubscription.findMany({
+    // Unique users with at least one push subscription
+    const subs = await prisma.pushSubscription.findMany({
       include: {
         user: {
           include: {
             notificationPreference: true,
-            budgets: true,
-            recurringTransactions: {
-              where: {
-                isSubscription: true,
-                status: "ACTIVE",
-                nextDueDate: {
-                  gte: startOfDay(now),
-                  lte: endOfDay(threeDaysLater),
-                },
-              },
-            },
           },
         },
       },
     });
 
-    for (const pushSub of allSubscriptions) {
-      const user = pushSub.user;
+    const userIds = Array.from(new Set(subs.map((s) => s.userId)));
+
+    for (const userId of userIds) {
+      const user = subs.find((s) => s.userId === userId)?.user;
       if (!user) continue;
 
       const prefs = user.notificationPreference;
       const budgetsEnabled = prefs ? prefs.budgets : true;
       const subscriptionsEnabled = prefs ? prefs.subscriptions : true;
 
-      // Budget alerts
       if (budgetsEnabled) {
-        for (const budget of user.budgets) {
-          const budgetAmount = decimalToNumber(budget.amount);
-          const budgetSpent = decimalToNumber(budget.spent);
-          if (budgetAmount > 0 && budgetSpent / budgetAmount >= 0.8) {
-            const res = await sendPushNotification(
-              {
-                endpoint: pushSub.endpoint,
-                p256dh: pushSub.p256dh,
-                auth: pushSub.auth,
-              },
-              {
-                title: "Alerta de Presupuesto",
-                body: `Has usado ${Math.round((budgetSpent / budgetAmount) * 100)}% de tu presupuesto "${budget.name}".`,
-                tag: `budget-${budget.id}`,
-                url: "/dashboard/personal",
-              }
-            );
-            if (res.success) {
-              results.budgetAlerts++;
-              results.totalSent++;
-            } else {
-              results.errors++;
-            }
+        const budgets = await prisma.budget.findMany({ where: { userId } });
+        for (const budget of budgets) {
+          const res = await sendBudgetAlert(userId, budget);
+          if (!res.skipped) {
+            results.budgetAlerts++;
+            results.totalSent += res.sent;
+            results.totalErrors += res.errors;
           }
         }
       }
 
-      // Subscription reminders
-      if (subscriptionsEnabled) {
-        for (const sub of user.recurringTransactions) {
-          const res = await sendPushNotification(
-            {
-              endpoint: pushSub.endpoint,
-              p256dh: pushSub.p256dh,
-              auth: pushSub.auth,
-            },
-            {
-              title: "Recordatorio de Suscripción",
-              body: `"${sub.name}" vence el ${sub.nextDueDate.toLocaleDateString("es-CO")}.`,
-              tag: `subscription-${sub.id}`,
-              url: "/dashboard/personal",
-            }
-          );
-          if (res.success) {
-            results.subscriptionReminders++;
-            results.totalSent++;
-          } else {
-            results.errors++;
+      const goals = await prisma.goal.findMany({ where: { userId } });
+      for (const goal of goals) {
+        for (const threshold of [0.75, 1] as const) {
+          const res = await sendGoalProgressAlert(userId, goal, threshold);
+          if (!res.skipped) {
+            results.goalAlerts++;
+            results.totalSent += res.sent;
+            results.totalErrors += res.errors;
           }
+        }
+      }
+
+      if (subscriptionsEnabled) {
+        const recurring = await prisma.recurringTransaction.findMany({
+          where: {
+            userId,
+            isSubscription: true,
+            status: "ACTIVE",
+            nextDueDate: {
+              gte: startOfDay(now),
+              lte: endOfDay(addDays(now, 7)),
+            },
+          },
+        });
+        for (const sub of recurring) {
+          const res = await sendSubscriptionReminder(userId, sub);
+          if (!res.skipped) {
+            results.subscriptionReminders++;
+            results.totalSent += res.sent;
+            results.totalErrors += res.errors;
+          }
+        }
+      }
+
+      const overdueInvoices = await prisma.invoice.findMany({
+        where: {
+          status: "OVERDUE",
+          dueDate: { lt: addDays(startOfDay(now), -1) },
+          organization: { userId },
+        },
+      });
+      for (const invoice of overdueInvoices) {
+        const res = await sendInvoiceOverdueReminder(invoice, userId);
+        if (!res.skipped) {
+          results.invoiceOverdueReminders++;
+          results.totalSent += res.sent;
+          results.totalErrors += res.errors;
         }
       }
     }
@@ -120,4 +124,10 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+function endOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
 }

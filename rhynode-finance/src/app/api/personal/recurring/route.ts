@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
+import { checkAndNotifySubscriptionReminder } from "@/lib/push-events";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
@@ -92,6 +93,11 @@ export async function POST(request: Request) {
         provider,
       },
     });
+
+    // Event-triggered push if this subscription is due within 7 days
+    if (isSubscription) {
+      void checkAndNotifySubscriptionReminder(profile.id, recurring.id).catch(() => null);
+    }
 
     return NextResponse.json({ recurring });
   } catch (error) {
