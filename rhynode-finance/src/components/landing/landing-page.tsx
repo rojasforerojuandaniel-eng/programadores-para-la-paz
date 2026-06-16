@@ -311,7 +311,7 @@ function HowItWorks() {
         <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step) => (
             <div key={step.number} className="relative rounded-2xl border border-border/50 bg-card p-6">
-              <span className="text-3xl font-bold text-primary/30">{step.number}</span>
+              <span className="text-3xl font-bold text-primary">{step.number}</span>
               <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
             </div>
@@ -532,7 +532,7 @@ function LandingSchema() {
 
 export function LandingPageV2() {
   return (
-    <main className="min-h-screen bg-background">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-background">
       <LandingSchema />
       <Navbar />
       <Hero />
