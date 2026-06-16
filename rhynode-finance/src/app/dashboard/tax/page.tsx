@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CreateTaxReportDialog } from "@/components/dashboard/create-tax-report-dialog";
 import { TaxCalculator } from "@/components/dashboard/tax-calculator";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -18,7 +26,12 @@ import {
   Percent,
   Receipt,
   FileCheck,
+  FileText,
+  FileSpreadsheet,
+  Download,
+  AlertCircle,
 } from "lucide-react";
+import type { ColombianTaxReport } from "@/lib/tax-reports";
 
 interface TaxReport {
   id: string;
@@ -105,9 +118,36 @@ function formatCOP(amount: number) {
   }).format(amount);
 }
 
+function getReportUrl(
+  year: number,
+  month: number,
+  periodType: string,
+  format: string
+): string {
+  const params = new URLSearchParams({
+    year: String(year),
+    month: String(month),
+    periodType,
+    format,
+  });
+  return `/api/tax/reports?${params.toString()}`;
+}
+
 export default function TaxPage() {
   const [reports, setReports] = useState<TaxReport[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [periodType, setPeriodType] = useState<"MONTHLY" | "BIMONTHLY">("MONTHLY");
+  const [report, setReport] = useState<ColombianTaxReport | null>(null);
+  const [loadingReport, setLoadingReport] = useState(true);
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  const years = useMemo(() => {
+    const current = new Date().getFullYear();
+    return Array.from({ length: 7 }, (_, i) => current - 3 + i);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -118,6 +158,31 @@ export default function TaxPage() {
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(getReportUrl(year, month, periodType, "json"), { signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Error al generar el reporte");
+        }
+        return res.json() as Promise<ColombianTaxReport>;
+      })
+      .then((data) => {
+        setReport(data);
+        setReportError(null);
+      })
+      .catch((error) => {
+        if (error instanceof Error && error.name !== "AbortError") {
+          setReportError(error.message);
+        }
+      })
+      .finally(() => setLoadingReport(false));
+
+    return () => controller.abort();
+  }, [year, month, periodType]);
 
   const exampleColumns = [
     { key: "type", header: "Tipo" },
@@ -270,6 +335,185 @@ export default function TaxPage() {
       </div>
 
       <TaxCalculator />
+
+      <Card className="surface-elevated-2">
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="heading-card">Reporte Fiscal Colombia</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                <SelectTrigger className="w-[100px]" aria-label="Año">
+                  <SelectValue placeholder="Año" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
+                <SelectTrigger className="w-[130px]" aria-label="Mes">
+                  <SelectValue placeholder="Mes" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <SelectItem key={m} value={String(m)}>
+                      {new Date(2024, m - 1, 1).toLocaleDateString("es-CO", { month: "long" })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={periodType} onValueChange={(v) => setPeriodType(v as "MONTHLY" | "BIMONTHLY")}>
+                <SelectTrigger className="w-[130px]" aria-label="Periodicidad">
+                  <SelectValue placeholder="Periodicidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MONTHLY">Mensual</SelectItem>
+                  <SelectItem value="BIMONTHLY">Bimestral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {loadingReport ? (
+            <div className="flex h-40 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : reportError ? (
+            <div className="flex h-40 flex-col items-center justify-center gap-2 text-center">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+              <p className="text-sm text-muted-foreground">{reportError}</p>
+            </div>
+          ) : report ? (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">IVA generado</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.generated.tax)}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">IVA descontable estimado</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.deductible.tax)}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">ReteFuente estimada</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.reteFuente.total)}</div>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <div className="text-xs text-muted-foreground">ICA estimado</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.ica.amount)}</div>
+                  <div className="text-xs text-muted-foreground">{report.ica.city || "Sin ciudad"}</div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 text-left font-medium">Concepto</th>
+                      <th className="py-2 text-right font-medium">Base</th>
+                      <th className="py-2 text-right font-medium">Tasa</th>
+                      <th className="py-2 text-right font-medium">Impuesto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    <tr>
+                      <td>IVA generado ({report.iva.generated.count} facturas)</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.generated.base)}</td>
+                      <td className="text-right font-mono">{(report.iva.generated.rate * 100).toFixed(0)}%</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.generated.tax)}</td>
+                    </tr>
+                    <tr>
+                      <td>IVA descontable estimado ({report.iva.deductible.count} gastos)</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.base)}</td>
+                      <td className="text-right font-mono">{(report.iva.deductible.rate * 100).toFixed(0)}%</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.tax)}</td>
+                    </tr>
+                    <tr className="font-medium">
+                      <td>IVA neto a pagar</td>
+                      <td className="text-right font-mono" />
+                      <td className="text-right font-mono" />
+                      <td className="text-right font-mono">{formatCOP(report.iva.netPayable)}</td>
+                    </tr>
+                    <tr>
+                      <td>ReteFuente sobre ingresos ({report.reteFuente.onIncome.count} facturas)</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.base)}</td>
+                      <td className="text-right font-mono">{(report.reteFuente.onIncome.rate * 100).toFixed(1)}%</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.tax)}</td>
+                    </tr>
+                    <tr>
+                      <td>ReteFuente practicada en pagos ({report.reteFuente.onExpenses.count} gastos)</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.base)}</td>
+                      <td className="text-right font-mono">{(report.reteFuente.onExpenses.rate * 100).toFixed(1)}%</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.tax)}</td>
+                    </tr>
+                    <tr className="font-medium">
+                      <td>Total ReteFuente estimada</td>
+                      <td className="text-right font-mono" />
+                      <td className="text-right font-mono" />
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.total)}</td>
+                    </tr>
+                    <tr>
+                      <td>ICA {report.ica.city ? `(${report.ica.city})` : ""}</td>
+                      <td className="text-right font-mono">{formatCOP(report.ica.base)}</td>
+                      <td className="text-right font-mono">{(report.ica.rate * 1000).toFixed(2)}‰</td>
+                      <td className="text-right font-mono">{formatCOP(report.ica.amount)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <a
+                    href={getReportUrl(year, month, periodType, "csv")}
+                    download
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    CSV
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a
+                    href={getReportUrl(year, month, periodType, "xlsx")}
+                    download
+                    className="flex items-center gap-2"
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Excel
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a
+                    href={getReportUrl(year, month, periodType, "pdf")}
+                    download
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    PDF
+                  </a>
+                </Button>
+              </div>
+
+              <div className="rounded-md border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="space-y-1">
+                    <p className="font-medium">Borrador orientativo</p>
+                    {report.disclaimers.map((d, i) => (
+                      <p key={i} className="text-xs opacity-90">{d}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card className="surface-elevated-2">
         <CardHeader>
