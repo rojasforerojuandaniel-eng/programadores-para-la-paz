@@ -21,6 +21,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import dynamic from "next/dynamic";
 import {
   buildDefaultLayout,
@@ -142,7 +143,9 @@ export function DraggableDashboard({
           setLayout(normalizeLayout(data.widgets));
         }
       } catch (error) {
-        console.error("Failed to sync widget layout:", error);
+        logger.error("Failed to sync widget layout", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       } finally {
         setIsLoading(false);
       }
@@ -164,7 +167,9 @@ export function DraggableDashboard({
         setLayout(normalizeLayout(data.widgets));
       }
     } catch (error) {
-      console.error("Failed to save widget layout:", error);
+      logger.error("Failed to save widget layout", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setIsSyncing(false);
     }

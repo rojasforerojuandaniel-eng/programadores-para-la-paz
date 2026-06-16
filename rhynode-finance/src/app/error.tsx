@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 
 export default function RootError({
   error,
@@ -11,7 +12,10 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logger.error("Root error boundary caught error", {
+      message: error.message,
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { getPrisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import type Stripe from "stripe";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -15,7 +16,7 @@ type StripeInvoice = Stripe.Invoice & { subscription: string };
 export async function POST(request: Request) {
   try {
     if (!webhookSecret) {
-      console.error("STRIPE_WEBHOOK_SECRET is not configured");
+      logger.error("STRIPE_WEBHOOK_SECRET is not configured");
       return NextResponse.json(
         { error: "Webhook not configured" },
         { status: 500 }
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
       event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      console.error(`Webhook signature verification failed: ${message}`);
+      logger.error("Stripe webhook signature verification failed", { message });
       return NextResponse.json(
         { error: "Invalid signature" },
         { status: 400 }
@@ -221,12 +222,16 @@ export async function POST(request: Request) {
         });
       }
     } catch (recordErr) {
-      console.error("Failed to record Stripe webhook event:", recordErr);
+      logger.error("Failed to record Stripe webhook event", {
+        error: recordErr instanceof Error ? recordErr.message : String(recordErr),
+      });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
+    logger.error("Stripe webhook error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }

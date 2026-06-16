@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import crypto from "crypto";
 
 // Wompi events integrity key (set in Vercel env, never in code)
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
     // Wompi signature verification is mandatory
     if (!WOMPI_EVENTS_KEY) {
-      console.error("WOMPI_EVENTS_KEY not configured");
+      logger.error("WOMPI_EVENTS_KEY not configured");
       return NextResponse.json(
         { error: "Webhook not configured" },
         { status: 500 }
@@ -48,7 +49,10 @@ export async function POST(request: Request) {
       .update(values)
       .digest("hex");
     if (signature.checksum !== expected) {
-      console.error("Wompi signature verification failed");
+      logger.error("Wompi signature verification failed", {
+        expected,
+        received: signature.checksum,
+      });
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
@@ -138,7 +142,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true, status: updatedLink.status });
   } catch (error) {
-    console.error("Wompi webhook error:", error);
+    logger.error("Wompi webhook error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }
