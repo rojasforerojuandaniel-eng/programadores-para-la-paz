@@ -1,0 +1,6 @@
+#!/bin/sh
+# Run lint-staged for rhynode-finance when files in that directory are staged
+if git diff --cached --name-only | grep -q "^rhynode-finance/"; then
+  echo "Running lint-staged for rhynode-finance..."
+  cd rhynode-finance && npx lint-staged
+fi
