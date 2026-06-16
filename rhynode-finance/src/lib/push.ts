@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 export async function subscribeToPush(): Promise<PushSubscription | null> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
     return null;
@@ -9,7 +11,7 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
   if (!subscription) {
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!publicKey) {
-      console.error("VAPID public key not configured");
+      logger.error("VAPID public key not configured");
       return null;
     }
     subscription = await registration.pushManager.subscribe({
