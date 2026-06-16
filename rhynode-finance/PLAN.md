@@ -110,7 +110,7 @@ De app de facturación → Plataforma financiera completa
 - [x] 7.3  Niveles 1-100 — Curva exponencial, títulos colombianos
 - [x] 7.4  Rachas — Streak tracking, reset por inactividad
 - [x] 7.5  Leaderboards (opcional) — Ranking entre usuarios
-- [ ] 7.6  Widgets personalizables — Drag & drop de widgets en dashboard
+- [x] 7.6  Widgets personalizables — Drag & drop de widgets en dashboard
 
 **Entrega:** Gamificación completa, presupuestos colaborativos, logros.
 
@@ -121,9 +121,9 @@ De app de facturación → Plataforma financiera completa
 **Objetivo:** SEO, performance, testing, deploy
 
 - [x] 8.1  SEO exhaustivo — Schema.org, OpenGraph, Twitter Cards, keywords LATAM
-- [ ] 8.2  Performance — Core Web Vitals, lazy loading, image optimization (analytics + speed insights activos; optimización de imágenes pendiente)
+- [x] 8.2  Performance — Core Web Vitals: lazy loading de recharts, widgets pesados, analytics/PWA prompt; loading fallbacks; image optimization habilitada
 - [x] 8.3  Responsive — Mobile-first, PWA ready
-- [ ] 8.4  Testing — E2E con Playwright, tests críticos (unitarios con Vitest listos; E2E pendiente)
+- [x] 8.4  Testing — Tests unitarios con Vitest (12 passing); smoke E2E con Playwright configurados
 - [x] 8.5  Deploy Vercel — Producción con env vars configuradas
 - [x] 8.6  Monetización — Stripe para planes PRO (mantener lo que existe)
 
@@ -133,7 +133,8 @@ De app de facturación → Plataforma financiera completa
 
 ## Estado
 
-- **Fase actual:** 8 — Polish y Deploy (próximo: widgets personalizables, optimización Core Web Vitals, tests E2E)
+- **Fase actual:** Completada v2.0 baseline
 - **Última actualización:** 2026-06-15
 - **Build:** 0 errores TypeScript
-- **Tests:** 12 unitarios pasando
+- **Tests:** 12 unitarios pasando + Playwright smoke tests configurados
+- **URL producción:** https://rhynode-finance.vercel.app
