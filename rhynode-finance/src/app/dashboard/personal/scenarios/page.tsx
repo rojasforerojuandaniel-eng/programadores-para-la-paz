@@ -1,25 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import {
   TrendingUp,
   PiggyBank,
-  Briefcase,
-  ShoppingBag,
   DollarSign,
   RotateCcw,
+  AlertTriangle,
+  Lightbulb,
+  Calendar,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { parseISO, format } from "date-fns";
 import {
   type ScenarioData,
   ScenarioChartSkeleton,
 } from "@/components/dashboard/scenario-chart";
+import { toast } from "sonner";
 
 const ScenarioChart = dynamic(
   () =>
@@ -35,12 +53,54 @@ interface ScenarioSummary {
   currency: string;
 }
 
+interface ForecastProjectionMonth {
+  month: string;
+  monthIndex: number;
+  baseIncome: number;
+  baseExpenses: number;
+  recurringIncome: number;
+  recurringExpenses: number;
+  variableIncome: number;
+  variableExpenses: number;
+  eventIncome: number;
+  eventExpenses: number;
+  net: number;
+  baseBalance: number;
+  optimisticBalance: number;
+  pessimisticBalance: number;
+  events: string[];
+}
+
+interface ForecastSummary {
+  currentBalance: number;
+  monthsToProject: number;
+  finalBaseBalance: number;
+  finalOptimisticBalance: number;
+  finalPessimisticBalance: number;
+  riskMonth: string | null;
+  lowestBalance: number;
+  averageMonthlyNet: number;
+  recommendation: string;
+}
+
+interface ForecastResponse {
+  projection: ForecastProjectionMonth[];
+  summary: ForecastSummary;
+  currency: string;
+  recurringCount: number;
+  hasInvoices: boolean;
+}
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency: "COP",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function monthLabel(month: string) {
+  return format(parseISO(`${month}-01`), "MMM yyyy");
 }
 
 const defaultSummary: ScenarioSummary = {
@@ -53,19 +113,14 @@ const defaultSummary: ScenarioSummary = {
 
 export default function ScenariosPage() {
   const [summary, setSummary] = useState<ScenarioSummary | null>(null);
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [salaryIncrease, setSalaryIncrease] = useState(0);
-  const [newExpense, setNewExpense] = useState(0);
-  const [largePurchase, setLargePurchase] = useState(0);
-  const [largePurchaseMonths, setLargePurchaseMonths] = useState(12);
-  const [monthlySavings, setMonthlySavings] = useState(defaultSummary.monthlySavings);
-  const [currentBalance, setCurrentBalance] = useState(defaultSummary.currentBalance);
-  const [monthsToProject, setMonthsToProject] = useState(24);
+  const [monthsToProject, setMonthsToProject] = useState(12);
+  const [includeAguinaldo, setIncludeAguinaldo] = useState(true);
+  const [includePrima, setIncludePrima] = useState(true);
+  const [includeIva, setIncludeIva] = useState(true);
 
   const activeSummary = summary ?? defaultSummary;
-  const monthlyIncome = activeSummary.monthlyIncome;
-  const monthlyExpenses = activeSummary.monthlyExpenses;
 
   useEffect(() => {
     async function loadSummary() {
@@ -74,50 +129,58 @@ export default function ScenariosPage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = (await response.json()) as ScenarioSummary;
         setSummary(data);
-        setCurrentBalance(data.currentBalance);
-        setMonthlySavings(data.monthlySavings);
       } catch {
-        // Keep defaults on error; no need to surface noise in a simulator.
-      } finally {
-        setLoading(false);
+        // Defaults keep the page usable if the summary API fails.
       }
     }
     loadSummary();
   }, []);
 
-  const data: ScenarioData[] = [];
-  let baseline = currentBalance;
-  let projected = currentBalance;
+  useEffect(() => {
+    async function loadForecast() {
+      setLoading(true);
+      try {
+        const url = new URL("/api/personal/forecast", window.location.origin);
+        url.searchParams.set("months", String(monthsToProject));
+        url.searchParams.set("aguinaldo", String(includeAguinaldo));
+        url.searchParams.set("prima", String(includePrima));
+        url.searchParams.set("iva", String(includeIva));
 
-  for (let i = 1; i <= monthsToProject; i++) {
-    const monthIncome = monthlyIncome * (1 + salaryIncrease / 100);
-    const monthExpense = monthlyExpenses + newExpense;
-    const purchasePayment =
-      largePurchase > 0 && i <= largePurchaseMonths ? largePurchase / largePurchaseMonths : 0;
+        const response = await fetch(url.toString());
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = (await response.json()) as ForecastResponse;
+        setForecast(data);
+      } catch {
+        toast.error("No se pudo cargar la proyección. Intenta de nuevo.");
+        setForecast(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadForecast();
+  }, [monthsToProject, includeAguinaldo, includePrima, includeIva]);
 
-    baseline += monthlyIncome - monthlyExpenses - purchasePayment + monthlySavings;
-    projected += monthIncome - monthExpense - purchasePayment + monthlySavings;
-
-    data.push({
-      month: `Mes ${i}`,
-      baseline: Math.round(baseline),
-      projected: Math.round(projected),
-    });
-  }
-
-  const projectedFinal = data.length > 0 ? data[data.length - 1].projected : currentBalance;
-  const baselineFinal = data.length > 0 ? data[data.length - 1].baseline : currentBalance;
-  const difference = projectedFinal - baselineFinal;
+  const chartData: ScenarioData[] = useMemo(() => {
+    if (!forecast) return [];
+    return forecast.projection.map((p) => ({
+      month: monthLabel(p.month),
+      base: p.baseBalance,
+      optimistic: p.optimisticBalance,
+      pessimistic: p.pessimisticBalance,
+    }));
+  }, [forecast]);
 
   function reset() {
-    setSalaryIncrease(0);
-    setNewExpense(0);
-    setLargePurchase(0);
-    setLargePurchaseMonths(12);
-    setMonthlySavings(activeSummary.monthlySavings);
-    setCurrentBalance(activeSummary.currentBalance);
-    setMonthsToProject(24);
+    setMonthsToProject(12);
+    setIncludeAguinaldo(true);
+    setIncludePrima(true);
+    setIncludeIva(true);
   }
+
+  const finalBalance = forecast?.summary.finalBaseBalance ?? activeSummary.currentBalance;
+  const riskMonth = forecast?.summary.riskMonth ?? null;
+  const recommendation = forecast?.summary.recommendation ?? "";
+  const currency = forecast?.currency ?? activeSummary.currency;
 
   return (
     <div className="space-y-6">
@@ -125,7 +188,7 @@ export default function ScenariosPage() {
         <div>
           <h1 className="heading-section">Simulador de Escenarios</h1>
           <p className="body-default mt-1">
-            Juega con variables y proyecta tu futuro financiero
+            Proyección de flujo de caja con estacionalidad, recurrentes y eventos Colombianos
           </p>
         </div>
         <Button variant="outline" onClick={reset} className="gap-2">
@@ -134,29 +197,49 @@ export default function ScenariosPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Balance actual"
           value={
             loading ? (
               <div className="h-6 w-24 animate-pulse rounded bg-muted" />
             ) : (
-              formatCurrency(currentBalance)
+              formatCurrency(activeSummary.currentBalance)
             )
           }
           icon={DollarSign}
         />
         <KpiCard
-          label="Proyección final"
-          value={formatCurrency(projectedFinal)}
+          label="Proyección final (base)"
+          value={loading ? <div className="h-6 w-24 animate-pulse rounded bg-muted" /> : formatCurrency(finalBalance)}
           icon={TrendingUp}
-          valueClassName="text-primary"
+          valueClassName={finalBalance >= activeSummary.currentBalance ? "text-emerald-500" : "text-rose-500"}
         />
         <KpiCard
-          label="Diferencia vs. base"
-          value={`${difference >= 0 ? "+" : ""}${formatCurrency(difference)}`}
-          icon={PiggyBank}
-          valueClassName={difference >= 0 ? "text-emerald-500" : "text-rose-500"}
+          label="Mes de riesgo"
+          value={
+            loading ? (
+              <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+            ) : riskMonth ? (
+              monthLabel(riskMonth)
+            ) : (
+              "Sin riesgo"
+            )
+          }
+          icon={AlertTriangle}
+          valueClassName={riskMonth ? "text-rose-500" : "text-emerald-500"}
+        />
+        <KpiCard
+          label="Recomendación"
+          value={
+            loading ? (
+              <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+            ) : (
+              <span className="line-clamp-2 text-sm font-normal leading-snug">{recommendation}</span>
+            )
+          }
+          icon={Lightbulb}
+          className="sm:col-span-2 lg:col-span-1"
         />
       </div>
 
@@ -165,101 +248,28 @@ export default function ScenariosPage() {
           <Card className="surface-elevated-2 rounded-xl border-border">
             <CardHeader className="pb-3">
               <CardTitle className="heading-card flex items-center gap-2 text-base">
-                <Briefcase className="h-4 w-4 text-primary" />
-                Ingresos
+                <Calendar className="h-4 w-4 text-primary" />
+                Horizonte
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <Label>Ingreso mensual actual</Label>
-                  <span className="font-medium text-muted-foreground">
-                    {formatCurrency(monthlyIncome)}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-sm">Aumento de salario: {salaryIncrease}%</Label>
-                  <Slider
-                    value={[salaryIncrease]}
-                    onValueChange={(v) => setSalaryIncrease(v[0])}
-                    max={100}
-                    step={5}
-                  />
-                </div>
-              </div>
-              <div className="space-y-3">
-                <Label className="text-sm">Ahorro mensual objetivo</Label>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={monthlySavings}
-                    onChange={(e) => setMonthlySavings(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="surface-elevated-2 rounded-xl border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="heading-card flex items-center gap-2 text-base">
-                <ShoppingBag className="h-4 w-4 text-primary" />
-                Gastos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <Label>Gasto mensual actual</Label>
-                  <span className="font-medium text-muted-foreground">
-                    {formatCurrency(monthlyExpenses)}
-                  </span>
-                </div>
-                <Label className="text-sm">Nuevo gasto mensual</Label>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={newExpense}
-                    onChange={(e) => setNewExpense(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="surface-elevated-2 rounded-xl border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="heading-card flex items-center gap-2 text-base">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                Compra Grande
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-3">
-                <Label className="text-sm">Valor de la compra</Label>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={largePurchase}
-                    onChange={(e) => setLargePurchase(Number(e.target.value))}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-              <div className="space-y-3">
-                <Label className="text-sm">Meses de financiación: {largePurchaseMonths}</Label>
-                <Slider
-                  value={[largePurchaseMonths]}
-                  onValueChange={(v) => setLargePurchaseMonths(v[0])}
-                  min={1}
-                  max={60}
-                  step={1}
-                />
+                <Label className="text-sm">Meses a proyectar</Label>
+                <Select
+                  value={String(monthsToProject)}
+                  onValueChange={(v) => setMonthsToProject(Number(v))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona meses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[3, 6, 12, 24].map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {m} meses
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -268,43 +278,141 @@ export default function ScenariosPage() {
             <CardHeader className="pb-3">
               <CardTitle className="heading-card flex items-center gap-2 text-base">
                 <PiggyBank className="h-4 w-4 text-primary" />
-                Balance Inicial
+                Eventos Colombianos
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="space-y-3">
-                <Label className="text-sm">Balance actual</Label>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={currentBalance}
-                    onChange={(e) => setCurrentBalance(Number(e.target.value))}
-                    className="flex-1"
-                  />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Aguinaldo (diciembre)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    +1 ingreso medio en diciembre
+                  </p>
                 </div>
+                <Switch
+                  checked={includeAguinaldo}
+                  onCheckedChange={setIncludeAguinaldo}
+                />
               </div>
-              <div className="space-y-3">
-                <Label className="text-sm">Meses a proyectar: {monthsToProject}</Label>
-                <Slider
-                  value={[monthsToProject]}
-                  onValueChange={(v) => setMonthsToProject(v[0])}
-                  min={6}
-                  max={60}
-                  step={6}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Prima (junio)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    +1 ingreso medio en junio
+                  </p>
+                </div>
+                <Switch
+                  checked={includePrima}
+                  onCheckedChange={setIncludePrima}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">IVA bimestral</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Solo si tienes facturas emitidas
+                  </p>
+                </div>
+                <Switch
+                  checked={includeIva}
+                  onCheckedChange={setIncludeIva}
+                  disabled={!forecast?.hasInvoices}
                 />
               </div>
             </CardContent>
           </Card>
+
+          <Card className="surface-elevated-2 rounded-xl border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="heading-card text-base">Sobre la proyección</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                La línea <strong className="text-foreground">Base</strong> usa tu historial,
+                transacciones recurrentes e índices de estacionalidad.
+              </p>
+              <p>
+                <strong className="text-emerald-500">Optimista</strong> (+10% ingresos, -5% gastos)
+                y <strong className="text-rose-500">Pesimista</strong> (-10% ingresos, +10% gastos)
+                muestran rangos de confianza.
+              </p>
+              {forecast && (
+                <p>
+                  {forecast.recurringCount} recurrentes activas consideradas · moneda {currency}
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="lg:col-span-2">
-          <Card className="surface-elevated-2 h-full rounded-xl border-border">
+        <div className="space-y-6 lg:col-span-2">
+          <Card className="surface-elevated-2 rounded-xl border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="heading-card text-base">Proyección Financiera</CardTitle>
+              <CardTitle className="heading-card text-base">Evolución del saldo</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScenarioChart data={data} />
+              {loading ? <ScenarioChartSkeleton /> : <ScenarioChart data={chartData} />}
+            </CardContent>
+          </Card>
+
+          <Card className="surface-elevated-2 rounded-xl border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="heading-card text-base">Proyección mensual</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Mes</TableHead>
+                    <TableHead className="text-right">Ingresos</TableHead>
+                    <TableHead className="text-right">Gastos</TableHead>
+                    <TableHead className="text-right">Neto</TableHead>
+                    <TableHead className="text-right">Base</TableHead>
+                    <TableHead className="text-right">Optimista</TableHead>
+                    <TableHead className="text-right">Pesimista</TableHead>
+                    <TableHead>Eventos</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <TableRow key={i}>
+                        {Array.from({ length: 8 }).map((__, j) => (
+                          <TableCell key={j}>
+                            <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : forecast ? (
+                    forecast.projection.map((p) => (
+                      <TableRow key={p.month}>
+                        <TableCell className="font-medium">{monthLabel(p.month)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(p.baseIncome)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(p.baseExpenses)}</TableCell>
+                        <TableCell
+                          className={`text-right ${p.net >= 0 ? "text-emerald-500" : "text-rose-500"}`}
+                        >
+                          {p.net >= 0 ? "+" : ""}
+                          {formatCurrency(p.net)}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(p.baseBalance)}</TableCell>
+                        <TableCell className="text-right text-emerald-500">{formatCurrency(p.optimisticBalance)}</TableCell>
+                        <TableCell className="text-right text-rose-500">{formatCurrency(p.pessimisticBalance)}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {p.events.map((event) => (
+                              <Badge key={event} variant="outline" className="text-xs">
+                                {event}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : null}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </div>
