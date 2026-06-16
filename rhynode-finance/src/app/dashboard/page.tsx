@@ -23,6 +23,7 @@ import { LeftWidget } from "@/components/dashboard/left-widget";
 import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
 import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
+import { SmartInsights } from "@/components/dashboard/smart-insights";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import type { UserScope } from "@/lib/scope";
 
@@ -359,6 +360,10 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      <Suspense fallback={<WidgetLoading />}>
+        <SmartInsights currency={org.currency} />
+      </Suspense>
 
       <DraggableDashboard initialLayout={initialLayout} widgets={widgets} />
     </div>
