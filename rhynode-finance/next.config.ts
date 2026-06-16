@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://checkout.stripe.com https://js.stripe.com https://sandbox.wompi.co https://checkout.wompi.co",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' https://fonts.gstatic.com",
+  "font-src 'self'",
   "connect-src 'self' https://*.clerk.accounts.dev https://api.stripe.com https://sandbox.wompi.co https://production.wompi.co wss://*.clerk.accounts.dev",
   "frame-src https://checkout.stripe.com https://js.stripe.com https://sandbox.wompi.co https://checkout.wompi.co",
   "form-action 'self' https://checkout.stripe.com https://sandbox.wompi.co https://checkout.wompi.co",
@@ -41,4 +42,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const sentryBuildOptions = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+};
+
+export default withSentryConfig(nextConfig, sentryBuildOptions);
