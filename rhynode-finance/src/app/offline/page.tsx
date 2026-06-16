@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { WifiOff } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Sin conexión — Rhynode",
+};
 
 export default function OfflinePage() {
   return (
