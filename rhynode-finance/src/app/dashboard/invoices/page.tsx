@@ -228,7 +228,7 @@ export default function InvoicesPage() {
             {new Date(inv.issueDate).toLocaleDateString("es-CO")}
           </div>
         </div>
-        <div className="flex items-center justify-end gap-1 border-t border-border pt-3">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-3">
           {inv.status === "DRAFT" && (
             <button
               onClick={() => updateStatus(inv.id, "SENT")}

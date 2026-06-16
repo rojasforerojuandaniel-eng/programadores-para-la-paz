@@ -230,7 +230,7 @@ export function CreateTransactionDialog({ onCreate }: { onCreate: () => void }) 
           Nueva Transacción
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-lg max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Transacción</DialogTitle>
         </DialogHeader>
@@ -357,11 +357,11 @@ export function CreateTransactionDialog({ onCreate }: { onCreate: () => void }) 
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-auto gap-1 px-1 py-0 text-xs text-primary"
+                  className="h-9 gap-1 px-2 text-xs text-primary"
                   onClick={handleAiSuggestButton}
                   disabled={aiLoading || !form.description.trim() || !form.amount}
                 >
-                  <Sparkles className="h-3 w-3" />
+                  <Sparkles className="h-3.5 w-3.5" />
                   {aiLoading ? "Analizando..." : "Sugerir con IA"}
                 </Button>
               </div>
@@ -400,11 +400,11 @@ export function CreateTransactionDialog({ onCreate }: { onCreate: () => void }) 
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" className="h-10 w-full sm:w-auto" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="h-10 w-full sm:w-auto">
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </div>

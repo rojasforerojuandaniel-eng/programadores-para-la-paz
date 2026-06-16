@@ -27,7 +27,7 @@ export function ScopeToggle() {
   };
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-1">
+    <div className="flex min-w-0 shrink items-center gap-0.5 rounded-lg border border-border bg-background p-0.5">
       {scopes.map((s) => {
         const disabled = false;
         return (
@@ -37,7 +37,7 @@ export function ScopeToggle() {
             disabled={disabled}
             onClick={() => handleChange(s.value)}
             className={cn(
-              "relative rounded-md px-3 py-1.5 text-xs font-medium transition-all",
+              "relative h-9 min-w-0 shrink-0 rounded-md px-2 sm:px-2.5 text-xs font-medium transition-all touch-manipulation whitespace-nowrap",
               scope === s.value
                 ? "border border-primary/20 bg-primary/5 text-primary"
                 : "text-muted-foreground hover:text-foreground",

@@ -32,7 +32,7 @@ export function EmptyStateCard({
             {description}
           </p>
         )}
-        {action && <div className="mt-5">{action}</div>}
+        {action && <div className="mt-5 w-full sm:w-auto">{action}</div>}
       </CardContent>
     </Card>
   );

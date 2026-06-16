@@ -134,7 +134,7 @@ export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
           Nueva Factura
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Factura</DialogTitle>
         </DialogHeader>
@@ -210,8 +210,8 @@ export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Ítems</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                <Plus className="h-3 w-3 mr-1" /> Agregar
+              <Button type="button" variant="outline" className="h-10" onClick={addItem}>
+                <Plus className="h-4 w-4 mr-1.5" /> Agregar ítem
               </Button>
             </div>
             <div className="space-y-3">
@@ -263,11 +263,12 @@ export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
                       type="button"
                       variant="ghost"
                       size="icon"
+                      className="h-10 w-10 shrink-0"
                       onClick={() => removeItem(idx)}
                       disabled={items.length <= 1}
                       aria-label={`Eliminar ítem ${idx + 1}`}
                     >
-                      <Trash2 className="h-4 w-4 text-red-400" />
+                      <Trash2 className="h-5 w-5 text-red-400" />
                     </Button>
                   </div>
                 </div>
@@ -285,11 +286,11 @@ export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="ghost" className="h-10 w-full sm:w-auto" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="h-10 w-full sm:w-auto">
               {loading ? "Guardando..." : "Guardar Factura"}
             </Button>
           </div>

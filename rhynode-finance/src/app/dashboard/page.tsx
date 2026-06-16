@@ -42,7 +42,7 @@ export const metadata = dashboardMetadata(
 
 function ScopeBadge({ scope }: { scope: UserScope }) {
   const label = scope === "PERSONAL" ? "Personal" : scope === "BUSINESS" ? "Empresa" : "Ambas";
-  return <Badge variant="outline">{label}</Badge>;
+  return <Badge variant="outline" className="h-10 px-3 text-xs sm:text-sm">{label}</Badge>;
 }
 
 function KpiGridLoading() {
@@ -347,7 +347,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <ScopeBadge scope={scope} />
           <Link href="/dashboard/advisor">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" className="h-10 gap-2">
               <Brain className="h-4 w-4" />
               AI Advisor
             </Button>
