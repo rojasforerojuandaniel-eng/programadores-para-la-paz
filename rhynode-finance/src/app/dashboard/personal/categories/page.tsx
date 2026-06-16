@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/dashboard/data-table";
+import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateCategoryDialog } from "./create-dialog";
@@ -49,7 +49,7 @@ export default async function CategoriesPage() {
       </div>
 
       <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-        <DataTable
+        <ServerDataTable
           columns={columns}
           data={categories}
           emptyState={<EmptyState />}
