@@ -39,6 +39,6 @@ export default clerkMiddleware(async (auth, request) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)"],
-  runtime: "nodejs",
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.json|sw.js|icon-192.png|icon-512.png|screenshots/).)*)",
+  ],
 };
