@@ -206,8 +206,10 @@ function BottomNav() {
                   <button
                     type="button"
                     className={cn(
-                      "flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors",
-                      sheetOpen ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      "mx-1 flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-medium transition-colors",
+                      sheetOpen
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <Icon className="h-6 w-6" />

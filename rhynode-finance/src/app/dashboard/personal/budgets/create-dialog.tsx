@@ -22,7 +22,7 @@ import {
 import { Plus, Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
-export function CreateBudgetDialog() {
+export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -85,10 +85,12 @@ export function CreateBudgetDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Presupuesto
-        </Button>
+        {trigger || (
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nuevo Presupuesto
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
