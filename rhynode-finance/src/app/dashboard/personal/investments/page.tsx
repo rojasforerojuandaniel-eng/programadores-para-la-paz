@@ -10,6 +10,17 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateInvestmentDialog } from "./create-dialog";
 import { TrendingUp, TrendingDown, Minus, Briefcase } from "lucide-react";
+import dynamic from "next/dynamic";
+import { InvestmentAllocationChartSkeleton } from "@/components/dashboard/investment-allocation-chart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const InvestmentAllocationChart = dynamic(
+  () =>
+    import("@/components/dashboard/investment-allocation-chart").then(
+      (mod) => mod.InvestmentAllocationChart
+    ),
+  { loading: InvestmentAllocationChartSkeleton }
+);
 
 export const metadata = dashboardMetadata(
   "Inversiones",
@@ -69,6 +80,21 @@ export default async function InvestmentsPage() {
   const totalCurrent = investments.reduce((s, i) => s + decimalToNumber(i.balance), 0);
   const totalReturn = totalInvested > 0 ? ((totalCurrent - totalInvested) / totalInvested) * 100 : 0;
 
+  const allocation = Object.entries(
+    investments.reduce((acc, inv) => {
+      const amount = decimalToNumber(inv.balance);
+      acc[inv.investmentType] = (acc[inv.investmentType] ?? 0) + amount;
+      return acc;
+    }, {} as Record<string, number>)
+  )
+    .map(([type, amount]) => ({
+      type,
+      label: investmentTypeLabels[type] || type,
+      value: totalCurrent > 0 ? (amount / totalCurrent) * 100 : 0,
+      amount,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -89,6 +115,19 @@ export default async function InvestmentsPage() {
           valueClassName={totalReturn >= 0 ? "text-emerald-500" : "text-rose-500"}
         />
       </div>
+
+      {allocation.length > 0 && (
+        <Card className="surface-elevated-2 rounded-xl border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Distribución del portafolio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InvestmentAllocationChart data={allocation} currency={org.currency} />
+          </CardContent>
+        </Card>
+      )}
 
       <ServerDataTable
         columns={[
