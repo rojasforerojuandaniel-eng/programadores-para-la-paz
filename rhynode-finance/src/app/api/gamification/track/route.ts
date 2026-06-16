@@ -4,6 +4,7 @@ import { addXp } from "@/lib/gamification";
 import { updateStreak } from "@/lib/streak";
 import { getPrisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const trackSchema = z.object({
   action: z.enum([
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
       xp: xpResult,
     });
   } catch (error) {
-    console.error("Gamification track error:", error);
+    logger.error("Gamification track error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
@@ -72,7 +73,7 @@ export async function GET() {
       activities,
     });
   } catch (error) {
-    console.error("Gamification get error:", error);
+    logger.error("Gamification get error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }

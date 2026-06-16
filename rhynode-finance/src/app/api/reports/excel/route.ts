@@ -39,8 +39,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    logger.error("Excel export error", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("Excel export error", { error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json({ error: "Failed to generate Excel" }, { status: 500 });
   }

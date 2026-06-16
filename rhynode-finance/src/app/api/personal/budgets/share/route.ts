@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { randomBytes } from "crypto";
+import { logger } from "@/lib/logger";
 
 const postSchema = z.object({
   budgetId: z.string().min(1),
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ inviteCode });
   } catch (error) {
-    console.error("Failed to share budget:", error);
+    logger.error("Failed to share budget", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to share budget" },
       { status: 500 }
@@ -104,7 +105,7 @@ export async function GET() {
 
     return NextResponse.json({ budgets: sharedBudgets });
   } catch (error) {
-    console.error("Failed to fetch shared budgets:", error);
+    logger.error("Failed to fetch shared budgets", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch shared budgets" },
       { status: 500 }

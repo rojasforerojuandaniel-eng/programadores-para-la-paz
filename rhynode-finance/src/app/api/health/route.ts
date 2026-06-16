@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
       db: "connected",
     });
   } catch (err: unknown) {
-    console.error("Health check error:", err);
+    logger.error("Health check error", { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json(
       {
         status: "error",

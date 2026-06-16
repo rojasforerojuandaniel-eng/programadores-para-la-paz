@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { logger } from "@/lib/logger";
 
 export const POST = withRateLimit(
   async () => {
@@ -29,7 +30,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error("Failed to cancel subscription:", error);
+      logger.error("Failed to cancel subscription", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json({ error: "Failed to cancel subscription" }, { status: 500 });
     }
   },

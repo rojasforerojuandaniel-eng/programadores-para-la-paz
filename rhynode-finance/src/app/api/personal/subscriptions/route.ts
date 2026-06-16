@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -27,7 +28,7 @@ export async function GET() {
 
     return NextResponse.json({ subscriptions });
   } catch (error) {
-    console.error("Failed to fetch subscriptions:", error);
+    logger.error("Failed to fetch subscriptions", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
   }
 }
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ subscription });
   } catch (error) {
-    console.error("Failed to create subscription:", error);
+    logger.error("Failed to create subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create subscription" }, { status: 500 });
   }
 }
@@ -100,7 +101,7 @@ export async function DELETE(request: Request) {
     await prisma.detectedSubscription.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Failed to delete subscription:", error);
+    logger.error("Failed to delete subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to delete subscription" }, { status: 500 });
   }
 }

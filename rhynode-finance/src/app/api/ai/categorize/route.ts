@@ -3,6 +3,7 @@ import { getUserProfile } from "@/lib/auth";
 import { suggestCategory } from "@/lib/categorizer";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const schema = z.object({
   description: z.string().min(1),
@@ -29,7 +30,7 @@ export const POST = withRateLimit(
       const result = suggestCategory(parsed.data.description, parsed.data.amount);
       return NextResponse.json(result);
     } catch (error) {
-      console.error("AI categorize error:", error);
+      logger.error("AI categorize error", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json({ error: "Failed to categorize" }, { status: 500 });
     }
   },

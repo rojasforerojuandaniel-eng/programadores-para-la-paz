@@ -204,8 +204,7 @@ export async function fetchEconomicIndicators(): Promise<IndicatorsResult> {
       isFallback: false,
     };
   } catch (error) {
-    logger.error("Failed to fetch economic indicators, using fallback", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("Failed to fetch economic indicators, using fallback", { error: error instanceof Error ? error.message : String(error),
     });
 
     return {

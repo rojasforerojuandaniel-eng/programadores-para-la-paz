@@ -76,7 +76,7 @@ export default function ScenariosPage() {
         setSummary(data);
         setCurrentBalance(data.currentBalance);
         setMonthlySavings(data.monthlySavings);
-      } catch (error) {
+      } catch {
         // Keep defaults on error; no need to surface noise in a simulator.
       } finally {
         setLoading(false);

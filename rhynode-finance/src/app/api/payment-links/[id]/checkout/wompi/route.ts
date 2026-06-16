@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { logger } from "@/lib/logger";
 
 export const POST = withRateLimit(
   async (
@@ -78,7 +79,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json({ url: wompiUrl.toString(), reference });
     } catch (error) {
-      console.error("Failed to create Wompi checkout:", error);
+      logger.error("Failed to create Wompi checkout", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to create Wompi checkout" },
         { status: 500 }

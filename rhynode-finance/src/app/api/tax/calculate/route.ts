@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const calculateSchema = z.object({
   type: z.enum(["IVA", "RETEFUENTE", "ICA"]),
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       total,
     });
   } catch (error) {
-    console.error("Failed to calculate tax:", error);
+    logger.error("Failed to calculate tax", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to calculate tax" },
       { status: 500 }

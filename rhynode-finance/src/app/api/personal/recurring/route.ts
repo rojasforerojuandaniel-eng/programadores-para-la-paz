@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -33,7 +34,7 @@ export async function GET() {
 
     return NextResponse.json({ recurring });
   } catch (error) {
-    console.error("Failed to fetch recurring:", error);
+    logger.error("Failed to fetch recurring", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch recurring" },
       { status: 500 }
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ recurring });
   } catch (error) {
-    console.error("Failed to create recurring:", error);
+    logger.error("Failed to create recurring", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create recurring" },
       { status: 500 }

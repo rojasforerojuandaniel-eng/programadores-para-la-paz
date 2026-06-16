@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendPushNotification } from "@/lib/notifications";
 import { addDays, startOfDay, endOfDay } from "date-fns";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   // Verify cron secret
@@ -113,7 +114,7 @@ export async function GET(request: Request) {
       timestamp: now.toISOString(),
     });
   } catch (error) {
-    console.error("Cron notifications failed:", error);
+    logger.error("Cron notifications failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Cron job failed" },
       { status: 500 }

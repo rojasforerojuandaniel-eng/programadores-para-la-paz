@@ -44,8 +44,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    logger.error("CSV export error", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("CSV export error", { error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json({ error: "Failed to generate CSV" }, { status: 500 });
   }

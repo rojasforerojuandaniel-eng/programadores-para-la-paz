@@ -143,8 +143,7 @@ export function DraggableDashboard({
           setLayout(normalizeLayout(data.widgets));
         }
       } catch (error) {
-        logger.error("Failed to sync widget layout", {
-          error: error instanceof Error ? error.message : String(error),
+        logger.error("Failed to sync widget layout", { error: error instanceof Error ? error.message : String(error),
         });
       } finally {
         setIsLoading(false);
@@ -167,8 +166,7 @@ export function DraggableDashboard({
         setLayout(normalizeLayout(data.widgets));
       }
     } catch (error) {
-      logger.error("Failed to save widget layout", {
-        error: error instanceof Error ? error.message : String(error),
+      logger.error("Failed to save widget layout", { error: error instanceof Error ? error.message : String(error),
       });
     } finally {
       setIsSyncing(false);

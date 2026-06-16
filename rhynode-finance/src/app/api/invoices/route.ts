@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth";
 import { checkPlanLimit } from "@/lib/subscription";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   clientId: z.string(),
@@ -71,7 +72,7 @@ export const GET = withRateLimit(
 
       return NextResponse.json({ invoices });
     } catch (error) {
-      console.error("Failed to fetch invoices:", error);
+      logger.error("Failed to fetch invoices", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to fetch invoices" },
         { status: 500 }
@@ -205,7 +206,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json({ invoice });
     } catch (error) {
-      console.error("Failed to create invoice:", error);
+      logger.error("Failed to create invoice", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to create invoice" },
         { status: 500 }

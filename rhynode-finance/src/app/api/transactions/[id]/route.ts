@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"]).optional(),
@@ -34,7 +35,7 @@ export async function PATCH(
 
     return NextResponse.json({ transaction });
   } catch (error) {
-    console.error("Failed to update transaction:", error);
+    logger.error("Failed to update transaction", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update transaction" }, { status: 500 });
   }
 }
@@ -51,7 +52,7 @@ export async function DELETE(
     await prisma.transaction.delete({ where: { id, organizationId: org.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete transaction:", error);
+    logger.error("Failed to delete transaction", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to delete transaction" }, { status: 500 });
   }
 }

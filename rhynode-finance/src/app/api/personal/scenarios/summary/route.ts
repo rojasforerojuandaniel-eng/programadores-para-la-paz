@@ -62,8 +62,7 @@ export async function GET() {
       currency: accounts[0]?.currency ?? "COP",
     });
   } catch (error) {
-    logger.error("Failed to fetch scenario summary", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("Failed to fetch scenario summary", { error: error instanceof Error ? error.message : String(error),
       userId: profile?.id,
     });
     return NextResponse.json(
