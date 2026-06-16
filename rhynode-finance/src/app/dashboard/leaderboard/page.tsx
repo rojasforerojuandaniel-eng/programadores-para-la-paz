@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { LevelBadge } from "@/components/dashboard/level-badge";
 
 interface LeaderboardEntry {
   rank: number;
@@ -29,7 +30,7 @@ interface LeaderboardResponse {
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
     return (
-      <div className="flex items-center justify-center gap-1 text-yellow-400">
+      <div className="flex items-center justify-center gap-1 text-yellow-500">
         <Crown className="h-4 w-4" />
         <span className="font-bold">1</span>
       </div>
@@ -37,7 +38,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   if (rank === 2) {
     return (
-      <div className="flex items-center justify-center gap-1 text-gray-300">
+      <div className="flex items-center justify-center gap-1 text-slate-400">
         <Medal className="h-4 w-4" />
         <span className="font-bold">2</span>
       </div>
@@ -52,6 +53,66 @@ function RankBadge({ rank }: { rank: number }) {
     );
   }
   return <span className="text-muted-foreground">{rank}</span>;
+}
+
+function PodiumPlace({
+  entry,
+  place,
+}: {
+  entry: LeaderboardEntry;
+  place: 1 | 2 | 3;
+}) {
+  const heights = { 1: "h-40", 2: "h-32", 3: "h-28" };
+  const gradients = {
+    1: "from-yellow-400 via-amber-300 to-yellow-500",
+    2: "from-slate-300 via-slate-200 to-slate-400",
+    3: "from-amber-600 via-amber-500 to-amber-700",
+  };
+  const labels = { 1: "1.º", 2: "2.º", 3: "3.º" };
+
+  return (
+    <div className="flex flex-1 flex-col items-center">
+      <div
+        className={cn(
+          "relative flex w-full max-w-[140px] flex-col items-center justify-end rounded-t-2xl border border-white/20 bg-gradient-to-b p-3 text-center shadow-lg",
+          heights[place],
+          gradients[place]
+        )}
+      >
+        <div className="absolute inset-0 animate-shimmer rounded-t-2xl opacity-30" />
+        <div className="relative z-10">
+          <p className="text-2xl font-black text-white drop-shadow-sm">{labels[place]}</p>
+          <div className="mt-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-sm font-bold text-foreground shadow">
+            {entry.name.charAt(0).toUpperCase()}
+          </div>
+          <p className="mt-2 truncate px-1 text-sm font-semibold text-white">
+            {entry.name}
+          </p>
+          <p className="text-xs text-white/90">
+            Nivel {entry.level} · {entry.xp.toLocaleString("es-CO")} XP
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Podium({ entries }: { entries: LeaderboardEntry[] }) {
+  const first = entries.find((e) => e.rank === 1);
+  const second = entries.find((e) => e.rank === 2);
+  const third = entries.find((e) => e.rank === 3);
+
+  if (!first && !second && !third) return null;
+
+  return (
+    <Card className="surface-elevated-2 overflow-hidden">
+      <CardContent className="flex items-end justify-center gap-2 pb-0 pt-6 sm:gap-4">
+        {second && <PodiumPlace entry={second} place={2} />}
+        {first && <PodiumPlace entry={first} place={1} />}
+        {third && <PodiumPlace entry={third} place={3} />}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function LeaderboardPage() {
@@ -83,8 +144,10 @@ export default function LeaderboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="heading-section">Leaderboard</h1>
-        <p className="body-default mt-1">Los usuarios con mas XP</p>
+        <p className="body-default mt-1">Los usuarios con más XP</p>
       </div>
+
+      {!loading && !error && top20.length > 0 && <Podium entries={top20} />}
 
       <Card className="surface-elevated-2">
         <CardContent className="py-4">
@@ -98,7 +161,7 @@ export default function LeaderboardPage() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Medal className="mb-4 h-12 w-12 text-muted-foreground" />
               <p className="body-default text-muted-foreground">
-                Se el primero en ganar XP
+                Sé el primero en ganar XP
               </p>
             </div>
           ) : (
@@ -110,7 +173,7 @@ export default function LeaderboardPage() {
                     <TableHead>Nombre</TableHead>
                     <TableHead className="text-right">Nivel</TableHead>
                     <TableHead className="text-right">XP</TableHead>
-                    <TableHead>Titulo</TableHead>
+                    <TableHead>Título</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -120,6 +183,7 @@ export default function LeaderboardPage() {
                       <TableRow
                         key={entry.rank}
                         className={cn(
+                          "transition-colors",
                           isMe && "bg-primary/10 hover:bg-primary/20"
                         )}
                       >
@@ -127,7 +191,9 @@ export default function LeaderboardPage() {
                           <RankBadge rank={entry.rank} />
                         </TableCell>
                         <TableCell className="font-medium">{entry.name}</TableCell>
-                        <TableCell className="text-right">{entry.level}</TableCell>
+                        <TableCell className="text-right">
+                          <LevelBadge level={entry.level} />
+                        </TableCell>
                         <TableCell className="text-right font-semibold">
                           {entry.xp.toLocaleString("es-CO")}
                         </TableCell>
@@ -161,8 +227,10 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold">Nivel {myRank.level}</p>
-                  <p className="text-xs text-muted-foreground">{myRank.xp.toLocaleString("es-CO")} XP</p>
+                  <LevelBadge level={myRank.level} />
+                  <p className="text-xs text-muted-foreground">
+                    {myRank.xp.toLocaleString("es-CO")} XP
+                  </p>
                 </div>
               </div>
             </CardContent>
