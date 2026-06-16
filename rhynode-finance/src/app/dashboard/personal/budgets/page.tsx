@@ -8,6 +8,7 @@ import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { ProgressBar } from "@/components/dashboard/progress-bar";
+import { ProgressRowsSkeleton } from "@/components/dashboard/page-skeleton";
 import { TableCell } from "@/components/ui/table";
 import { CreateBudgetDialog, ShareBudgetDialog } from "./create-dialog";
 import { PiggyBank, Receipt, AlertTriangle } from "lucide-react";
@@ -122,7 +123,7 @@ export default async function BudgetsPage() {
         </div>
       )}
 
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+      <Suspense fallback={<ProgressRowsSkeleton rows={3} />}>
         <ServerDataTable
           columns={columns}
           data={budgets}

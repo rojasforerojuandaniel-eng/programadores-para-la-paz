@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, ArrowLeftRight, TrendingUp, TrendingDown, Scale } from "lucide-react";
+import { ArrowLeftRight, TrendingUp, TrendingDown, Scale } from "lucide-react";
+import { KpiSkeleton, TableRowsSkeleton } from "@/components/dashboard/page-skeleton";
 
 interface Transaction {
   id: string;
@@ -66,15 +67,7 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-            ))}
-          </div>
-        }
-      >
+      <Suspense fallback={<KpiSkeleton count={3} columns={3} />}>
         <KpiSection />
       </Suspense>
 
@@ -84,10 +77,8 @@ export default function TransactionsPage() {
         </CardHeader>
         <Suspense
           fallback={
-            <CardContent>
-              <div className="flex h-40 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
+            <CardContent className="space-y-4">
+              <TableRowsSkeleton rows={5} />
             </CardContent>
           }
         >
