@@ -36,8 +36,29 @@ metadata:
 6. **Sitemap expandido**
    - `src/app/sitemap.ts` ahora incluye rutas públicas legales/app y rutas principales del dashboard.
 
-**Estado:** Producción deployada en `https://rhynode-finance.vercel.app`, build 0 errores, middleware redirige correctamente, APIs responden 200, logs sin errores de runtime.
+7. **Fix 'Functions cannot be passed to Client Components'**
+   - Se dividió `DataTable` en `ServerDataTable` (para páginas RSC que pasan `renderRow`/`renderCard`) y `DataTable` (Client Component para páginas interactivas).
+   - Esto eliminó los errores de Server Components en `/dashboard/personal/investments` y `/dashboard/personal/net-worth`.
 
-**Por qué importa:** Cierra un bug de auth que rompía la experiencia en producción y eleva la percepción de producto real con datos financieros colombianos vivos en lugar de mocks.
+8. **Modo claro/oscuro accesible**
+   - Nuevo `ThemeToggle` en header móvil y desktop sidebar, además del selector en settings.
+   - `ThemeProvider` ya existía con `next-themes`; ahora el cambio es visible y de un toque.
 
-**Cómo aplicar:** Seguir iterando en áreas visibles (investment allocation chart, net worth history, empty states, a11y audit, performance) y mantener la regla de build 0 errores antes de cada deploy.
+9. **Scope Empresa/Ambos desbloqueado**
+   - El toggle ya no deshabilita BUSINESS/BOTH por `hasBusiness`. Cualquier usuario puede probar los modos empresa y ambos.
+   - `/dashboard/transactions` ahora filtra por el scope del perfil (PERSONAL, BUSINESS o BOTH).
+
+10. **Responsive móvil pulido**
+    - Scope toggle con touch targets de 36px+, bottom nav con iconos 24px y affordance activo.
+    - Sheet de menú móvil con `85dvh` y safe-area.
+    - Dialogs (factura, transacción, inversión) adaptados a móvil con anchos `calc(100%-1rem)` y `90dvh`.
+    - KPI labels legibles, export buttons horizontal scroll, acciones de factura con mejor espaciado.
+
+11. **Theme toggle en landing**
+    - Modo claro/oscuro disponible también en navbar de landing y menú móvil.
+
+**Estado:** Producción deployada en `https://rhynode-finance.vercel.app`, build 0 errores, runtime logs sin errores recientes.
+
+**Por qué importa:** Cierra bugs de producción que rompían la experiencia, agrega datos financieros colombianos reales, y da acceso a modo claro/oscuro y scopes de negocio.
+
+**Cómo aplicar:** Seguir iterando en responsive móvil, empty states, a11y audit, performance y flujos de negocio. Mantener build 0 errores antes de cada deploy.
