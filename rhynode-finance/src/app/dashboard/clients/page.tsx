@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateClientButton } from "@/components/dashboard/create-client-button";
@@ -18,6 +19,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Users, UserCheck, DollarSign } from "lucide-react";
+
+export const metadata = dashboardMetadata(
+  "Clientes",
+  "Gestiona tus clientes, su historial de facturas y datos fiscales para facturación DIAN."
+);
 
 interface ClientInvoiceSummary {
   id: string;

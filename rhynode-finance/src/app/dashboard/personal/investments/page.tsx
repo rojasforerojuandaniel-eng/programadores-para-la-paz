@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/dashboard/data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -9,6 +10,11 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateInvestmentDialog } from "./create-dialog";
 import { TrendingUp, TrendingDown, Minus, Briefcase } from "lucide-react";
+
+export const metadata = dashboardMetadata(
+  "Inversiones",
+  "Registra y haz seguimiento de tus inversiones: acciones, bonos, cripto, ETFs y bienes raíces."
+);
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {

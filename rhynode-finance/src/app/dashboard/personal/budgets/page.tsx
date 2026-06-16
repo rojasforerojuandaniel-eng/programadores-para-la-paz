@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/dashboard/data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -10,6 +11,11 @@ import { ProgressBar } from "@/components/dashboard/progress-bar";
 import { TableCell } from "@/components/ui/table";
 import { CreateBudgetDialog, ShareBudgetDialog } from "./create-dialog";
 import { PiggyBank, Receipt, AlertTriangle } from "lucide-react";
+
+export const metadata = dashboardMetadata(
+  "Presupuestos",
+  "Crea presupuestos mensuales por categoría, compártelos y recibe alertas cuando te acerques al límite."
+);
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {

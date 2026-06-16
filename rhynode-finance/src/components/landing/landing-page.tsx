@@ -1,7 +1,17 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { Logo } from "@/components/logo";
 import { PricingCards } from "./pricing-cards";
 import {
@@ -18,27 +28,34 @@ import {
   Check,
   Smartphone,
   Menu,
+  X,
 } from "lucide-react";
 
+const navLinks = [
+  { href: "#personal", label: "Personal" },
+  { href: "#business", label: "Negocios" },
+  { href: "#pricing", label: "Precios" },
+  { href: "#faq", label: "FAQ" },
+];
+
 function Navbar() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16">
         <Logo href="/" />
 
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <a href="#personal" className="text-muted-foreground transition-colors hover:text-foreground">
-            Personal
-          </a>
-          <a href="#business" className="text-muted-foreground transition-colors hover:text-foreground">
-            Negocios
-          </a>
-          <a href="#pricing" className="text-muted-foreground transition-colors hover:text-foreground">
-            Precios
-          </a>
-          <a href="#faq" className="text-muted-foreground transition-colors hover:text-foreground">
-            FAQ
-          </a>
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -50,9 +67,52 @@ function Navbar() {
           </Button>
         </div>
 
-        <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menú de navegación">
-          <Menu className="h-5 w-5" aria-hidden="true" />
-        </Button>
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label="Abrir menú de navegación"
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="top" className="w-full border-b border-border/50 bg-background/95 backdrop-blur-md">
+            <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+            <div className="flex flex-col gap-6 py-6">
+              <div className="flex items-center justify-between">
+                <Logo href="/" />
+                <SheetClose asChild>
+                  <Button variant="ghost" size="icon" aria-label="Cerrar menú">
+                    <X className="h-5 w-5" aria-hidden="true" />
+                  </Button>
+                </SheetClose>
+              </div>
+              <nav className="flex flex-col gap-4 text-base font-medium">
+                {navLinks.map((link) => (
+                  <SheetClose key={link.href} asChild>
+                    <a
+                      href={link.href}
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => setOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  </SheetClose>
+                ))}
+              </nav>
+              <div className="flex flex-col gap-3 pt-4">
+                <Button variant="outline" asChild>
+                  <Link href="/sign-in">Iniciar sesión</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/sign-up">Empezar gratis</Link>
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );
@@ -414,9 +474,66 @@ function Footer() {
   );
 }
 
+function LandingSchema() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "Rhynode",
+        url: "https://rhynode.finance",
+        logo: "https://rhynode.finance/icon-192x192.png",
+        sameAs: [
+          "https://twitter.com/rhynode",
+        ],
+        description:
+          "Rhynode une finanzas personales e inteligencia contable para personas y pymes en Colombia.",
+        areaServed: {
+          "@type": "Country",
+          name: "Colombia",
+        },
+      },
+      {
+        "@type": "WebSite",
+        name: "Rhynode",
+        url: "https://rhynode.finance",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: "https://rhynode.finance/dashboard?q={search_term_string}",
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "Rhynode",
+        applicationCategory: "FinanceApplication",
+        operatingSystem: "Web, iOS, Android",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "COP",
+        },
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.8",
+          ratingCount: "120",
+        },
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 export function LandingPageV2() {
   return (
     <main className="min-h-screen bg-background">
+      <LandingSchema />
       <Navbar />
       <Hero />
       <TrustBadges />
