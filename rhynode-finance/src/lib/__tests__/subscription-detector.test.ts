@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { detectSubscriptions } from "@/lib/subscription-detector";
 import { Prisma } from "@/generated/prisma/client";
+import type { Transaction } from "@/generated/prisma/client";
 
 function tx(description: string, amount: number, date: Date) {
   return {
@@ -10,7 +11,7 @@ function tx(description: string, amount: number, date: Date) {
     date,
     currency: "COP",
     category: "Entretenimiento",
-  } as any;
+  } as unknown as Transaction;
 }
 
 describe("detectSubscriptions", () => {
