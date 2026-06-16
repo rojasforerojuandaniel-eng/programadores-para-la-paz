@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScopeToggle } from "./scope-toggle";
+import { GlobalSearch } from "./global-search";
 import { NotificationCenter } from "./notification-center";
 import { useScope } from "@/lib/scope-context";
 import { Logo } from "@/components/logo";
@@ -138,6 +139,7 @@ function MobileHeader() {
     <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md lg:hidden">
       <Logo href="/dashboard" />
       <div className="flex min-w-0 shrink items-center gap-0.5">
+        <GlobalSearch compact />
         <div className="hidden min-w-0 shrink sm:block">
           <ScopeToggle />
         </div>
@@ -241,6 +243,9 @@ export function Sidebar() {
           <div className="flex h-16 items-center justify-between px-6">
             <Logo href="/dashboard" />
             <NotificationCenter />
+          </div>
+          <div className="px-6 pb-3">
+            <GlobalSearch />
           </div>
           <div className="px-6 pb-2">
             <ScopeToggle />
