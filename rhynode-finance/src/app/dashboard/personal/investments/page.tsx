@@ -1,4 +1,3 @@
-import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -9,10 +8,11 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateInvestmentDialog } from "./create-dialog";
-import { TrendingUp, TrendingDown, Minus, Briefcase } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Briefcase, Clock } from "lucide-react";
 import dynamic from "next/dynamic";
 import { InvestmentAllocationChartSkeleton } from "@/components/dashboard/investment-allocation-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { resolveInvestmentPrices, ResolvedInvestment } from "@/lib/market-prices";
 
 const InvestmentAllocationChart = dynamic(
   () =>
@@ -28,10 +28,20 @@ export const metadata = dashboardMetadata(
 );
 
 function formatCurrency(amount: number, currency: string) {
+  const fractionDigits = currency.toUpperCase() === "COP" ? 0 : 2;
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: fractionDigits,
+  }).format(amount);
+}
+
+function formatPrice(amount: number, currency: string) {
+  const fractionDigits = currency.toUpperCase() === "COP" ? 0 : 4;
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: fractionDigits,
   }).format(amount);
 }
 
@@ -41,6 +51,13 @@ function formatPercent(value: number) {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   }).format(value / 100);
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }
 
 const investmentTypeLabels: Record<string, string> = {
@@ -61,6 +78,17 @@ const investmentTypeColors: Record<string, string> = {
   OTHER: "bg-muted text-muted-foreground border-border",
 };
 
+function sourceBadge(source: ResolvedInvestment["marketPrice"]["source"]) {
+  switch (source) {
+    case "real":
+      return { label: "Precio real", className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20" };
+    case "estimated":
+      return { label: "Estimado", className: "bg-amber-500/15 text-amber-600 border-amber-500/20" };
+    default:
+      return { label: "N/A", className: "bg-muted text-muted-foreground border-border" };
+  }
+}
+
 export default async function InvestmentsPage() {
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
@@ -76,13 +104,15 @@ export default async function InvestmentsPage() {
       })
     : [];
 
-  const totalInvested = investments.reduce((s, i) => s + decimalToNumber(i.investedAmount), 0);
-  const totalCurrent = investments.reduce((s, i) => s + decimalToNumber(i.balance), 0);
+  const resolvedInvestments = await resolveInvestmentPrices(investments);
+
+  const totalInvested = resolvedInvestments.reduce((s, i) => s + i.investedAmount, 0);
+  const totalCurrent = resolvedInvestments.reduce((s, i) => s + i.estimatedValue, 0);
   const totalReturn = totalInvested > 0 ? ((totalCurrent - totalInvested) / totalInvested) * 100 : 0;
 
   const allocation = Object.entries(
-    investments.reduce((acc, inv) => {
-      const amount = decimalToNumber(inv.balance);
+    resolvedInvestments.reduce((acc, inv) => {
+      const amount = inv.estimatedValue;
       acc[inv.investmentType] = (acc[inv.investmentType] ?? 0) + amount;
       return acc;
     }, {} as Record<string, number>)
@@ -133,15 +163,17 @@ export default async function InvestmentsPage() {
         columns={[
           { key: "name", header: "Nombre" },
           { key: "type", header: "Tipo" },
-          { key: "current", header: "Valor Actual" },
-          { key: "invested", header: "Invertido" },
+          { key: "price", header: "Precio / unidad" },
+          { key: "value", header: "Valor estimado" },
+          { key: "gain", header: "Ganancia" },
           { key: "return", header: "Retorno %" },
+          { key: "updated", header: "Actualizado" },
+          { key: "source", header: "Fuente" },
         ]}
-        data={investments}
+        data={resolvedInvestments}
         renderRow={(item) => {
-          const balance = decimalToNumber(item.balance);
-          const investedAmount = decimalToNumber(item.investedAmount);
-          const ret = investedAmount > 0 ? ((balance - investedAmount) / investedAmount) * 100 : 0;
+          const { marketPrice, gainAmount, gainPercent } = item;
+          const source = sourceBadge(marketPrice.source);
           return (
             <>
               <TableCell className="py-3 text-sm font-medium">{item.name}</TableCell>
@@ -153,18 +185,48 @@ export default async function InvestmentsPage() {
                   {investmentTypeLabels[item.investmentType] || item.investmentType}
                 </Badge>
               </TableCell>
-              <TableCell className="py-3 text-sm">{formatCurrency(balance, item.currency)}</TableCell>
-              <TableCell className="py-3 text-sm">{formatCurrency(investedAmount, item.currency)}</TableCell>
-              <TableCell className={`py-3 text-sm font-medium ${ret >= 0 ? "text-success" : "text-danger"}`}>
-                {formatPercent(ret)}
+              <TableCell className="py-3 text-sm">
+                {marketPrice.price !== null ? (
+                  <div className="space-y-0.5">
+                    <div>{formatPrice(marketPrice.price, marketPrice.currency)}</div>
+                    {item.estimatedQuantity !== null && (
+                      <div className="text-xs text-muted-foreground">
+                        ~{item.estimatedQuantity.toLocaleString("es-CO")} unidades
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell className="py-3 text-sm">{formatCurrency(item.estimatedValue, item.currency)}</TableCell>
+              <TableCell className={`py-3 text-sm font-medium ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
+                {formatCurrency(gainAmount, item.currency)}
+              </TableCell>
+              <TableCell className={`py-3 text-sm font-medium ${gainPercent >= 0 ? "text-success" : "text-danger"}`}>
+                {formatPercent(gainPercent)}
+              </TableCell>
+              <TableCell className="py-3 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatDateTime(marketPrice.updatedAt)}
+                </span>
+              </TableCell>
+              <TableCell className="py-3">
+                <Badge
+                  variant="outline"
+                  className={source.className}
+                  title={marketPrice.note}
+                >
+                  {source.label}
+                </Badge>
               </TableCell>
             </>
           );
         }}
         renderCard={(item) => {
-          const balance = decimalToNumber(item.balance);
-          const investedAmount = decimalToNumber(item.investedAmount);
-          const ret = investedAmount > 0 ? ((balance - investedAmount) / investedAmount) * 100 : 0;
+          const { marketPrice, gainAmount, gainPercent } = item;
+          const source = sourceBadge(marketPrice.source);
           return (
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-3">
@@ -177,13 +239,39 @@ export default async function InvestmentsPage() {
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="text-muted-foreground">Valor Actual</div>
-                <div className="text-right font-medium">{formatCurrency(balance, item.currency)}</div>
+                <div className="text-muted-foreground">Precio / unidad</div>
+                <div className="text-right font-medium">
+                  {marketPrice.price !== null ? (
+                    formatPrice(marketPrice.price, marketPrice.currency)
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </div>
+                {item.estimatedQuantity !== null && (
+                  <>
+                    <div className="text-muted-foreground">Unidades estimadas</div>
+                    <div className="text-right font-medium">{item.estimatedQuantity.toLocaleString("es-CO")}</div>
+                  </>
+                )}
+                <div className="text-muted-foreground">Valor estimado</div>
+                <div className="text-right font-medium">{formatCurrency(item.estimatedValue, item.currency)}</div>
                 <div className="text-muted-foreground">Invertido</div>
-                <div className="text-right font-medium">{formatCurrency(investedAmount, item.currency)}</div>
+                <div className="text-right font-medium">{formatCurrency(item.investedAmount, item.currency)}</div>
+                <div className="text-muted-foreground">Ganancia</div>
+                <div className={`text-right font-medium ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
+                  {formatCurrency(gainAmount, item.currency)}
+                </div>
                 <div className="text-muted-foreground">Retorno</div>
-                <div className={`text-right font-medium ${ret >= 0 ? "text-success" : "text-danger"}`}>
-                  {formatPercent(ret)}
+                <div className={`text-right font-medium ${gainPercent >= 0 ? "text-success" : "text-danger"}`}>
+                  {formatPercent(gainPercent)}
+                </div>
+                <div className="text-muted-foreground">Actualizado</div>
+                <div className="text-right text-muted-foreground">{formatDateTime(marketPrice.updatedAt)}</div>
+                <div className="text-muted-foreground">Fuente</div>
+                <div className="text-right">
+                  <Badge variant="outline" className={source.className} title={marketPrice.note}>
+                    {source.label}
+                  </Badge>
                 </div>
               </div>
             </div>
