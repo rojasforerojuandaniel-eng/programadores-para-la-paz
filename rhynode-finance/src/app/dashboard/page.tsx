@@ -21,6 +21,8 @@ import { KpiGrid } from "@/components/dashboard/kpi-grid";
 import { LeftWidget } from "@/components/dashboard/left-widget";
 import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
+import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
+import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import type { UserScope } from "@/lib/scope";
 
 const Anomalies = dynamic(
@@ -257,6 +259,8 @@ export default async function DashboardPage() {
 
   const healthScores = await getHealthScores(profile?.id, org.id, scope);
 
+  const indicatorsData = await fetchEconomicIndicators();
+
   const metadata = (profile?.metadata ?? {}) as { widgets?: WidgetLayoutItem[] };
   const initialLayout = mergeLayouts(metadata.widgets);
 
@@ -318,6 +322,17 @@ export default async function DashboardPage() {
         <Suspense fallback={<WidgetLoading />}>
           <UpcomingEvents userId={profile?.id} currency={org.currency} />
         </Suspense>
+      ),
+    },
+    {
+      id: "economic-indicators",
+      label: "Indicadores Colombia",
+      content: (
+        <EconomicIndicatorsWidget
+          indicators={indicatorsData.indicators}
+          lastUpdated={indicatorsData.lastUpdated}
+          attribution={indicatorsData.source}
+        />
       ),
     },
   ].filter((widget) => widget.content !== null);

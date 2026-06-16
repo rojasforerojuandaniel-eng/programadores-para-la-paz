@@ -20,6 +20,7 @@ export const DEFAULT_WIDGETS: WidgetDefinition[] = [
   { id: "right-widget", label: "Presupuestos / Vencimientos", defaultVisible: true, defaultOrder: 5 },
   { id: "ant-expenses", label: "Gastos Hormiga", defaultVisible: true, defaultOrder: 6 },
   { id: "recent-events", label: "Próximos Eventos", defaultVisible: true, defaultOrder: 7 },
+  { id: "economic-indicators", label: "Indicadores Colombia", defaultVisible: true, defaultOrder: 8 },
 ];
 
 export function buildDefaultLayout(): WidgetLayoutItem[] {
