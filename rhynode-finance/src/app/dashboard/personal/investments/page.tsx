@@ -192,8 +192,9 @@ export default async function InvestmentsPage() {
         emptyState={
           <EmptyStateCard
             icon={TrendingUp}
-            title="No tienes inversiones"
-            description="Crea tu primera inversión para empezar a hacer seguimiento."
+            title="Haz crecer tu patrimonio"
+            description="Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar."
+            hint="Empieza registrando tu primera inversión."
             action={<CreateInvestmentDialog />}
           />
         }

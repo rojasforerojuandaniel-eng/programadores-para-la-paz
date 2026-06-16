@@ -41,8 +41,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={Repeat}
-      title="No tienes transacciones recurrentes"
-      description="Crea tu primera transacción recurrente para automatizar el seguimiento."
+      title="Automatiza tus pagos recurrentes"
+      description="Registra suscripciones y pagos periódicos para nunca perder un vencimiento."
+      hint="Empieza creando tu primera transacción recurrente."
       action={<CreateRecurringDialog />}
     />
   );

@@ -343,8 +343,9 @@ export default function InvoicesPage() {
               emptyState={
                 <EmptyStateCard
                   icon={FileText}
-                  title="No tienes facturas"
-                  description="Crea tu primera factura electrónica compatible con DIAN, SAT o AFIP."
+                  title="Factura electrónicamente"
+                  description="Crea facturas compatibles con DIAN, SAT o AFIP y da seguimiento a sus pagos."
+                  hint="Empieza creando tu primera factura."
                   action={<CreateInvoiceDialog onCreate={() => window.location.reload()} />}
                 />
               }

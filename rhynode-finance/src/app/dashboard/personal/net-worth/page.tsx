@@ -190,8 +190,9 @@ export default async function NetWorthPage() {
         emptyState={
           <EmptyStateCard
             icon={Landmark}
-            title="No tienes snapshots"
-            description="Crea tu primer registro de patrimonio para empezar a hacer seguimiento."
+            title="Tu patrimonio empieza aquí"
+            description="Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas."
+            hint="Empieza creando tu primer registro de patrimonio."
             action={
               <UpdateSnapshotButton
                 totalAssets={totalAssets}

@@ -58,8 +58,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={PiggyBank}
-      title="No tienes presupuestos"
-      description="Crea tu primer presupuesto y controla tus gastos."
+      title="Controla tus gastos con presupuestos"
+      description="Establece límites por categoría y recibe alertas antes de excederte."
+      hint="Empieza creando tu primer presupuesto."
       action={<CreateBudgetDialog />}
     />
   );

@@ -160,8 +160,9 @@ export default async function CalendarPage() {
       {sortedWeeks.length === 0 ? (
         <EmptyStateCard
           icon={Calendar}
-          title="No hay eventos financieros este mes"
-          description="Cuando tengas vencimientos, pagos recurrentes o deadlines de metas, aparecerán aquí."
+          title="Tu calendario financiero está vacío"
+          description="Aquí aparecerán vencimientos, pagos recurrentes y deadlines de metas."
+          hint="Crea transacciones, deudas o metas para empezar a visualizar eventos."
         />
       ) : (
         <div className="space-y-6">

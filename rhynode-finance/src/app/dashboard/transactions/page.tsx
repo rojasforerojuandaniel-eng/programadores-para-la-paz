@@ -170,8 +170,9 @@ async function TransactionsContent() {
       {rows.length === 0 ? (
         <EmptyStateCard
           icon={ArrowLeftRight}
-          title="No hay transacciones"
-          description="Registra tus ingresos y gastos para llevar el control financiero."
+          title="El centro de tus finanzas"
+          description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."
+          hint="Empieza creando tu primera transacción."
           action={<CreateTransactionButton />}
         />
       ) : (

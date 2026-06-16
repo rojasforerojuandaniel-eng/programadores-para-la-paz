@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,10 +36,10 @@ function monthlyEquivalent(amount: number, frequency: string): number {
   }
 }
 
-function DetectButton() {
+function DetectButton({ className }: { className?: string }) {
   return (
     <form action="/api/personal/subscriptions/detect" method="POST">
-      <Button type="submit" className="gap-2">
+      <Button type="submit" className={cn("gap-2", className)}>
         <RefreshCw className="h-4 w-4" />
         Detectar
       </Button>
@@ -116,9 +117,10 @@ async function SubscriptionsContent() {
         </div>
         <EmptyStateCard
           icon={CreditCard}
-          title="No se han detectado suscripciones"
-          description="Presiona el botón para analizar tus transacciones y descubrir suscripciones recurrentes."
-          action={<DetectButton />}
+          title="Detecta suscripciones automáticamente"
+          description="Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar."
+          hint="Presiona detectar para descubrir tus suscripciones."
+          action={<DetectButton className="w-full" />}
         />
       </div>
     );

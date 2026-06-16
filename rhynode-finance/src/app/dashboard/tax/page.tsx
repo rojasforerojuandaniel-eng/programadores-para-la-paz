@@ -284,8 +284,8 @@ export default function TaxPage() {
             emptyState={
               <EmptyStateCard
                 icon={Receipt}
-                title="Sin ejemplos"
-                description="No hay ejemplos de cálculo disponibles."
+                title="Sin ejemplos disponibles"
+                description="Aquí verás cálculos de impuestos de referencia cuando estén disponibles."
               />
             }
           />
@@ -314,8 +314,9 @@ export default function TaxPage() {
               emptyState={
                 <EmptyStateCard
                   icon={ShieldCheck}
-                  title="No tienes reportes de impuestos"
-                  description="Crea reportes de IVA, ISR, retenciones y cumplimiento DIAN/SAT/AFIP."
+                  title="Mantén el compliance al día"
+                  description="Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP."
+                  hint="Empieza creando tu primer reporte fiscal."
                   action={<CreateTaxReportDialog onCreate={() => window.location.reload()} />}
                 />
               }

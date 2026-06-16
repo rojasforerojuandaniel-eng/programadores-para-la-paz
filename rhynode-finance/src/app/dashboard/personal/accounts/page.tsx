@@ -28,8 +28,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={Wallet}
-      title="No tienes cuentas"
-      description="Crea tu primera cuenta para consolidar tus saldos."
+      title="Consolida tus cuentas"
+      description="Conecta bancos, efectivo y tarjetas para tener una vista completa de tu dinero."
+      hint="Empieza creando tu primera cuenta."
       action={<CreateAccountDialog />}
     />
   );

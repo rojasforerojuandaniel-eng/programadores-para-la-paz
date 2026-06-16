@@ -150,8 +150,9 @@ export default function PaymentLinksPage() {
               emptyState={
                 <EmptyStateCard
                   icon={CreditCard}
-                  title="No hay links de cobro"
-                  description="Crea links de pago integrados con Wompi, PayU y PSE para cobrar en línea."
+                  title="Cobra en línea en minutos"
+                  description="Crea links de pago integrados con Wompi, PayU y PSE y compártelos fácilmente."
+                  hint="Empieza creando tu primer link de cobro."
                   action={<CreatePaymentLinkDialog onCreate={() => window.location.reload()} />}
                 />
               }

@@ -166,8 +166,9 @@ async function ClientsContent() {
       {rows.length === 0 ? (
         <EmptyStateCard
           icon={Users}
-          title="No tienes clientes"
-          description="Agrega clientes para asociarlos a facturas y reportes de impuestos."
+          title="Gestiona tus clientes"
+          description="Agrega datos fiscales y de contacto para facturar de forma organizada."
+          hint="Empieza agregando tu primer cliente."
           action={<CreateClientButton />}
         />
       ) : (
