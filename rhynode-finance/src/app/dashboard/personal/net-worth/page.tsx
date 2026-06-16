@@ -10,6 +10,13 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { Landmark, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import dynamic from "next/dynamic";
+import { NetWorthChartSkeleton } from "@/components/dashboard/net-worth-chart";
+
+const NetWorthChart = dynamic(
+  () => import("@/components/dashboard/net-worth-chart").then((mod) => mod.NetWorthChart),
+  { loading: NetWorthChartSkeleton }
+);
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {
@@ -59,7 +66,13 @@ export default async function NetWorthPage() {
     latest && previous ? decimalToNumber(latest.netWorth) - decimalToNumber(previous.netWorth) : 0;
 
   const chartSnapshots = [...snapshots].slice(0, 12).reverse();
-  const maxAssets = Math.max(...chartSnapshots.map((s) => decimalToNumber(s.totalAssets)), 1);
+  const chartData = chartSnapshots.map((s) => ({
+    date: s.date.toISOString(),
+    label: new Date(s.date).toLocaleDateString("es-CO", { month: "short", day: "numeric" }),
+    netWorth: decimalToNumber(s.netWorth),
+    assets: decimalToNumber(s.totalAssets),
+    liabilities: decimalToNumber(s.totalLiabilities),
+  }));
 
   return (
     <div className="space-y-6">
@@ -119,7 +132,7 @@ export default async function NetWorthPage() {
         />
       </div>
 
-      {chartSnapshots.length > 0 && (
+      {chartData.length > 0 && (
         <Card className="surface-elevated-2 rounded-xl border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -127,23 +140,7 @@ export default async function NetWorthPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex max-h-40 items-end gap-2 overflow-x-auto pb-2 sm:max-h-52">
-              {chartSnapshots.map((s, i) => {
-                const h = Math.max(8, (decimalToNumber(s.totalAssets) / maxAssets) * 120);
-                return (
-                  <div key={i} className="flex min-w-[28px] flex-1 flex-col items-center gap-1">
-                    <div
-                      className="w-full max-w-[28px] rounded-t-md bg-gradient-to-t from-primary to-primary/70"
-                      style={{ height: `${h}px` }}
-                    />
-                    <span className="text-[10px] text-muted-foreground">
-                      {new Date(s.date).getMonth() + 1}/
-                      {new Date(s.date).getFullYear().toString().slice(2)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            <NetWorthChart data={chartData} currency={latest?.currency ?? org.currency} />
           </CardContent>
         </Card>
       )}
