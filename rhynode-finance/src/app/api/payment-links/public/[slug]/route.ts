@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { logger } from "@/lib/logger";
 
 export const GET = withRateLimit(
   async (
@@ -58,7 +59,7 @@ export const GET = withRateLimit(
         currentPayments: link.currentPayments,
       });
     } catch (error) {
-      console.error("Failed to fetch public payment link:", error);
+      logger.error("Failed to fetch public payment link", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to fetch payment link" },
         { status: 500 }

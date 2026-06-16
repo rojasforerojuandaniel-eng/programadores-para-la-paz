@@ -222,15 +222,13 @@ export async function POST(request: Request) {
         });
       }
     } catch (recordErr) {
-      logger.error("Failed to record Stripe webhook event", {
-        error: recordErr instanceof Error ? recordErr.message : String(recordErr),
+      logger.error("Failed to record Stripe webhook event", { error: recordErr instanceof Error ? recordErr.message : String(recordErr),
       });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    logger.error("Stripe webhook error", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("Stripe webhook error", { error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }

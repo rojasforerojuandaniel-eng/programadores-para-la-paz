@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -27,7 +28,7 @@ export async function GET() {
 
     return NextResponse.json({ projects });
   } catch (error) {
-    console.error("Failed to fetch projects:", error);
+    logger.error("Failed to fetch projects", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch projects" },
       { status: 500 }
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ project });
   } catch (error) {
-    console.error("Failed to create project:", error);
+    logger.error("Failed to create project", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create project" },
       { status: 500 }

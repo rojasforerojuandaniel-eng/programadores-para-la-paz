@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   date: z.string().datetime().or(z.string()).optional(),
@@ -22,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json({ snapshots });
   } catch (error) {
-    console.error("Failed to fetch net worth snapshots:", error);
+    logger.error("Failed to fetch net worth snapshots", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch net worth snapshots" },
       { status: 500 }
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ snapshot });
   } catch (error) {
-    console.error("Failed to create net worth snapshot:", error);
+    logger.error("Failed to create net worth snapshot", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create net worth snapshot" },
       { status: 500 }

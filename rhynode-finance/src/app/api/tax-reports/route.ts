@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   period: z.enum(["MONTHLY", "BIMONTHLY", "QUARTERLY", "ANNUAL"]),
@@ -35,7 +36,7 @@ export async function GET() {
 
     return NextResponse.json({ reports });
   } catch (error) {
-    console.error("Failed to fetch tax reports:", error);
+    logger.error("Failed to fetch tax reports", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch tax reports" },
       { status: 500 }
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ report });
   } catch (error) {
-    console.error("Failed to create tax report:", error);
+    logger.error("Failed to create tax report", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create tax report" },
       { status: 500 }

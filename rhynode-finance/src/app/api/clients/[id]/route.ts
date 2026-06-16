@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -36,7 +37,7 @@ export async function PATCH(
 
     return NextResponse.json({ client });
   } catch (error) {
-    console.error("Failed to update client:", error);
+    logger.error("Failed to update client", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update client" }, { status: 500 });
   }
 }
@@ -53,7 +54,7 @@ export async function DELETE(
     await prisma.client.delete({ where: { id, organizationId: org.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete client:", error);
+    logger.error("Failed to delete client", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to delete client" }, { status: 500 });
   }
 }

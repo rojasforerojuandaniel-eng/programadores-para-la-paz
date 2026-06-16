@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { ACHIEVEMENTS } from "@/lib/achievements";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -42,7 +43,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch achievements:", error);
+    logger.error("Failed to fetch achievements", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch achievements" },
       { status: 500 }

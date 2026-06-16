@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -45,7 +46,7 @@ export async function GET() {
       },
     });
   } catch (err: unknown) {
-    console.error("Debug dashboard error:", err);
+    logger.error("Debug dashboard error", { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json(
       {
         error: "Internal server error",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { detectSubscriptions } from "@/lib/subscription-detector";
+import { logger } from "@/lib/logger";
 
 export async function POST() {
   try {
@@ -57,7 +58,7 @@ export async function POST() {
 
     return NextResponse.json({ subscriptions: upserted });
   } catch (error) {
-    console.error("Subscription detection error:", error);
+    logger.error("Subscription detection error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to detect subscriptions" }, { status: 500 });
   }
 }

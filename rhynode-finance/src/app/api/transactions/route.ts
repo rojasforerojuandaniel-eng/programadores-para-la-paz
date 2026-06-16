@@ -4,6 +4,7 @@ import { requireAuth, getUserProfile } from "@/lib/auth";
 import { suggestCategory } from "@/lib/categorizer";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const createSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"]),
@@ -35,7 +36,7 @@ export const GET = withRateLimit(
 
       return NextResponse.json({ transactions });
     } catch (error) {
-      console.error("Failed to fetch transactions:", error);
+      logger.error("Failed to fetch transactions", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to fetch transactions" },
         { status: 500 }
@@ -149,7 +150,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json({ transaction });
     } catch (error) {
-      console.error("Failed to create transaction:", error);
+      logger.error("Failed to create transaction", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
         { error: "Failed to create transaction" },
         { status: 500 }

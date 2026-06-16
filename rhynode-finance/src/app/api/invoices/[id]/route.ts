@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateSchema = z.object({
   status: z.enum(["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED", "PARTIAL"]).optional(),
@@ -49,7 +50,7 @@ export async function PATCH(
 
     return NextResponse.json({ invoice });
   } catch (error) {
-    console.error("Failed to update invoice:", error);
+    logger.error("Failed to update invoice", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update invoice" },
       { status: 500 }
@@ -74,7 +75,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete invoice:", error);
+    logger.error("Failed to delete invoice", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to delete invoice" },
       { status: 500 }

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
 import { subMonths, addMonths, format } from "date-fns";
+import { logger } from "@/lib/logger";
 
 interface MonthlyData {
   month: string;
@@ -150,7 +151,7 @@ export async function GET() {
       insights,
     });
   } catch (error) {
-    console.error("Failed to generate forecast:", error);
+    logger.error("Failed to generate forecast", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to generate forecast" },
       { status: 500 }

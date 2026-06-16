@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { logger } from "@/lib/logger";
 
 export const POST = withRateLimit(
   async () => {
@@ -27,7 +28,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json({ url: portalSession.url });
     } catch (error) {
-      console.error("Failed to create portal session:", error);
+      logger.error("Failed to create portal session", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json({ error: "Failed to create portal session" }, { status: 500 });
     }
   },

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -117,7 +118,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("PDF export error:", error);
+    logger.error("PDF export error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
   }
 }

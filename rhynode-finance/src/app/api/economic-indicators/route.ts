@@ -12,8 +12,7 @@ export async function GET() {
     });
     return NextResponse.json(result);
   } catch (error) {
-    logger.error("Failed to serve economic indicators", {
-      error: error instanceof Error ? error.message : String(error),
+    logger.error("Failed to serve economic indicators", { error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json(
       { error: "Failed to fetch economic indicators" },

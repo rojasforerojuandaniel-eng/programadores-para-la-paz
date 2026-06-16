@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   // Verify cron secret
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
       timestamp: now.toISOString(),
     });
   } catch (error) {
-    console.error("Cron job failed:", error);
+    logger.error("Cron job failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Cron job failed" },
       { status: 500 }

@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 const INVESTMENT_TYPES = [
   "INVESTMENT",
@@ -76,7 +77,7 @@ export async function GET() {
       totalReturn: Number(totalReturn.toFixed(2)),
     });
   } catch (error) {
-    console.error("Failed to fetch investment performance:", error);
+    logger.error("Failed to fetch investment performance", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch investment performance" },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -41,7 +42,7 @@ export async function GET() {
 
     return NextResponse.json({ leaderboard, myRank });
   } catch (error) {
-    console.error("Failed to fetch leaderboard:", error);
+    logger.error("Failed to fetch leaderboard", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch leaderboard" },
       { status: 500 }

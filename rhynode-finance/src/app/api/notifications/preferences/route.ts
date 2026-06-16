@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const preferenceSchema = z.object({
   budgets: z.boolean().optional(),
@@ -26,7 +27,7 @@ export async function GET() {
       weeklySummary: prefs?.weeklySummary ?? false,
     });
   } catch (error) {
-    console.error("Failed to get notification preferences:", error);
+    logger.error("Failed to get notification preferences", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to get preferences" },
       { status: 500 }
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       weeklySummary: prefs.weeklySummary,
     });
   } catch (error) {
-    console.error("Failed to save notification preferences:", error);
+    logger.error("Failed to save notification preferences", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to save preferences" },
       { status: 500 }

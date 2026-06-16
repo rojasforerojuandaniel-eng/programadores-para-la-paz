@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const deleteSchema = z.object({
   budgetId: z.string().min(1),
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ members: enrichedMembers });
   } catch (error) {
-    console.error("Failed to fetch members:", error);
+    logger.error("Failed to fetch members", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch members" },
       { status: 500 }
@@ -134,7 +135,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to remove member:", error);
+    logger.error("Failed to remove member", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to remove member" },
       { status: 500 }

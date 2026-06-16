@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -16,7 +17,7 @@ export async function GET() {
 
     return NextResponse.json({ count });
   } catch (error) {
-    console.error("Failed to fetch unread notifications count:", error);
+    logger.error("Failed to fetch unread notifications count", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch notifications count" },
       { status: 500 }

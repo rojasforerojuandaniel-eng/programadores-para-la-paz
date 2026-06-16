@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -34,7 +35,7 @@ export async function GET() {
     }
     return NextResponse.json({ organization: org });
   } catch (error) {
-    console.error("Failed to fetch organization:", error);
+    logger.error("Failed to fetch organization", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch organization" },
       { status: 500 }
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ organization: org }, { status: 201 });
   } catch (error) {
-    console.error("Failed to create organization:", error);
+    logger.error("Failed to create organization", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create organization" },
       { status: 500 }
@@ -171,7 +172,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ organization: updated });
   } catch (error) {
-    console.error("Failed to update organization:", error);
+    logger.error("Failed to update organization", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update organization" },
       { status: 500 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const postSchema = z.object({
   inviteCode: z.string().min(1),
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to accept invite:", error);
+    logger.error("Failed to accept invite", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to accept invite" },
       { status: 500 }

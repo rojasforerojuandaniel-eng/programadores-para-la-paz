@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -44,7 +45,7 @@ export async function PATCH(
 
     return NextResponse.json({ link });
   } catch (error) {
-    console.error("Failed to update payment link:", error);
+    logger.error("Failed to update payment link", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update payment link" },
       { status: 500 }
@@ -69,7 +70,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete payment link:", error);
+    logger.error("Failed to delete payment link", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to delete payment link" },
       { status: 500 }

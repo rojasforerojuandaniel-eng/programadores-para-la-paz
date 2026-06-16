@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { checkAndUnlockAchievement } from "@/lib/achievements";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const postSchema = z.object({
   action: z.string().optional(),
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ unlocked });
   } catch (error) {
-    console.error("Failed to check achievements:", error);
+    logger.error("Failed to check achievements", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to check achievements" },
       { status: 500 }
