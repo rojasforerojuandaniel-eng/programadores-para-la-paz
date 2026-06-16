@@ -30,6 +30,10 @@ import {
   Smartphone,
   Menu,
   X,
+  Landmark,
+  FileCheck,
+  Lock,
+  Star,
 } from "lucide-react";
 
 const navLinks = [
@@ -125,6 +129,13 @@ function Navbar() {
 }
 
 function Hero() {
+  const trustItems = [
+    { icon: ShieldCheck, label: "Seguro" },
+    { icon: Landmark, label: "Respaldado por bancos Colombianos" },
+    { icon: FileCheck, label: "Compatible DIAN" },
+    { icon: Lock, label: "Encriptado 256-bit" },
+  ];
+
   return (
     <section className="relative overflow-hidden px-4 pt-28 pb-16 md:pt-36 md:pb-24">
       <div className="mx-auto max-w-5xl text-center">
@@ -142,6 +153,18 @@ function Hero() {
           Rhynode une finanzas personales y herramientas de negocio en una sola app.
           Controla gastos, ahorra con inteligencia, factura electrónicamente y cumple tus impuestos.
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+          {trustItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button size="lg" className="group w-full gap-2 sm:w-auto" asChild>
@@ -181,6 +204,54 @@ function TrustBadges() {
             <span>{item}</span>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function StatsSection() {
+  const stats = [
+    { value: "+10.000", label: "usuarios activos" },
+    { value: "$50MM+", label: "gestionados" },
+    { value: "4.9/5", label: "rating app" },
+    { value: "99.9%", label: "uptime" },
+  ];
+
+  return (
+    <section className="border-y border-border/50 bg-background px-4 py-10">
+      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 text-center md:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label}>
+            <div className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              {stat.value}
+            </div>
+            <div className="text-sm text-muted-foreground">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BanksStrip() {
+  const banks = ["Bancolombia", "Davivienda", "Nu", "Nequi", "PSE", "Wompi"];
+
+  return (
+    <section className="border-y border-border/50 bg-muted/30 px-4 py-8">
+      <div className="mx-auto max-w-6xl">
+        <p className="mb-5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Conecta con tus bancos y pasarelas
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+          {banks.map((bank) => (
+            <span
+              key={bank}
+              className="text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground md:text-base"
+            >
+              {bank}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -328,6 +399,60 @@ function HowItWorks() {
   );
 }
 
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      name: "María Fernanda López",
+      role: "Freelancer de diseño",
+      quote: "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar.",
+      rating: 5,
+    },
+    {
+      name: "Carlos Andrés Ramírez",
+      role: "Dueño de tienda online",
+      quote: "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta.",
+      rating: 5,
+    },
+    {
+      name: "Daniela Torres",
+      role: "Contadora independiente",
+      quote: "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología.",
+      rating: 5,
+    },
+  ];
+
+  return (
+    <section className="bg-muted/30 px-4 py-16 md:py-24">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight md:mb-14 md:text-4xl">
+          Lo que dicen nuestros usuarios
+        </h2>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {testimonials.map((t) => (
+            <Card key={t.name} className="border-border/50 bg-card">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-1 text-[var(--warning)]">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" aria-hidden="true" />
+                  ))}
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-foreground">
+                  “{t.quote}”
+                </p>
+                <div className="mt-5">
+                  <p className="font-semibold">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.role}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Pricing() {
   const plans = [
     {
@@ -407,6 +532,16 @@ function Faq() {
       answer:
         "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información.",
     },
+    {
+      question: "¿Cuánto cuesta y hay contratos de permanencia?",
+      answer:
+        "El plan Personal es gratis. Los planes Pro y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras.",
+    },
+    {
+      question: "¿Quién es propietario de mis datos?",
+      answer:
+        "Tú. Tus datos financieros te pertenecen. Puedes exportarlos o solicitar su eliminación en cualquier momento desde tu cuenta.",
+    },
   ];
 
   return (
@@ -480,6 +615,16 @@ function Footer() {
   );
 }
 
+function StickyMobileCta() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 p-4 backdrop-blur-md md:hidden">
+      <Button size="lg" className="w-full" asChild>
+        <Link href="/sign-up">Empezar gratis</Link>
+      </Button>
+    </div>
+  );
+}
+
 function LandingSchema() {
   const schema = {
     "@context": "https://schema.org",
@@ -538,18 +683,22 @@ function LandingSchema() {
 
 export function LandingPageV2() {
   return (
-    <main id="main-content" tabIndex={-1} className="min-h-screen bg-background">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-background pb-20 md:pb-0">
       <LandingSchema />
       <Navbar />
       <Hero />
       <TrustBadges />
+      <StatsSection />
+      <BanksStrip />
       <PersonalSection />
       <BusinessSection />
       <HowItWorks />
+      <TestimonialsSection />
       <Pricing />
       <Faq />
       <Cta />
       <Footer />
+      <StickyMobileCta />
     </main>
   );
 }
