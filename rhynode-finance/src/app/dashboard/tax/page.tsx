@@ -283,6 +283,7 @@ export default function TaxPage() {
             renderCard={renderExampleCard}
             emptyState={
               <EmptyStateCard
+                variant="md"
                 icon={Receipt}
                 title="Sin ejemplos disponibles"
                 description="Aquí verás cálculos de impuestos de referencia cuando estén disponibles."
@@ -313,6 +314,7 @@ export default function TaxPage() {
               loading={loading}
               emptyState={
                 <EmptyStateCard
+                  variant="lg"
                   icon={ShieldCheck}
                   title="Mantén el compliance al día"
                   description="Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP."

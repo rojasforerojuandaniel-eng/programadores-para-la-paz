@@ -360,7 +360,8 @@ export default function InvoicesPage() {
               loading={loading}
               emptyState={
                 <EmptyStateCard
-                  icon={FileText}
+          variant="lg"
+          icon={FileText}
                   title="Factura electrónicamente"
                   description="Crea facturas compatibles con DIAN, SAT o AFIP y da seguimiento a sus pagos."
                   hint="Empieza creando tu primera factura."

@@ -19,7 +19,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Loader2 } from "lucide-react";
+import { GripVertical, Loader2, LayoutDashboard } from "lucide-react";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import dynamic from "next/dynamic";
@@ -95,19 +96,21 @@ function DashboardSkeleton() {
 
 function DashboardEmptyState({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border p-12 text-center">
-      <p className="text-lg font-medium">Todos los widgets están ocultos</p>
-      <p className="text-sm text-muted-foreground">
-        Abre la configuración para mostrar widgets en tu dashboard.
-      </p>
-      <button
-        type="button"
-        onClick={onOpenSettings}
-        className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        Personalizar widgets
-      </button>
-    </div>
+    <EmptyStateCard
+      variant="lg"
+      icon={LayoutDashboard}
+      title="Todos los widgets están ocultos"
+      description="Abre la configuración para mostrar widgets en tu dashboard."
+      action={
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          Personalizar widgets
+        </button>
+      }
+    />
   );
 }
 

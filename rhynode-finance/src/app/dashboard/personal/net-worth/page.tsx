@@ -189,6 +189,7 @@ export default async function NetWorthPage() {
         )}
         emptyState={
           <EmptyStateCard
+            variant="lg"
             icon={Landmark}
             title="Tu patrimonio empieza aquí"
             description="Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas."

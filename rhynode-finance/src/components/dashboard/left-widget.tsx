@@ -5,6 +5,8 @@ import type { UserScope } from "@/lib/scope";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
   ArrowLeftRight,
   FileText,
@@ -53,17 +55,22 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
         </CardHeader>
         <CardContent>
           {empty ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <Receipt className="h-8 w-8 text-muted-foreground" />
-              <p className="body-default text-muted-foreground">Sin transacciones</p>
-              <Link
-                href="/dashboard/transactions"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Plus className="h-4 w-4" />
-                Crear primera transacción
-              </Link>
-            </div>
+            <EmptyStateCard
+              variant="sm"
+              className="border-0 bg-transparent shadow-none"
+              icon={Receipt}
+              title="Sin transacciones"
+              description="Registra tu primera transacción para empezar a controlar tus finanzas."
+              hint="Empieza creando tu primera transacción."
+              action={
+                <Link href="/dashboard/transactions">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    Crear primera transacción
+                  </Button>
+                </Link>
+              }
+            />
           ) : (
             <div className="space-y-3">
               {transactions.map((t) => (
@@ -117,17 +124,22 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
         </CardHeader>
         <CardContent className="space-y-3">
           {empty ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <FileText className="h-8 w-8 text-muted-foreground" />
-              <p className="body-default text-muted-foreground">Sin facturas</p>
-              <Link
-                href="/dashboard/invoices"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Plus className="h-4 w-4" />
-                Crear primera factura
-              </Link>
-            </div>
+            <EmptyStateCard
+              variant="sm"
+              className="border-0 bg-transparent shadow-none"
+              icon={FileText}
+              title="Sin facturas"
+              description="Crea facturas electrónicas y da seguimiento a sus pagos."
+              hint="Empieza creando tu primera factura."
+              action={
+                <Link href="/dashboard/invoices">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    Crear primera factura
+                  </Button>
+                </Link>
+              }
+            />
           ) : (
             <>
               <div className="flex items-center justify-between">
@@ -187,17 +199,22 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
       </CardHeader>
       <CardContent>
         {empty ? (
-          <div className="flex flex-col items-center gap-2 py-8 text-center">
-            <Receipt className="h-8 w-8 text-muted-foreground" />
-            <p className="body-default text-muted-foreground">Sin actividad reciente</p>
-            <Link
-              href="/dashboard/transactions"
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-            >
-              <Plus className="h-4 w-4" />
-              Crear primera transacción
-            </Link>
-          </div>
+          <EmptyStateCard
+            variant="sm"
+            className="border-0 bg-transparent shadow-none"
+            icon={Receipt}
+            title="Sin actividad reciente"
+            description="Registra transacciones o facturas para ver tu actividad mixta aquí."
+            hint="Empieza creando tu primera transacción."
+            action={
+              <Link href="/dashboard/transactions">
+                <Button size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Crear primera transacción
+                </Button>
+              </Link>
+            }
+          />
         ) : (
           <div className="space-y-4">
             {personalTxns.length > 0 && (

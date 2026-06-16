@@ -149,6 +149,7 @@ export default function PaymentLinksPage() {
               loading={loading}
               emptyState={
                 <EmptyStateCard
+                  variant="lg"
                   icon={CreditCard}
                   title="Cobra en línea en minutos"
                   description="Crea links de pago integrados con Wompi, PayU y PSE y compártelos fácilmente."

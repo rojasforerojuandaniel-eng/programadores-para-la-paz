@@ -4,6 +4,7 @@ import { useState, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -157,16 +158,13 @@ export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] 
             ))}
           </div>
         ) : visibleNudges.length === 0 ? (
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card/50 p-4">
-            <PiggyBank className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-            <div>
-              <p className="font-medium">Todo en orden</p>
-              <p className="text-sm text-muted-foreground">
-                No hay alertas importantes ahora. Sigue registrando movimientos para recibir
-                insights proactivos.
-              </p>
-            </div>
-          </div>
+          <EmptyStateCard
+            variant="sm"
+            className="border-0 bg-transparent shadow-none"
+            icon={PiggyBank}
+            title="Todo en orden"
+            description="No hay alertas importantes ahora. Sigue registrando movimientos para recibir insights proactivos."
+          />
         ) : (
           <ul className="space-y-3">
             {visibleNudges.map((nudge) => (

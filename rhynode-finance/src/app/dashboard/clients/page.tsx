@@ -165,6 +165,7 @@ async function ClientsContent() {
     <CardContent>
       {rows.length === 0 ? (
         <EmptyStateCard
+          variant="lg"
           icon={Users}
           title="Gestiona tus clientes"
           description="Agrega datos fiscales y de contacto para facturar de forma organizada."

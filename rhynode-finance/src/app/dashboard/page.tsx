@@ -217,6 +217,7 @@ async function UpcomingEvents({ userId, currency }: { userId: string | undefined
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Próximos eventos</h2>
         <EmptyStateCard
+          variant="sm"
           icon={Calendar}
           title="Sin eventos próximos"
           description="Aquí verás deudas, pagos recurrentes y deadlines de metas que vencen este mes."

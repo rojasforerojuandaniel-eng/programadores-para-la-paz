@@ -57,7 +57,8 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
 function EmptyState() {
   return (
     <EmptyStateCard
-      icon={PiggyBank}
+          variant="lg"
+          icon={PiggyBank}
       title="Controla tus gastos con presupuestos"
       description="Establece límites por categoría y recibe alertas antes de excederte."
       hint="Empieza creando tu primer presupuesto."

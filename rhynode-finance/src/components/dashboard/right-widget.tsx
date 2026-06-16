@@ -5,6 +5,8 @@ import type { UserScope } from "@/lib/scope";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
   ArrowLeftRight,
   Plus,
@@ -53,17 +55,22 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
         </CardHeader>
         <CardContent>
           {empty ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <TrendingUp className="h-8 w-8 text-muted-foreground" />
-              <p className="body-default text-muted-foreground">Sin presupuestos</p>
-              <Link
-                href="/dashboard/transactions"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Plus className="h-4 w-4" />
-                Crear primer presupuesto
-              </Link>
-            </div>
+            <EmptyStateCard
+              variant="sm"
+              className="border-0 bg-transparent shadow-none"
+              icon={TrendingUp}
+              title="Sin presupuestos"
+              description="Establece límites por categoría y recibe alertas antes de excederte."
+              hint="Empieza creando tu primer presupuesto."
+              action={
+                <Link href="/dashboard/personal/budgets">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    Crear primer presupuesto
+                  </Button>
+                </Link>
+              }
+            />
           ) : (
             <div className="space-y-4">
               {budgets.map((b) => {
@@ -113,19 +120,22 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
         </CardHeader>
         <CardContent>
           {empty ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <ShieldCheck className="h-8 w-8 text-muted-foreground" />
-              <p className="body-default text-muted-foreground">
-                No hay vencimientos próximos
-              </p>
-              <Link
-                href="/dashboard/tax"
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-              >
-                <Plus className="h-4 w-4" />
-                Crear reporte de impuestos
-              </Link>
-            </div>
+            <EmptyStateCard
+              variant="sm"
+              className="border-0 bg-transparent shadow-none"
+              icon={ShieldCheck}
+              title="No hay vencimientos próximos"
+              description="Crea reportes fiscales para mantener el compliance al día."
+              hint="Empieza creando tu primer reporte fiscal."
+              action={
+                <Link href="/dashboard/tax">
+                  <Button size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    Crear reporte fiscal
+                  </Button>
+                </Link>
+              }
+            />
           ) : (
             <div className="space-y-2">
               {taxes.map((t) => (
@@ -205,17 +215,22 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
       </CardHeader>
       <CardContent>
         {empty ? (
-          <div className="flex flex-col items-center gap-2 py-8 text-center">
-            <Receipt className="h-8 w-8 text-muted-foreground" />
-            <p className="body-default text-muted-foreground">Sin actividad reciente</p>
-            <Link
-              href="/dashboard/transactions"
-              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-            >
-              <Plus className="h-4 w-4" />
-              Crear primera transacción
-            </Link>
-          </div>
+          <EmptyStateCard
+            variant="sm"
+            className="border-0 bg-transparent shadow-none"
+            icon={Receipt}
+            title="Sin actividad reciente"
+            description="Registra transacciones o facturas para ver tu actividad mixta aquí."
+            hint="Empieza creando tu primera transacción."
+            action={
+              <Link href="/dashboard/transactions">
+                <Button size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Crear primera transacción
+                </Button>
+              </Link>
+            }
+          />
         ) : (
           <div className="space-y-3">
             {mixed.map((item) => (

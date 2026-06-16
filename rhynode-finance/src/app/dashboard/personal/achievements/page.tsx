@@ -108,6 +108,7 @@ export default function AchievementsPage() {
             </div>
           ) : error || totalPossible === 0 ? (
             <EmptyStateCard
+              variant="lg"
               icon={Trophy}
               title="Desbloquea logros mientras ahorras"
               description="Completa acciones financieras y gana XP por cada hito que consigas."
