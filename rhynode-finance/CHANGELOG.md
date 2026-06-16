@@ -23,6 +23,9 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Mejoras de accesibilidad: contraste, landmarks `<main>`, skip-to-content link.
 - Lazy loading de componentes pesados (recharts, analytics, PWA install prompt) para mejorar Core Web Vitals.
 - Widgets del dashboard personalizables con drag-and-drop y persistencia.
+- Sentry para monitoreo de errores y performance.
+- Exportación CSV de transacciones.
+- Logger estructurado en rutas críticas.
 
 ### Fixed
 
