@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
-import InstallPrompt from "@/components/pwa/install-prompt";
+import dynamic from "next/dynamic";
 import "./globals.css";
+
+const InstallPrompt = dynamic(() => import("@/components/pwa/install-prompt"));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,5 +1,6 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
@@ -9,21 +10,33 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Brain, Calendar } from "lucide-react";
-
-export const metadata = dashboardMetadata(
-  "Resumen",
-  "Visualiza tu salud financiera, KPIs, gastos hormiga, anomalías y progreso de gamificación en Rhynode."
-);
-
+import {
+  mergeLayouts,
+  type WidgetLayoutItem,
+  type DashboardWidget,
+} from "@/lib/widgets";
+import { DraggableDashboard } from "@/components/dashboard/draggable-dashboard";
 import { XPBar } from "@/components/dashboard/xp-bar";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";
 import { LeftWidget } from "@/components/dashboard/left-widget";
 import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
-import { AntExpenses } from "@/components/dashboard/ant-expenses";
-import { Anomalies } from "@/components/dashboard/anomalies";
-import { WidgetShell } from "@/components/dashboard/widget-shell";
 import type { UserScope } from "@/lib/scope";
+
+const Anomalies = dynamic(
+  () => import("@/components/dashboard/anomalies").then((mod) => mod.Anomalies),
+  { loading: () => <WidgetLoading /> }
+);
+
+const AntExpenses = dynamic(
+  () => import("@/components/dashboard/ant-expenses").then((mod) => mod.AntExpenses),
+  { loading: () => <WidgetLoading /> }
+);
+
+export const metadata = dashboardMetadata(
+  "Resumen",
+  "Visualiza tu salud financiera, KPIs, gastos hormiga, anomalías y progreso de gamificación en Rhynode."
+);
 
 function ScopeBadge({ scope }: { scope: UserScope }) {
   const label = scope === "PERSONAL" ? "Personal" : scope === "BUSINESS" ? "Empresa" : "Ambas";
@@ -194,7 +207,16 @@ async function UpcomingEvents({ userId, currency }: { userId: string | undefined
     ...goals.map((g) => ({ id: `goal-${g.id}`, title: g.name, date: g.deadline as Date, amount: g.targetAmount, currency: g.currency, type: "Meta" })),
   ].sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 3);
 
-  if (events.length === 0) return null;
+  if (events.length === 0) {
+    return (
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Próximos eventos</h2>
+        <div className="rounded-xl border border-border surface-elevated-2 p-4">
+          <p className="text-sm text-muted-foreground">No hay eventos financieros próximos este mes.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -235,6 +257,71 @@ export default async function DashboardPage() {
 
   const healthScores = await getHealthScores(profile?.id, org.id, scope);
 
+  const metadata = (profile?.metadata ?? {}) as { widgets?: WidgetLayoutItem[] };
+  const initialLayout = mergeLayouts(metadata.widgets);
+
+  const widgets: DashboardWidget[] = [
+    {
+      id: "xp-bar",
+      label: "Barra de XP",
+      content: <XPBar level={level} xp={xp} nextLevelXp={nextLevelXp} streakDays={streakDays} />,
+    },
+    {
+      id: "health-score",
+      label: "Health Score",
+      content:
+        scope === "PERSONAL" || scope === "BOTH" ? (
+          <HealthScore {...healthScores} />
+        ) : null,
+    },
+    {
+      id: "kpi-grid",
+      label: "KPIs",
+      content: (
+        <Suspense fallback={<KpiGridLoading />}>
+          <KpiGrid scope={scope} orgId={org.id} userId={profile?.id} currency={org.currency} />
+        </Suspense>
+      ),
+    },
+    {
+      id: "anomalies",
+      label: "Anomalías",
+      content: <Anomalies />,
+    },
+    {
+      id: "left-widget",
+      label: "Transacciones / Facturas",
+      content: (
+        <Suspense fallback={<WidgetLoading />}>
+          <LeftWidget scope={scope} orgId={org.id} userId={profile?.id} currency={org.currency} />
+        </Suspense>
+      ),
+    },
+    {
+      id: "right-widget",
+      label: "Presupuestos / Vencimientos",
+      content: (
+        <Suspense fallback={<WidgetLoading />}>
+          <RightWidget scope={scope} orgId={org.id} userId={profile?.id} currency={org.currency} />
+        </Suspense>
+      ),
+    },
+    {
+      id: "ant-expenses",
+      label: "Gastos Hormiga",
+      content: <AntExpenses />,
+    },
+    {
+      id: "recent-events",
+      label: "Próximos Eventos",
+      content: (
+        <Suspense fallback={<WidgetLoading />}>
+          <UpcomingEvents userId={profile?.id} currency={org.currency} />
+        </Suspense>
+      ),
+    },
+  ].filter((widget) => widget.content !== null);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -253,61 +340,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <WidgetShell widgetId="xp-bar">
-        <XPBar level={level} xp={xp} nextLevelXp={nextLevelXp} streakDays={streakDays} />
-      </WidgetShell>
-
-      <WidgetShell widgetId="health-score">
-        {(scope === "PERSONAL" || scope === "BOTH") && profile?.id && (
-          <HealthScore {...healthScores} />
-        )}
-      </WidgetShell>
-
-      <WidgetShell widgetId="kpi-grid">
-        <Suspense fallback={<KpiGridLoading />}>
-          <KpiGrid
-            scope={scope}
-            orgId={org.id}
-            userId={profile?.id}
-            currency={org.currency}
-          />
-        </Suspense>
-      </WidgetShell>
-
-      <WidgetShell widgetId="anomalies">
-        <Anomalies />
-      </WidgetShell>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <WidgetShell widgetId="left-widget">
-          <Suspense fallback={<WidgetLoading />}>
-            <LeftWidget
-              scope={scope}
-              orgId={org.id}
-              userId={profile?.id}
-              currency={org.currency}
-            />
-          </Suspense>
-        </WidgetShell>
-        <div className="space-y-6">
-          <WidgetShell widgetId="right-widget">
-            <Suspense fallback={<WidgetLoading />}>
-              <RightWidget
-                scope={scope}
-                orgId={org.id}
-                userId={profile?.id}
-                currency={org.currency}
-              />
-            </Suspense>
-          </WidgetShell>
-          <WidgetShell widgetId="ant-expenses">
-            <AntExpenses />
-          </WidgetShell>
-        </div>
-      </div>
-      <WidgetShell widgetId="recent-events">
-        <UpcomingEvents userId={profile?.id} currency={org.currency} />
-      </WidgetShell>
+      <DraggableDashboard initialLayout={initialLayout} widgets={widgets} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
+import { mergeLayouts, normalizeLayout, type WidgetLayoutItem } from "@/lib/widgets";
 
 const widgetSchema = z.object({
   id: z.string().min(1),
@@ -14,11 +15,7 @@ const postSchema = z.object({
 });
 
 interface WidgetMetadata {
-  widgets?: Array<{
-    id: string;
-    visible: boolean;
-    order: number;
-  }>;
+  widgets?: WidgetLayoutItem[];
 }
 
 export async function GET() {
@@ -29,11 +26,7 @@ export async function GET() {
     }
 
     const metadata = (profile.metadata ?? {}) as WidgetMetadata;
-    const widgets = metadata.widgets ?? [
-      { id: "kpi-grid", visible: true, order: 1 },
-      { id: "xp-bar", visible: true, order: 2 },
-      { id: "ant-expenses", visible: false, order: 3 },
-    ];
+    const widgets = mergeLayouts(metadata.widgets);
 
     return NextResponse.json({ widgets });
   } catch (error) {
@@ -61,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { layout } = parsed.data;
+    const layout = normalizeLayout(parsed.data.layout);
     const metadata = (profile.metadata ?? {}) as WidgetMetadata;
 
     await prisma.userProfile.update({

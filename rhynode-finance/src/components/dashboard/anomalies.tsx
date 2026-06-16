@@ -36,9 +36,28 @@ export function Anomalies() {
     fetchAnomalies();
   }, []);
 
-  if (loading) return null;
-  if (error || !data) return null;
-  if (data.anomalies.length === 0) return null;
+  if (loading) {
+    return (
+      <div className="surface-elevated-2 rounded-xl border border-border p-4">
+        <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+        <div className="mt-3 space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-10 animate-pulse rounded bg-muted" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (error || !data) {
+    return (
+      <div className="surface-elevated-2 rounded-xl border border-border p-4">
+        <p className="text-sm text-muted-foreground">No pudimos cargar las anomalías.</p>
+      </div>
+    );
+  }
+  if (data.anomalies.length === 0) {
+    return <AnomaliesEmptyState />;
+  }
 
   return (
     <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4">
