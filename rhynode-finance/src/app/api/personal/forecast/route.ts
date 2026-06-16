@@ -1,40 +1,64 @@
-import { decimalToNumber } from "@/lib/decimal";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
+import { decimalToNumber } from "@/lib/decimal";
 import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
-import { subMonths, addMonths, format } from "date-fns";
+import {
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  format,
+  addMonths,
+} from "date-fns";
 import { logger } from "@/lib/logger";
+import {
+  generateCashflowProjection,
+  type HistoricalMonth,
+  type RecurringTransactionInput,
+} from "@/lib/cashflow-forecast";
+import { z } from "zod";
 
-interface MonthlyData {
-  month: string;
-  income: number;
-  expenses: number;
+const querySchema = z.object({
+  months: z.coerce.number().min(3).max(60).default(12),
+  includeAguinaldo: z.coerce.boolean().default(true),
+  includePrima: z.coerce.boolean().default(true),
+  includeIva: z.coerce.boolean().default(true),
+});
+
+function buildHistoricalMonths(
+  transactions: Array<{ date: Date; type: string; amount: unknown }>,
+  start: Date,
+  end: Date
+): HistoricalMonth[] {
+  const monthlyMap = new Map<string, { income: number; expenses: number }>();
+
+  for (const t of transactions) {
+    if (t.date < start || t.date > end) continue;
+    const key = format(t.date, "yyyy-MM");
+    const bucket = monthlyMap.get(key) || { income: 0, expenses: 0 };
+    const amount = decimalToNumber(t.amount as number);
+
+    if (t.type === "INCOME") {
+      bucket.income += amount;
+    } else if (t.type === "EXPENSE") {
+      bucket.expenses += Math.abs(amount);
+    }
+
+    monthlyMap.set(key, bucket);
+  }
+
+  const historical: HistoricalMonth[] = [];
+  let cursor = start;
+  while (cursor <= end) {
+    const key = format(cursor, "yyyy-MM");
+    const bucket = monthlyMap.get(key) || { income: 0, expenses: 0 };
+    historical.push({ month: key, income: bucket.income, expenses: bucket.expenses });
+    cursor = addMonths(cursor, 1);
+  }
+
+  return historical;
 }
 
-interface ForecastData extends MonthlyData {
-  confidence: number;
-}
-
-function linearRegression(values: number[]): { slope: number; intercept: number } {
-  const n = values.length;
-  if (n === 0) return { slope: 0, intercept: 0 };
-
-  const sumX = values.reduce((sum, _, i) => sum + i, 0);
-  const sumY = values.reduce((sum, v) => sum + v, 0);
-  const sumXY = values.reduce((sum, v, i) => sum + i * v, 0);
-  const sumXX = values.reduce((sum, _, i) => sum + i * i, 0);
-
-  const denominator = n * sumXX - sumX * sumX;
-  if (denominator === 0) return { slope: 0, intercept: sumY / n };
-
-  const slope = (n * sumXY - sumX * sumY) / denominator;
-  const intercept = (sumY - slope * sumX) / n;
-
-  return { slope, intercept };
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -46,112 +70,113 @@ export async function GET() {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
-    const now = new Date();
-    const sixMonthsAgo = subMonths(now, 6);
-
-    const txnWhere: TransactionWhereInput = {
-      organizationId: org.id,
-      scope: "PERSONAL",
-      date: { gte: sixMonthsAgo },
-      OR: [{ userId: profile.id }, { userId: null }],
-    };
-
-    const transactions = await prisma.transaction.findMany({
-      where: txnWhere,
-      orderBy: { date: "asc" },
+    const { searchParams } = new URL(request.url);
+    const parsed = querySchema.safeParse({
+      months: searchParams.get("months"),
+      includeAguinaldo: searchParams.get("aguinaldo"),
+      includePrima: searchParams.get("prima"),
+      includeIva: searchParams.get("iva"),
     });
 
-    const monthlyMap = new Map<string, { income: number; expenses: number }>();
+    const params = parsed.success
+      ? parsed.data
+      : { months: 12, includeAguinaldo: true, includePrima: true, includeIva: true };
 
-    for (const t of transactions) {
-      const monthKey = format(t.date, "yyyy-MM");
-      const current = monthlyMap.get(monthKey) || { income: 0, expenses: 0 };
+    const now = new Date();
+    const historicalEnd = endOfMonth(subMonths(now, 1));
+    const historicalStart = startOfMonth(subMonths(historicalEnd, 23));
 
-      if (t.type === "INCOME") {
-        current.income += decimalToNumber(t.amount);
-      } else if (t.type === "EXPENSE") {
-        current.expenses += Math.abs(decimalToNumber(t.amount));
-      }
+    const [accounts, transactions, recurring, invoices] = await Promise.all([
+      prisma.account.findMany({
+        where: { userId: profile.id },
+        select: { balance: true, currency: true },
+      }),
+      prisma.transaction.findMany({
+        where: {
+          organizationId: org.id,
+          scope: "PERSONAL",
+          date: { gte: historicalStart, lte: historicalEnd },
+          OR: [{ userId: profile.id }, { userId: null }],
+        },
+        orderBy: { date: "asc" },
+        select: { date: true, type: true, amount: true },
+      }),
+      prisma.recurringTransaction.findMany({
+        where: {
+          userId: profile.id,
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+          name: true,
+          amount: true,
+          type: true,
+          frequency: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+        },
+      }),
+      prisma.invoice.findMany({
+        where: {
+          organizationId: org.id,
+          issueDate: { gte: subMonths(now, 12) },
+        },
+        select: { taxAmount: true, total: true, issueDate: true },
+      }),
+    ]);
 
-      monthlyMap.set(monthKey, current);
-    }
+    const currentBalance = accounts.reduce(
+      (sum, account) => sum + decimalToNumber(account.balance),
+      0
+    );
 
-    const historical: MonthlyData[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const monthDate = subMonths(now, i);
-      const monthKey = format(monthDate, "yyyy-MM");
-      const data = monthlyMap.get(monthKey) || { income: 0, expenses: 0 };
-      historical.push({ month: monthKey, income: data.income, expenses: data.expenses });
-    }
+    const historical = buildHistoricalMonths(
+      transactions as Array<{ date: Date; type: string; amount: unknown }>,
+      historicalStart,
+      historicalEnd
+    );
 
-    const incomeValues = historical.map((h) => h.income);
-    const expenseValues = historical.map((h) => h.expenses);
+    const recurringInputs: RecurringTransactionInput[] = recurring.map((r) => ({
+      id: r.id,
+      name: r.name,
+      amount: decimalToNumber(r.amount),
+      type: r.type === "INCOME" ? "INCOME" : "EXPENSE",
+      frequency: r.frequency,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      status: r.status,
+    }));
 
-    const incomeRegression = linearRegression(incomeValues);
-    const expenseRegression = linearRegression(expenseValues);
+    const hasInvoices = invoices.length > 0;
+    const averageMonthlyIva = hasInvoices
+      ? invoices.reduce((sum, inv) => sum + decimalToNumber(inv.taxAmount), 0) / 12
+      : 0;
 
-    const forecast: ForecastData[] = [];
-    for (let i = 1; i <= 3; i++) {
-      const projectedIncome =
-        incomeRegression.intercept +
-        incomeRegression.slope * (incomeValues.length - 1 + i);
-      const projectedExpenses =
-        expenseRegression.intercept +
-        expenseRegression.slope * (expenseValues.length - 1 + i);
-
-      const monthDate = addMonths(now, i);
-      const monthKey = format(monthDate, "yyyy-MM");
-
-      forecast.push({
-        month: monthKey,
-        income: Math.max(0, Math.round(projectedIncome)),
-        expenses: Math.max(0, Math.round(projectedExpenses)),
-        confidence: 0.75 - i * 0.05,
-      });
-    }
-
-    const insights: string[] = [];
-
-    const firstMonthExpenses = expenseValues[0] || 0;
-    const lastMonthExpenses = expenseValues[expenseValues.length - 1] || 0;
-
-    if (firstMonthExpenses > 0) {
-      const expenseGrowth =
-        ((lastMonthExpenses - firstMonthExpenses) / firstMonthExpenses) * 100;
-      if (Math.abs(expenseGrowth) > 1) {
-        insights.push(
-          `Tus gastos han ${expenseGrowth > 0 ? "crecido" : "disminuido"} un ${Math.abs(expenseGrowth).toFixed(1)}% en promedio respecto al inicio del período`
-        );
-      }
-    }
-
-    const nextMonth = forecast[0];
-    if (nextMonth) {
-      const surplus = nextMonth.income - nextMonth.expenses;
-      if (surplus > 0) {
-        insights.push(
-          `Se proyecta un superávit de $${surplus.toLocaleString("es-CO")} para ${nextMonth.month}`
-        );
-      } else {
-        insights.push(
-          `Se proyecta un déficit de $${Math.abs(surplus).toLocaleString("es-CO")} para ${nextMonth.month}`
-        );
-      }
-    }
-
-    if (incomeRegression.slope > 0) {
-      insights.push("Tus ingresos muestran una tendencia al alza");
-    } else if (incomeRegression.slope < 0) {
-      insights.push("Tus ingresos muestran una tendencia a la baja");
-    }
+    const projection = generateCashflowProjection({
+      currentBalance,
+      historical,
+      recurring: recurringInputs,
+      monthsToProject: params.months,
+      referenceDate: now,
+      colombianEvents: {
+        includeAguinaldo: params.includeAguinaldo,
+        includePrima: params.includePrima,
+        includeIvaBimestral: params.includeIva && hasInvoices,
+        averageMonthlyIva,
+      },
+    });
 
     return NextResponse.json({
-      historical,
-      forecast,
-      insights,
+      ...projection,
+      currency: accounts[0]?.currency ?? "COP",
+      recurringCount: recurring.length,
+      hasInvoices,
     });
   } catch (error) {
-    logger.error("Failed to generate forecast", { error: error instanceof Error ? error.message : String(error) });
+    logger.error("Failed to generate forecast", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to generate forecast" },
       { status: 500 }

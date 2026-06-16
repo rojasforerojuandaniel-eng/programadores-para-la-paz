@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -13,8 +13,9 @@ import {
 
 export interface ScenarioData {
   month: string;
-  baseline: number;
-  projected: number;
+  base: number;
+  optimistic: number;
+  pessimistic: number;
 }
 
 function formatCurrency(amount: number) {
@@ -35,9 +36,26 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
   return (
     <div className="h-[300px] w-full sm:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorOptimistic" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--emerald-500, #10b981)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="var(--emerald-500, #10b981)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorPessimistic" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--rose-500, #f43f5e)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="var(--rose-500, #f43f5e)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
-          <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
+          <XAxis
+            dataKey="month"
+            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+          />
           <YAxis
             tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}
             tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
@@ -52,23 +70,37 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
             }}
           />
           <Legend />
-          <Line
+          <Area
             type="monotone"
-            dataKey="baseline"
-            name="Base"
-            stroke="var(--muted-foreground)"
+            dataKey="pessimistic"
+            name="Pesimista"
+            stroke="var(--rose-500, #f43f5e)"
             strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorPessimistic)"
             dot={false}
           />
-          <Line
+          <Area
             type="monotone"
-            dataKey="projected"
-            name="Proyectado"
+            dataKey="base"
+            name="Base"
             stroke="var(--primary)"
             strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorBase)"
             dot={false}
           />
-        </LineChart>
+          <Area
+            type="monotone"
+            dataKey="optimistic"
+            name="Optimista"
+            stroke="var(--emerald-500, #10b981)"
+            strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorOptimistic)"
+            dot={false}
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
