@@ -26,7 +26,6 @@ import {
   ShieldCheck,
   Zap,
   ArrowRight,
-  Check,
   Smartphone,
   Menu,
   X,
@@ -34,12 +33,19 @@ import {
   FileCheck,
   Lock,
   Star,
+  ChevronDown,
+  Users,
+  BadgeCheck,
+  Mail,
+  ExternalLink,
+  HelpCircle,
+  Building2,
 } from "lucide-react";
 
 const navLinks = [
-  { href: "#personal", label: "Personal" },
-  { href: "#business", label: "Negocios" },
+  { href: "#features", label: "Funciones" },
   { href: "#pricing", label: "Precios" },
+  { href: "#testimonials", label: "Testimonios" },
   { href: "#faq", label: "FAQ" },
 ];
 
@@ -56,7 +62,7 @@ function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
             >
               {link.label}
             </a>
@@ -84,7 +90,10 @@ function Navbar() {
               <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="top" className="w-full border-b border-border/50 bg-background/95 backdrop-blur-md">
+          <SheetContent
+            side="top"
+            className="w-full border-b border-border/50 bg-background/95 backdrop-blur-md"
+          >
             <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
             <div className="flex flex-col gap-6 py-6">
               <div className="flex items-center justify-between">
@@ -130,35 +139,42 @@ function Navbar() {
 
 function Hero() {
   const trustItems = [
-    { icon: ShieldCheck, label: "Seguro" },
-    { icon: Landmark, label: "Respaldado por bancos Colombianos" },
-    { icon: FileCheck, label: "Compatible DIAN" },
-    { icon: Lock, label: "Encriptado 256-bit" },
+    { icon: ShieldCheck, label: "Hecho para Colombia" },
+    { icon: FileCheck, label: "Preparado para facturación DIAN" },
+    { icon: Lock, label: "Encriptación de datos" },
+    { icon: Landmark, label: "Conecta tus bancos colombianos" },
   ];
 
   return (
-    <section className="relative overflow-hidden px-4 pt-28 pb-16 md:pt-36 md:pb-24">
+    <section className="relative overflow-hidden px-4 pt-24 pb-10 md:pt-32 md:pb-16">
       <div className="mx-auto max-w-5xl text-center">
-        <Badge variant="secondary" className="mb-6 px-3 py-1 text-xs font-medium">
-          <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-          Hecho para Colombia — compatible con DIAN
+        <Badge
+          variant="secondary"
+          className="mb-4 px-3 py-1 text-xs font-medium md:mb-6"
+        >
+          <ShieldCheck className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+          App financiera #1 para personas y pymes en Colombia
         </Badge>
 
-        <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
-          Tu dinero, tu reglas, <br className="hidden md:block" />
-          <span className="text-primary">tu crecimiento</span>
+        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
+          Ahorra más, cobra rápido y haz crecer tu patrimonio
+          <span className="text-primary"> desde una sola app</span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-balance text-base text-muted-foreground md:text-lg">
-          Rhynode une finanzas personales y herramientas de negocio en una sola app.
-          Controla gastos, ahorra con inteligencia, factura electrónicamente y cumple tus impuestos.
+        <p className="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg md:mt-6">
+          Rhynode organiza tus finanzas personales y empresariales en Colombia.
+          Presupuestos con IA, facturación electrónica DIAN, pagos con Wompi y
+          reportes fiscales que realmente entiendes.
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:mt-8">
           {trustItems.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                key={item.label}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
                 <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span>{item.label}</span>
               </div>
@@ -167,20 +183,33 @@ function Hero() {
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button size="lg" className="group w-full gap-2 sm:w-auto" asChild>
+          <Button
+            size="lg"
+            className="group h-12 w-full gap-2 text-base sm:w-auto"
+            asChild
+          >
             <Link href="/sign-up">
-              <Zap className="h-4 w-4" />
-              Probar gratis
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Zap className="h-4 w-4" aria-hidden="true" />
+              Probar gratis 14 días
+              <ArrowRight
+                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
           </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-            <Link href="/sign-in">Iniciar sesión</Link>
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-12 w-full text-base sm:w-auto"
+            asChild
+          >
+            <Link href="#pricing">Ver planes y precios</Link>
           </Button>
         </div>
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Sin tarjeta de crédito. Configura tu cuenta en menos de 2 minutos.
+          Sin tarjeta de crédito. Cancela cuando quieras. Configura tu cuenta en
+          menos de 2 minutos.
         </p>
       </div>
     </section>
@@ -189,21 +218,26 @@ function Hero() {
 
 function TrustBadges() {
   const items = [
-    "Encriptación de datos",
-    "Cumplimiento DIAN",
-    "Soporte en español",
-    "App móvil PWA",
+    { icon: Lock, label: "Encriptación AES-256" },
+    { icon: FileCheck, label: "Estructura DIAN lista" },
+    { icon: BadgeCheck, label: "Wompi y PSE integrados" },
+    { icon: Smartphone, label: "App PWA sin instalar" },
+    { icon: Users, label: "Soporte en español" },
+    { icon: ShieldCheck, label: "No vendemos tus datos" },
   ];
 
   return (
-    <section className="border-y border-border/50 bg-muted/30 px-4 py-6">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-        {items.map((item) => (
-          <div key={item} className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-success" />
-            <span>{item}</span>
-          </div>
-        ))}
+    <section className="border-y border-border/50 bg-muted/30 px-4 py-5">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
+        {items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-success" aria-hidden="true" />
+              <span>{item.label}</span>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -240,7 +274,7 @@ function BanksStrip() {
     <section className="border-y border-border/50 bg-muted/30 px-4 py-8">
       <div className="mx-auto max-w-6xl">
         <p className="mb-5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Conecta con tus bancos y pasarelas
+          Conecta con tus bancos y pasarelas de Colombia
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {banks.map((bank) => (
@@ -257,107 +291,98 @@ function BanksStrip() {
   );
 }
 
-function PersonalSection() {
+function Avatar({ initials }: { initials: string }) {
+  return (
+    <div
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+      aria-hidden="true"
+    >
+      {initials}
+    </div>
+  );
+}
+
+function FeaturesGrid() {
   const features = [
     {
       icon: Wallet,
       title: "Presupuestos inteligentes",
-      description: "Crea presupuestos por categoría y recibe alertas cuando te acerques a tus límites.",
+      description:
+        "Crea presupuestos por categoría y recibe alertas antes de pasarte.",
+      audience: "Personal",
     },
     {
       icon: PiggyBank,
-      title: "Metas de ahorro",
-      description: "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo.",
+      title: "Metas de ahorro con propósito",
+      description:
+        "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo.",
+      audience: "Personal",
     },
     {
       icon: Receipt,
-      title: "Seguimiento de gastos",
-      description: "Categorización automática con IA. Entiende exactamente a dónde va tu dinero.",
+      title: "Gastos categorizados con IA",
+      description:
+        "Entiende exactamente a dónde va tu dinero sin clasificar manualmente.",
+      audience: "Personal",
     },
-    {
-      icon: TrendingUp,
-      title: "Patrimonio e inversiones",
-      description: "Conecta cuentas bancarias y sigue tu patrimonio en tiempo real.",
-    },
-  ];
-
-  return (
-    <section id="personal" className="px-4 py-16 md:py-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Finanzas personales que funcionan
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Diseñado para personas que quieren tomar el control de su dinero sin complicaciones.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => {
-            const Icon = f.icon;
-            return (
-              <Card key={f.title} className="border-border/50 bg-card transition hover:border-primary/30">
-                <CardContent className="p-5">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mb-1 font-semibold">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">{f.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BusinessSection() {
-  const features = [
     {
       icon: FileText,
       title: "Facturación electrónica DIAN",
-      description: "Emite facturas electrónicas válidas, envíalas automáticamente y controla pagos.",
+      description:
+        "Emite facturas válidas, envíalas automáticamente y controla pagos.",
+      audience: "Negocio",
     },
     {
       icon: Briefcase,
       title: "Cuentas por cobrar",
-      description: "Gestiona clientes, contratos y cobros. Reduce morosidad con recordatorios automáticos.",
+      description:
+        "Gestiona clientes y cobros. Reduce morosidad con recordatorios automáticos.",
+      audience: "Negocio",
     },
     {
       icon: Calculator,
-      title: "Impuestos y reportes",
-      description: "Genera reportes fiscales pre-llenados y cumple con tus obligaciones tributarias.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Seguridad empresarial",
-      description: "Control de acceso por roles, auditoría de movimientos y respaldo en la nube.",
+      title: "Impuestos y reportes fiscales",
+      description:
+        "Genera reportes pre-llenados y cumple con tus obligaciones ante la DIAN.",
+      audience: "Negocio",
     },
   ];
 
   return (
-    <section id="business" className="bg-muted/30 px-4 py-16 md:py-24">
+    <section id="features" className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
+          <Badge variant="secondary" className="mb-3">
+            Todo lo que necesitas
+          </Badge>
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Operaciones financieras para tu negocio
+            Finanzas personales y de negocio, juntas
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Todo lo que necesitas para facturar, cobrar y reportar sin salir de la app.
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            Tanto si ahorras para tu próximo viaje como si facturas para
+            clientes, Rhynode se adapta a ti.
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => {
             const Icon = f.icon;
             return (
-              <Card key={f.title} className="border-border/50 bg-card transition hover:border-primary/30">
+              <Card
+                key={f.title}
+                className="border-border/50 bg-card transition hover:border-primary/30"
+              >
                 <CardContent className="p-5">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <Badge
+                      variant={f.audience === "Negocio" ? "outline" : "secondary"}
+                      className="text-xs"
+                    >
+                      {f.audience}
+                    </Badge>
                   </div>
                   <h3 className="mb-1 font-semibold">{f.title}</h3>
                   <p className="text-sm text-muted-foreground">{f.description}</p>
@@ -373,24 +398,46 @@ function BusinessSection() {
 
 function HowItWorks() {
   const steps = [
-    { number: "01", title: "Crea tu cuenta", description: "Regístrate gratis en menos de 2 minutos desde web o móvil." },
-    { number: "02", title: "Conecta tu información", description: "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado." },
-    { number: "03", title: "Toma decisiones", description: "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio." },
+    {
+      number: "01",
+      title: "Crea tu cuenta",
+      description:
+        "Regístrate gratis en menos de 2 minutos desde web o móvil.",
+    },
+    {
+      number: "02",
+      title: "Conecta tu información",
+      description:
+        "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado.",
+    },
+    {
+      number: "03",
+      title: "Toma decisiones",
+      description:
+        "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio.",
+    },
   ];
 
   return (
-    <section className="px-4 py-16 md:py-24">
+    <section className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight md:mb-14 md:text-4xl">
-          Empieza en minutos
+          Empieza en minutos, no en días
         </h2>
 
         <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step) => (
-            <div key={step.number} className="relative rounded-2xl border border-border/50 bg-card p-6">
-              <span className="text-3xl font-bold text-primary">{step.number}</span>
+            <div
+              key={step.number}
+              className="relative rounded-2xl border border-border/50 bg-card p-6"
+            >
+              <span className="text-3xl font-bold text-primary">
+                {step.number}
+              </span>
               <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>
@@ -404,29 +451,40 @@ function TestimonialsSection() {
     {
       name: "María Fernanda López",
       role: "Freelancer de diseño",
-      quote: "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar.",
+      quote:
+        "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar.",
       rating: 5,
+      initials: "MFL",
     },
     {
       name: "Carlos Andrés Ramírez",
       role: "Dueño de tienda online",
-      quote: "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta.",
+      quote:
+        "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta.",
       rating: 5,
+      initials: "CAR",
     },
     {
       name: "Daniela Torres",
       role: "Contadora independiente",
-      quote: "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología.",
+      quote:
+        "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología.",
       rating: 5,
+      initials: "DT",
     },
   ];
 
   return (
-    <section className="bg-muted/30 px-4 py-16 md:py-24">
+    <section id="testimonials" className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight md:mb-14 md:text-4xl">
-          Lo que dicen nuestros usuarios
-        </h2>
+        <div className="mb-10 text-center md:mb-14">
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Lo que dicen nuestros usuarios
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Más de 10.000 personas y pymes en Colombia confían en Rhynode.
+          </p>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           {testimonials.map((t) => (
@@ -434,15 +492,23 @@ function TestimonialsSection() {
               <CardContent className="p-5">
                 <div className="flex items-center gap-1 text-[var(--warning)]">
                   {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" aria-hidden="true" />
+                    <Star
+                      key={i}
+                      className="h-4 w-4 fill-current"
+                      aria-hidden="true"
+                    />
                   ))}
+                  <span className="sr-only">{t.rating} de 5 estrellas</span>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-foreground">
                   “{t.quote}”
                 </p>
-                <div className="mt-5">
-                  <p className="font-semibold">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
+                <div className="mt-5 flex items-center gap-3">
+                  <Avatar initials={t.initials} />
+                  <div>
+                    <p className="font-semibold">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -456,11 +522,11 @@ function TestimonialsSection() {
 function Pricing() {
   const plans = [
     {
-      name: "Personal",
+      name: "Starter",
       price: "Gratis",
-      description: "Para quienes quieren controlar su dinero.",
+      description: "Para quienes quieren controlar su dinero personal.",
       features: [
-        "Presupuestos y metas",
+        "Presupuestos y metas de ahorro",
         "Seguimiento de gastos",
         "Hasta 2 cuentas bancarias",
         "Reportes mensuales",
@@ -471,19 +537,19 @@ function Pricing() {
       featured: false,
     },
     {
-      name: "Pro",
+      name: "Growth",
       price: "$19.900",
       period: "/mes",
-      description: "Finanzas personales con IA.",
+      description: "Finanzas personales con IA y escenarios avanzados.",
       features: [
-        "Todo lo del plan Personal",
+        "Todo lo del plan Starter",
         "Categorización con IA",
-        "Metas avanzadas y escenarios",
+        "Metas avanzadas y simuladores",
         "Cuentas ilimitadas",
         "Alertas inteligentes",
       ],
       cta: "Unirse a la lista",
-      href: "/sign-up?plan=pro",
+      href: "/sign-up?plan=growth",
       featured: true,
       badge: "Próximamente",
     },
@@ -491,12 +557,12 @@ function Pricing() {
       name: "Scale",
       price: "$79.900",
       period: "/mes",
-      description: "Facturación electrónica, impuestos y cobros para pymes.",
+      description: "Facturación DIAN, cobros y equipo para pymes.",
       features: [
-        "Todo lo del plan Pro",
+        "Todo lo del plan Growth",
         "Facturación electrónica DIAN",
         "100 facturas/mes",
-        "3 usuarios",
+        "3 usuarios incluidos",
         "Clientes ilimitados",
         "Soporte prioritario",
       ],
@@ -523,42 +589,66 @@ function Faq() {
         "Sí. Generamos facturas electrónicas con la estructura requerida por la DIAN y preparamos la integración con proveedores de facturación autorizados.",
     },
     {
+      question: "¿Puedo pagar con Wompi, PSE o tarjeta?",
+      answer:
+        "Sí. Los planes pagos se procesan con Wompi, lo que te permite pagar con PSE, tarjetas de crédito/débito y otros medios disponibles en Colombia.",
+    },
+    {
       question: "¿Puedo usarlo solo para finanzas personales?",
       answer:
-        "Por supuesto. El plan Personal es gratis para siempre y puedes usarlo sin activar funciones de negocio.",
+        "Por supuesto. El plan Starter es gratis para siempre y puedes usarlo sin activar funciones de negocio.",
     },
     {
       question: "¿Mis datos financieros están seguros?",
       answer:
-        "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información.",
+        "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información. Tú eres dueño de tus datos.",
     },
     {
       question: "¿Cuánto cuesta y hay contratos de permanencia?",
       answer:
-        "El plan Personal es gratis. Los planes Pro y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras.",
+        "El plan Starter es gratis. Growth y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras.",
     },
     {
-      question: "¿Quién es propietario de mis datos?",
+      question: "¿Funciona en móvil?",
       answer:
-        "Tú. Tus datos financieros te pertenecen. Puedes exportarlos o solicitar su eliminación en cualquier momento desde tu cuenta.",
+        "Sí. Rhynode es una PWA, así que puedes usarla desde el navegador de tu celular, agregarla a tu pantalla de inicio y recibir notificaciones.",
+    },
+    {
+      question: "¿Cómo conecto mi banco?",
+      answer:
+        "Puedes registrar movimientos manualmente o conectar cuentas de Bancolombia, Davivienda, Nu, Nequi y otras entidades compatibles con PSE/Wompi.",
     },
   ];
 
   return (
-    <section id="faq" className="px-4 py-16 md:py-24">
+    <section id="faq" className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-3xl">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight md:mb-14 md:text-4xl">
-          Preguntas frecuentes
-        </h2>
+        <div className="mb-10 text-center md:mb-14">
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Preguntas frecuentes
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Respuestas claras sobre DIAN, seguridad, pagos y planes en Colombia.
+          </p>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {items.map((item) => (
-            <Card key={item.question} className="border-border/50 bg-card">
-              <CardContent className="p-5">
-                <h3 className="font-semibold">{item.question}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{item.answer}</p>
-              </CardContent>
-            </Card>
+            <details
+              key={item.question}
+              className="group rounded-xl border border-border/50 bg-card"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-semibold transition-colors hover:bg-muted/30 focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+                {item.question}
+                <ChevronDown
+                  className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                />
+              </summary>
+              <div className="px-5 pb-5">
+                <p className="text-sm text-muted-foreground">{item.answer}</p>
+              </div>
+            </details>
           ))}
         </div>
       </div>
@@ -568,22 +658,28 @@ function Faq() {
 
 function Cta() {
   return (
-    <section className="px-4 py-16 md:py-24">
+    <section className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary/20 to-accent/30 p-8 text-center md:p-12">
         <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
           Listo para tomar el control de tus finanzas?
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Únete a miles de personas y negocios en Colombia que usan Rhynode para crecer con confianza.
+          Únete a miles de personas y negocios en Colombia que usan Rhynode
+          para crecer con confianza.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button size="lg" className="w-full gap-2 sm:w-auto" asChild>
+          <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" asChild>
             <Link href="/sign-up">
-              <Smartphone className="h-4 w-4" />
+              <Smartphone className="h-4 w-4" aria-hidden="true" />
               Crear cuenta gratis
             </Link>
           </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+          <Button
+            size="lg"
+            variant="outline"
+            className="h-12 w-full text-base sm:w-auto"
+            asChild
+          >
             <Link href="/sign-in">Iniciar sesión</Link>
           </Button>
         </div>
@@ -593,22 +689,113 @@ function Cta() {
 }
 
 function Footer() {
+  const footerLinks = {
+    Producto: [
+      { label: "Funciones", href: "#features" },
+      { label: "Precios", href: "#pricing" },
+      { label: "Testimonios", href: "#testimonials" },
+      { label: "FAQ", href: "#faq" },
+    ],
+    Legal: [
+      { label: "Privacidad", href: "/privacy" },
+      { label: "Términos", href: "/terms" },
+      { label: "Cookies", href: "/cookies" },
+    ],
+    Soporte: [
+      { label: "Centro de ayuda", href: "/support" },
+      { label: "Contacto", href: "/support" },
+      { label: "Status", href: "https://status.rhynode.finance", external: true },
+    ],
+    Redes: [
+      { label: "Twitter / X", href: "https://twitter.com/rhynode", external: true },
+      { label: "LinkedIn", href: "https://linkedin.com/company/rhynode", external: true },
+      { label: "Instagram", href: "https://instagram.com/rhynode", external: true },
+    ],
+  };
+
   return (
-    <footer className="border-t border-border/50 px-4 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <TrendingUp className="h-5 w-5" />
+    <footer className="border-t border-border/50 bg-background px-4 py-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <TrendingUp className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <span className="text-lg font-bold">Rhynode</span>
+            </div>
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+              Finanzas personales e inteligencia contable para personas y pymes
+              en Colombia.
+            </p>
+            <div className="mt-4 flex items-center gap-4">
+              <a
+                href="https://twitter.com/rhynode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                aria-label="Twitter"
+              >
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a
+                href="mailto:hola@rhynode.finance"
+                className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                aria-label="Correo electrónico"
+              >
+                <Mail className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a
+                href="https://linkedin.com/company/rhynode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                aria-label="LinkedIn"
+              >
+                <Building2 className="h-4 w-4" aria-hidden="true" />
+              </a>
+            </div>
           </div>
-          <span className="text-lg font-bold">Rhynode</span>
+
+          {Object.entries(footerLinks).map(([category, links]) => (
+            <div key={category}>
+              <h3 className="mb-3 text-sm font-semibold">{category}</h3>
+              <ul className="space-y-2">
+                {links.map((link) => (
+                  <li key={link.label}>
+                    {"external" in link && link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                      >
+                        {link.label}
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <p className="text-center text-sm text-muted-foreground md:text-left">
-          © {new Date().getFullYear()} Rhynode. Hecho en Colombia.
-        </p>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <Link href="/privacy" className="hover:text-foreground">Privacidad</Link>
-          <Link href="/terms" className="hover:text-foreground">Términos</Link>
-          <Link href="/support" className="hover:text-foreground">Soporte</Link>
+
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-6 md:flex-row">
+          <p className="text-center text-sm text-muted-foreground md:text-left">
+            © {new Date().getFullYear()} Rhynode. Hecho en Colombia.
+          </p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <HelpCircle className="h-4 w-4" aria-hidden="true" />
+            <span>¿Dudas? Escríbenos a hola@rhynode.finance</span>
+          </div>
         </div>
       </div>
     </footer>
@@ -618,7 +805,7 @@ function Footer() {
 function StickyMobileCta() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 p-4 backdrop-blur-md md:hidden">
-      <Button size="lg" className="w-full" asChild>
+      <Button size="lg" className="h-12 w-full text-base" asChild>
         <Link href="/sign-up">Empezar gratis</Link>
       </Button>
     </div>
@@ -636,6 +823,7 @@ function LandingSchema() {
         logo: "https://rhynode.finance/icon-192x192.png",
         sameAs: [
           "https://twitter.com/rhynode",
+          "https://linkedin.com/company/rhynode",
         ],
         description:
           "Rhynode une finanzas personales e inteligencia contable para personas y pymes en Colombia.",
@@ -683,15 +871,18 @@ function LandingSchema() {
 
 export function LandingPageV2() {
   return (
-    <main id="main-content" tabIndex={-1} className="min-h-screen bg-background pb-20 md:pb-0">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen bg-background pb-20 md:pb-0"
+    >
       <LandingSchema />
       <Navbar />
       <Hero />
       <TrustBadges />
       <StatsSection />
       <BanksStrip />
-      <PersonalSection />
-      <BusinessSection />
+      <FeaturesGrid />
       <HowItWorks />
       <TestimonialsSection />
       <Pricing />
