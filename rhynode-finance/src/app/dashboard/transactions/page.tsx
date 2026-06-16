@@ -1,8 +1,9 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import type { UserScope } from "@/lib/scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateTransactionButton } from "@/components/dashboard/create-transaction-button";
@@ -28,6 +29,12 @@ interface Transaction {
   description: string;
   amount: number;
   currency: string;
+}
+
+function scopeFilter(scope: UserScope) {
+  if (scope === "PERSONAL") return { scope: "PERSONAL" };
+  if (scope === "BUSINESS") return { scope: "BUSINESS" };
+  return { scope: { in: ["PERSONAL", "BUSINESS"] } };
 }
 
 const typeConfig: Record<string, { label: string; className: string }> = {
@@ -95,9 +102,12 @@ async function KpiSection() {
   const org = await requireAuth();
   if (!org) return null;
 
+  const profile = await getUserProfile();
+  const scope = (profile?.scope ?? "PERSONAL") as UserScope;
+
   const prisma = getPrisma();
   const transactions = await prisma.transaction.findMany({
-    where: { organizationId: org.id, scope: "BUSINESS" },
+    where: { organizationId: org.id, ...scopeFilter(scope) },
   });
 
   const income = transactions
@@ -136,9 +146,12 @@ async function TransactionsContent() {
   const org = await requireAuth();
   if (!org) return notFound();
 
+  const profile = await getUserProfile();
+  const scope = (profile?.scope ?? "PERSONAL") as UserScope;
+
   const prisma = getPrisma();
   const transactions = await prisma.transaction.findMany({
-    where: { organizationId: org.id, scope: "BUSINESS" },
+    where: { organizationId: org.id, ...scopeFilter(scope) },
     orderBy: { date: "desc" },
   });
 
