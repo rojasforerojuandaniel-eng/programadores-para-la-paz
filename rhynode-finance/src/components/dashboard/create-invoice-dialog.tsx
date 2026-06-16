@@ -33,7 +33,13 @@ interface InvoiceItemForm {
   taxRate: string;
 }
 
-export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
+export function CreateInvoiceDialog({
+  onCreate,
+  trigger,
+}: {
+  onCreate: () => void;
+  trigger?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -129,10 +135,12 @@ export function CreateInvoiceDialog({ onCreate }: { onCreate: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Factura
-        </Button>
+        {trigger || (
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Factura
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-2xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>

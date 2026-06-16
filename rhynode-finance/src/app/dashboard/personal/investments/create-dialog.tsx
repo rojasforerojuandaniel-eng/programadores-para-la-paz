@@ -30,7 +30,7 @@ const investmentTypes = [
   { value: "OTHER", label: "Otro" },
 ];
 
-export function CreateInvestmentDialog() {
+export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -79,10 +79,12 @@ export function CreateInvestmentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Inversión
-        </Button>
+        {trigger || (
+          <Button size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Inversión
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-lg max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
