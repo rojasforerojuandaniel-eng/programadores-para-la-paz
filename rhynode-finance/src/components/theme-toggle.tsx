@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useIsClient } from "@/hooks/use-is-client";
 
 export function ThemeToggle() {
@@ -17,30 +17,17 @@ export function ThemeToggle() {
     );
   }
 
-  const current = resolvedTheme || theme || "dark";
-
-  function cycleTheme() {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
-  }
-
-  const Icon = current === "dark" ? Moon : Sun;
-  const label = current === "dark" ? "Modo oscuro" : current === "light" ? "Modo claro" : "Tema del sistema";
+  const isDark = (resolvedTheme || theme) === "dark";
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      aria-label={label}
-      title={label}
-      onClick={cycleTheme}
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {theme === "system" ? (
-        <Monitor className="h-5 w-5" />
-      ) : (
-        <Icon className="h-5 w-5" />
-      )}
+      {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
     </Button>
   );
 }
