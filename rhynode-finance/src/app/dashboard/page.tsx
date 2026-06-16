@@ -18,6 +18,7 @@ import {
 import { DraggableDashboard } from "@/components/dashboard/draggable-dashboard";
 import { XPBar } from "@/components/dashboard/xp-bar";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { LeftWidget } from "@/components/dashboard/left-widget";
 import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
@@ -213,9 +214,13 @@ async function UpcomingEvents({ userId, currency }: { userId: string | undefined
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Próximos eventos</h2>
-        <div className="rounded-xl border border-border surface-elevated-2 p-4">
-          <p className="text-sm text-muted-foreground">No hay eventos financieros próximos este mes.</p>
-        </div>
+        <EmptyStateCard
+          icon={Calendar}
+          title="Sin eventos próximos"
+          description="Aquí verás deudas, pagos recurrentes y deadlines de metas que vencen este mes."
+          hint="Crea transacciones, deudas o metas para llenar tu calendario."
+          className="border-dashed"
+        />
       </div>
     );
   }

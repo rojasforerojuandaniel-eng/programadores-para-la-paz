@@ -109,8 +109,9 @@ export default function AchievementsPage() {
           ) : error || totalPossible === 0 ? (
             <EmptyStateCard
               icon={Trophy}
-              title="Aún no tienes logros"
-              description="Empieza a usar Rhynode para desbloquearlos."
+              title="Desbloquea logros mientras ahorras"
+              description="Completa acciones financieras y gana XP por cada hito que consigas."
+              hint="Empieza usando Rhynode para desbloquearlos."
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

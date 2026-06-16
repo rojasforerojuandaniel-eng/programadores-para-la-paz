@@ -23,8 +23,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={Target}
-      title="No tienes metas"
-      description="Crea tu primera meta de ahorro y haz seguimiento de tu progreso."
+      title="Alcanza tus metas de ahorro"
+      description="Define objetivos claros y haz seguimiento visual de tu progreso día a día."
+      hint="Empieza creando tu primera meta."
       action={<CreateGoalDialog />}
     />
   );

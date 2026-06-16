@@ -135,8 +135,9 @@ async function AccountsContent() {
       {rows.length === 0 ? (
         <EmptyStateCard
           icon={Landmark}
-          title="No hay cuentas bancarias"
-          description="Conecta tus cuentas para visualizar saldos y movimientos."
+          title="Conecta tus cuentas bancarias"
+          description="Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales."
+          hint="Empieza conectando tu primera cuenta bancaria."
           action={<CreateBankAccountButton />}
         />
       ) : (

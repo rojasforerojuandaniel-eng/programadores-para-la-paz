@@ -12,8 +12,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={Tags}
-      title="No tienes categorías"
-      description="Crea tu primera categoría para organizar gastos e ingresos."
+      title="Organiza tus movimientos"
+      description="Crea categorías personalizadas para clasificar ingresos y gastos con precisión."
+      hint="Empieza creando tu primera categoría."
       action={<CreateCategoryDialog categories={[]} />}
     />
   );

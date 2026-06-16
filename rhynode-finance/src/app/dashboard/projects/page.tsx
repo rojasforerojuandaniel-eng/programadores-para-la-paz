@@ -6,6 +6,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateProjectDialog } from "./create-dialog";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
   Table,
   TableBody,
@@ -76,13 +77,13 @@ export default async function ProjectsPage() {
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
-            <div className="flex h-40 flex-col items-center justify-center gap-3 text-center">
-              <Folder className="h-10 w-10 text-muted-foreground/50" />
-              <p className="body-default">No tienes proyectos. Crea tu primer proyecto.</p>
-              <p className="body-small max-w-sm">
-                Organiza tu trabajo en proyectos y asócialos a facturas para un mejor seguimiento.
-              </p>
-            </div>
+            <EmptyStateCard
+              icon={Folder}
+              title="Organiza tu trabajo en proyectos"
+              description="Crea proyectos y asócialos a facturas para un seguimiento claro de ingresos."
+              hint="Empieza creando tu primer proyecto."
+              action={<CreateProjectDialog />}
+            />
           ) : (
             <Table>
               <TableHeader>

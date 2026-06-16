@@ -22,8 +22,9 @@ function EmptyState() {
   return (
     <EmptyStateCard
       icon={Scale}
-      title="No tienes deudas"
-      description="Crea tu primera deuda o préstamo para llevar control."
+      title="Mantén tus deudas bajo control"
+      description="Registra préstamos y obligaciones para planificar su pago y reducir intereses."
+      hint="Empieza creando tu primera deuda."
       action={<CreateDebtDialog />}
     />
   );
