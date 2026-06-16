@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ScopeProvider } from "@/lib/scope-context";
 import type { UserScope } from "@/lib/scope";
+
+export const metadata: Metadata = {
+  title: "Dashboard — Rhynode",
+  description:
+    "Gestiona tus finanzas personales y empresariales: transacciones, presupuestos, facturas, impuestos, inversiones y asesoría con IA.",
+};
 
 export default async function DashboardLayout({
   children,

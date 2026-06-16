@@ -3,11 +3,17 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Brain, Calendar } from "lucide-react";
+
+export const metadata = dashboardMetadata(
+  "Resumen",
+  "Visualiza tu salud financiera, KPIs, gastos hormiga, anomalías y progreso de gamificación en Rhynode."
+);
 
 import { XPBar } from "@/components/dashboard/xp-bar";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";

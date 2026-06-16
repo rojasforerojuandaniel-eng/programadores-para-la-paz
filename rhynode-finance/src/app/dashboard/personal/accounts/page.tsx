@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/dashboard/data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -9,6 +10,11 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateAccountDialog } from "./create-dialog";
 import { Wallet, Landmark } from "lucide-react";
+
+export const metadata = dashboardMetadata(
+  "Cuentas",
+  "Administra tus cuentas bancarias, efectivo, tarjetas e inversiones personales en Rhynode."
+);
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {
