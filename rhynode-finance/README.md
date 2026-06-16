@@ -58,6 +58,19 @@ npm run dev
 | `npm run build` | Build de producción |
 | `npm run db:push` | Push schema a Neon |
 | `npm run db:studio` | Prisma Studio |
+| `npm test` | Tests unitarios (Vitest) |
+| `npm run test:e2e` | Tests E2E (Playwright) |
+| `npm run lint` | ESLint |
+
+## CI/CD
+
+Cada push a `main` dispara el workflow de GitHub Actions:
+1. Type-check con `tsc --noEmit`
+2. Lint con ESLint
+3. Tests unitarios con Vitest
+4. Deploy a Vercel production
+
+Requiere configurar el secret `VERCEL_TOKEN` en GitHub.
 
 ## Environment Variables
 
