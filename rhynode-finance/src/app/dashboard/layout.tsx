@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { ScopeProvider } from "@/lib/scope-context";
 import type { UserScope } from "@/lib/scope";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dashboard — Rhynode",
   description:
