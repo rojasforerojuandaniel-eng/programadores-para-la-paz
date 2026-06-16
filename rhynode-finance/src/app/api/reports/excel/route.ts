@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -38,7 +39,9 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Excel export error:", error);
+    logger.error("Excel export error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json({ error: "Failed to generate Excel" }, { status: 500 });
   }
 }
