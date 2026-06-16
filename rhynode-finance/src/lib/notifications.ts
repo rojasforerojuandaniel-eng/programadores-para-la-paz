@@ -12,13 +12,17 @@ if (vapidPublicKey && vapidPrivateKey) {
   );
 }
 
-interface PushPayload {
+export interface PushPayload {
   title: string;
   body: string;
   icon?: string;
   badge?: string;
   tag?: string;
   url?: string;
+  actionUrl?: string;
+  requireInteraction?: boolean;
+  renotify?: boolean;
+  actions?: Array<{ action: string; title: string; icon?: string }>;
 }
 
 export async function sendPushNotification(

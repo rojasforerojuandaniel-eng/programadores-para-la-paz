@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { checkAndNotifyBudgetThreshold } from "@/lib/push-events";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
@@ -73,6 +74,9 @@ export const POST = withRateLimit(
           rollover,
         },
       });
+
+      // Event-triggered push when the new budget is already over threshold
+      void checkAndNotifyBudgetThreshold(profile.id, budget.id).catch(() => null);
 
       return NextResponse.json({ budget });
     } catch (error) {
