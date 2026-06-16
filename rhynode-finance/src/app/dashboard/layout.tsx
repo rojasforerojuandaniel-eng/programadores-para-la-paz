@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { QuickActionsFab } from "@/components/dashboard/quick-actions-fab";
+import { PullToRefresh } from "@/components/dashboard/pull-to-refresh";
 import { ScopeProvider } from "@/lib/scope-context";
 import type { UserScope } from "@/lib/scope";
 
@@ -38,9 +39,9 @@ export default async function DashboardLayout({
         <Sidebar />
         <QuickActionsFab />
         <main className="pt-14 pb-20 lg:pt-4 lg:pb-4 lg:pl-64">
-          <div className="mx-auto max-w-7xl p-4 sm:p-6">
+          <PullToRefresh className="mx-auto max-w-7xl p-4 sm:p-6">
             {children}
-          </div>
+          </PullToRefresh>
         </main>
       </ScopeProvider>
     </div>

@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { TableCell } from "@/components/ui/table";
+import { InvoicesSkeleton } from "@/components/dashboard/page-skeleton";
 import {
-  Loader2,
   FileText,
   Trash2,
   CheckCircle,
@@ -281,6 +281,8 @@ export default function InvoicesPage() {
     );
   }
 
+  if (loading) return <InvoicesSkeleton />;
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -349,7 +351,7 @@ export default function InvoicesPage() {
         <CardContent>
           {loading ? (
             <div className="flex h-40 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : (
             <DataTable
