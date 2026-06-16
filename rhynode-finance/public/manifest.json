@@ -1,0 +1,55 @@
+{
+  "name": "Rhynode — Finanzas personales e inteligencia contable",
+  "short_name": "Rhynode",
+  "description": "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Hecho para Colombia.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay"],
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Resumen",
+      "short_name": "Resumen",
+      "description": "Ver resumen financiero",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Transacciones",
+      "short_name": "Movimientos",
+      "description": "Ver movimientos recientes",
+      "url": "/dashboard/transactions",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Facturas",
+      "short_name": "Facturas",
+      "description": "Gestionar facturas",
+      "url": "/dashboard/invoices",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard de Rhynode"
+    },
+    {
+      "src": "/screenshots/mobile-dashboard.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard móvil de Rhynode"
+    }
+  ]
+}
