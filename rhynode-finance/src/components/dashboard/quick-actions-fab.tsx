@@ -4,8 +4,8 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, ArrowLeftRight, FileText, TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CreateTransactionDialog } from "@/components/dashboard/create-transaction-dialog";
-import { CreateInvoiceDialog } from "@/components/dashboard/create-invoice-dialog";
+import { CreateTransactionSheet } from "@/components/dashboard/create-transaction-sheet";
+import { CreateInvoiceSheet } from "@/components/dashboard/create-invoice-sheet";
 import { CreateInvestmentDialog } from "@/app/dashboard/personal/investments/create-dialog";
 import { CreateBudgetDialog } from "@/app/dashboard/personal/budgets/create-dialog";
 
@@ -38,7 +38,7 @@ export function QuickActionsFab() {
       label: "Nueva transacción",
       icon: ArrowLeftRight,
       dialog: (
-        <CreateTransactionDialog
+        <CreateTransactionSheet
           onCreate={handleCreated}
           trigger={
             <QuickActionButton
@@ -55,7 +55,7 @@ export function QuickActionsFab() {
       label: "Nueva factura",
       icon: FileText,
       dialog: (
-        <CreateInvoiceDialog
+        <CreateInvoiceSheet
           onCreate={handleCreated}
           trigger={
             <QuickActionButton

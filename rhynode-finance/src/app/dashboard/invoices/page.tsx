@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreateInvoiceDialog } from "@/components/dashboard/create-invoice-dialog";
+import { CreateInvoiceSheet } from "@/components/dashboard/create-invoice-sheet";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { DataTable } from "@/components/dashboard/data-table";
@@ -291,7 +291,7 @@ export default function InvoicesPage() {
           <p className="body-default mt-1">Gestiona tus facturas electrónicas</p>
         </div>
         {planLoading || canCreateInvoice ? (
-          <CreateInvoiceDialog onCreate={() => window.location.reload()} />
+          <CreateInvoiceSheet onCreate={() => window.location.reload()} />
         ) : (
           <PlanLimitUpgradeCard
             planName={planName}
@@ -367,7 +367,7 @@ export default function InvoicesPage() {
                   title="Factura electrónicamente"
                   description="Crea facturas compatibles con DIAN, SAT o AFIP y da seguimiento a sus pagos."
                   hint="Empieza creando tu primera factura."
-                  action={<CreateInvoiceDialog onCreate={() => window.location.reload()} />}
+                  action={<CreateInvoiceSheet onCreate={() => window.location.reload()} />}
                 />
               }
             />

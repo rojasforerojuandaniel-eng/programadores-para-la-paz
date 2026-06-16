@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CreateTransactionDialog } from "./create-transaction-dialog";
+import { CreateTransactionSheet } from "./create-transaction-sheet";
 
 export function CreateTransactionButton() {
   const router = useRouter();
-  return <CreateTransactionDialog onCreate={() => router.refresh()} />;
+  return <CreateTransactionSheet onCreate={() => router.refresh()} />;
 }
