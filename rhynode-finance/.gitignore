@@ -46,8 +46,15 @@ Thumbs.db
 # Testing
 coverage
 .nyc_output
+/test-results/
+/playwright-report/
+/playwright/.cache/
+e2e/.auth/
 
 # Prisma / DB
 *.db
 *.db-journal
 prisma/migrations/*/migration_lock.toml
+
+# clerk configuration (can include secrets)
+/.clerk/
