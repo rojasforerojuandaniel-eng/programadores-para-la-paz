@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileText, Sheet } from "lucide-react";
+import { FileText, Sheet, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
 async function downloadFile(url: string, filename: string) {
@@ -42,6 +42,14 @@ export function ExportButtons() {
       >
         <Sheet className="h-4 w-4" />
         Exportar Excel
+      </Button>
+      <Button
+        variant="outline"
+        className="gap-2"
+        onClick={() => downloadFile("/api/reports/csv", "transacciones.csv")}
+      >
+        <FileSpreadsheet className="h-4 w-4" />
+        Exportar CSV
       </Button>
     </>
   );
