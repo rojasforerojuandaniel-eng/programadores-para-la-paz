@@ -91,6 +91,15 @@ Requeridas para producción:
 | `WOMPI_EVENTS_KEY` | Wompi events key para verificar webhooks |
 | `CRON_SECRET` | Secret para cron jobs |
 | `NEXT_PUBLIC_APP_URL` | URL pública de la app |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Clave pública VAPID para push notifications |
+| `VAPID_PRIVATE_KEY` | Clave privada VAPID |
+| `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | DSN de Sentry para monitoreo de errores |
+| `SENTRY_ORG` | Organización de Sentry |
+| `SENTRY_PROJECT` | Proyecto de Sentry |
+
+## Monitoreo
+
+Rhynode usa Sentry para monitoreo de errores y performance. Configura `SENTRY_DSN` y `NEXT_PUBLIC_SENTRY_DSN` en Vercel para activarlo.
 
 ## PWA
 
