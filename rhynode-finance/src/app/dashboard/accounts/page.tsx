@@ -146,11 +146,11 @@ async function AccountsContent() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Banco</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Moneda</TableHead>
-                  <TableHead className="text-right">Saldo</TableHead>
+                  <TableHead scope="col">Nombre</TableHead>
+                  <TableHead scope="col">Banco</TableHead>
+                  <TableHead scope="col">Tipo</TableHead>
+                  <TableHead scope="col">Moneda</TableHead>
+                  <TableHead scope="col" className="text-right">Saldo</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

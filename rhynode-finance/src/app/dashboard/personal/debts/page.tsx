@@ -73,14 +73,14 @@ export default async function DebtsPage() {
             label="Restante Total"
             value={formatCurrency(totalRemaining, "COP")}
             icon={Wallet}
-            valueClassName="text-rose-500"
+            valueClassName="text-danger"
           />
           <KpiCard label="Activas" value={activeCount} icon={Scale} />
           <KpiCard
             label="Vencidas"
             value={overdueCount}
             icon={AlertTriangle}
-            valueClassName={overdueCount > 0 ? "text-amber-500" : "text-foreground"}
+            valueClassName={overdueCount > 0 ? "text-warning" : "text-foreground"}
           />
         </div>
       )}
@@ -131,7 +131,7 @@ export default async function DebtsPage() {
                   <div className="text-muted-foreground">Contraparte</div>
                   <div className="text-right">{debt.counterparty || "-"}</div>
                   <div className="text-muted-foreground">Vence</div>
-                  <div className={`text-right ${isOverdue ? "text-amber-500 font-medium" : ""}`}>
+                  <div className={`text-right ${isOverdue ? "text-warning font-medium" : ""}`}>
                     {debt.dueDate ? new Date(debt.dueDate).toLocaleDateString("es-CO") : "-"}
                     {isOverdue && " (vencida)"}
                   </div>
@@ -140,7 +140,7 @@ export default async function DebtsPage() {
                   <Badge variant={debt.status === "PAID" ? "default" : "outline"}>
                     {debt.status === "PAID" ? "Pagada" : "Activa"}
                   </Badge>
-                  {debt.status === "PAID" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                  {debt.status === "PAID" && <CheckCircle2 className="h-4 w-4 text-success" />}
                 </div>
               </div>
             );

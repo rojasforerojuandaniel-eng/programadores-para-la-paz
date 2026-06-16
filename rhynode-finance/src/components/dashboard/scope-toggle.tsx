@@ -29,7 +29,7 @@ export function ScopeToggle() {
   return (
     <div className="flex min-w-0 shrink items-center gap-0.5 rounded-lg border border-border bg-background p-0.5">
       {scopes.map((s) => {
-        const disabled = false;
+        const disabled = s.value === "BUSINESS" && !hasBusiness;
         return (
           <button
             key={s.value}

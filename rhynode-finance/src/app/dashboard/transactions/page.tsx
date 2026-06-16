@@ -38,10 +38,10 @@ function scopeFilter(scope: UserScope) {
 }
 
 const typeConfig: Record<string, { label: string; className: string }> = {
-  INCOME: { label: "Ingreso", className: "bg-emerald-500/10 text-emerald-400" },
-  EXPENSE: { label: "Gasto", className: "bg-red-500/10 text-red-400" },
-  TRANSFER: { label: "Transferencia", className: "bg-blue-500/10 text-blue-400" },
-  ADJUSTMENT: { label: "Ajuste", className: "bg-gray-500/10 text-gray-400" },
+  INCOME: { label: "Ingreso", className: "bg-success/10 text-success" },
+  EXPENSE: { label: "Gasto", className: "bg-danger/10 text-danger" },
+  TRANSFER: { label: "Transferencia", className: "bg-info/10 text-info" },
+  ADJUSTMENT: { label: "Ajuste", className: "bg-muted text-muted-foreground" },
 };
 
 function formatCurrency(amount: number, currency: string) {
@@ -124,19 +124,19 @@ async function KpiSection() {
         label="Ingresos"
         value={formatCurrency(income, org.currency)}
         icon={TrendingUp}
-        valueClassName="text-emerald-400"
+        valueClassName="text-success"
       />
       <KpiCard
         label="Gastos"
         value={formatCurrency(expense, org.currency)}
         icon={TrendingDown}
-        valueClassName="text-rose-400"
+        valueClassName="text-danger"
       />
       <KpiCard
         label="Balance"
         value={formatCurrency(balance, org.currency)}
         icon={Scale}
-        valueClassName={balance >= 0 ? "text-emerald-400" : "text-rose-400"}
+        valueClassName={balance >= 0 ? "text-success" : "text-danger"}
       />
     </div>
   );
@@ -181,12 +181,12 @@ async function TransactionsContent() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="text-right">Monto</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead scope="col">Fecha</TableHead>
+                  <TableHead scope="col">Tipo</TableHead>
+                  <TableHead scope="col">Categoría</TableHead>
+                  <TableHead scope="col">Descripción</TableHead>
+                  <TableHead scope="col" className="text-right">Monto</TableHead>
+                  <TableHead scope="col" className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -207,9 +207,9 @@ async function TransactionsContent() {
                       <TableCell
                         className={`text-right font-medium ${
                           tx.type === "INCOME"
-                            ? "text-emerald-400"
+                            ? "text-success"
                             : tx.type === "EXPENSE"
-                            ? "text-red-400"
+                            ? "text-danger"
                             : ""
                         }`}
                       >
@@ -253,9 +253,9 @@ async function TransactionsContent() {
                       <div
                         className={`text-lg font-semibold ${
                           tx.type === "INCOME"
-                            ? "text-emerald-400"
+                            ? "text-success"
                             : tx.type === "EXPENSE"
-                            ? "text-red-400"
+                            ? "text-danger"
                             : ""
                         }`}
                       >

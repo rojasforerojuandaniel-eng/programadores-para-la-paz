@@ -7,7 +7,7 @@ export const PLANS = {
   },
   GROWTH: {
     name: "Growth",
-    limits: { invoices: 500, users: 5 },
+    limits: { invoices: 100, users: 3 },
   },
   SCALE: {
     name: "Scale",

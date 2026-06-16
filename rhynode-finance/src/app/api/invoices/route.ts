@@ -79,7 +79,7 @@ export const GET = withRateLimit(
       );
     }
   },
-  { key: "invoices-read", maxRequests: 30, windowMs: 60000 }
+  { key: "invoices-read", maxRequests: 60, windowMs: 60000 }
 );
 
 export const POST = withRateLimit(
@@ -213,5 +213,5 @@ export const POST = withRateLimit(
       );
     }
   },
-  { key: "invoices", maxRequests: 30, windowMs: 60000 }
+  { key: "invoices", maxRequests: 10, windowMs: 60000 }
 );

@@ -39,6 +39,8 @@ export async function SmartInsights({ currency }: { currency: string }) {
 
   const prisma = getPrisma();
   const { start, end } = getMonthRange();
+  const now = new Date();
+  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const [transactions, budgets, goals, debts, subscriptions, accounts, investments] =
     await Promise.all([
@@ -135,7 +137,7 @@ export async function SmartInsights({ currency }: { currency: string }) {
   }
 
   const upcomingDebt = debts
-    .filter((d) => d.dueDate && new Date(d.dueDate) >= new Date() && new Date(d.dueDate) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+    .filter((d) => d.dueDate && new Date(d.dueDate) >= now && new Date(d.dueDate) <= weekFromNow)
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())[0];
   if (upcomingDebt) {
     insights.push({
@@ -143,7 +145,7 @@ export async function SmartInsights({ currency }: { currency: string }) {
       type: "warning",
       title: `Deuda próxima: ${upcomingDebt.name}`,
       description: `Vence en ${Math.ceil(
-        (new Date(upcomingDebt.dueDate!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        (new Date(upcomingDebt.dueDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       )} días por ${formatCurrency(decimalToNumber(upcomingDebt.remainingAmount), currency)}.`,
       action: { label: "Ver deudas", href: "/dashboard/personal/debts" },
     });

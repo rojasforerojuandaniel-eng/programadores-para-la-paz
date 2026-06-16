@@ -71,7 +71,7 @@ export default async function GoalsPage() {
             label="Ahorrado"
             value={formatCurrency(totalCurrent, "COP")}
             icon={Wallet}
-            valueClassName="text-emerald-500"
+            valueClassName="text-success"
           />
           <KpiCard label="Completadas" value={completed} icon={CheckCircle2} />
         </div>

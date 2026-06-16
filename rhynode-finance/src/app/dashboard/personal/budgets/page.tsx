@@ -36,20 +36,20 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
     case "EXCEEDED":
       return {
         label: "Excedido",
-        colorClass: "bg-rose-500",
-        textClass: "text-rose-500",
+        colorClass: "bg-danger",
+        textClass: "text-danger",
       };
     case "WARNING":
       return {
         label: "Alerta",
-        colorClass: "bg-amber-500",
-        textClass: "text-amber-500",
+        colorClass: "bg-warning",
+        textClass: "text-warning",
       };
     default:
       return {
         label: "OK",
-        colorClass: "bg-emerald-500",
-        textClass: "text-emerald-500",
+        colorClass: "bg-success",
+        textClass: "text-success",
       };
   }
 }
@@ -110,13 +110,13 @@ export default async function BudgetsPage() {
             label="Gastado"
             value={formatCurrency(totalSpent, "COP")}
             icon={Receipt}
-            valueClassName={totalSpent > totalBudgeted ? "text-rose-500" : "text-foreground"}
+            valueClassName={totalSpent > totalBudgeted ? "text-danger" : "text-foreground"}
           />
           <KpiCard
             label="Excedidos"
             value={exceededCount}
             icon={AlertTriangle}
-            valueClassName={exceededCount > 0 ? "text-amber-500" : "text-foreground"}
+            valueClassName={exceededCount > 0 ? "text-warning" : "text-foreground"}
           />
         </div>
       )}

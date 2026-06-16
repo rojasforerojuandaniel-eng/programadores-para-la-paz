@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
+import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
@@ -14,67 +15,73 @@ const createSchema = z.object({
   rollover: z.boolean().default(false),
 });
 
-export async function GET() {
-  try {
-    const profile = await getUserProfile();
-    if (!profile) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const GET = withRateLimit(
+  async () => {
+    try {
+      const profile = await getUserProfile();
+      if (!profile) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
-    const budgets = await prisma.budget.findMany({
-      where: { userId: profile.id },
-      include: { category: true },
-      orderBy: { createdAt: "desc" },
-    });
+      const budgets = await prisma.budget.findMany({
+        where: { userId: profile.id },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+      });
 
-    return NextResponse.json({ budgets });
-  } catch (error) {
-    logger.error("Failed to fetch budgets", { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json(
-      { error: "Failed to fetch budgets" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const profile = await getUserProfile();
-    if (!profile) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const parsed = createSchema.safeParse(body);
-
-    if (!parsed.success) {
+      return NextResponse.json({ budgets });
+    } catch (error) {
+      logger.error("Failed to fetch budgets", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json(
-        { error: "Invalid input", details: parsed.error.flatten() },
-        { status: 400 }
+        { error: "Failed to fetch budgets" },
+        { status: 500 }
       );
     }
+  },
+  { key: "budgets-read", maxRequests: 60, windowMs: 60000 }
+);
 
-    const { name, amount, period, startDate, endDate, categoryId, rollover } = parsed.data;
+export const POST = withRateLimit(
+  async (request: Request) => {
+    try {
+      const profile = await getUserProfile();
+      if (!profile) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
-    const budget = await prisma.budget.create({
-      data: {
-        userId: profile.id,
-        name,
-        amount,
-        period,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        rollover,
-      },
-    });
+      const body = await request.json();
+      const parsed = createSchema.safeParse(body);
 
-    return NextResponse.json({ budget });
-  } catch (error) {
-    logger.error("Failed to create budget", { error: error instanceof Error ? error.message : String(error) });
-    return NextResponse.json(
-      { error: "Failed to create budget" },
-      { status: 500 }
-    );
-  }
-}
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parsed.error.flatten() },
+          { status: 400 }
+        );
+      }
+
+      const { name, amount, period, startDate, endDate, categoryId, rollover } = parsed.data;
+
+      const budget = await prisma.budget.create({
+        data: {
+          userId: profile.id,
+          name,
+          amount,
+          period,
+          startDate: new Date(startDate),
+          endDate: endDate ? new Date(endDate) : undefined,
+          categoryId,
+          rollover,
+        },
+      });
+
+      return NextResponse.json({ budget });
+    } catch (error) {
+      logger.error("Failed to create budget", { error: error instanceof Error ? error.message : String(error) });
+      return NextResponse.json(
+        { error: "Failed to create budget" },
+        { status: 500 }
+      );
+    }
+  },
+  { key: "budgets", maxRequests: 10, windowMs: 60000 }
+);

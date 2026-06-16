@@ -76,7 +76,11 @@ export function InvestmentAllocationChart({
             ))}
           </Pie>
           <Tooltip
-            formatter={(value, name, item: any) => {
+            formatter={(
+              value,
+              name,
+              item: { payload?: AllocationItem }
+            ) => {
               const entry = item?.payload;
               return [
                 `${formatCurrency(entry?.amount ?? 0, currency)} (${Number(entry?.value ?? 0).toFixed(1)}%)`,

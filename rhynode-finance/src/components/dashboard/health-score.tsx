@@ -97,7 +97,7 @@ export function HealthScore({
               cy="50"
               r="40"
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              stroke="var(--border)"
               strokeWidth="8"
             />
             <circle

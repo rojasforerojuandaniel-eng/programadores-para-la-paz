@@ -29,6 +29,8 @@ import {
   PenLine,
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanLimit } from "@/hooks/use-plan-limit";
+import { PlanLimitUpgradeCard } from "@/components/dashboard/plan-limit-upgrade-card";
 
 interface Invoice {
   id: string;
@@ -45,12 +47,12 @@ interface Invoice {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Borrador", className: "bg-gray-500/10 text-gray-400" },
-  SENT: { label: "Enviada", className: "bg-amber-500/10 text-amber-400" },
-  PAID: { label: "Pagada", className: "bg-emerald-500/10 text-emerald-400" },
-  OVERDUE: { label: "Vencida", className: "bg-red-500/10 text-red-400" },
-  CANCELLED: { label: "Anulada", className: "bg-gray-500/10 text-gray-400" },
-  PARTIAL: { label: "Parcial", className: "bg-blue-500/10 text-blue-400" },
+  DRAFT: { label: "Borrador", className: "bg-muted text-muted-foreground" },
+  SENT: { label: "Enviada", className: "bg-warning/10 text-warning" },
+  PAID: { label: "Pagada", className: "bg-success/10 text-success" },
+  OVERDUE: { label: "Vencida", className: "bg-danger/10 text-danger" },
+  CANCELLED: { label: "Anulada", className: "bg-muted text-muted-foreground" },
+  PARTIAL: { label: "Parcial", className: "bg-info/10 text-info" },
 };
 
 function formatCurrency(amount: number, currency: string) {
@@ -65,6 +67,13 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const {
+    allowed: canCreateInvoice,
+    limit,
+    current,
+    planName,
+    loading: planLoading,
+  } = usePlanLimit("invoices");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -163,7 +172,7 @@ export default function InvoicesPage() {
             {inv.status === "DRAFT" && (
               <button
                 onClick={() => updateStatus(inv.id, "SENT")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-amber-400 transition-colors hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Marcar como Enviada"
                 aria-label="Marcar como Enviada"
               >
@@ -173,7 +182,7 @@ export default function InvoicesPage() {
             {inv.status === "SENT" && (
               <button
                 onClick={() => updateStatus(inv.id, "PAID")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-emerald-400 transition-colors hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-success transition-colors hover:bg-success/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Marcar como Pagada"
                 aria-label="Marcar como Pagada"
               >
@@ -183,7 +192,7 @@ export default function InvoicesPage() {
             {(inv.status === "SENT" || inv.status === "DRAFT") && (
               <button
                 onClick={() => updateStatus(inv.id, "CANCELLED")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Anular"
                 aria-label="Anular"
               >
@@ -192,7 +201,7 @@ export default function InvoicesPage() {
             )}
             <button
               onClick={() => deleteInvoice(inv.id)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-red-400 transition-colors hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Eliminar"
               aria-label="Eliminar"
             >
@@ -232,7 +241,7 @@ export default function InvoicesPage() {
           {inv.status === "DRAFT" && (
             <button
               onClick={() => updateStatus(inv.id, "SENT")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-amber-400 transition-colors hover:bg-amber-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Marcar como Enviada"
               aria-label="Marcar como Enviada"
             >
@@ -242,7 +251,7 @@ export default function InvoicesPage() {
           {inv.status === "SENT" && (
             <button
               onClick={() => updateStatus(inv.id, "PAID")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-emerald-400 transition-colors hover:bg-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-success transition-colors hover:bg-success/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Marcar como Pagada"
               aria-label="Marcar como Pagada"
             >
@@ -252,7 +261,7 @@ export default function InvoicesPage() {
           {(inv.status === "SENT" || inv.status === "DRAFT") && (
             <button
               onClick={() => updateStatus(inv.id, "CANCELLED")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Anular"
               aria-label="Anular"
             >
@@ -261,7 +270,7 @@ export default function InvoicesPage() {
           )}
           <button
             onClick={() => deleteInvoice(inv.id)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-red-400 transition-colors hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Eliminar"
             aria-label="Eliminar"
           >
@@ -279,7 +288,16 @@ export default function InvoicesPage() {
           <h1 className="heading-section">Facturas</h1>
           <p className="body-default mt-1">Gestiona tus facturas electrónicas</p>
         </div>
-        <CreateInvoiceDialog onCreate={() => window.location.reload()} />
+        {planLoading || canCreateInvoice ? (
+          <CreateInvoiceDialog onCreate={() => window.location.reload()} />
+        ) : (
+          <PlanLimitUpgradeCard
+            planName={planName}
+            resource="invoices"
+            limit={limit}
+            current={current}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
