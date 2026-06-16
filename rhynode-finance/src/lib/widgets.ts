@@ -15,12 +15,13 @@ export const DEFAULT_WIDGETS: WidgetDefinition[] = [
   { id: "xp-bar", label: "Barra de XP", defaultVisible: true, defaultOrder: 0 },
   { id: "health-score", label: "Health Score", defaultVisible: true, defaultOrder: 1 },
   { id: "kpi-grid", label: "KPIs", defaultVisible: true, defaultOrder: 2 },
-  { id: "anomalies", label: "Anomalías", defaultVisible: true, defaultOrder: 3 },
-  { id: "left-widget", label: "Transacciones / Facturas", defaultVisible: true, defaultOrder: 4 },
-  { id: "right-widget", label: "Presupuestos / Vencimientos", defaultVisible: true, defaultOrder: 5 },
-  { id: "ant-expenses", label: "Gastos Hormiga", defaultVisible: true, defaultOrder: 6 },
-  { id: "recent-events", label: "Próximos Eventos", defaultVisible: true, defaultOrder: 7 },
-  { id: "economic-indicators", label: "Indicadores Colombia", defaultVisible: true, defaultOrder: 8 },
+  { id: "ai-copilot", label: "Copiloto AI", defaultVisible: true, defaultOrder: 3 },
+  { id: "anomalies", label: "Anomalías", defaultVisible: true, defaultOrder: 4 },
+  { id: "left-widget", label: "Transacciones / Facturas", defaultVisible: true, defaultOrder: 5 },
+  { id: "right-widget", label: "Presupuestos / Vencimientos", defaultVisible: true, defaultOrder: 6 },
+  { id: "ant-expenses", label: "Gastos Hormiga", defaultVisible: true, defaultOrder: 7 },
+  { id: "recent-events", label: "Próximos Eventos", defaultVisible: true, defaultOrder: 8 },
+  { id: "economic-indicators", label: "Indicadores Colombia", defaultVisible: true, defaultOrder: 9 },
 ];
 
 export function buildDefaultLayout(): WidgetLayoutItem[] {
