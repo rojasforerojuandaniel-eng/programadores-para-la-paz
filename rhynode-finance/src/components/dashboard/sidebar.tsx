@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import {
   LayoutDashboard,
@@ -23,7 +23,6 @@ import {
   Medal,
   Calculator,
   Link as LinkIcon,
-  Bell,
   X,
   Wallet,
 } from "lucide-react";
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScopeToggle } from "./scope-toggle";
+import { NotificationCenter } from "./notification-center";
 import { useScope } from "@/lib/scope-context";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -134,25 +134,6 @@ function UserSection({ mobile = false }: { mobile?: boolean }) {
 
 
 function MobileHeader() {
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    async function fetchCount() {
-      try {
-        const res = await fetch("/api/notifications/unread-count");
-        if (res.ok) {
-          const data = await res.json();
-          setUnreadCount(data.count ?? 0);
-        }
-      } catch {
-        // Silently ignore
-      }
-    }
-    fetchCount();
-    const interval = setInterval(fetchCount, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md lg:hidden">
       <Logo href="/dashboard" />
@@ -161,14 +142,7 @@ function MobileHeader() {
           <ScopeToggle />
         </div>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative h-10 w-10">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-medium text-danger-foreground">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
+        <NotificationCenter />
       </div>
     </header>
   );
@@ -264,8 +238,9 @@ export function Sidebar() {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-card lg:block">
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center px-6">
+          <div className="flex h-16 items-center justify-between px-6">
             <Logo href="/dashboard" />
+            <NotificationCenter />
           </div>
           <div className="px-6 pb-2">
             <ScopeToggle />
