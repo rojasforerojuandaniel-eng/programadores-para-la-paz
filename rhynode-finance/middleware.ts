@@ -1,16 +1,60 @@
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
-  response.headers.set("x-rhynode-middleware", "active");
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/sso-callback(.*)",
+  "/onboarding(.*)",
+  "/api/webhooks/(.*)",
+  "/api/health",
+  "/api/debug-dashboard",
+  "/api/payment-links/public/(.*)",
+  "/api/payment-links/([^/]+)/checkout/(.*)",
+  "/api/payment-links/([^/]+)/pay",
+  "/pay/(.*)",
+  "/offline",
+  "/privacy",
+  "/terms",
+  "/support",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/manifest.json",
+  "/sw.js",
+]);
 
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+const isPublicApiRoute = createRouteMatcher([
+  "/api/webhooks/(.*)",
+  "/api/health",
+  "/api/debug-dashboard",
+  "/api/payment-links/public/(.*)",
+  "/api/payment-links/([^/]+)/checkout/(.*)",
+  "/api/payment-links/([^/]+)/pay",
+]);
+
+export default clerkMiddleware(async (auth, request) => {
+  const { userId, sessionId } = await auth();
+  const url = new URL(request.url);
+
+  if (isPublicApiRoute(request) || isPublicRoute(request)) {
+    return NextResponse.next();
+  }
+
+  if (!userId || !sessionId) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "content-type": "application/json" },
+      });
+    }
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
+  const response = NextResponse.next();
+  response.headers.set("x-rhynode-auth", "authenticated");
   return response;
-}
+});
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)"],
