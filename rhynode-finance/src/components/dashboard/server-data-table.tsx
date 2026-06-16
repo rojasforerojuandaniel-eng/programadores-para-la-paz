@@ -1,9 +1,8 @@
-"use client";
-
 import { ReactNode } from "react";
 import {
   Table,
   TableBody,
+  // TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -18,7 +17,7 @@ interface DataTableProps<T> {
   loading?: boolean;
 }
 
-export function DataTable<T>({
+export function ServerDataTable<T>({
   columns,
   data,
   renderRow,

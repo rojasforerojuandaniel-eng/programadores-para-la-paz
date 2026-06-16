@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UpdateSnapshotButton } from "./update-button";
-import { DataTable } from "@/components/dashboard/data-table";
+import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
@@ -148,7 +148,7 @@ export default async function NetWorthPage() {
         </Card>
       )}
 
-      <DataTable
+      <ServerDataTable
         columns={[
           { key: "date", header: "Fecha" },
           { key: "assets", header: "Activos" },

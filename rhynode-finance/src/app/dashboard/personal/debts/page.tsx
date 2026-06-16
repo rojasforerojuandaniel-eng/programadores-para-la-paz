@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/dashboard/data-table";
+import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
@@ -85,7 +85,7 @@ export default async function DebtsPage() {
       )}
 
       <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-        <DataTable
+        <ServerDataTable
           columns={columns}
           data={debts}
           emptyState={<EmptyState />}
