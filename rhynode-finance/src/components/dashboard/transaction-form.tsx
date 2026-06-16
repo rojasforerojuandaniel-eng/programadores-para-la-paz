@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, ScanLine, Loader2 } from "lucide-react";
+import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { type Suggestion, applyRules } from "@/lib/rules-engine";
 
 const COMMON_CATEGORIES = [
   "Ventas",
@@ -65,6 +66,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrItems, setOcrItems] = useState<OcrItem[]>([]);
   const [ocrConfidence, setOcrConfidence] = useState<number | null>(null);
+  const [appliedSuggestionIds, setAppliedSuggestionIds] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({
     type: "INCOME" as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
     category: "",
@@ -88,6 +90,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     setAiConfidence(null);
     setOcrItems([]);
     setOcrConfidence(null);
+    setAppliedSuggestionIds(new Set());
   }, []);
 
   const handleAiSuggest = useCallback(async (description: string, amount: number) => {
@@ -119,6 +122,51 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     }, 700);
     return () => clearTimeout(timeout);
   }, [form.description, form.amount, form.category, handleAiSuggest]);
+
+  const suggestions = useMemo(() => {
+    if (!form.description.trim() || !form.amount) return [];
+    const amount = Number(form.amount);
+    if (Number.isNaN(amount)) return [];
+    return applyRules({
+      type: form.type,
+      amount,
+      description: form.description,
+      category: form.category,
+    }).filter((s) => !appliedSuggestionIds.has(s.ruleId));
+  }, [form.description, form.amount, form.type, form.category, appliedSuggestionIds]);
+
+  function applySuggestion(suggestion: Suggestion) {
+    switch (suggestion.action.type) {
+      case "setCategory":
+        setForm((prev) => ({ ...prev, category: suggestion.action.value }));
+        setAiConfidence(null);
+        break;
+      case "setProject":
+        // Project selection is not part of this form; surface as alert only.
+        toast.info(`Sugerencia: asignar proyecto "${suggestion.action.value}"`);
+        break;
+      case "addTag":
+        toast.info(`Sugerencia: agregar etiqueta "${suggestion.action.value}"`);
+        break;
+      case "alert":
+        toast.warning(suggestion.action.value);
+        break;
+    }
+    setAppliedSuggestionIds((prev) => new Set(prev).add(suggestion.ruleId));
+  }
+
+  function getSuggestionLabel(suggestion: Suggestion): string {
+    switch (suggestion.action.type) {
+      case "setCategory":
+        return `aplicar categoría "${suggestion.action.value}"`;
+      case "setProject":
+        return `asignar proyecto "${suggestion.action.value}"`;
+      case "addTag":
+        return `agregar etiqueta "${suggestion.action.value}"`;
+      case "alert":
+        return suggestion.action.value;
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -379,7 +427,34 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select>          
+          {suggestions.length > 0 && (
+            <div className="space-y-2 pt-1">
+              {suggestions.map((suggestion) => (
+                <div
+                  key={suggestion.ruleId}
+                  className="flex items-center justify-between gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2"
+                >
+                  <div className="flex items-center gap-2 text-sm">
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-muted-foreground">Sugerencia de regla:</span>
+                    <span className="font-medium">{getSuggestionLabel(suggestion)}</span>
+                  </div>
+                  {suggestion.action.type === "setCategory" && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-primary"
+                      onClick={() => applySuggestion(suggestion)}
+                    >
+                      Aplicar
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           {aiConfidence !== null && (
             <div className="flex items-center gap-2 pt-1">
               <span className="text-xs text-muted-foreground">Confianza IA:</span>
