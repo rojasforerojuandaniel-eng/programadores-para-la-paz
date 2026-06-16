@@ -29,7 +29,7 @@ export function ScopeToggle() {
   return (
     <div className="flex items-center gap-1 rounded-lg border border-border bg-background p-1">
       {scopes.map((s) => {
-        const disabled = !hasBusiness && s.value !== "PERSONAL";
+        const disabled = false;
         return (
           <button
             key={s.value}
@@ -43,6 +43,13 @@ export function ScopeToggle() {
                 : "text-muted-foreground hover:text-foreground",
               disabled && "pointer-events-none opacity-40"
             )}
+            title={
+              s.value === "BUSINESS"
+                ? "Ver solo finanzas empresariales"
+                : s.value === "BOTH"
+                  ? "Ver finanzas personales y empresariales"
+                  : "Ver solo finanzas personales"
+            }
           >
             {s.label}
           </button>

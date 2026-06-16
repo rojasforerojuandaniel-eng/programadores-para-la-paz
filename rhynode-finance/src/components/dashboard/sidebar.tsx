@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { ScopeToggle } from "./scope-toggle";
 import { useScope } from "@/lib/scope-context";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const allNavItems = [
   { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
@@ -156,8 +157,9 @@ function MobileHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-md lg:hidden">
       <Logo href="/dashboard" />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <ScopeToggle />
+        <ThemeToggle />
         <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -263,7 +265,11 @@ export function Sidebar() {
             <ScopeToggle />
           </div>
           <NavLinks />
-          <div className="mt-auto">
+          <div className="mt-auto space-y-2 border-t border-border p-4">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-xs text-muted-foreground">Tema</span>
+              <ThemeToggle />
+            </div>
             <UserSection />
           </div>
         </div>
