@@ -32,10 +32,13 @@ export default clerkMiddleware(async (auth, request) => {
     signInUrl.searchParams.set("redirect_url", request.url);
     return NextResponse.redirect(signInUrl);
   }
+
+  return NextResponse.next({
+    headers: { "x-rhynode-auth": "authenticated" },
+  });
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.json|sw.js|icon-192.png|icon-512.png|screenshots/).)*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)"],
+  runtime: "nodejs",
 };
