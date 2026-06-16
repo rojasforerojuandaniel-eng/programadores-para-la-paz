@@ -13,6 +13,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { PricingCards } from "./pricing-cards";
 import {
   Wallet,
@@ -58,7 +59,8 @@ function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           <Button variant="ghost" size="sm" asChild>
             <Link href="/sign-in">Iniciar sesión</Link>
           </Button>
@@ -103,6 +105,10 @@ function Navbar() {
                 ))}
               </nav>
               <div className="flex flex-col gap-3 pt-4">
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <span className="text-sm text-muted-foreground">Tema</span>
+                  <ThemeToggle />
+                </div>
                 <Button variant="outline" asChild>
                   <Link href="/sign-in">Iniciar sesión</Link>
                 </Button>
