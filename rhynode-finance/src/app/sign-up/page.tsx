@@ -9,8 +9,12 @@ export const metadata: Metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex min-h-screen items-center justify-center bg-background p-4"
+    >
       <SignUpForm />
-    </div>
+    </main>
   );
 }
