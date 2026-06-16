@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 
 const csp = [
   "default-src 'self'",
@@ -42,10 +41,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const sentryBuildOptions = {
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-};
-
-export default withSentryConfig(nextConfig, sentryBuildOptions);
+export default nextConfig;
