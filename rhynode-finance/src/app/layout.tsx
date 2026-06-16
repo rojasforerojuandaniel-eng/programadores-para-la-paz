@@ -1,0 +1,110 @@
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "@/components/providers";
+import InstallPrompt from "@/components/pwa/install-prompt";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0f172a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
+export const metadata: Metadata = {
+  title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
+  description:
+    "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
+  keywords: [
+    "finanzas personales",
+    "contabilidad",
+    "facturación electrónica",
+    "Colombia",
+    "DIAN",
+    "impuestos",
+    "IA",
+    "Pyme",
+    "presupuesto",
+    "inversiones",
+  ],
+  authors: [{ name: "Rhynode" }],
+  creator: "Rhynode",
+  metadataBase: new URL("https://rhynode.finance"),
+  openGraph: {
+    title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
+    description: "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
+    url: "/",
+    siteName: "Rhynode",
+    locale: "es_CO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
+    description: "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
+    creator: "@rhynode",
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "Rhynode",
+    statusBarStyle: "black-translucent",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className="antialiased">
+        <Providers>{children}</Providers>
+        <InstallPrompt />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
+      </body>
+    </html>
+  );
+}
