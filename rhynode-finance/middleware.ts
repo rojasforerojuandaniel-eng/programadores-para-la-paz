@@ -35,7 +35,6 @@ const isPublicApiRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, request) => {
   const { userId, sessionId } = await auth();
-  const url = new URL(request.url);
 
   if (isPublicApiRoute(request) || isPublicRoute(request)) {
     return NextResponse.next();
