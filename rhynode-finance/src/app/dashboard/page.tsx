@@ -24,6 +24,7 @@ import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
 import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
 import { SmartInsights } from "@/components/dashboard/smart-insights";
+import { AiCopilot } from "@/components/dashboard/ai-copilot";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import type { UserScope } from "@/lib/scope";
 
@@ -292,6 +293,16 @@ export default async function DashboardPage() {
           <KpiGrid scope={scope} orgId={org.id} userId={profile?.id} currency={org.currency} />
         </Suspense>
       ),
+    },
+    {
+      id: "ai-copilot",
+      label: "Copiloto AI",
+      content:
+        scope === "PERSONAL" || scope === "BOTH" ? (
+          <Suspense fallback={<WidgetLoading />}>
+            <AiCopilot currency={org.currency} />
+          </Suspense>
+        ) : null,
     },
     {
       id: "anomalies",
