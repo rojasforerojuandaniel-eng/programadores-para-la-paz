@@ -1,153 +1,127 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { fetchEconomicIndicators } from "@/lib/economic-indicators";
+import { requireAuth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, Globe } from "lucide-react";
+import { TrendBadge } from "./trend-badge";
+import { Globe, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { revalidatePath } from "next/cache";
 
-interface EconomicIndicator {
-  id: string;
-  name: string;
-  value: string;
-  unit: string;
-  date: string;
-  source: string;
-  trend: "up" | "down" | "flat";
-  previousValue: string;
+export const metadata = dashboardMetadata(
+  "Indicadores Económicos",
+  "Tasas de referencia de Colombia: TRM, inflación, tasa de intervención, UVR e IBR."
+);
+
+function formatLastUpdated(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("es-CO", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
-const mockIndicators: EconomicIndicator[] = [
-  {
-    id: "trm",
-    name: "TRM",
-    value: "4,012.50",
-    unit: "COP/USD",
-    date: "2026-06-13",
-    source: "Superfinanciera",
-    trend: "up",
-    previousValue: "3,985.20",
-  },
-  {
-    id: "intervention",
-    name: "Tasa de Intervención",
-    value: "9.50",
-    unit: "%",
-    date: "2026-06-13",
-    source: "Banco de la República",
-    trend: "down",
-    previousValue: "9.75",
-  },
-  {
-    id: "ipc",
-    name: "IPC (Inflación)",
-    value: "4.82",
-    unit: "% anual",
-    date: "2026-05-31",
-    source: "DANE",
-    trend: "down",
-    previousValue: "5.15",
-  },
-  {
-    id: "dtf",
-    name: "DTF",
-    value: "9.35",
-    unit: "% EA",
-    date: "2026-06-13",
-    source: "Banco de la República",
-    trend: "flat",
-    previousValue: "9.35",
-  },
-  {
-    id: "uvr",
-    name: "UVR",
-    value: "342.15",
-    unit: "COP",
-    date: "2026-06-13",
-    source: "Banco de la República",
-    trend: "up",
-    previousValue: "341.80",
-  },
-];
-
-function TrendBadge({ trend }: { trend: "up" | "down" | "flat" }) {
-  if (trend === "up") {
-    return (
-      <Badge variant="outline" className="gap-1 text-emerald-600">
-        <TrendingUp className="h-3 w-3" />
-        Subió
-      </Badge>
-    );
-  }
-  if (trend === "down") {
-    return (
-      <Badge variant="outline" className="gap-1 text-rose-600">
-        <TrendingDown className="h-3 w-3" />
-        Bajó
-      </Badge>
-    );
-  }
-  return (
-    <Badge variant="outline" className="gap-1 text-muted-foreground">
-      <Minus className="h-3 w-3" />
-      Sin cambio
-    </Badge>
-  );
+async function refreshIndicators() {
+  "use server";
+  revalidatePath("/dashboard/economic-indicators");
 }
 
-export default function EconomicIndicatorsPage() {
-  const [indicators, setIndicators] = useState<EconomicIndicator[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function EconomicIndicatorsPage() {
+  const org = await requireAuth();
+  if (!org) redirect("/sign-in");
 
-  useEffect(() => {
-    // Simular fetch de datos
-    const timer = setTimeout(() => {
-      setIndicators(mockIndicators);
-      setLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const { indicators, lastUpdated, source, attribution, isFallback } =
+    await fetchEconomicIndicators();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="heading-section">Indicadores Económicos</h1>
-        <p className="body-default mt-1">Tasas de referencia y variables macroeconómicas de Colombia</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="heading-section">Indicadores Económicos</h1>
+          <p className="body-default mt-1">
+            Datos de referencia de Colombia actualizados diariamente
+          </p>
+        </div>
+        <form action={refreshIndicators}>
+          <Button type="submit" variant="outline" size="sm" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Actualizar
+          </Button>
+        </form>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {indicators.map((ind) => (
-            <Card key={ind.id} className="surface-elevated-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between text-sm font-medium text-muted-foreground">
-                  {ind.name}
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{ind.value}</span>
-                  <span className="text-sm text-muted-foreground">{ind.unit}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <TrendBadge trend={ind.trend} />
-                  <span className="text-xs text-muted-foreground">Anterior: {ind.previousValue}</span>
-                </div>
-                <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
-                  <span>{ind.source}</span>
-                  <span>{ind.date}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      {isFallback && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-medium">Mostrando datos de respaldo</p>
+            <p className="text-sm opacity-90">
+              No pudimos conectarnos con la fuente oficial. Los valores mostrados son de referencia y pueden no reflejar el mercado actual.
+            </p>
+          </div>
         </div>
       )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {indicators.map((indicator) => (
+          <Card key={indicator.id} className="feature-card">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">
+                    {indicator.name}
+                  </CardTitle>
+                </div>
+                <TrendBadge trend={indicator.trend} />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-tight">
+                  {indicator.value}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {indicator.unit}
+                </span>
+              </div>
+              {indicator.previousValue !== "—" && (
+                <p className="text-xs text-muted-foreground">
+                  Valor base / meta: {indicator.previousValue}
+                </p>
+              )}
+              {indicator.description && (
+                <p className="text-xs text-muted-foreground">
+                  {indicator.description}
+                </p>
+              )}
+              <div className="flex items-center justify-between pt-2">
+                <Badge variant="secondary" className="text-xs">
+                  {indicator.source}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {indicator.date}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
+        <p>
+          <strong>Fuente:</strong> {source}
+        </p>
+        <p className="mt-1">{attribution}</p>
+        <p className="mt-1">
+          <strong>Última actualización:</strong> {formatLastUpdated(lastUpdated)}
+        </p>
+      </div>
     </div>
   );
 }
