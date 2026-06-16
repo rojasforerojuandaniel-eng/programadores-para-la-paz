@@ -169,6 +169,7 @@ async function TransactionsContent() {
     <CardContent>
       {rows.length === 0 ? (
         <EmptyStateCard
+          variant="lg"
           icon={ArrowLeftRight}
           title="El centro de tus finanzas"
           description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."

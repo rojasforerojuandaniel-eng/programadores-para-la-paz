@@ -116,6 +116,7 @@ async function SubscriptionsContent() {
           <DetectButton />
         </div>
         <EmptyStateCard
+          variant="lg"
           icon={CreditCard}
           title="Detecta suscripciones automáticamente"
           description="Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar."

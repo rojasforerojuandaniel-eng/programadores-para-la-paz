@@ -40,6 +40,7 @@ function frequencyLabel(frequency: string) {
 function EmptyState() {
   return (
     <EmptyStateCard
+      variant="lg"
       icon={Repeat}
       title="Automatiza tus pagos recurrentes"
       description="Registra suscripciones y pagos periódicos para nunca perder un vencimiento."

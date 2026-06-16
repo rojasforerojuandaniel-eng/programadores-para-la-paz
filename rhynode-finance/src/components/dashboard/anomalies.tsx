@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -101,12 +102,12 @@ export function Anomalies() {
 
 export function AnomaliesEmptyState() {
   return (
-    <div className="mb-6 rounded-xl border border-border surface-elevated-2 p-4">
-      <div className="flex items-center gap-2">
-        <ShieldCheck className="h-5 w-5 text-emerald-400" />
-        <span className="text-sm font-medium text-emerald-400">Todo en orden</span>
-      </div>
-      <p className="body-small mt-1">No detectamos anomalías este mes.</p>
-    </div>
+    <EmptyStateCard
+      variant="sm"
+      className="mb-6 border-dashed"
+      icon={ShieldCheck}
+      title="Todo en orden"
+      description="No detectamos anomalías este mes."
+    />
   );
 }

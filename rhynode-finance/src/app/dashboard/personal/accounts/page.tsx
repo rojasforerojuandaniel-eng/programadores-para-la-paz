@@ -27,6 +27,7 @@ function formatCurrency(amount: number, currency: string) {
 function EmptyState() {
   return (
     <EmptyStateCard
+      variant="lg"
       icon={Wallet}
       title="Consolida tus cuentas"
       description="Conecta bancos, efectivo y tarjetas para tener una vista completa de tu dinero."

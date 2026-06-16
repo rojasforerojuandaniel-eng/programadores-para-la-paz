@@ -11,6 +11,7 @@ import { Tags } from "lucide-react";
 function EmptyState() {
   return (
     <EmptyStateCard
+      variant="lg"
       icon={Tags}
       title="Organiza tus movimientos"
       description="Crea categorías personalizadas para clasificar ingresos y gastos con precisión."

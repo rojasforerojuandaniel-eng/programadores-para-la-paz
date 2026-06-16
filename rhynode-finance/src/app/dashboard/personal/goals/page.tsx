@@ -22,7 +22,8 @@ function formatCurrency(amount: number, currency: string) {
 function EmptyState() {
   return (
     <EmptyStateCard
-      icon={Target}
+          variant="lg"
+          icon={Target}
       title="Alcanza tus metas de ahorro"
       description="Define objetivos claros y haz seguimiento visual de tu progreso día a día."
       hint="Empieza creando tu primera meta."

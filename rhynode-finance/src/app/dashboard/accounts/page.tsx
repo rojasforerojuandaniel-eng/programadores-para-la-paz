@@ -134,6 +134,7 @@ async function AccountsContent() {
     <CardContent>
       {rows.length === 0 ? (
         <EmptyStateCard
+          variant="lg"
           icon={Landmark}
           title="Conecta tus cuentas bancarias"
           description="Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales."

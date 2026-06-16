@@ -21,7 +21,8 @@ function formatCurrency(amount: number, currency: string) {
 function EmptyState() {
   return (
     <EmptyStateCard
-      icon={Scale}
+          variant="lg"
+          icon={Scale}
       title="Mantén tus deudas bajo control"
       description="Registra préstamos y obligaciones para planificar su pago y reducir intereses."
       hint="Empieza creando tu primera deuda."

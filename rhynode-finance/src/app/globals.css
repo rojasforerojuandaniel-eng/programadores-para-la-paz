@@ -168,6 +168,28 @@
   }
 }
 
+/* Empty state icon pulse — subtle, accessible */
+@keyframes empty-state-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.92;
+  }
+}
+
+.animate-empty-state-pulse {
+  animation: empty-state-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-empty-state-pulse {
+    animation: none;
+  }
+}
+
 /* ========================================
    PREMIUM UTILITIES — Rhynode Design System
    ======================================== */

@@ -78,6 +78,7 @@ export default async function ProjectsPage() {
         <CardContent>
           {projects.length === 0 ? (
             <EmptyStateCard
+              variant="lg"
               icon={Folder}
               title="Organiza tu trabajo en proyectos"
               description="Crea proyectos y asócialos a facturas para un seguimiento claro de ingresos."

@@ -279,6 +279,7 @@ export default async function InvestmentsPage() {
         }}
         emptyState={
           <EmptyStateCard
+            variant="lg"
             icon={TrendingUp}
             title="Haz crecer tu patrimonio"
             description="Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar."
