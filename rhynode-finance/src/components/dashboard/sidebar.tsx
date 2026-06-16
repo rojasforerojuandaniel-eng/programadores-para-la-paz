@@ -25,6 +25,7 @@ import {
   Link as LinkIcon,
   X,
   Wallet,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -50,6 +51,7 @@ const allNavItems = [
   { href: "/dashboard/personal/scenarios", label: "Escenarios", icon: Calculator, scopes: ["PERSONAL", "BOTH"] as const },
   { href: "/dashboard/personal/achievements", label: "Logros", icon: Trophy, scopes: ["PERSONAL", "BOTH"] as const },
   { href: "/dashboard/transactions", label: "Transacciones", icon: ArrowLeftRight, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
+  { href: "/dashboard/rules", label: "Reglas", icon: Workflow, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
   { href: "/dashboard/accounts", label: "Cuentas bancarias", icon: Landmark, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
   { href: "/dashboard/invoices", label: "Facturas", icon: FileText, scopes: ["BUSINESS", "BOTH"] as const },
   { href: "/dashboard/clients", label: "Clientes", icon: Users, scopes: ["BUSINESS", "BOTH"] as const },
