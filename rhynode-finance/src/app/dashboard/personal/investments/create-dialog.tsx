@@ -84,7 +84,7 @@ export function CreateInvestmentDialog() {
           Nueva Inversión
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-lg max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Crear Inversión</DialogTitle>
           <DialogDescription>

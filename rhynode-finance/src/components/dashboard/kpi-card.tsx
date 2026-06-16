@@ -24,7 +24,7 @@ export function KpiCard({
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-muted-foreground sm:text-sm">{label}</p>
+            <p className="text-sm font-medium text-muted-foreground sm:text-base">{label}</p>
             <div
               className={cn(
                 "mt-1 text-xl font-bold tracking-tight text-foreground sm:mt-2 sm:text-2xl",

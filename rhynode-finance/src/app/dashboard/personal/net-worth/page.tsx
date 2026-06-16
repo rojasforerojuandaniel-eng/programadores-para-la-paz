@@ -127,9 +127,9 @@ export default async function NetWorthPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-2 overflow-x-auto pb-2">
+            <div className="flex max-h-40 items-end gap-2 overflow-x-auto pb-2 sm:max-h-52">
               {chartSnapshots.map((s, i) => {
-                const h = Math.max(8, (decimalToNumber(s.totalAssets) / maxAssets) * 160);
+                const h = Math.max(8, (decimalToNumber(s.totalAssets) / maxAssets) * 120);
                 return (
                   <div key={i} className="flex min-w-[28px] flex-1 flex-col items-center gap-1">
                     <div

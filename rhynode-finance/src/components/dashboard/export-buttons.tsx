@@ -24,33 +24,44 @@ async function downloadFile(url: string, filename: string) {
   }
 }
 
+interface ExportButtonProps {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  shortLabel: string;
+}
+
+function ExportButton({ onClick, icon, label, shortLabel }: ExportButtonProps) {
+  return (
+    <Button variant="outline" className="h-10 shrink-0 gap-2" onClick={onClick}>
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{shortLabel}</span>
+    </Button>
+  );
+}
+
 export function ExportButtons() {
   return (
-    <>
-      <Button
-        variant="outline"
-        className="gap-2"
+    <div className="flex flex-row gap-2 overflow-x-auto pb-1">
+      <ExportButton
         onClick={() => downloadFile("/api/reports/pdf", "transacciones.pdf")}
-      >
-        <FileText className="h-4 w-4" />
-        Exportar PDF
-      </Button>
-      <Button
-        variant="outline"
-        className="gap-2"
+        icon={<FileText className="h-4 w-4" />}
+        label="Exportar PDF"
+        shortLabel="PDF"
+      />
+      <ExportButton
         onClick={() => downloadFile("/api/reports/excel", "transacciones.xlsx")}
-      >
-        <Sheet className="h-4 w-4" />
-        Exportar Excel
-      </Button>
-      <Button
-        variant="outline"
-        className="gap-2"
+        icon={<Sheet className="h-4 w-4" />}
+        label="Exportar Excel"
+        shortLabel="Excel"
+      />
+      <ExportButton
         onClick={() => downloadFile("/api/reports/csv", "transacciones.csv")}
-      >
-        <FileSpreadsheet className="h-4 w-4" />
-        Exportar CSV
-      </Button>
-    </>
+        icon={<FileSpreadsheet className="h-4 w-4" />}
+        label="Exportar CSV"
+        shortLabel="CSV"
+      />
+    </div>
   );
 }

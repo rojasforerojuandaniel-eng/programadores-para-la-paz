@@ -122,8 +122,7 @@ function UserSection({ mobile = false }: { mobile?: boolean }) {
       </div>
       <Button
         variant="ghost"
-        size="sm"
-        className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+        className="h-10 w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
         onClick={() => signOut({ redirectUrl: "/" })}
       >
         <LogOut className="h-4 w-4" />
@@ -155,12 +154,14 @@ function MobileHeader() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-md lg:hidden">
+    <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md lg:hidden">
       <Logo href="/dashboard" />
-      <div className="flex items-center gap-1">
-        <ScopeToggle />
+      <div className="flex min-w-0 shrink items-center gap-0.5">
+        <div className="hidden min-w-0 shrink sm:block">
+          <ScopeToggle />
+        </div>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
+        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative h-10 w-10">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-medium text-danger-foreground">
@@ -194,8 +195,8 @@ function BottomNav() {
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-safe pt-2 backdrop-blur-md lg:hidden">
-        <div className="grid h-14 grid-cols-4 items-center">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-safe pt-1 backdrop-blur-md lg:hidden">
+        <div className="grid h-[calc(3.5rem+env(safe-area-inset-bottom))] min-h-14 grid-cols-4 items-center">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = !tab.sheet && (pathname === tab.href || pathname?.startsWith(`${tab.href}/`));
@@ -204,18 +205,21 @@ function BottomNav() {
                 <SheetTrigger asChild>
                   <button
                     type="button"
-                    className="flex flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    className={cn(
+                      "flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors",
+                      sheetOpen ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-6 w-6" />
                     <span>{tab.label}</span>
                   </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl border-border bg-background p-0">
+                <SheetContent side="bottom" className="h-[85dvh] max-h-[85dvh] rounded-t-2xl border-border bg-background p-0">
                   <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
                   <div className="flex h-full flex-col">
                     <div className="flex items-center justify-between border-b border-border p-4">
                       <Logo href="/dashboard" />
-                      <Button variant="ghost" size="icon" onClick={() => setSheetOpen(false)} aria-label="Cerrar menú de navegación">
+                      <Button variant="ghost" size="icon" onClick={() => setSheetOpen(false)} aria-label="Cerrar menú de navegación" className="h-10 w-10">
                         <X className="h-5 w-5" aria-hidden="true" />
                       </Button>
                     </div>
@@ -234,11 +238,11 @@ function BottomNav() {
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  "flex h-full flex-col items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors",
+                  isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-6 w-6" />
                 <span>{tab.label}</span>
               </Link>
             );
