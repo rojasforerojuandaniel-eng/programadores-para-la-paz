@@ -12,7 +12,7 @@ export function withRateLimit<T = Record<string, string | string[]>>(
   return async function (request: Request, context?: RouteContext<T>): Promise<Response> {
     const ip = getClientIp(request);
     const key = `${options.key || "api"}:${ip}`;
-    const limit = rateLimit(key, options.maxRequests ?? 30, options.windowMs ?? 60000);
+    const limit = await rateLimit(key, options.maxRequests ?? 30, options.windowMs ?? 60000);
 
     if (!limit.success) {
       return NextResponse.json(

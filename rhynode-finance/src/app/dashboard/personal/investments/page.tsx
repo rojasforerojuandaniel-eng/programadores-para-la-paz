@@ -53,12 +53,12 @@ const investmentTypeLabels: Record<string, string> = {
 };
 
 const investmentTypeColors: Record<string, string> = {
-  STOCK: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-  BOND: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
-  CRYPTO: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-  ETF: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-  REAL_ESTATE: "bg-rose-500/15 text-rose-400 border-rose-500/20",
-  OTHER: "bg-slate-500/15 text-slate-400 border-slate-500/20",
+  STOCK: "bg-info/15 text-info border-info/20",
+  BOND: "bg-success/15 text-success border-success/20",
+  CRYPTO: "bg-purple-500/15 text-purple-500 border-purple-500/20",
+  ETF: "bg-warning/15 text-warning border-warning/20",
+  REAL_ESTATE: "bg-danger/15 text-danger border-danger/20",
+  OTHER: "bg-muted text-muted-foreground border-border",
 };
 
 export default async function InvestmentsPage() {
@@ -112,7 +112,7 @@ export default async function InvestmentsPage() {
           label="Retorno Total"
           value={formatPercent(totalReturn)}
           icon={totalReturn >= 0 ? TrendingUp : TrendingDown}
-          valueClassName={totalReturn >= 0 ? "text-emerald-500" : "text-rose-500"}
+          valueClassName={totalReturn >= 0 ? "text-success" : "text-danger"}
         />
       </div>
 
@@ -155,7 +155,7 @@ export default async function InvestmentsPage() {
               </TableCell>
               <TableCell className="py-3 text-sm">{formatCurrency(balance, item.currency)}</TableCell>
               <TableCell className="py-3 text-sm">{formatCurrency(investedAmount, item.currency)}</TableCell>
-              <TableCell className={`py-3 text-sm font-medium ${ret >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+              <TableCell className={`py-3 text-sm font-medium ${ret >= 0 ? "text-success" : "text-danger"}`}>
                 {formatPercent(ret)}
               </TableCell>
             </>
@@ -182,7 +182,7 @@ export default async function InvestmentsPage() {
                 <div className="text-muted-foreground">Invertido</div>
                 <div className="text-right font-medium">{formatCurrency(investedAmount, item.currency)}</div>
                 <div className="text-muted-foreground">Retorno</div>
-                <div className={`text-right font-medium ${ret >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                <div className={`text-right font-medium ${ret >= 0 ? "text-success" : "text-danger"}`}>
                   {formatPercent(ret)}
                 </div>
               </div>

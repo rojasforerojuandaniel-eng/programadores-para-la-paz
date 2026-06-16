@@ -157,5 +157,5 @@ export const POST = withRateLimit(
       );
     }
   },
-  { key: "transactions", maxRequests: 60, windowMs: 60000 }
+  { key: "transactions", maxRequests: 10, windowMs: 60000 }
 );

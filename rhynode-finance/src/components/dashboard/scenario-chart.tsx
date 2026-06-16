@@ -36,7 +36,7 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
     <div className="h-[300px] w-full sm:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
           <XAxis dataKey="month" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
           <YAxis
             tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}

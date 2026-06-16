@@ -43,7 +43,7 @@ export function ServerDataTable<T>({
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               {columns.map((col) => (
-                <TableHead key={col.key} className={col.className}>
+                <TableHead key={col.key} scope="col" className={col.className}>
                   {col.header}
                 </TableHead>
               ))}
