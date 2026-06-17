@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Brain, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChatMessage } from "@/components/dashboard/chat-message";
+import { ChatMessage, ChatMessageSkeleton } from "@/components/dashboard/chat-message";
 import { ChatInput } from "@/components/dashboard/chat-input";
 
 interface UserMessage {
@@ -39,6 +39,8 @@ function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+const WARMUP_DURATION = 400;
+
 export default function AdvisorPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -49,8 +51,15 @@ export default function AdvisorPage() {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasStreamedContent, setHasStreamedContent] = useState(false);
+  const [isWarmup, setIsWarmup] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const assistantMessageIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsWarmup(false), WARMUP_DURATION);
+    return () => clearTimeout(timer);
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -178,11 +187,12 @@ export default function AdvisorPage() {
     } finally {
       setIsLoading(false);
       assistantMessageIdRef.current = null;
+      window.setTimeout(() => inputRef.current?.focus(), 0);
     }
   }
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col rounded-xl border border-border bg-card lg:h-[calc(100dvh-7rem)]">
+    <div className="flex h-[calc(100dvh-10.5rem-env(safe-area-inset-bottom))] flex-col rounded-xl border border-border bg-card pb-safe lg:h-[calc(100dvh-2.5rem)]">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <Link href="/dashboard">
@@ -203,29 +213,40 @@ export default function AdvisorPage() {
       <div
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto p-4"
+        role="log"
+        aria-live="polite"
         aria-label="Mensajes del chat"
       >
-        {messages.map((msg) => (
-          <ChatMessage
-            key={msg.id}
-            role={msg.role}
-            content={"content" in msg ? msg.content : ""}
-            isLoading={msg.role === "assistant" ? msg.isLoading : false}
-            toolName={msg.role === "tool" ? msg.toolName : undefined}
-            toolResult={msg.role === "tool" && "toolResult" in msg ? msg.toolResult : undefined}
-          />
-        ))}
-        {isLoading && !hasStreamedContent && (
-          <ChatMessage
-            role="assistant"
-            content=""
-            isLoading={true}
-          />
+        {isWarmup ? (
+          <>
+            <ChatMessageSkeleton />
+            <ChatMessageSkeleton isUser />
+          </>
+        ) : (
+          <>
+            {messages.map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                role={msg.role}
+                content={"content" in msg ? msg.content : ""}
+                isLoading={msg.role === "assistant" ? msg.isLoading : false}
+                toolName={msg.role === "tool" ? msg.toolName : undefined}
+                toolResult={msg.role === "tool" && "toolResult" in msg ? msg.toolResult : undefined}
+              />
+            ))}
+            {isLoading && !hasStreamedContent && (
+              <ChatMessage
+                role="assistant"
+                content=""
+                isLoading={true}
+              />
+            )}
+          </>
         )}
       </div>
 
       {/* Input */}
-      <ChatInput onSend={handleSend} isLoading={isLoading} />
+      <ChatInput ref={inputRef} onSend={handleSend} isLoading={isLoading} />
     </div>
   );
 }

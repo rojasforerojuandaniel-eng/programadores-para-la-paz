@@ -16,8 +16,10 @@ function log(level: LogLevel, message: string, context?: LogContext) {
   if (level === "error") {
     console.error(JSON.stringify(entry));
   } else if (level === "warn") {
+    // eslint-disable-next-line no-console -- Structured JSON logs must go to stdout for serverless observability.
     console.warn(JSON.stringify(entry));
   } else {
+    // eslint-disable-next-line no-console -- Structured JSON logs must go to stdout for serverless observability.
     console.log(JSON.stringify(entry));
   }
 }

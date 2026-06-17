@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreateBankAccountButton } from "@/components/dashboard/create-bank-account-button";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { BankAccountActions } from "@/components/dashboard/bank-account-actions";
 import {
   Table,
   TableBody,
@@ -16,16 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Landmark, Wallet, PiggyBank, CreditCard } from "lucide-react";
-
-interface BankAccount {
-  id: string;
-  name: string;
-  bankName: string;
-  type: string;
-  currency: string;
-  balance: number;
-}
+import { Loader2, Landmark, Wallet, PiggyBank, CreditCard, Building2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { BankAccountRow } from "@/components/dashboard/bank-account-actions";
 
 const typeLabels: Record<string, string> = {
   CHECKING: "Corriente",
@@ -34,12 +28,41 @@ const typeLabels: Record<string, string> = {
   VIRTUAL: "Virtual",
 };
 
+const typeIcons: Record<string, typeof Building2> = {
+  CHECKING: Wallet,
+  SAVINGS: PiggyBank,
+  CREDIT: CreditCard,
+  VIRTUAL: Wallet,
+};
+
+const lowBalanceThresholds: Record<string, number> = {
+  COP: 100_000,
+  MXN: 500,
+  BRL: 250,
+  USD: 50,
+};
+
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function accountStatus(amount: number, currency: string) {
+  if (amount < 0) return { label: "Negativo", variant: "destructive" as const };
+  const threshold = lowBalanceThresholds[currency] ?? 0;
+  if (threshold > 0 && amount < threshold) {
+    return { label: "Saldo bajo", variant: "warning" as const };
+  }
+  return null;
+}
+
+function bankInitials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const firstLetters = words.slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "");
+  return firstLetters.join("").slice(0, 2) || "B";
 }
 
 export default function AccountsPage() {
@@ -121,12 +144,13 @@ async function AccountsContent() {
     orderBy: { createdAt: "desc" },
   });
 
-  const rows: BankAccount[] = accounts.map((account) => ({
+  const rows: BankAccountRow[] = accounts.map((account) => ({
     id: account.id,
     name: account.name,
     bankName: account.bankName,
-    type: account.type,
-    currency: account.currency,
+    accountNumber: account.accountNumber ?? "",
+    type: account.type as BankAccountRow["type"],
+    currency: account.currency as BankAccountRow["currency"],
     balance: decimalToNumber(account.balance),
   }));
 
@@ -137,7 +161,7 @@ async function AccountsContent() {
           variant="lg"
           icon={Landmark}
           title="Conecta tus cuentas bancarias"
-          description="Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales."
+          description="Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales en un solo lugar."
           hint="Empieza conectando tu primera cuenta bancaria."
           action={<CreateBankAccountButton />}
         />
@@ -147,26 +171,41 @@ async function AccountsContent() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead scope="col">Nombre</TableHead>
-                  <TableHead scope="col">Banco</TableHead>
+                  <TableHead scope="col">Cuenta</TableHead>
                   <TableHead scope="col">Tipo</TableHead>
                   <TableHead scope="col">Moneda</TableHead>
                   <TableHead scope="col" className="text-right">Saldo</TableHead>
+                  <TableHead scope="col" className="w-16">
+                    <span className="sr-only">Acciones</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((acc) => (
                   <TableRow key={acc.id}>
-                    <TableCell className="font-medium">{acc.name}</TableCell>
-                    <TableCell className="text-sm">{acc.bankName}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {typeLabels[acc.type] || acc.type}
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+                          aria-hidden="true"
+                        >
+                          {bankInitials(acc.bankName)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium">{acc.name}</div>
+                          <div className="text-sm text-muted-foreground">{acc.bankName}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{typeLabels[acc.type] || acc.type}</Badge>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{acc.currency}</TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-semibold tabular-nums">
                       {formatCurrency(acc.balance, acc.currency)}
+                    </TableCell>
+                    <TableCell>
+                      <BankAccountActions account={acc} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -175,27 +214,56 @@ async function AccountsContent() {
           </div>
 
           <ul className="grid grid-cols-1 gap-4 md:hidden" role="list">
-            {rows.map((acc) => (
-              <li key={acc.id} className="surface-elevated-2 rounded-xl p-5">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{acc.name}</div>
+            {rows.map((acc) => {
+              const status = accountStatus(acc.balance, acc.currency);
+              const Icon = typeIcons[acc.type] ?? Building2;
+              return (
+                <li
+                  key={acc.id}
+                  className="surface-elevated-2 rounded-2xl p-4 sm:p-5"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold leading-snug text-foreground">
+                        {acc.name}
+                      </div>
                       <div className="text-sm text-muted-foreground">{acc.bankName}</div>
                     </div>
-                    <Badge variant="outline">
-                      {typeLabels[acc.type] || acc.type}
-                    </Badge>
+                    <BankAccountActions account={acc} />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">{acc.currency}</div>
-                    <div className="text-lg font-semibold">
-                      {formatCurrency(acc.balance, acc.currency)}
-                    </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline">{typeLabels[acc.type] || acc.type}</Badge>
+                    {status && (
+                      <Badge
+                        variant={status.variant === "destructive" ? "destructive" : "secondary"}
+                        className={cn(
+                          status.variant === "warning" &&
+                            "border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10"
+                        )}
+                      >
+                        {status.label}
+                      </Badge>
+                    )}
                   </div>
-                </div>
-              </li>
-            ))}
+
+                  <div
+                    className={cn(
+                      "mt-3 text-2xl font-bold tracking-tight tabular-nums",
+                      acc.balance < 0 && "text-destructive"
+                    )}
+                  >
+                    {formatCurrency(acc.balance, acc.currency)}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </>
       )}
