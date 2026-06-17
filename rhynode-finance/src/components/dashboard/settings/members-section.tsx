@@ -34,7 +34,12 @@ interface Member {
 export function MembersSection() {
   const { user } = useUser();
   const { isAdmin } = useOrganizationRole();
-  const { allowed: canInviteByPlan, current: usersUsed, limit: usersLimit, planName } = usePlanLimit("users");
+  const {
+    allowed: canInviteByPlan,
+    current: usersUsed,
+    limit: usersLimit,
+    planName,
+  } = usePlanLimit("users");
 
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +175,10 @@ export function MembersSection() {
           </div>
 
           {isAdmin && (
-            <form onSubmit={handleInvite} className="space-y-3 rounded-lg border border-border p-3">
+            <form
+              onSubmit={handleInvite}
+              className="space-y-3 rounded-lg border border-border p-3"
+            >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-2 sm:col-span-1">
                   <Label htmlFor="invite-email">Email</Label>
@@ -196,8 +204,12 @@ export function MembersSection() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ADMIN">{ROLE_LABELS.ADMIN}</SelectItem>
-                      <SelectItem value="MANAGER">{ROLE_LABELS.MANAGER}</SelectItem>
-                      <SelectItem value="VIEWER">{ROLE_LABELS.VIEWER}</SelectItem>
+                      <SelectItem value="MANAGER">
+                        {ROLE_LABELS.MANAGER}
+                      </SelectItem>
+                      <SelectItem value="VIEWER">
+                        {ROLE_LABELS.VIEWER}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -223,8 +235,8 @@ export function MembersSection() {
               </div>
               {!canInviteByPlan && (
                 <p className="text-xs text-danger">
-                  Has alcanzado el límite de usuarios de tu plan. Sube de plan para invitar más
-                  miembros.
+                  Has alcanzado el límite de usuarios de tu plan. Sube de plan
+                  para invitar más miembros.
                 </p>
               )}
             </form>
@@ -250,14 +262,22 @@ export function MembersSection() {
                       <span className="font-medium">
                         {member.name || member.email || "Miembro"}
                       </span>
-                      {isCurrentUser(member) && <Badge variant="secondary">Tú</Badge>}
+                      {isCurrentUser(member) && (
+                        <Badge variant="secondary">Tú</Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-3.5 w-3.5" />
-                      <span className="truncate">{member.email ?? member.userId}</span>
+                      <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span className="truncate">
+                        {member.email ?? member.userId}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge variant={member.status === "ACTIVE" ? "default" : "outline"}>
+                      <Badge
+                        variant={
+                          member.status === "ACTIVE" ? "default" : "outline"
+                        }
+                      >
                         {member.status === "ACTIVE" ? "Activo" : "Pendiente"}
                       </Badge>
                       <span>{ROLE_LABELS[member.role]}</span>
@@ -268,15 +288,23 @@ export function MembersSection() {
                     <div className="flex items-center gap-2">
                       <Select
                         value={member.role}
-                        onValueChange={(v) => changeRole(member.id, v as OrganizationRole)}
+                        onValueChange={(v) =>
+                          changeRole(member.id, v as OrganizationRole)
+                        }
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ADMIN">{ROLE_LABELS.ADMIN}</SelectItem>
-                          <SelectItem value="MANAGER">{ROLE_LABELS.MANAGER}</SelectItem>
-                          <SelectItem value="VIEWER">{ROLE_LABELS.VIEWER}</SelectItem>
+                          <SelectItem value="ADMIN">
+                            {ROLE_LABELS.ADMIN}
+                          </SelectItem>
+                          <SelectItem value="MANAGER">
+                            {ROLE_LABELS.MANAGER}
+                          </SelectItem>
+                          <SelectItem value="VIEWER">
+                            {ROLE_LABELS.VIEWER}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -285,9 +313,10 @@ export function MembersSection() {
                           variant="outline"
                           size="icon"
                           title="Reenviar invitación"
+                          aria-label="Reenviar invitación"
                           onClick={() => resendInvitation(member.id)}
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
 
@@ -296,9 +325,10 @@ export function MembersSection() {
                         size="icon"
                         className="text-danger hover:bg-danger/10"
                         title="Remover miembro"
+                        aria-label="Remover miembro"
                         onClick={() => removeMember(member.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </div>
                   )}

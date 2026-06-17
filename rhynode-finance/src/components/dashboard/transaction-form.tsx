@@ -66,7 +66,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrItems, setOcrItems] = useState<OcrItem[]>([]);
   const [ocrConfidence, setOcrConfidence] = useState<number | null>(null);
-  const [appliedSuggestionIds, setAppliedSuggestionIds] = useState<Set<string>>(new Set());
+  const [appliedSuggestionIds, setAppliedSuggestionIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [form, setForm] = useState({
     type: "INCOME" as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
     category: "",
@@ -93,27 +95,36 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     setAppliedSuggestionIds(new Set());
   }, []);
 
-  const handleAiSuggest = useCallback(async (description: string, amount: number) => {
-    setAiLoading(true);
-    try {
-      const res = await fetch("/api/ai/categorize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, amount }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { category?: string; confidence?: number };
-        if (data.category) {
-          setForm((prev) => ({ ...prev, category: data.category ?? prev.category }));
-          setAiConfidence(data.confidence ?? null);
+  const handleAiSuggest = useCallback(
+    async (description: string, amount: number) => {
+      setAiLoading(true);
+      try {
+        const res = await fetch("/api/ai/categorize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ description, amount }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as {
+            category?: string;
+            confidence?: number;
+          };
+          if (data.category) {
+            setForm((prev) => ({
+              ...prev,
+              category: data.category ?? prev.category,
+            }));
+            setAiConfidence(data.confidence ?? null);
+          }
         }
+      } catch {
+        // Auto-suggest should fail silently.
+      } finally {
+        setAiLoading(false);
       }
-    } catch {
-      // Auto-suggest should fail silently.
-    } finally {
-      setAiLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!form.description.trim() || !form.amount || form.category) return;
@@ -133,7 +144,13 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
       description: form.description,
       category: form.category,
     }).filter((s) => !appliedSuggestionIds.has(s.ruleId));
-  }, [form.description, form.amount, form.type, form.category, appliedSuggestionIds]);
+  }, [
+    form.description,
+    form.amount,
+    form.type,
+    form.category,
+    appliedSuggestionIds,
+  ]);
 
   function applySuggestion(suggestion: Suggestion) {
     switch (suggestion.action.type) {
@@ -232,7 +249,10 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
       });
       let category = "";
       if (categoryRes.ok) {
-        const catData = (await categoryRes.json()) as { category?: string; confidence?: number };
+        const catData = (await categoryRes.json()) as {
+          category?: string;
+          confidence?: number;
+        };
         category = catData.category || "";
         setAiConfidence(catData.confidence ?? null);
       }
@@ -272,7 +292,8 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
 
   function confidenceLabel(confidence: number) {
     if (confidence >= 0.8) return { text: "Alta", variant: "default" as const };
-    if (confidence >= 0.6) return { text: "Media", variant: "secondary" as const };
+    if (confidence >= 0.6)
+      return { text: "Media", variant: "secondary" as const };
     return { text: "Baja", variant: "destructive" as const };
   }
 
@@ -280,7 +301,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4 pt-2">
       <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4">
         <div className="mb-2 flex items-center gap-2">
-          <ScanLine className="h-4 w-4 text-primary" />
+          <ScanLine className="h-4 w-4 text-primary" aria-hidden="true" />
           <span className="text-sm font-medium">Escanear recibo</span>
         </div>
         <Input
@@ -293,7 +314,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
         />
         {ocrLoading && (
           <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Procesando imagen...
           </div>
         )}
@@ -305,21 +326,28 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
             </Badge>
           </div>
         )}
-        {ocrItems.length > 0 && ocrConfidence !== null && ocrConfidence > 0.7 && (
-          <div className="mt-3 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Items detectados:</p>
-            <div className="max-h-32 overflow-auto rounded border border-muted-foreground/20 p-2">
-              {ocrItems.map((item, idx) => (
-                <div key={idx} className="flex justify-between py-0.5 text-xs">
-                  <span className="truncate">{item.description}</span>
-                  <span className="tabular-nums text-muted-foreground">
-                    {item.amount.toLocaleString("es-CO")}
-                  </span>
-                </div>
-              ))}
+        {ocrItems.length > 0 &&
+          ocrConfidence !== null &&
+          ocrConfidence > 0.7 && (
+            <div className="mt-3 space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                Items detectados:
+              </p>
+              <div className="max-h-32 overflow-auto rounded border border-muted-foreground/20 p-2">
+                {ocrItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between py-0.5 text-xs"
+                  >
+                    <span className="truncate">{item.description}</span>
+                    <span className="tabular-nums text-muted-foreground">
+                      {item.amount.toLocaleString("es-CO")}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -327,7 +355,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
           <Label htmlFor="tx-type">Tipo</Label>
           <Select
             value={form.type}
-            onValueChange={(value) => setForm({ ...form, type: value as typeof form.type })}
+            onValueChange={(value) =>
+              setForm({ ...form, type: value as typeof form.type })
+            }
           >
             <SelectTrigger id="tx-type">
               <SelectValue />
@@ -365,7 +395,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
           id="tx-desc"
           required
           value={form.description}
-          onChange={(event) => setForm({ ...form, description: event.target.value })}
+          onChange={(event) =>
+            setForm({ ...form, description: event.target.value })
+          }
           placeholder="Ej. Pago de factura mensual"
         />
       </div>
@@ -379,7 +411,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
             required
             min={0}
             value={form.amount}
-            onChange={(event) => setForm({ ...form, amount: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, amount: event.target.value })
+            }
             placeholder="0"
           />
         </div>
@@ -427,7 +461,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>          
+          </Select>
           {suggestions.length > 0 && (
             <div className="space-y-2 pt-1">
               {suggestions.map((suggestion) => (
@@ -437,8 +471,12 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
                 >
                   <div className="flex items-center gap-2 text-sm">
                     <Zap className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-muted-foreground">Sugerencia de regla:</span>
-                    <span className="font-medium">{getSuggestionLabel(suggestion)}</span>
+                    <span className="text-muted-foreground">
+                      Sugerencia de regla:
+                    </span>
+                    <span className="font-medium">
+                      {getSuggestionLabel(suggestion)}
+                    </span>
                   </div>
                   {suggestion.action.type === "setCategory" && (
                     <Button
@@ -457,7 +495,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
           )}
           {aiConfidence !== null && (
             <div className="flex items-center gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">Confianza IA:</span>
+              <span className="text-xs text-muted-foreground">
+                Confianza IA:
+              </span>
               <Badge variant={confidenceLabel(aiConfidence).variant}>
                 {confidenceLabel(aiConfidence).text}
               </Badge>
@@ -469,7 +509,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
           <Input
             id="tx-ref"
             value={form.reference}
-            onChange={(event) => setForm({ ...form, reference: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, reference: event.target.value })
+            }
             placeholder="Número de referencia bancaria"
           />
         </div>
@@ -484,7 +526,11 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading} className="h-10 w-full sm:w-auto">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="h-10 w-full sm:w-auto"
+        >
           {loading ? "Guardando..." : "Guardar"}
         </Button>
       </div>

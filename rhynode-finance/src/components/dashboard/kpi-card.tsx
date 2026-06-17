@@ -1,8 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { KpiSparkline } from "./kpi-sparkline";
+import dynamic from "next/dynamic";
 import { LucideIcon } from "lucide-react";
+
+const KpiSparkline = dynamic(
+  () => import("./kpi-sparkline").then((mod) => mod.KpiSparkline),
+  {
+    loading: () => (
+      <div className="h-10 w-full animate-pulse rounded bg-muted" />
+    ),
+  },
+);
 
 interface KpiCardProps {
   label: string;
@@ -47,15 +56,19 @@ export function KpiCard({
       : true;
 
   return (
-    <Card className={cn("surface-elevated-2 rounded-xl border-border", className)}>
+    <Card
+      className={cn("surface-elevated-2 rounded-xl border-border", className)}
+    >
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-muted-foreground sm:text-base">{label}</p>
+            <p className="text-sm font-medium text-muted-foreground sm:text-base">
+              {label}
+            </p>
             <div
               className={cn(
                 "mt-1 text-xl font-bold tracking-tight text-foreground sm:mt-2 sm:text-2xl",
-                valueClassName
+                valueClassName,
               )}
             >
               {value}
@@ -71,20 +84,26 @@ export function KpiCard({
                           "text-xs font-medium",
                           positive
                             ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
-                            : "border-rose-500/20 bg-rose-500/10 text-rose-600"
+                            : "border-rose-500/20 bg-rose-500/10 text-rose-600",
                         )}
                       >
                         {formatDelta(delta)}
                       </Badge>
                     )}
                     {deltaLabel && (
-                      <span className="text-xs text-muted-foreground">{deltaLabel}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {deltaLabel}
+                      </span>
                     )}
                     {footer}
                   </div>
                 )}
                 {hasTrend && (
-                  <KpiSparkline data={trend} positive={positive} label={label} />
+                  <KpiSparkline
+                    data={trend}
+                    positive={positive}
+                    label={label}
+                  />
                 )}
               </div>
             )}
