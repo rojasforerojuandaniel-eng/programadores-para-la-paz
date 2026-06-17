@@ -25,6 +25,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { LevelBadge } from "@/components/dashboard/level-badge";
 import { ClientAvatar } from "@/components/dashboard/client-avatar";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 
 type Period = "week" | "month" | "all";
 
@@ -237,12 +238,12 @@ function LeaderboardTable({
             ))}
           </div>
         ) : error || entries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Medal className="mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-            <p className="body-default text-muted-foreground">
-              Sé el primero en ganar XP
-            </p>
-          </div>
+          <EmptyStateCard
+            variant="md"
+            icon={Medal}
+            title={error ? "No se pudo cargar el leaderboard" : "Sé el primero en ganar XP"}
+            description={error || "Completa acciones en Rhynode para sumar puntos y aparecer en el ranking."}
+          />
         ) : (
           <div className="overflow-x-auto">
             <Table>

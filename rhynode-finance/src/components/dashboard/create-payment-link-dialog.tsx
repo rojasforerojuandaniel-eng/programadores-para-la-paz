@@ -114,12 +114,12 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
               />
             </div>
             <div className="space-y-2">
-              <Label>Moneda</Label>
+              <Label htmlFor="pl-currency">Moneda</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="pl-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

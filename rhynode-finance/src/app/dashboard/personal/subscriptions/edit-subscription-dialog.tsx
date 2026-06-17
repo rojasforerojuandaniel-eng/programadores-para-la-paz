@@ -134,12 +134,12 @@ export function EditSubscriptionDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Frecuencia</Label>
+              <Label htmlFor="sub-frequency">Frecuencia</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="sub-frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

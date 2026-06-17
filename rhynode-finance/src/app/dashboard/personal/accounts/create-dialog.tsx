@@ -92,12 +92,12 @@ export function CreateAccountDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="acc-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="acc-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,12 +124,12 @@ export function CreateAccountDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Moneda</Label>
+              <Label htmlFor="acc-currency">Moneda</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="acc-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

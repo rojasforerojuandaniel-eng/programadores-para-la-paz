@@ -379,7 +379,7 @@ export function CommandPalette() {
             aria-label="Comandos"
           >
             {flatItems.length === 0 && (
-              <div className="flex h-32 flex-col items-center justify-center gap-1 px-6 text-center text-muted-foreground">
+              <div className="flex h-32 flex-col items-center justify-center gap-1 px-6 text-center text-muted-foreground" role="status" aria-live="polite">
                 <Search className="h-6 w-6 opacity-40" aria-hidden="true" />
                 <p className="text-sm">No se encontraron comandos</p>
                 <p className="text-xs">Prueba con otro término</p>

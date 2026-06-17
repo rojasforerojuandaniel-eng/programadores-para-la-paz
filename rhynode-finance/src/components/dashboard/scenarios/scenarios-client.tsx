@@ -43,7 +43,7 @@ import {
   SlidersHorizontal,
   RefreshCw,
   Plus,
-  Sparkles,
+  GitBranch,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { parseISO, format } from "date-fns";
@@ -53,6 +53,7 @@ import {
 } from "@/components/dashboard/scenario-chart";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
   ScenarioCard,
 } from "./scenario-card";
@@ -612,23 +613,18 @@ export function ScenariosClient({
         </div>
 
         {scenarios.length === 0 ? (
-          <Card className="surface-elevated-2 rounded-xl border-border">
-            <CardContent className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Sparkles className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium">No tienes escenarios guardados</p>
-                <p className="text-sm text-muted-foreground">
-                  Crea tu primer escenario para comparar contra tu línea base.
-                </p>
-              </div>
+          <EmptyStateCard
+            variant="md"
+            icon={GitBranch}
+            title="No tienes escenarios guardados"
+            description="Crea escenarios para comparar hipótesis de ingresos, gastos y crecimiento contra tu línea base."
+            action={
               <Button onClick={() => setIsFormOpen(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Crear escenario
               </Button>
-            </CardContent>
-          </Card>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {scenarios.map((scenario) => (

@@ -50,20 +50,21 @@ export function DataTable<T>({
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="stagger-children">
             {data.map((item, i) => (
-              <TableRow key={i}>{renderRow(item)}</TableRow>
+              <TableRow key={i} style={{ "--child-index": i } as React.CSSProperties}>{renderRow(item)}</TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
       {/* Mobile Cards */}
-      <ul className="grid grid-cols-1 gap-4 md:hidden" role="list">
+      <ul className="stagger-children grid grid-cols-1 gap-4 md:hidden" role="list">
         {data.map((item, i) => (
           <li
             key={i}
             className="surface-elevated-2 rounded-xl p-5"
+            style={{ "--child-index": i } as React.CSSProperties}
           >
             {renderCard ? renderCard(item) : renderRow(item)}
           </li>

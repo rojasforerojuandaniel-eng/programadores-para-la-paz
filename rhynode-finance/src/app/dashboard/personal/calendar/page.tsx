@@ -47,7 +47,7 @@ export default async function CalendarPage() {
   const nextSubscription = upcoming[0];
 
   return (
-    <main className="container mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <div className="container mx-auto max-w-6xl px-4 py-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="heading-section">Calendario de Pagos</h1>
@@ -94,6 +94,6 @@ export default async function CalendarPage() {
       )}
 
       <CalendarView orgCurrency={org.currency} />
-    </main>
+    </div>
   );
 }

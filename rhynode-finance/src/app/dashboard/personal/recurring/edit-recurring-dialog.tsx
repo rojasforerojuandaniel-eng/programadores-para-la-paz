@@ -142,12 +142,12 @@ export function EditRecurringDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="edit-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="edit-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,12 +162,12 @@ export function EditRecurringDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Frecuencia</Label>
+              <Label htmlFor="edit-frequency">Frecuencia</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="edit-frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -22,6 +22,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { trackEvent } from "@/lib/analytics";
+import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
   const [open, setOpen] = useState(false);
@@ -40,21 +41,22 @@ export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
     if (!form.name.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        trackEvent("client_created", { country: form.country });
-        setOpen(false);
-        setForm({ name: "", email: "", taxId: "", phone: "", city: "", country: "CO" });
-        onCreate();
-      } else {
-        toast.error("Error al crear cliente");
-      }
-    } catch {
-      toast.error("Error de red");
+      await executeMutation(
+        "/api/clients",
+        "POST",
+        form,
+        {
+          onSuccess: () => {
+            trackEvent("client_created", { country: form.country });
+            setOpen(false);
+            setForm({ name: "", email: "", taxId: "", phone: "", city: "", country: "CO" });
+            onCreate();
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear cliente");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }

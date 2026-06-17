@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+import { executeMutation } from "@/lib/offline-queue";
 
 interface CreateGoalDialogProps {
   trigger?: ReactNode;
@@ -65,32 +66,33 @@ export function CreateGoalDialog({
       if (form.icon) body.icon = form.icon;
       if (form.color) body.color = form.color;
 
-      const res = await fetch("/api/personal/goals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        trackEvent("goal_created", {
-          currency: form.currency,
-          hasDeadline: Boolean(form.deadline),
-        });
-        setOpen(false);
-        setForm({
-          name: "",
-          targetAmount: "",
-          currency: "COP",
-          deadline: "",
-          icon: "",
-          color: "",
-        });
-        router.refresh();
-        toast.success("Meta creada");
-      } else {
-        toast.error("Error al crear meta");
-      }
-    } catch {
-      toast.error("Error de red");
+      await executeMutation(
+        "/api/personal/goals",
+        "POST",
+        body,
+        {
+          onSuccess: () => {
+            trackEvent("goal_created", {
+              currency: form.currency,
+              hasDeadline: Boolean(form.deadline),
+            });
+            setOpen(false);
+            setForm({
+              name: "",
+              targetAmount: "",
+              currency: "COP",
+              deadline: "",
+              icon: "",
+              color: "",
+            });
+            router.refresh();
+            toast.success("Meta creada");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear meta");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }

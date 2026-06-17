@@ -22,6 +22,7 @@ import {
 import { Plus, Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
@@ -54,35 +55,36 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
       if (form.categoryId) body.categoryId = form.categoryId;
       if (form.alertThreshold) body.alertThreshold = Number(form.alertThreshold);
 
-      const res = await fetch("/api/personal/budgets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        trackEvent("budget_created", {
-          period: form.period,
-          hasEndDate: Boolean(form.endDate),
-          hasAlertThreshold: Boolean(form.alertThreshold),
-        });
-        setOpen(false);
-        setForm({
-          name: "",
-          amount: "",
-          period: "MONTHLY",
-          startDate: "",
-          endDate: "",
-          categoryId: "",
-          rollover: false,
-          alertThreshold: "",
-        });
-        router.refresh();
-        toast.success("Presupuesto creado");
-      } else {
-        toast.error("Error al crear presupuesto");
-      }
-    } catch {
-      toast.error("Error de red");
+      await executeMutation(
+        "/api/personal/budgets",
+        "POST",
+        body,
+        {
+          onSuccess: () => {
+            trackEvent("budget_created", {
+              period: form.period,
+              hasEndDate: Boolean(form.endDate),
+              hasAlertThreshold: Boolean(form.alertThreshold),
+            });
+            setOpen(false);
+            setForm({
+              name: "",
+              amount: "",
+              period: "MONTHLY",
+              startDate: "",
+              endDate: "",
+              categoryId: "",
+              rollover: false,
+              alertThreshold: "",
+            });
+            router.refresh();
+            toast.success("Presupuesto creado");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear presupuesto");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }
@@ -127,12 +129,12 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
               />
             </div>
             <div className="space-y-2">
-              <Label>Periodo</Label>
+              <Label htmlFor="bud-period">Periodo</Label>
               <Select
                 value={form.period}
                 onValueChange={(v) => setForm({ ...form, period: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="bud-period">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -46,9 +46,9 @@ interface ClientListProps {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: "Activo", className: "bg-emerald-500/10 text-emerald-400" },
-  INACTIVE: { label: "Inactivo", className: "bg-gray-500/10 text-gray-400" },
-  ARCHIVED: { label: "Archivado", className: "bg-gray-500/10 text-gray-400" },
+  ACTIVE: { label: "Activo", className: "bg-emerald-500/10 text-emerald-600" },
+  INACTIVE: { label: "Inactivo", className: "bg-gray-500/10 text-gray-600" },
+  ARCHIVED: { label: "Archivado", className: "bg-gray-500/10 text-gray-600" },
 };
 
 function ContactLink({

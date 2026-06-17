@@ -97,12 +97,12 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Autoridad</Label>
+              <Label htmlFor="tax-authority">Autoridad</Label>
               <Select
                 value={form.authority}
                 onValueChange={(v) => setForm({ ...form, authority: v as typeof form.authority })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="tax-authority">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -115,12 +115,12 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="tax-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v as typeof form.type })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="tax-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,12 +136,12 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label>Período</Label>
+              <Label htmlFor="tax-period">Período</Label>
               <Select
                 value={form.period}
                 onValueChange={(v) => setForm({ ...form, period: v as typeof form.period })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="tax-period">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

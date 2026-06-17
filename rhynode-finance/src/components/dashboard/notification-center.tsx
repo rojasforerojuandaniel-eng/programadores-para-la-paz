@@ -283,7 +283,7 @@ export function NotificationCenter() {
       <Separator />
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading && notifications.length === 0 ? (
-          <div className="flex items-center justify-center py-10">
+          <div className="flex items-center justify-center py-10" aria-live="polite" aria-busy="true">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
             <span className="sr-only">Cargando notificaciones</span>
           </div>

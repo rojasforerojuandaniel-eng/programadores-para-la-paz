@@ -16,7 +16,7 @@ interface SkeletonBlockProps {
 function SkeletonBlock({ className, style }: SkeletonBlockProps) {
   return (
     <div
-      className={cn("animate-pulse rounded-xl bg-muted", className)}
+      className={cn("animate-skeleton-shimmer rounded-xl", className)}
       style={style}
       aria-hidden="true"
     />

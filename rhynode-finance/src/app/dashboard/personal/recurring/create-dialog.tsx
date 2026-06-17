@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateRecurringDialog() {
   const [open, setOpen] = useState(false);
@@ -46,10 +47,10 @@ export function CreateRecurringDialog() {
     if (!form.name.trim() || !form.amount || !form.nextDueDate) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/personal/recurring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/personal/recurring",
+        "POST",
+        {
           name: form.name,
           description: form.description || undefined,
           amount: Number(form.amount),
@@ -62,24 +63,25 @@ export function CreateRecurringDialog() {
           nextDueDate: form.nextDueDate,
           isSubscription: form.isSubscription,
           provider: form.provider || undefined,
-        }),
-      });
-      if (res.ok) {
-        setOpen(false);
-        setForm({
-          name: "", description: "", amount: "", type: "EXPENSE",
-          categoryId: "", accountId: "", frequency: "MONTHLY",
-          startDate: new Date().toISOString().split("T")[0],
-          endDate: "", nextDueDate: new Date().toISOString().split("T")[0],
-          isSubscription: false, provider: "",
-        });
-        router.refresh();
-        toast.success("Transacción recurrente creada");
-      } else {
-        toast.error("Error al crear transacción recurrente");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            setForm({
+              name: "", description: "", amount: "", type: "EXPENSE",
+              categoryId: "", accountId: "", frequency: "MONTHLY",
+              startDate: new Date().toISOString().split("T")[0],
+              endDate: "", nextDueDate: new Date().toISOString().split("T")[0],
+              isSubscription: false, provider: "",
+            });
+            router.refresh();
+            toast.success("Transacción recurrente creada");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear transacción recurrente");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }
@@ -131,12 +133,12 @@ export function CreateRecurringDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="rec-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="rec-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,7 +156,7 @@ export function CreateRecurringDialog() {
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="rec-freq">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

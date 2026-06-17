@@ -28,19 +28,19 @@ import {
 const statusConfig: Record<string, { label: string; className: string }> = {
   ACTIVE: {
     label: "Activo",
-    className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+    className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600",
   },
   INACTIVE: {
     label: "Inactivo",
-    className: "border-gray-500/20 bg-gray-500/10 text-gray-400",
+    className: "border-gray-500/20 bg-gray-500/10 text-gray-600",
   },
   EXPIRED: {
     label: "Expirado",
-    className: "border-amber-500/20 bg-amber-500/10 text-amber-400",
+    className: "border-amber-500/20 bg-amber-500/10 text-amber-600",
   },
   EXHAUSTED: {
     label: "Agotado",
-    className: "border-red-500/20 bg-red-500/10 text-red-400",
+    className: "border-red-500/20 bg-red-500/10 text-red-600",
   },
 };
 
