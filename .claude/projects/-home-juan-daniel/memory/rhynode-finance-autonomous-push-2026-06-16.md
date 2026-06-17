@@ -66,6 +66,10 @@ Sesión autónoma 2026-06-16 tras el prompt "no pares hasta mejorar el máximo l
 53. Error boundaries globales con ErrorFallback reusable, Sentry y UI amigable.
 54. README.md actualizado con stack, features, setup y deploy.
 55. Not-found y offline pages polish con branding y funciones offline.
+56. Transacciones page polish mobile-first: cards, filtros chips, selección múltiple, acciones bottom sheet.
+57. Facturas page polish mobile-first: cards, filtros chips, KPIs monetarios, acciones bottom sheet, EditInvoiceDialog.
+58. Calendario page polish mobile-first: celdas táctiles, bottom sheet día, layout desktop split.
+59. SEO metadata Colombia en todas las rutas públicas y dashboard con JSON-LD.
 
 **Branches pendientes:**
 - `feat/subscription-manager-v2` contiene subscription manager mejorado con KPIs, cancelación e insights. Requiere aplicar migración `prisma/migrations/20250615160000_subscription_status/migration.sql`.
@@ -77,5 +81,15 @@ Sesión autónoma 2026-06-16 tras el prompt "no pares hasta mejorar el máximo l
 - Commit message pattern: `feat(rhynode-finance): ...` con `Co-Authored-By: Claude`.
 
 **Why:** El usuario activó modo autónomo "no pares" y quería maximizar valor de producto en una sola sesión. La estrategia fue quick wins de alto impacto sin cambios de schema, dejando features que requieren migración en branch separada.
+
+**v1 Locked — 2026-06-17**
+- Trabajo del working tree commiteado y limpio.
+- Commits: `32936f6fc` (prisma warnings), `99d629205` (lint-staged fix), `582d26ba5` (componentes/endpoints y polish).
+- `npx tsc --noEmit`: pasa.
+- `npm run lint`: 0 errores, 0 warnings.
+- `npm test`: 6 archivos, 61 tests pasan.
+- `npm run build`: pasa.
+- Deploy Vercel production: pendiente finalización en sesión.
+- Pendiente para v1.1/v2: `feat/subscription-manager-v2`, `feat/quotes-v2`.
 
 **How to apply:** Para futuras sesiones autónomas, mantener el patrón de 1 agente/worktree por feature, verificar build/lint antes de cada commit, y separar inmediatamente cualquier cambio que requiera migración de DB hasta tener `DATABASE_URL` disponible.
