@@ -3,38 +3,27 @@ import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-import { CreditCard, ArrowUp, RefreshCw, AlertTriangle } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
-function daysSince(date: Date | null): number {
-  if (!date) return Infinity;
-  return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function monthlyEquivalent(amount: number, frequency: string): number {
-  switch (frequency) {
-    case "MONTHLY":
-      return amount;
-    case "QUARTERLY":
-      return amount / 3;
-    case "YEARLY":
-      return amount / 12;
-    default:
-      return amount;
-  }
-}
+import {
+  CreditCard,
+  RefreshCw,
+  CalendarDays,
+  Wallet,
+  BarChart3,
+  Layers,
+} from "lucide-react";
+import type { SubscriptionItem } from "./subscription-utils";
+import {
+  buildTransactionIndex,
+  computeSubscriptionMeta,
+  formatCurrency,
+  monthlyEquivalent,
+  yearlyEquivalent,
+  formatDate,
+} from "./subscription-utils";
+import { SubscriptionList } from "./subscription-list";
 
 function DetectButton({ className }: { className?: string }) {
   return (
@@ -51,142 +40,109 @@ async function SubscriptionsContent() {
   const profile = await getUserProfile();
   if (!profile) return null;
 
-  const subscriptions = await prisma.detectedSubscription.findMany({
-    where: { userId: profile.id },
-    orderBy: { createdAt: "desc" },
+  const [subscriptions, transactions] = await Promise.all([
+    prisma.detectedSubscription.findMany({
+      where: { userId: profile.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.transaction.findMany({
+      where: { userId: profile.id, scope: "PERSONAL", type: "EXPENSE" },
+      orderBy: { date: "desc" },
+    }),
+  ]);
+
+  const txByNormalizedDesc = buildTransactionIndex(transactions);
+
+  const items: SubscriptionItem[] = subscriptions.map((sub) => {
+    const meta = computeSubscriptionMeta(sub, txByNormalizedDesc);
+    return {
+      id: sub.id,
+      name: sub.name,
+      description: sub.description,
+      amount: decimalToNumber(sub.amount),
+      currency: sub.currency,
+      frequency: sub.frequency,
+      provider: sub.provider,
+      category: sub.category,
+      status: sub.status,
+      lastPaidAt: sub.lastPaidAt?.toISOString() ?? null,
+      lastDetectedAt: sub.lastDetectedAt.toISOString(),
+      ...meta,
+    };
   });
 
-  const transactions = await prisma.transaction.findMany({
-    where: { userId: profile.id, scope: "PERSONAL", type: "EXPENSE" },
-    orderBy: { date: "desc" },
-  });
+  const activeItems = items.filter((item) => item.status !== "CANCELLED");
 
-  const totalMonthly = subscriptions.reduce((sum, sub) => {
-    return sum + monthlyEquivalent(decimalToNumber(sub.amount), sub.frequency);
+  const totalMonthly = activeItems.reduce((sum, item) => {
+    return sum + monthlyEquivalent(item.amount, item.frequency);
   }, 0);
 
-  const txByNormalizedDesc = new Map<string, typeof transactions>();
-  for (const tx of transactions) {
-    const key = tx.description
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/\d+/g, "")
-      .replace(/[^a-z\s]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!key) continue;
-    const list = txByNormalizedDesc.get(key) || [];
-    list.push(tx);
-    txByNormalizedDesc.set(key, list);
-  }
+  const totalYearly = activeItems.reduce((sum, item) => {
+    return sum + yearlyEquivalent(item.amount, item.frequency);
+  }, 0);
 
-  const subsWithMeta = subscriptions.map((sub) => {
-    const key =
-      sub.description
-        ?.toLowerCase()
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "")
-        .replace(/\d+/g, "")
-        .replace(/[^a-z\s]/g, "")
-        .replace(/\s+/g, " ")
-        .trim() || "";
-    const txs = txByNormalizedDesc.get(key) || [];
-    let increased = false;
-    if (txs.length >= 2) {
-      const sorted = [...txs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const last = decimalToNumber(sorted[0].amount);
-      const prev = decimalToNumber(sorted[1].amount);
-      if (last > prev) {
-        increased = true;
-      }
-    }
-    const unused = daysSince(sub.lastPaidAt) > 45;
-    return { ...sub, increased, unused };
-  });
+  const upcomingRenewal = activeItems
+    .filter((item) => item.nextRenewal)
+    .sort(
+      (a, b) =>
+        new Date(a.nextRenewal!).getTime() - new Date(b.nextRenewal!).getTime()
+    )[0]?.nextRenewal ?? null;
 
-  if (subscriptions.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="heading-section">Suscripciones</h1>
-            <p className="body-default mt-1">Detecta y monitorea tus suscripciones automáticas</p>
-          </div>
-          <DetectButton />
-        </div>
-        <EmptyStateCard
-          variant="lg"
-          icon={CreditCard}
-          title="Detecta suscripciones automáticamente"
-          description="Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar."
-          hint="Presiona detectar para descubrir tus suscripciones."
-          action={<DetectButton className="w-full" />}
-        />
-      </div>
-    );
-  }
+  const emptyState = (
+    <EmptyStateCard
+      variant="lg"
+      icon={CreditCard}
+      title="Detecta suscripciones automáticamente"
+      description="Analizamos tus transacciones para encontrar pagos recurrentes, detectar subidas de precio y ayudarte a ahorrar."
+      hint="Presiona detectar para descubrir tus suscripciones."
+      action={<DetectButton className="w-full" />}
+    />
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="heading-section">Suscripciones</h1>
-          <p className="body-default mt-1">Detecta y monitorea tus suscripciones automáticas</p>
+          <p className="body-default mt-1">
+            Detecta y monitorea tus suscripciones automáticas
+          </p>
         </div>
         <DetectButton />
       </div>
 
-      <KpiCard
-        label="Costo mensual estimado"
-        value={formatCurrency(totalMonthly, "COP")}
-        icon={CreditCard}
-        className="max-w-md"
-      />
+      {items.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label="Gasto mensual estimado"
+            value={formatCurrency(totalMonthly, "COP")}
+            icon={Wallet}
+          />
+          <KpiCard
+            label="Gasto anual estimado"
+            value={formatCurrency(totalYearly, "COP")}
+            icon={BarChart3}
+          />
+          <KpiCard
+            label="Suscripciones activas"
+            value={activeItems.length}
+            icon={Layers}
+          />
+          <KpiCard
+            label="Próxima renovación"
+            value={<div className="flex items-center gap-1.5">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <span>{formatDate(upcomingRenewal)}</span>
+              </div>
+            }
+            icon={CalendarDays}
+          />
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-4">
-        {subsWithMeta.map((sub) => (
-          <Card key={sub.id} className="surface-elevated-2 rounded-xl border-border">
-            <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <CreditCard className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{sub.name}</span>
-                    {sub.unused && (
-                      <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-500">
-                        <AlertTriangle className="h-3 w-3" /> Sin usar
-                      </Badge>
-                    )}
-                    {sub.increased && (
-                      <Badge variant="outline" className="gap-1 border-rose-500/30 text-rose-500">
-                        <ArrowUp className="h-3 w-3" /> Subió
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="mt-0.5 text-sm text-muted-foreground">
-                    {sub.provider && <span>{sub.provider} · </span>}
-                    <span className="capitalize">{sub.frequency.toLowerCase()}</span>
-                    {sub.lastPaidAt && (
-                      <span> · Último pago: {new Date(sub.lastPaidAt).toLocaleDateString("es-CO")}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="text-left sm:text-right">
-                <p className="text-lg font-semibold">
-                  {formatCurrency(decimalToNumber(sub.amount), sub.currency)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatCurrency(monthlyEquivalent(decimalToNumber(sub.amount), sub.frequency), sub.currency)} / mes
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
+        <SubscriptionList items={items} emptyState={emptyState} />
+      </Suspense>
     </div>
   );
 }
