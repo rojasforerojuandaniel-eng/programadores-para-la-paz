@@ -2,10 +2,9 @@ import { getPrisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { decimalToNumber } from "@/lib/decimal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Lightbulb, ArrowRight, TrendingUp, TrendingDown, AlertTriangle, Target, PiggyBank, CreditCard } from "lucide-react";
+import { Lightbulb, ArrowRight, TrendingUp, AlertTriangle, PiggyBank } from "lucide-react";
 
 interface Insight {
   id: string;
@@ -42,7 +41,7 @@ export async function SmartInsights({ currency }: { currency: string }) {
   const now = new Date();
   const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const [transactions, budgets, goals, debts, subscriptions, accounts, investments] =
+  const [transactions, budgets, goals, debts, subscriptions, investments] =
     await Promise.all([
       prisma.transaction.findMany({
         where: { userId, date: { gte: start, lte: end } },
@@ -63,10 +62,6 @@ export async function SmartInsights({ currency }: { currency: string }) {
       prisma.recurringTransaction.findMany({
         where: { userId, status: "ACTIVE", type: "EXPENSE" },
         select: { name: true, amount: true },
-      }),
-      prisma.account.findMany({
-        where: { userId },
-        select: { balance: true },
       }),
       prisma.investment.findMany({
         where: { userId },

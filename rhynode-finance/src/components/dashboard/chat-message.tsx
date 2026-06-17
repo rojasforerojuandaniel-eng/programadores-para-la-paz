@@ -22,7 +22,7 @@ export function ChatMessage({
 
   if (role === "tool") {
     return (
-      <div className="flex gap-3">
+      <div className="flex animate-in fade-in slide-in-from-bottom-2 gap-3 duration-300">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
           <Brain className="h-4 w-4" aria-hidden="true" />
         </div>
@@ -44,7 +44,13 @@ export function ChatMessage({
   }
 
   return (
-    <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
+    <div
+      className={cn(
+        "flex animate-in fade-in gap-3 duration-300",
+        isUser ? "flex-row-reverse" : "flex-row",
+        isUser ? "slide-in-from-bottom-2" : "slide-in-from-bottom-2"
+      )}
+    >
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
@@ -89,6 +95,33 @@ export function ChatMessage({
         ) : (
           content
         )}
+      </div>
+    </div>
+  );
+}
+
+export function ChatMessageSkeleton({ isUser = false }: { isUser?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex animate-in fade-in gap-3 duration-300",
+        isUser ? "flex-row-reverse" : "flex-row",
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+          isUser ? "bg-primary/10" : "bg-accent",
+        )}
+      />
+      <div
+        className={cn(
+          "max-w-[80%] space-y-2 rounded-2xl px-4 py-2.5",
+          isUser ? "bg-primary/10" : "surface-elevated-2",
+        )}
+      >
+        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
       </div>
     </div>
   );
