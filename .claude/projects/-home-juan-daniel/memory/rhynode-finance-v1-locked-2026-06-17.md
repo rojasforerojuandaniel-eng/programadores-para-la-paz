@@ -26,8 +26,11 @@ Cierre de la versión definitiva testeable tras la sesión autónoma masiva del 
 - `git status --short rhynode-finance/`: vacío (limpio).
 
 **Deploy:**
-- Producción Vercel: en proceso de finalización en la sesión.
-- URL esperada: `https://rhynode-finance.vercel.app`
+- Producción Vercel: completado exitosamente.
+- Deployment ID: `dpl_289rSYx6rY6wBcVfQa7KRkw3PPeZ`
+- URLs: `https://rhynode-finance.vercel.app` (alias), `https://rhynode-finance-cp66u03gl-rojasforerojuandaniel-engs-projects.vercel.app`
+- Status: READY
+- Landing page smoke test: carga correctamente, título "Rhynode — Finanzas personales e inteligencia contable para Colombia", sin errores visibles.
 
 **Pendiente para próxima sesión (requiere migraciones de DB):**
 - `feat/subscription-manager-v2` — migración `prisma/migrations/20250615160000_subscription_status/migration.sql`.
