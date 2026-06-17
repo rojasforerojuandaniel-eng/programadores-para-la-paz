@@ -15,6 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 interface Plan {
   name: string;
@@ -55,6 +56,7 @@ export function BillingSection({
     try {
       const res = await fetch("/api/subscribe/cancel", { method: "POST" });
       if (res.ok) {
+        trackEvent("subscription_cancel_marked");
         toast.success("Suscripción cancelada");
         window.location.reload();
       } else {
@@ -138,7 +140,7 @@ export function BillingSection({
                     type="button"
                     size="sm"
                     className="w-full"
-                    onClick={() => onUpgrade("GROWTH")}
+                    onClick={() => { trackEvent("plan_upgrade_clicked", { targetPlan: "GROWTH" }); onUpgrade("GROWTH"); }}
                     disabled={upgrading}
                   >
                     {upgrading ? "Procesando..." : "Elegir Growth"}
@@ -159,7 +161,7 @@ export function BillingSection({
                     size="sm"
                     variant="outline"
                     className="w-full"
-                    onClick={() => onUpgrade("SCALE")}
+                    onClick={() => { trackEvent("plan_upgrade_clicked", { targetPlan: "SCALE" }); onUpgrade("SCALE"); }}
                     disabled={upgrading}
                   >
                     {upgrading ? "Procesando..." : "Elegir Scale"}

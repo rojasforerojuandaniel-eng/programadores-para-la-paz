@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 interface ClientOption {
   id: string;
@@ -119,6 +120,10 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
         }),
       });
       if (res.ok) {
+        trackEvent("invoice_created", {
+          currency: form.currency,
+          itemCount: validItems.length,
+        });
         setForm({
           clientId: "",
           number: "",

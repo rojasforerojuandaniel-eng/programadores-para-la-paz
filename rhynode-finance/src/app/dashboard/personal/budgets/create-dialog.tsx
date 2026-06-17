@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
@@ -59,6 +60,11 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
         body: JSON.stringify(body),
       });
       if (res.ok) {
+        trackEvent("budget_created", {
+          period: form.period,
+          hasEndDate: Boolean(form.endDate),
+          hasAlertThreshold: Boolean(form.alertThreshold),
+        });
         setOpen(false);
         setForm({
           name: "",

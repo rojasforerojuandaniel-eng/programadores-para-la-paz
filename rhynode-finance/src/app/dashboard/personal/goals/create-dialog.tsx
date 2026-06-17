@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
   const [open, setOpen] = useState(false);
@@ -48,6 +49,10 @@ export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
         body: JSON.stringify(body),
       });
       if (res.ok) {
+        trackEvent("goal_created", {
+          currency: form.currency,
+          hasDeadline: Boolean(form.deadline),
+        });
         setOpen(false);
         setForm({ name: "", targetAmount: "", currency: "COP", deadline: "", icon: "", color: "" });
         router.refresh();

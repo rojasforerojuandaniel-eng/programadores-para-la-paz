@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -64,6 +65,7 @@ function useSearchQuery() {
   const [error, setError] = React.useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 200);
   const abortRef = React.useRef<AbortController | null>(null);
+  const trackedRef = React.useRef<Set<string>>(new Set());
 
   const setQuery = React.useCallback(
     (value: string) => {
@@ -102,6 +104,14 @@ function useSearchQuery() {
       })
       .then((data) => {
         setResults(data.results ?? []);
+        if (!trackedRef.current.has(debouncedQuery)) {
+          trackedRef.current.add(debouncedQuery);
+          trackEvent("search_query", {
+            queryLength: debouncedQuery.length,
+            resultCount: data.results?.length ?? 0,
+            hasResults: (data.results?.length ?? 0) > 0,
+          });
+        }
       })
       .catch((err) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
