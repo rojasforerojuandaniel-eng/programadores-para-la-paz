@@ -28,13 +28,25 @@ function formatCurrency(amount: number) {
 
 export function ScenarioChartSkeleton() {
   return (
-    <div className="h-[300px] w-full animate-pulse rounded-xl bg-muted sm:h-[400px]" />
+    <div
+      className="h-[300px] w-full animate-pulse rounded-xl bg-muted sm:h-[400px]"
+      aria-hidden="true"
+    />
   );
 }
 
 export function ScenarioChart({ data }: { data: ScenarioData[] }) {
+  const monthCount = data.length;
   return (
-    <div className="h-[300px] w-full sm:h-[400px]">
+    <div
+      className="h-[300px] w-full sm:h-[400px]"
+      role="img"
+      aria-label={`Gráfico de proyección de saldo a ${monthCount} meses. Muestra tres escenarios: base, optimista (+10% ingresos, -5% gastos) y pesimista (-10% ingresos, +10% gastos).`}
+    >
+      <span className="sr-only">
+        Proyección de saldo a {monthCount} meses. Los valores varían según el
+        escenario seleccionado.
+      </span>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
