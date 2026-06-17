@@ -5,6 +5,7 @@ import { withRateLimit, type RouteContext } from "@/lib/with-rate-limit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -73,6 +74,13 @@ export const PUT = withRateLimit(
           ? "PAID"
           : undefined);
 
+      auditLog({
+        userId: profile?.id,
+        action: "UPDATE_DEBT",
+        resource: "debt",
+        resourceId: id,
+        metadata: { name, type, counterparty, remainingAmount: nextRemaining, status: computedStatus },
+      });
       const debt = await prisma.debt.update({
         where: { id },
         data: {
@@ -123,6 +131,12 @@ export const DELETE = withRateLimit(
         return NextResponse.json({ error: "Debt not found" }, { status: 404 });
       }
 
+      auditLog({
+        userId: profile?.id,
+        action: "DELETE_DEBT",
+        resource: "debt",
+        resourceId: id,
+      });
       await prisma.debt.delete({ where: { id } });
       revalidatePath("/dashboard/personal/debts");
       return NextResponse.json({ success: true });

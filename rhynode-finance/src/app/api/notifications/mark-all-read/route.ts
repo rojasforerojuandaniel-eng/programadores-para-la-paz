@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function POST() {
+export const POST = withRateLimit(async function POST() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -26,4 +27,4 @@ export async function POST() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
+import { auditLog } from "@/lib/audit-log";
 
 function toNumber(value: unknown): number {
   if (typeof value === "number") return value;
@@ -20,7 +22,7 @@ function toNumber(value: unknown): number {
   return 0;
 }
 
-export async function POST(
+export const POST = withRateLimit(async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -55,6 +57,13 @@ export async function POST(
       existing.client?.name ? ` - ${existing.client.name}` : ""
     }`;
 
+    auditLog({
+      userId: org.id,
+      action: "MARK_INVOICE_PAID",
+      resource: "invoice",
+      resourceId: id,
+      metadata: { number: existing.number, total: toNumber(existing.total) },
+    });
     const [invoice, transaction] = await prisma.$transaction([
       prisma.invoice.update({
         where: { id },
@@ -92,4 +101,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const validTypes = ["debt", "invoice", "tax"] as const;
 
@@ -16,7 +17,7 @@ function parseEventId(compositeId: string): { type: EventType; id: string } | nu
   return { type: type as EventType, id };
 }
 
-export async function POST(
+export const POST = withRateLimit(async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -85,4 +86,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

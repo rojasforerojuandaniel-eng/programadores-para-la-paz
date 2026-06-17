@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const CHECKLIST_ITEM_IDS = [
   "complete-profile",
@@ -35,7 +36,7 @@ function getChecklistState(profile: { metadata: unknown }) {
   };
 }
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -63,9 +64,9 @@ export async function GET() {
       { status: 500 },
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -131,4 +132,4 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

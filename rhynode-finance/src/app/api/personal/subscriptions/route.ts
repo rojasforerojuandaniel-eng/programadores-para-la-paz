@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 import { subtractFrequency } from "@/app/dashboard/personal/subscriptions/subscription-utils";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const baseSchema = z.object({
   name: z.string().min(1),
@@ -36,7 +38,7 @@ function parseNextDueDate(value: string | undefined): Date | null {
   return date;
 }
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -53,9 +55,9 @@ export async function GET() {
     logger.error("Failed to fetch subscriptions", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to fetch subscriptions" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -82,6 +84,13 @@ export async function POST(request: Request) {
 
     let subscription;
     if (existing) {
+      auditLog({
+        userId: profile?.id,
+        action: "CREATE_OR_UPDATE_SUBSCRIPTION",
+        resource: "subscription",
+        resourceId: existing.id,
+        metadata: { name: parsed.data.name, amount: parsed.data.amount, frequency: parsed.data.frequency },
+      });
       subscription = await prisma.detectedSubscription.update({
         where: { id: existing.id },
         data: {
@@ -91,6 +100,12 @@ export async function POST(request: Request) {
         },
       });
     } else {
+      auditLog({
+        userId: profile?.id,
+        action: "CREATE_OR_UPDATE_SUBSCRIPTION",
+        resource: "subscription",
+        metadata: { name: parsed.data.name, amount: parsed.data.amount, frequency: parsed.data.frequency },
+      });
       subscription = await prisma.detectedSubscription.create({
         data: {
           userId: profile.id,
@@ -106,9 +121,9 @@ export async function POST(request: Request) {
     logger.error("Failed to create subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create subscription" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function PUT(request: Request) {
+export const PUT = withRateLimit(async function PUT(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -138,6 +153,13 @@ export async function PUT(request: Request) {
 
     const { id, nextDueDate: nextDueDateInput, ...data } = parsed.data;
     void nextDueDateInput;
+    auditLog({
+      userId: profile?.id,
+      action: "UPDATE_SUBSCRIPTION",
+      resource: "subscription",
+      resourceId: id,
+      metadata: { name: data.name, amount: data.amount, frequency: data.frequency },
+    });
     const subscription = await prisma.detectedSubscription.update({
       where: { id },
       data: {
@@ -151,9 +173,9 @@ export async function PUT(request: Request) {
     logger.error("Failed to update subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function PATCH(request: Request) {
+export const PATCH = withRateLimit(async function PATCH(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -180,6 +202,13 @@ export async function PATCH(request: Request) {
 
     const canceledAt = status === "CANCELED" ? new Date() : null;
 
+    auditLog({
+      userId: profile?.id,
+      action: "UPDATE_SUBSCRIPTION_STATUS",
+      resource: "subscription",
+      resourceId: id,
+      metadata: { status, cancellationUrl },
+    });
     const subscription = await prisma.detectedSubscription.update({
       where: { id },
       data: {
@@ -194,9 +223,9 @@ export async function PATCH(request: Request) {
     logger.error("Failed to update subscription status", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update subscription status" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(request: Request) {
+export const DELETE = withRateLimit(async function DELETE(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -216,10 +245,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    auditLog({
+      userId: profile?.id,
+      action: "DELETE_SUBSCRIPTION",
+      resource: "subscription",
+      resourceId: id,
+    });
     await prisma.detectedSubscription.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     logger.error("Failed to delete subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to delete subscription" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

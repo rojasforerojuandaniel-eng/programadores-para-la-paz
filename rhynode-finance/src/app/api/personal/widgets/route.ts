@@ -4,6 +4,7 @@ import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { mergeLayouts, normalizeLayout, type WidgetLayoutItem } from "@/lib/widgets";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const widgetSchema = z.object({
   id: z.string().min(1),
@@ -19,7 +20,7 @@ interface WidgetMetadata {
   widgets?: WidgetLayoutItem[];
 }
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -37,9 +38,9 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -76,4 +77,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -5,6 +5,7 @@ import { suggestCategory } from "@/lib/categorizer";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const createSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"]),
@@ -105,6 +106,12 @@ export const POST = withRateLimit(
 
       const profile = await getUserProfile();
       const initialCategory = category || (type === "INCOME" ? "Ventas" : "Gastos");
+      auditLog({
+        userId: profile?.id,
+        action: "CREATE_TRANSACTION",
+        resource: "transaction",
+        metadata: { type, category: initialCategory, description, amount, currency },
+      });
       let transaction = await prisma.transaction.create({
         data: {
           organizationId: org.id,

@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 import type { Prisma } from "@/generated/prisma/client";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function POST(
+export const POST = withRateLimit(async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -32,6 +34,13 @@ export async function POST(
         : {};
 
     const sentAt = new Date().toISOString();
+    auditLog({
+      userId: org.id,
+      action: "SEND_INVOICE",
+      resource: "invoice",
+      resourceId: id,
+      metadata: { number: existing.number },
+    });
     const invoice = await prisma.invoice.update({
       where: { id },
       data: {
@@ -59,4 +68,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

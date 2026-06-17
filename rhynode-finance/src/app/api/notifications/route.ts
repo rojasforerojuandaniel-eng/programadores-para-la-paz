@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -37,4 +38,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

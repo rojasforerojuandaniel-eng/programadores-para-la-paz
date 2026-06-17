@@ -1,17 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { startOfMonth, startOfWeek } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function GET(req: NextRequest) {
+export const GET = withRateLimit(async function GET(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const period = searchParams.get("period") ?? "all";
     const validPeriod = ["week", "month", "all"].includes(period)
       ? (period as "week" | "month" | "all")
@@ -188,4 +189,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 100,"windowMs": 60000});

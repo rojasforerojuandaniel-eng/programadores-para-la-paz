@@ -5,6 +5,7 @@ import { withRateLimit, type RouteContext } from "@/lib/with-rate-limit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -62,6 +63,13 @@ export const PUT = withRateLimit(
           ? "COMPLETED"
           : undefined);
 
+      auditLog({
+        userId: profile?.id,
+        action: "UPDATE_GOAL",
+        resource: "goal",
+        resourceId: id,
+        metadata: { name, targetAmount: nextTarget, currentAmount: nextCurrent, status: computedStatus },
+      });
       const goal = await prisma.goal.update({
         where: { id },
         data: {
@@ -110,6 +118,12 @@ export const DELETE = withRateLimit(
         return NextResponse.json({ error: "Goal not found" }, { status: 404 });
       }
 
+      auditLog({
+        userId: profile?.id,
+        action: "DELETE_GOAL",
+        resource: "goal",
+        resourceId: id,
+      });
       await prisma.goal.delete({ where: { id } });
       revalidatePath("/dashboard/personal/goals");
       return NextResponse.json({ success: true });

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
+import { auditLog } from "@/lib/audit-log";
 
 const updateSchema = z.object({
   status: z.enum(["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED", "PARTIAL"]).optional(),
@@ -12,7 +14,7 @@ const updateSchema = z.object({
   dueDate: z.string().datetime().optional(),
 });
 
-export async function PATCH(
+export const PATCH = withRateLimit(async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -43,6 +45,13 @@ export async function PATCH(
       data.dueDate = new Date(parsed.data.dueDate);
     }
 
+    auditLog({
+      userId: org.id,
+      action: "UPDATE_INVOICE",
+      resource: "invoice",
+      resourceId: id,
+      metadata: data,
+    });
     const invoice = await prisma.invoice.update({
       where: { id, organizationId: org.id },
       data,
@@ -56,9 +65,9 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(
+export const DELETE = withRateLimit(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -69,6 +78,12 @@ export async function DELETE(
     }
     const { id } = await params;
 
+    auditLog({
+      userId: org.id,
+      action: "DELETE_INVOICE",
+      resource: "invoice",
+      resourceId: id,
+    });
     await prisma.invoice.delete({
       where: { id, organizationId: org.id },
     });
@@ -81,4 +96,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -3,12 +3,13 @@ import { getUserProfile } from "@/lib/auth";
 import { checkAndUnlockAchievement } from "@/lib/achievements";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const postSchema = z.object({
   action: z.string().optional(),
 });
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -64,4 +65,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

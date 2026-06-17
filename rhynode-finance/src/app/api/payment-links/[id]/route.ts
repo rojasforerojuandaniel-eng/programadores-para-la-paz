@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -12,7 +13,7 @@ const updateSchema = z.object({
   expiresAt: z.string().datetime().optional().nullable(),
 });
 
-export async function PATCH(
+export const PATCH = withRateLimit(async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -51,9 +52,9 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(
+export const DELETE = withRateLimit(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -76,4 +77,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

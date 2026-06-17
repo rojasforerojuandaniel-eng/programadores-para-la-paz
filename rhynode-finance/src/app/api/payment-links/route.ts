@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -16,7 +17,7 @@ const createSchema = z.object({
   expiresAt: z.string().datetime().optional(),
 });
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -36,9 +37,9 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -72,4 +73,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

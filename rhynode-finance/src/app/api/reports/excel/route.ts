@@ -3,8 +3,9 @@ import * as XLSX from "xlsx";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -43,4 +44,4 @@ export async function GET() {
     });
     return NextResponse.json({ error: "Failed to generate Excel" }, { status: 500 });
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});

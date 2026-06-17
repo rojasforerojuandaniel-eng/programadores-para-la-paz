@@ -6,6 +6,8 @@ import { PLANS } from "@/lib/subscription";
 import { normalizeRole, canAdmin, type OrganizationRole } from "@/lib/organization";
 import { getCurrentOrganization } from "@/lib/organization.server";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const inviteSchema = z.object({
   email: z.string().email(),
@@ -23,7 +25,7 @@ interface MemberItem {
   joinedAt: string | null;
 }
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -89,9 +91,9 @@ export async function GET() {
     logger.error("Failed to list members", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to list members" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -154,6 +156,12 @@ export async function POST(request: Request) {
       );
     }
 
+    auditLog({
+      userId,
+      action: "INVITE_ORGANIZATION_MEMBER",
+      resource: "organizationMember",
+      metadata: { email: parsed.data.email, role: parsed.data.role },
+    });
     const member = await prisma.organizationMember.create({
       data: {
         organizationId: ctx.org.id,
@@ -183,4 +191,4 @@ export async function POST(request: Request) {
     logger.error("Failed to invite member", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to invite member" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const calculateSchema = z.object({
   type: z.enum(["IVA", "RETEFUENTE", "ICA"]),
@@ -23,7 +24,7 @@ function getReteFuenteRate(amount: number): number {
   return 0.04;
 }
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsed = calculateSchema.safeParse(body);
@@ -66,4 +67,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 100,"windowMs": 60000});

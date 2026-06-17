@@ -4,12 +4,13 @@ import { getPrisma } from "@/lib/prisma";
 import { normalizeRole, canAdmin } from "@/lib/organization";
 import { getCurrentOrganization } from "@/lib/organization.server";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function POST(_request: Request, context: RouteContext) {
+export const POST = withRateLimit(async function POST(_request: Request, context: RouteContext) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -49,4 +50,4 @@ export async function POST(_request: Request, context: RouteContext) {
     logger.error("Failed to resend invitation", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to resend invitation" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function PATCH(request: Request, { params }: RouteContext) {
+export const PATCH = withRateLimit(async function PATCH(request: Request, { params }: RouteContext) {
   try {
     const { id } = await params;
     const profile = await getUserProfile();
@@ -38,9 +39,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export const DELETE = withRateLimit(async function DELETE(_request: Request, { params }: RouteContext) {
   try {
     const { id } = await params;
     const profile = await getUserProfile();
@@ -67,4 +68,4 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

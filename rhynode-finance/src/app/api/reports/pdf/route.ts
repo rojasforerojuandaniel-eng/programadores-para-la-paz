@@ -4,8 +4,9 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -121,4 +122,4 @@ export async function GET() {
     logger.error("PDF export error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});

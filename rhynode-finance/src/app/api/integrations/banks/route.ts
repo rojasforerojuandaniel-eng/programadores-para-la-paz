@@ -1,4 +1,5 @@
-export async function GET() {
+import { withRateLimit } from "@/lib/with-rate-limit";
+export const GET = withRateLimit(async function GET() {
   return new Response(JSON.stringify({ banks: [
     { id: "bancolombia", name: "Bancolombia", status: "coming_soon", logo: "/banks/bancolombia.svg" },
     { id: "davivienda", name: "Davivienda", status: "coming_soon", logo: "/banks/davivienda.svg" },
@@ -10,4 +11,4 @@ export async function GET() {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
-}
+}, {"maxRequests": 100,"windowMs": 60000});

@@ -5,6 +5,7 @@ import { updateStreak } from "@/lib/streak";
 import { getPrisma } from "@/lib/prisma";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const trackSchema = z.object({
   action: z.enum([
@@ -20,7 +21,7 @@ const trackSchema = z.object({
   ]),
 });
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -47,9 +48,9 @@ export async function POST(request: Request) {
     logger.error("Gamification track error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -76,4 +77,4 @@ export async function GET() {
     logger.error("Gamification get error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

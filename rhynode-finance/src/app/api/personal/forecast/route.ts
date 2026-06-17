@@ -16,6 +16,7 @@ import {
   type RecurringTransactionInput,
 } from "@/lib/cashflow-forecast";
 import { z } from "zod";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const querySchema = z.object({
   months: z.coerce.number().min(3).max(60).default(12),
@@ -58,7 +59,7 @@ function buildHistoricalMonths(
   return historical;
 }
 
-export async function GET(request: Request) {
+export const GET = withRateLimit(async function GET(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -182,4 +183,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});
