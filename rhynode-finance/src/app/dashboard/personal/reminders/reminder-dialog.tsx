@@ -36,6 +36,7 @@ export interface ReminderRow {
 interface ReminderDialogProps {
   reminder?: ReminderRow;
   onSuccess: () => void;
+  defaultOpen?: boolean;
 }
 
 function toLocalInputValue(iso: string | undefined): string {
@@ -52,9 +53,9 @@ function fromLocalInputValue(value: string): string {
   return date.toISOString();
 }
 
-export function ReminderDialog({ reminder, onSuccess }: ReminderDialogProps) {
+export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: ReminderDialogProps) {
   const isEdit = Boolean(reminder);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: reminder?.title ?? "",

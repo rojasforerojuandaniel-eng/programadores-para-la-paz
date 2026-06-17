@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+import { InvoicePreview } from "@/components/dashboard/invoice-preview";
 
 interface ClientOption {
   id: string;
@@ -27,26 +28,62 @@ interface InvoiceItemForm {
   taxRate: string;
 }
 
+interface InvoiceFormItemDefault {
+  description: string;
+  quantity?: number;
+  unitPrice?: number;
+  taxRate?: number;
+}
+
+export interface InvoiceFormDefaultValues {
+  clientId?: string;
+  number?: string;
+  currency?: string;
+  issueDate?: string;
+  dueDate?: string;
+  notes?: string;
+  terms?: string;
+  items?: InvoiceFormItemDefault[];
+}
+
 interface InvoiceFormProps {
   onSuccess: () => void;
   onCancel?: () => void;
+  defaultValues?: InvoiceFormDefaultValues;
 }
 
-export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
+function todayInputValue() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function toItemString(value: number | undefined, fallback: string): string {
+  if (value === undefined || Number.isNaN(value)) return fallback;
+  return String(value);
+}
+
+export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormProps) {
   const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [form, setForm] = useState({
-    clientId: "",
-    number: "",
-    currency: "COP",
-    issueDate: new Date().toISOString().split("T")[0],
-    dueDate: "",
-    notes: "",
-    terms: "",
+    clientId: defaultValues?.clientId || "",
+    number: defaultValues?.number || "",
+    currency: defaultValues?.currency || "COP",
+    issueDate: defaultValues?.issueDate || todayInputValue(),
+    dueDate: defaultValues?.dueDate || "",
+    notes: defaultValues?.notes || "",
+    terms: defaultValues?.terms || "",
   });
-  const [items, setItems] = useState<InvoiceItemForm[]>([
-    { description: "", quantity: "1", unitPrice: "", taxRate: "19" },
-  ]);
+  const [items, setItems] = useState<InvoiceItemForm[]>(
+    defaultValues?.items && defaultValues.items.length > 0
+      ? defaultValues.items.map((item) => ({
+          description: item.description || "",
+          quantity: toItemString(item.quantity, "1"),
+          unitPrice: toItemString(item.unitPrice, ""),
+          taxRate: toItemString(item.taxRate, "19"),
+        }))
+      : [{ description: "", quantity: "1", unitPrice: "", taxRate: "19" }]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -86,9 +123,57 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
     });
   }
 
+  const previewInvoice = useMemo(() => {
+    const validItems = items
+      .filter((item) => item.description.trim() && Number(item.unitPrice) > 0)
+      .map((item) => {
+        const quantity = Number(item.quantity) || 1;
+        const unitPrice = Number(item.unitPrice) || 0;
+        const taxRate = Number(item.taxRate) || 0;
+        const lineSubtotal = quantity * unitPrice;
+        const lineTax = (lineSubtotal * taxRate) / 100;
+        return {
+          description: item.description,
+          quantity,
+          unitPrice,
+          taxRate,
+          total: lineSubtotal + lineTax,
+        };
+      });
+
+    const subtotal = validItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    const taxRate = validItems.length > 0 ? validItems[0].taxRate : 0;
+    const taxAmount = validItems.reduce((sum, item) => {
+      const lineSubtotal = item.quantity * item.unitPrice;
+      return sum + (lineSubtotal * item.taxRate) / 100;
+    }, 0);
+    const total = subtotal + taxAmount;
+
+    const client = clients.find((c) => c.id === form.clientId);
+
+    return {
+      number: form.number.trim() || "PREVIEW",
+      status: "DRAFT",
+      currency: form.currency,
+      issueDate: form.issueDate || todayInputValue(),
+      dueDate: form.dueDate || null,
+      client: client ? { name: client.name } : undefined,
+      items: validItems,
+      subtotal,
+      taxRate,
+      taxAmount,
+      total,
+      notes: form.notes,
+      terms: form.terms,
+    };
+  }, [form, items, clients]);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!form.clientId || !form.number.trim()) return;
+    if (!form.clientId) {
+      toast.error("Selecciona un cliente");
+      return;
+    }
 
     const validItems = items
       .filter((item) => item.description.trim() && Number(item.unitPrice) > 0)
@@ -128,7 +213,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
           clientId: "",
           number: "",
           currency: "COP",
-          issueDate: new Date().toISOString().split("T")[0],
+          issueDate: todayInputValue(),
           dueDate: "",
           notes: "",
           terms: "",
@@ -136,9 +221,11 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
         setItems([
           { description: "", quantity: "1", unitPrice: "", taxRate: "19" },
         ]);
+        setShowPreview(false);
         onSuccess();
       } else {
-        toast.error("Error al crear factura");
+        const body = await res.json().catch(() => ({}));
+        toast.error(body.error || "Error al crear factura");
       }
     } catch {
       toast.error("Error de red");
@@ -169,15 +256,14 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="inv-number">Número de factura *</Label>
+          <Label htmlFor="inv-number">Número de factura</Label>
           <Input
             id="inv-number"
-            required
             value={form.number}
             onChange={(event) =>
               setForm({ ...form, number: event.target.value })
             }
-            placeholder="Ej. F-001"
+            placeholder="Ej. F-001 (se genera automáticamente si se deja vacío)"
           />
         </div>
       </div>
@@ -316,6 +402,22 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="inv-terms">Términos</Label>
+        <Input
+          id="inv-terms"
+          value={form.terms}
+          onChange={(event) => setForm({ ...form, terms: event.target.value })}
+          placeholder="Ej. Pago a 30 días"
+        />
+      </div>
+
+      {showPreview && (
+        <div className="pt-2">
+          <InvoicePreview invoice={previewInvoice} />
+        </div>
+      )}
+
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <Button
           type="button"
@@ -324,6 +426,22 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
           onClick={() => onCancel?.()}
         >
           Cancelar
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 w-full gap-2 sm:w-auto"
+          onClick={() => setShowPreview((prev) => !prev)}
+        >
+          {showPreview ? (
+            <>
+              <EyeOff className="h-4 w-4" /> Ocultar vista previa
+            </>
+          ) : (
+            <>
+              <Eye className="h-4 w-4" /> Vista previa
+            </>
+          )}
         </Button>
         <Button
           type="submit"

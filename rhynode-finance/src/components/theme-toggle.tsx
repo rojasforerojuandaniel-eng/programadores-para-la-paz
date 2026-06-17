@@ -12,7 +12,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon" aria-label="Cambiar tema" disabled>
-        <Sun className="h-5 w-5" />
+        <Sun className="h-5 w-5" aria-hidden="true" />
       </Button>
     );
   }
@@ -27,7 +27,11 @@ export function ThemeToggle() {
       title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+      {isDark ? (
+        <Moon className="h-5 w-5" aria-hidden="true" />
+      ) : (
+        <Sun className="h-5 w-5" aria-hidden="true" />
+      )}
     </Button>
   );
 }

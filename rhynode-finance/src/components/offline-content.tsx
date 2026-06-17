@@ -25,7 +25,7 @@ export function OfflineContent() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
           <Logo href="/" size="lg" />
@@ -58,15 +58,18 @@ export function OfflineContent() {
           </div>
 
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+            <div aria-live="polite" className="contents">
             <Button
               onClick={handleReload}
               disabled={isRetrying}
+              aria-busy={isRetrying}
               size="lg"
               className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} aria-hidden="true" />
               {isRetrying ? "Reintentando..." : "Reintentar conexión"}
             </Button>
+            </div>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/dashboard">
                 <LayoutDashboard className="h-4 w-4" aria-hidden="true" />

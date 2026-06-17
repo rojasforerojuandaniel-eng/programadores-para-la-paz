@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -74,13 +75,16 @@ export function CreateCategoryDialog({ categories }: { categories: Category[] })
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Nueva Categoría
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Categoría</DialogTitle>
+          <DialogDescription>
+            Crea una categoría para clasificar ingresos y gastos.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
@@ -95,12 +99,12 @@ export function CreateCategoryDialog({ categories }: { categories: Category[] })
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="cat-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="cat-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -111,12 +115,12 @@ export function CreateCategoryDialog({ categories }: { categories: Category[] })
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Categoría padre</Label>
+              <Label htmlFor="cat-parent">Categoría padre</Label>
               <Select
                 value={form.parentId}
                 onValueChange={(v) => setForm({ ...form, parentId: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="cat-parent">
                   <SelectValue placeholder="Ninguna" />
                 </SelectTrigger>
                 <SelectContent>

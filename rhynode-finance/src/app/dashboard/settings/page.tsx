@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useIsClient } from "@/hooks/use-is-client";
@@ -45,6 +46,16 @@ interface Plan {
   usersLimit: number;
 }
 
+interface PaymentItem {
+  id: string;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  paidAt: string | null;
+  createdAt: string;
+}
+
 interface NotificationPreferences {
   budgets: boolean;
   subscriptions: boolean;
@@ -63,6 +74,9 @@ const tabs = [
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [org, setOrg] = useState<Organization>({
     name: "",
     taxId: "",
@@ -83,6 +97,9 @@ export default function SettingsPage() {
   });
   const [upgrading, setUpgrading] = useState(false);
 
+  const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
+
   const { theme, setTheme } = useTheme();
   const mounted = useIsClient();
 
@@ -96,6 +113,16 @@ export default function SettingsPage() {
 
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    const success = searchParams.get("success") === "true";
+    const canceled = searchParams.get("canceled") === "true";
+    if (success) {
+      router.replace("/dashboard/settings/billing/success");
+    } else if (canceled) {
+      router.replace("/dashboard/settings/billing/cancel");
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     fetch("/api/notifications/preferences")
@@ -147,6 +174,41 @@ export default function SettingsPage() {
       })
       .catch(() => {
         // Plan endpoint not implemented yet, keep defaults
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/organization/members")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      })
+      .then((data) => {
+        const members = Array.isArray(data.members) ? data.members : [];
+        setPlan((prev) => ({
+          ...prev,
+          usersUsed: 1 + members.filter((m: { status?: string }) => m.status === "ACTIVE").length,
+        }));
+      })
+      .catch(() => {
+        // Members endpoint not available, keep default user count
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/payments/history")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
+      })
+      .then((data) => {
+        setPayments(Array.isArray(data.payments) ? data.payments : []);
+      })
+      .catch(() => {
+        setPayments([]);
+      })
+      .finally(() => {
+        setPaymentsLoading(false);
       });
   }, []);
 
@@ -248,7 +310,7 @@ export default function SettingsPage() {
 
   const usagePercent = Math.min(
     100,
-    Math.round((plan.invoicesUsed / plan.invoicesLimit) * 100)
+    Math.round((plan.invoicesUsed / (plan.invoicesLimit || 1)) * 100)
   );
 
   return (
@@ -327,6 +389,8 @@ export default function SettingsPage() {
               usagePercent={usagePercent}
               upgrading={upgrading}
               saving={saving}
+              payments={payments}
+              paymentsLoading={paymentsLoading}
               onUpgrade={handleUpgrade}
             />
           </TabsContent>

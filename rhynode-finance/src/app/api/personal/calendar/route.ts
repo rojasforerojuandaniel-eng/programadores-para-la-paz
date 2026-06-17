@@ -5,13 +5,14 @@ import { decimalToNumber } from "@/lib/decimal";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { getOccurrencesInRange } from "@/app/dashboard/personal/subscriptions/subscription-utils";
 
 const querySchema = z.object({
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
 });
 
-type CalendarEventType = "debt" | "recurring" | "goal" | "invoice" | "tax";
+type CalendarEventType = "debt" | "recurring" | "goal" | "invoice" | "tax" | "subscription";
 
 interface CalendarEvent {
   id: string;
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
     const fromDate = parsed.data.from ?? startOfMonth(now);
     const toDate = parsed.data.to ?? endOfMonth(now);
 
-    const [debts, recurring, goals, invoices, taxReports] = await Promise.all([
+    const [debts, recurring, goals, invoices, taxReports, subscriptions] = await Promise.all([
       prisma.debt.findMany({
         where: {
           userId: profile.id,
@@ -129,6 +130,23 @@ export async function GET(request: Request) {
           status: true,
         },
       }),
+      prisma.detectedSubscription.findMany({
+        where: {
+          userId: profile.id,
+          status: { not: "CANCELLED" },
+          lastPaidAt: { not: null },
+        },
+        select: {
+          id: true,
+          name: true,
+          lastPaidAt: true,
+          amount: true,
+          currency: true,
+          frequency: true,
+          provider: true,
+          status: true,
+        },
+      }),
     ]);
 
     const events: CalendarEvent[] = [
@@ -203,6 +221,21 @@ export async function GET(request: Request) {
           currency: org.currency,
           description: `Periodo ${t.period} ${t.year}`,
         };
+      }),
+      ...subscriptions.flatMap((s) => {
+        if (!s.lastPaidAt) return [];
+        const dates = getOccurrencesInRange(s.lastPaidAt, s.frequency, fromDate, toDate);
+        return dates.map((date, idx) => ({
+          id: `subscription-${s.id}-${idx}`,
+          referenceId: s.id,
+          type: "subscription" as const,
+          title: s.name,
+          date: date.toISOString(),
+          status: s.status,
+          amount: decimalToNumber(s.amount),
+          currency: s.currency,
+          description: s.provider ? `Suscripción: ${s.provider}` : "Suscripción recurrente",
+        }));
       }),
     ];
 

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import "./globals.css";
 
 const InstallPrompt = dynamic(() => import("@/components/pwa/install-prompt"));
+const ServiceWorkerRegister = dynamic(() => import("@/components/pwa/service-worker-register").then(m => ({ default: m.ServiceWorkerRegister })));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -119,17 +120,7 @@ export default function RootLayout({
         </a>
         <Providers>{children}</Providers>
         <InstallPrompt />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

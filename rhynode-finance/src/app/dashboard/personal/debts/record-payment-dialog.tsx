@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Coins } from "lucide-react";
 import { toast } from "sonner";
-import { recordPayment } from "./actions";
 
 interface RecordPaymentDialogProps {
   debtId: string;
@@ -59,14 +58,20 @@ export function RecordPaymentDialog({
 
     setLoading(true);
     try {
-      const result = await recordPayment({ debtId, amount: payment });
-      if (result.success) {
+      const res = await fetch(`/api/personal/debts/${debtId}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: payment }),
+      });
+
+      if (res.ok) {
         toast.success("Pago registrado");
         router.refresh();
         setOpen(false);
         setAmount("");
       } else {
-        toast.error(result.error || "No se pudo registrar el pago");
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "No se pudo registrar el pago");
       }
     } catch {
       toast.error("Error de red");
@@ -80,7 +85,7 @@ export function RecordPaymentDialog({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm" className="gap-2">
-            <Coins className="h-4 w-4" />
+            <Coins className="h-4 w-4" aria-hidden="true" />
             Registrar pago
           </Button>
         )}
@@ -92,6 +97,9 @@ export function RecordPaymentDialog({
             {debtName} · saldo restante{" "}
             <span className="font-medium text-foreground">
               {formatCurrency(remaining, currency)}
+            </span>
+            <span className="block pt-1 text-xs text-muted-foreground">
+              Se creará una transacción asociada en tu historial.
             </span>
           </DialogDescription>
         </DialogHeader>

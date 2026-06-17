@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -16,17 +17,38 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 
-export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
-  const [open, setOpen] = useState(false);
+interface CreateGoalDialogProps {
+  trigger?: ReactNode;
+  defaultOpen?: boolean;
+  defaultValues?: {
+    name?: string;
+    targetAmount?: number;
+    currency?: string;
+    deadline?: Date;
+    icon?: string;
+    color?: string;
+  };
+}
+
+export function CreateGoalDialog({
+  trigger,
+  defaultOpen = false,
+  defaultValues,
+}: CreateGoalDialogProps = {}) {
+  const [open, setOpen] = useState(defaultOpen);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [form, setForm] = useState({
-    name: "",
-    targetAmount: "",
-    currency: "COP",
-    deadline: "",
-    icon: "",
-    color: "",
+    name: defaultValues?.name ?? "",
+    targetAmount: defaultValues?.targetAmount
+      ? String(Math.round(defaultValues.targetAmount))
+      : "",
+    currency: defaultValues?.currency ?? "COP",
+    deadline: defaultValues?.deadline
+      ? new Date(defaultValues.deadline).toISOString().split("T")[0]
+      : "",
+    icon: defaultValues?.icon ?? "",
+    color: defaultValues?.color ?? "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -54,7 +76,14 @@ export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
           hasDeadline: Boolean(form.deadline),
         });
         setOpen(false);
-        setForm({ name: "", targetAmount: "", currency: "COP", deadline: "", icon: "", color: "" });
+        setForm({
+          name: "",
+          targetAmount: "",
+          currency: "COP",
+          deadline: "",
+          icon: "",
+          color: "",
+        });
         router.refresh();
         toast.success("Meta creada");
       } else {
@@ -72,7 +101,7 @@ export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
       <DialogTrigger asChild>
         {trigger ?? (
           <Button className="gap-2">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
             Nueva Meta
           </Button>
         )}
@@ -80,6 +109,9 @@ export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Meta</DialogTitle>
+          <DialogDescription>
+            Define el objetivo, monto y fecha límite de la meta.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">

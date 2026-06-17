@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -82,13 +83,16 @@ export function CreateDebtDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Nueva Deuda
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Deuda</DialogTitle>
+          <DialogDescription>
+            Registra un préstamo u obligación pendiente.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
@@ -103,12 +107,12 @@ export function CreateDebtDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="debt-type">Tipo</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="debt-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,12 +170,12 @@ export function CreateDebtDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Moneda</Label>
+              <Label htmlFor="debt-currency">Moneda</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="debt-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

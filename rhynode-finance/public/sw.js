@@ -1,64 +1,124 @@
-const CACHE_NAME = "rhynode-push-v2";
-const STATIC_ASSETS = [
+const CACHE_NAME = "rhynode-pwa-v3";
+const STATIC_CACHE = "rhynode-static-v3";
+
+const OFFLINE_PAGE = "/offline";
+const PRECACHE_ASSETS = [
   "/",
   "/dashboard",
+  "/dashboard/personal",
   "/dashboard/transactions",
   "/dashboard/invoices",
   "/dashboard/accounts",
-  "/dashboard/personal",
   "/offline",
 ];
 
+const STATIC_ASSET_PATTERNS = [
+  /\.(?:js|css|woff2?|json)$/i,
+  /^\/_next\/static\//i,
+];
+
+function isStaticAsset(url) {
+  return STATIC_ASSET_PATTERNS.some((pattern) => pattern.test(url.pathname));
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting()),
   );
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME && key !== STATIC_CACHE)
+            .map((key) => caches.delete(key)),
+        ),
       )
-    )
+      .then(() => self.clients.claim()),
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
 
-      return fetch(event.request)
-        .then((response) => {
-          if (
-            !response ||
-            response.status !== 200 ||
-            response.type !== "basic"
-          ) {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          if (event.request.mode === "navigate") {
-            return caches.match("/offline");
-          }
-        });
-    })
-  );
+  if (isStaticAsset(url)) {
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(networkFirstWithOfflineFallback(event.request));
+    return;
+  }
+
+  event.respondWith(staleWhileRevalidate(event.request));
 });
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200 && response.type === "basic") {
+      const cache = await caches.open(STATIC_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    throw error;
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cached = await caches.match(request);
+
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response && response.status === 200 && response.type === "basic") {
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(request, responseToCache);
+        });
+      }
+      return response;
+    })
+    .catch(() => cached);
+
+  return cached || networkPromise;
+}
+
+async function networkFirstWithOfflineFallback(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.status === 200) {
+      const responseToCache = networkResponse.clone();
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, responseToCache);
+    }
+    return networkResponse;
+  } catch (error) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    const offlineFallback = await caches.match(OFFLINE_PAGE);
+    if (offlineFallback) return offlineFallback;
+
+    throw error;
+  }
+}
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
@@ -73,8 +133,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Rhynode";
   const options = {
     body: data.body || "",
-    icon: data.icon || "/icon-192.png",
-    badge: data.badge || "/icon-192.png",
+    icon: data.icon || "/icon-192.svg",
+    badge: data.badge || "/icon-192.svg",
     tag: data.tag || "rhynode-notification",
     requireInteraction: data.requireInteraction === true,
     renotify: data.renotify === true,
@@ -122,6 +182,6 @@ self.addEventListener("notificationclick", (event) => {
       if (self.clients.openWindow) {
         return self.clients.openWindow(targetUrl);
       }
-    })
+    }),
   );
 });

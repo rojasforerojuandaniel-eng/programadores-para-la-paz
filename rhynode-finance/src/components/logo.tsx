@@ -24,7 +24,7 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
           s.box
         )}
       >
-        <TrendingUp className={s.icon} />
+        <TrendingUp className={s.icon} aria-hidden="true" />
       </div>
       <span className={cn("font-bold tracking-tight text-foreground", s.text)}>Rhynode</span>
     </div>

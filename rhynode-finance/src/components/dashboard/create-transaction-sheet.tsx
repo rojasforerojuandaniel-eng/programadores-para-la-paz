@@ -18,15 +18,17 @@ import { useOrganizationRole } from "@/hooks/use-organization-role";
 interface CreateTransactionSheetProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
+  defaultOpen?: boolean;
 }
 
 export function CreateTransactionSheet({
   onCreate,
   trigger,
+  defaultOpen = false,
 }: CreateTransactionSheetProps) {
   const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
 
   function handleSuccess() {
     setOpen(false);
@@ -37,7 +39,7 @@ export function CreateTransactionSheet({
 
   // Desktop keeps the centered dialog; mobile gets the bottom sheet.
   if (!isMobile) {
-    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} />;
+    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} defaultOpen={defaultOpen} />;
   }
 
   return (
@@ -45,7 +47,7 @@ export function CreateTransactionSheet({
       <BottomSheetTrigger asChild>
         {trigger || (
           <Button className="gap-2">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
             Nueva Transacción
           </Button>
         )}

@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, ArrowUp, AlertTriangle, Ban } from "lucide-react";
+import { CalendarDays, ArrowUp, AlertTriangle, Ban, Clock, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SubscriptionItem } from "./subscription-utils";
 import {
@@ -54,6 +54,30 @@ export function SubscriptionCard({
                 <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-500">
                   <Ban className="h-3 w-3" />
                   Para cancelar
+                </Badge>
+              )}
+              {item.daysRemaining !== null && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "gap-1",
+                    item.daysRemaining <= 3
+                      ? "border-rose-500/30 text-rose-500"
+                      : item.daysRemaining <= 7
+                        ? "border-amber-500/30 text-amber-500"
+                        : "border-emerald-500/30 text-emerald-500"
+                  )}
+                >
+                  <Clock className="h-3 w-3" />
+                  {item.daysRemaining <= 0
+                    ? `Vence ${item.daysRemaining === 0 ? "hoy" : `hace ${Math.abs(item.daysRemaining)} días`}`
+                    : `En ${item.daysRemaining} días`}
+                </Badge>
+              )}
+              {item.matched && (
+                <Badge variant="outline" className="gap-1 border-blue-500/30 text-blue-500">
+                  <Receipt className="h-3 w-3" />
+                  Coincide pago
                 </Badge>
               )}
             </div>

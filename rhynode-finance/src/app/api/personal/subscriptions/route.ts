@@ -3,16 +3,32 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { subtractFrequency } from "@/app/dashboard/personal/subscriptions/subscription-utils";
 
-const createSchema = z.object({
+const baseSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   amount: z.number().min(0),
   currency: z.string().default("COP"),
-  frequency: z.enum(["MONTHLY", "QUARTERLY", "YEARLY"]),
+  frequency: z.enum(["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"]),
   provider: z.string().optional(),
   category: z.string().optional(),
+  nextDueDate: z.string().optional(),
 });
+
+const createSchema = baseSchema;
+
+const updateSchema = baseSchema.extend({
+  id: z.string().min(1),
+  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELLED"]).optional(),
+});
+
+function parseNextDueDate(value: string | undefined): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
 
 export async function GET() {
   try {
@@ -53,12 +69,18 @@ export async function POST(request: Request) {
       where: { userId: profile.id, name: parsed.data.name },
     });
 
+    const nextDueDate = parseNextDueDate(parsed.data.nextDueDate);
+    const lastPaidAt = nextDueDate
+      ? subtractFrequency(nextDueDate, parsed.data.frequency)
+      : new Date();
+
     let subscription;
     if (existing) {
       subscription = await prisma.detectedSubscription.update({
         where: { id: existing.id },
         data: {
           ...parsed.data,
+          lastPaidAt,
           lastDetectedAt: new Date(),
         },
       });
@@ -67,6 +89,8 @@ export async function POST(request: Request) {
         data: {
           userId: profile.id,
           ...parsed.data,
+          lastPaidAt,
+          lastDetectedAt: new Date(),
         },
       });
     }
@@ -75,6 +99,51 @@ export async function POST(request: Request) {
   } catch (error) {
     logger.error("Failed to create subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create subscription" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const parsed = updateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.detectedSubscription.findFirst({
+      where: { id: parsed.data.id, userId: profile.id },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const parsedNextDueDate = parseNextDueDate(parsed.data.nextDueDate);
+    const lastPaidAt = parsedNextDueDate
+      ? subtractFrequency(parsedNextDueDate, parsed.data.frequency)
+      : existing.lastPaidAt;
+
+    const { id, nextDueDate: nextDueDateInput, ...data } = parsed.data;
+    void nextDueDateInput;
+    const subscription = await prisma.detectedSubscription.update({
+      where: { id },
+      data: {
+        ...data,
+        lastPaidAt,
+      },
+    });
+
+    return NextResponse.json({ subscription });
+  } catch (error) {
+    logger.error("Failed to update subscription", { error: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
   }
 }
 

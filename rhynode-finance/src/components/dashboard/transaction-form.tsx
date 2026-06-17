@@ -340,9 +340,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
               <p className="text-xs font-medium text-muted-foreground">
                 Items detectados:
               </p>
-              <div className="max-h-32 overflow-auto rounded border border-muted-foreground/20 p-2">
+              <ul className="max-h-32 overflow-auto rounded border border-muted-foreground/20 p-2" role="list">
                 {ocrItems.map((item, idx) => (
-                  <div
+                  <li
                     key={idx}
                     className="flex justify-between py-0.5 text-xs"
                   >
@@ -350,9 +350,9 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
                     <span className="tabular-nums text-muted-foreground">
                       {item.amount.toLocaleString("es-CO")}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
       </div>
@@ -447,7 +447,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
               onClick={handleAiSuggestButton}
               disabled={aiLoading || !form.description.trim() || !form.amount}
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               {aiLoading ? "Analizando..." : "Sugerir con IA"}
             </Button>
           </div>
@@ -477,7 +477,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
                   className="flex items-center justify-between gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2"
                 >
                   <div className="flex items-center gap-2 text-sm">
-                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <Zap className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                     <span className="text-muted-foreground">
                       Sugerencia de regla:
                     </span>

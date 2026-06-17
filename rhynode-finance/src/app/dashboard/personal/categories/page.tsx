@@ -2,15 +2,36 @@ import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
-import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-import { TableCell } from "@/components/ui/table";
 import { CreateCategoryDialog } from "./create-dialog";
 import { CategoryActions } from "./category-actions";
 import { CategoryIcon } from "./category-icon";
 import { getContrastColor } from "./utils";
 import { Tags, TrendingDown, TrendingUp } from "lucide-react";
 import type { CategoryRow, CategoryType } from "./types";
+
+interface BudgetSummary {
+  id: string;
+  name: string;
+  amount: number;
+  spent: number;
+}
+
+interface CategoryWithStats {
+  id: string;
+  userId: string | null;
+  name: string;
+  type: CategoryType;
+  parentId: string | null;
+  icon: string | null;
+  color: string | null;
+  isDefault: boolean;
+  parent: { name: string } | null;
+  spent: number;
+  earned: number;
+  totalFlow: number;
+  budgets: BudgetSummary[];
+}
 
 function EmptyState() {
   return (
@@ -37,7 +58,7 @@ function TypeBadge({ type }: { type: CategoryType }) {
   if (type === "INCOME") {
     return (
       <Badge className="gap-1 border-transparent bg-success/10 text-success hover:bg-success/10">
-        <TrendingUp className="h-3 w-3" />
+        <TrendingUp className="h-3 w-3" aria-hidden="true" />
         Ingreso
       </Badge>
     );
@@ -45,7 +66,7 @@ function TypeBadge({ type }: { type: CategoryType }) {
   if (type === "EXPENSE") {
     return (
       <Badge className="gap-1 border-transparent bg-danger/10 text-danger hover:bg-danger/10">
-        <TrendingDown className="h-3 w-3" />
+        <TrendingDown className="h-3 w-3" aria-hidden="true" />
         Gasto
       </Badge>
     );
@@ -53,81 +74,121 @@ function TypeBadge({ type }: { type: CategoryType }) {
   return <Badge variant="outline">Transferencia</Badge>;
 }
 
-function ProportionBar({
-  value,
-  max,
-  color,
-}: {
-  value: number;
-  max: number;
-  color?: string | null;
-}) {
-  const width = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+function decimalToNumber(value: unknown): number {
+  if (value === null || value === undefined) return 0;
+  return Number(value);
+}
+
+function BudgetBar({ spent, budget }: { spent: number; budget: number }) {
+  const width = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+  const overBudget = spent > budget;
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div
-        className="h-full rounded-full transition-all"
-        style={{
-          width: `${width}%`,
-          backgroundColor: color || "var(--primary)",
-        }}
-      />
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>Presupuesto</span>
+        <span className="font-medium text-foreground">
+          {formatCurrency(spent)} / {formatCurrency(budget)}
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className={`h-full rounded-full transition-all ${overBudget ? "bg-danger" : "bg-primary"}`}
+          style={{ width: `${width}%` }}
+        />
+      </div>
+      {overBudget ? <p className="text-xs text-danger">Sobre presupuesto</p> : null}
     </div>
   );
 }
 
 function CategoryCard({
   category,
-  maxAmount,
+  categories,
 }: {
-  category: CategoryRow;
-  maxAmount: number;
+  category: CategoryWithStats;
+  categories: CategoryRow[];
 }) {
   const primaryAmount =
     category.type === "INCOME" ? category.earned : category.spent;
   const fgClass = getContrastColor(category.color);
+  const mainBudget = category.budgets[0];
+
+  const categoryRow: CategoryRow = {
+    id: category.id,
+    userId: category.userId,
+    name: category.name,
+    type: category.type,
+    parentId: category.parentId,
+    icon: category.icon,
+    color: category.color,
+    isDefault: category.isDefault,
+    parent: category.parent,
+    spent: category.spent,
+    earned: category.earned,
+    totalFlow: category.totalFlow,
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span
-            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${fgClass}`}
-            style={{ backgroundColor: category.color || "var(--primary)" }}
-          >
-            <CategoryIcon name={category.icon} className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-medium">{category.name}</p>
-            {category.parent?.name ? (
-              <p className="truncate text-xs text-muted-foreground">
-                {category.parent.name}
-              </p>
-            ) : null}
-          </div>
-        </div>
-        <TypeBadge type={category.type} />
+    <div className="surface-elevated-2 relative rounded-xl p-5">
+      <div className="absolute right-3 top-3">
+        <CategoryActions category={categoryRow} categories={categories} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-sm">
+      <div className="flex items-start gap-3 pr-8">
+        <span
+          className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${fgClass}`}
+          style={{ backgroundColor: category.color || "var(--primary)" }}
+        >
+          <CategoryIcon name={category.icon} className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-medium">{category.name}</p>
+          {category.parent?.name ? (
+            <p className="truncate text-xs text-muted-foreground">{category.parent.name}</p>
+          ) : null}
+          <div className="mt-1">
+            <TypeBadge type={category.type} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p className="text-xs text-muted-foreground">Gastado</p>
+          <p className="text-xs text-muted-foreground">Gastado mes</p>
           <p className="font-medium text-danger">{formatCurrency(category.spent)}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Ingresado</p>
+          <p className="text-xs text-muted-foreground">Ingresado mes</p>
           <p className="font-medium text-success">{formatCurrency(category.earned)}</p>
         </div>
       </div>
 
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Proporción</span>
-          <span className="font-medium text-foreground">
-            {formatCurrency(primaryAmount)}
-          </span>
+      {category.type === "EXPENSE" && primaryAmount > 0 ? (
+        <div className="mt-4">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Proporción del mes</span>
+              <span className="font-medium text-foreground">{formatCurrency(primaryAmount)}</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: "100%",
+                  backgroundColor: category.color || "var(--primary)",
+                  opacity: 0.7,
+                }}
+              />
+            </div>
+          </div>
         </div>
-        <ProportionBar value={primaryAmount} max={maxAmount} color={category.color} />
-      </div>
+      ) : null}
+
+      {mainBudget ? (
+        <div className="mt-4">
+          <BudgetBar spent={mainBudget.spent} budget={mainBudget.amount} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -143,7 +204,7 @@ export default async function CategoriesPage() {
   const prisma = getPrisma();
   const rawCategories = await prisma.category.findMany({
     where: { userId: profile.id },
-    include: { parent: true },
+    include: { parent: true, budgets: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -180,7 +241,7 @@ export default async function CategoriesPage() {
     totalsMap.set(row.categoryId, current);
   }
 
-  const categories: CategoryRow[] = rawCategories.map((cat) => {
+  const categories: CategoryWithStats[] = rawCategories.map((cat) => {
     const totals = totalsMap.get(cat.id) || { spent: 0, earned: 0 };
     return {
       id: cat.id,
@@ -195,22 +256,29 @@ export default async function CategoriesPage() {
       spent: totals.spent,
       earned: totals.earned,
       totalFlow: totals.spent + totals.earned,
+      budgets: cat.budgets.map((b) => ({
+        id: b.id,
+        name: b.name,
+        amount: decimalToNumber(b.amount),
+        spent: decimalToNumber(b.spent),
+      })),
     };
   });
 
-  const maxAmount = Math.max(
-    ...categories.map((c) => (c.type === "INCOME" ? c.earned : c.spent)),
-    1,
-  );
-
-  const columns = [
-    { key: "category", header: "Categoría" },
-    { key: "type", header: "Tipo" },
-    { key: "spent", header: "Gastado mes" },
-    { key: "earned", header: "Ingresado mes" },
-    { key: "proportion", header: "Proporción" },
-    { key: "actions", header: "" },
-  ];
+  const categoryRows: CategoryRow[] = categories.map((c) => ({
+    id: c.id,
+    userId: c.userId,
+    name: c.name,
+    type: c.type,
+    parentId: c.parentId,
+    icon: c.icon,
+    color: c.color,
+    isDefault: c.isDefault,
+    parent: c.parent,
+    spent: c.spent,
+    earned: c.earned,
+    totalFlow: c.totalFlow,
+  }));
 
   return (
     <div className="space-y-6">
@@ -218,67 +286,24 @@ export default async function CategoriesPage() {
         <div>
           <h1 className="heading-section">Categorías</h1>
           <p className="body-default mt-1">
-            Administra tus categorías y visualiza tus movimientos del mes
+            Administra tus categorías, visualiza tus movimientos del mes y su presupuesto asociado.
           </p>
         </div>
-        <CreateCategoryDialog categories={categories} />
+        <CreateCategoryDialog categories={categoryRows} />
       </div>
 
       <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-        <ServerDataTable
-          columns={columns}
-          data={categories}
-          emptyState={<EmptyState />}
-          renderRow={(category) => (
-            <>
-              <TableCell className="py-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${getContrastColor(category.color)}`}
-                    style={{ backgroundColor: category.color || "var(--primary)" }}
-                  >
-                    <CategoryIcon name={category.icon} className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="font-medium">{category.name}</p>
-                    {category.parent?.name ? (
-                      <p className="text-xs text-muted-foreground">{category.parent.name}</p>
-                    ) : null}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-3">
-                <TypeBadge type={category.type} />
-              </TableCell>
-              <TableCell className="py-3 font-medium text-danger">
-                {formatCurrency(category.spent)}
-              </TableCell>
-              <TableCell className="py-3 font-medium text-success">
-                {formatCurrency(category.earned)}
-              </TableCell>
-              <TableCell className="py-3">
-                <div className="w-32">
-                  <ProportionBar
-                    value={category.type === "INCOME" ? category.earned : category.spent}
-                    max={maxAmount}
-                    color={category.color}
-                  />
-                </div>
-              </TableCell>
-              <TableCell className="py-3 text-right">
-                <CategoryActions category={category} categories={categories} />
-              </TableCell>
-            </>
-          )}
-          renderCard={(category) => (
-            <div className="relative">
-              <div className="absolute right-0 top-0">
-                <CategoryActions category={category} categories={categories} />
-              </div>
-              <CategoryCard category={category} maxAmount={maxAmount} />
-            </div>
-          )}
-        />
+        {categories.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
+            {categories.map((category) => (
+              <li key={category.id}>
+                <CategoryCard category={category} categories={categoryRows} />
+              </li>
+            ))}
+          </ul>
+        )}
       </Suspense>
     </div>
   );

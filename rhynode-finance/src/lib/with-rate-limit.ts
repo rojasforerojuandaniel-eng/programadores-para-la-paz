@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
-type RouteContext<T = Record<string, string | string[]>> = {
+export type RouteContext<T = Record<string, string | string[]>> = {
   params: Promise<T>;
 };
 

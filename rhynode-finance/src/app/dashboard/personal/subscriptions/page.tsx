@@ -54,7 +54,7 @@ async function SubscriptionsContent() {
   const txByNormalizedDesc = buildTransactionIndex(transactions);
 
   const items: SubscriptionItem[] = subscriptions.map((sub) => {
-    const meta = computeSubscriptionMeta(sub, txByNormalizedDesc);
+    const meta = computeSubscriptionMeta(sub, txByNormalizedDesc, transactions);
     return {
       id: sub.id,
       name: sub.name,

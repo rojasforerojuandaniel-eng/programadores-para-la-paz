@@ -164,7 +164,7 @@ function BottomSheetContent({
               className="absolute top-3 right-3 z-10 rounded-xs p-1 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label="Cerrar"
             >
-              <XIcon className="h-5 w-5" />
+              <XIcon className="h-5 w-5" aria-hidden="true" />
               <span className="sr-only">Cerrar</span>
             </DialogPrimitive.Close>
           )}

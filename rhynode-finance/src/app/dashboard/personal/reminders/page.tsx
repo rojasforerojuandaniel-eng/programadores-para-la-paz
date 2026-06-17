@@ -9,7 +9,11 @@ export const metadata = {
   description: "Administra tus recordatorios financieros personalizados.",
 };
 
-export default async function RemindersPage() {
+interface RemindersPageProps {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function RemindersPage({ searchParams }: RemindersPageProps) {
   const profile = await getUserProfile();
   if (!profile) redirect("/sign-in");
 
@@ -33,5 +37,5 @@ export default async function RemindersPage() {
       lastSentAt: r.lastSentAt?.toISOString(),
     }));
 
-  return <RemindersView reminders={reminders} />;
+  return <RemindersView reminders={reminders} defaultOpen={searchParams?.new === "1"} />;
 }
