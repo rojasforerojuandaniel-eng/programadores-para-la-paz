@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 export function UpdateSnapshotButton({
   totalAssets,
@@ -23,8 +24,11 @@ export function UpdateSnapshotButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ totalAssets, totalLiabilities, currency }),
       });
-      if (!res.ok) throw new Error("Failed to create snapshot");
+      if (!res.ok) throw new Error("No se pudo guardar el snapshot");
       window.location.reload();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -32,7 +36,7 @@ export function UpdateSnapshotButton({
 
   return (
     <Button size="default" className="gap-2" onClick={handleClick} disabled={loading}>
-      <Plus className="h-4 w-4" />
+      <Plus className="h-4 w-4" aria-hidden="true" />
       {loading ? "Guardando..." : "Actualizar Snapshot"}
     </Button>
   );

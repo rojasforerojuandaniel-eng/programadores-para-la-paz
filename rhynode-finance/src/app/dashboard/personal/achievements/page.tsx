@@ -63,7 +63,7 @@ interface AchievementsResponse {
   };
 }
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   Trophy,
   Star,
   Zap,
@@ -88,6 +88,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Crown,
 };
 
+const categoryConfig = {
+  starter: { label: "Primeros pasos", color: "bg-sky-500/10 text-sky-700 border-sky-500/20" },
+  consistency: { label: "Consistencia", color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" },
+  advanced: { label: "Avanzado", color: "bg-violet-500/10 text-violet-700 border-violet-500/20" },
+};
+
 function getIcon(name: string, iconKey?: string | null) {
   if (iconKey && iconMap[iconKey]) return iconMap[iconKey];
   const key = Object.keys(iconMap).find((k) =>
@@ -105,7 +111,7 @@ function AchievementIcon({
   iconKey?: string | null;
   className?: string;
 }) {
-  return React.createElement(getIcon(name, iconKey), { className });
+  return React.createElement(getIcon(name, iconKey), { className, "aria-hidden": true });
 }
 
 function CircularProgress({
@@ -117,15 +123,15 @@ function CircularProgress({
   unlocked: boolean;
   className?: string;
 }) {
-  const radius = 18;
+  const radius = 20;
   const stroke = 4;
   const normalizedRadius = radius - stroke * 0.5;
   const circumference = normalizedRadius * 2 * Math.PI;
   const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
 
   return (
-    <div className={cn("relative flex h-11 w-11 shrink-0 items-center justify-center", className)}>
-      <svg height={radius * 2} width={radius * 2} className="-rotate-90">
+    <div className={cn("relative flex h-12 w-12 shrink-0 items-center justify-center", className)}>
+      <svg height={radius * 2} width={radius * 2} className="-rotate-90" aria-hidden="true">
         <circle
           stroke="currentColor"
           fill="transparent"
@@ -155,9 +161,9 @@ function CircularProgress({
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         {unlocked ? (
-          <Check className="h-4 w-4 text-emerald-500" />
+          <Check className="h-4 w-4 text-emerald-500" aria-hidden="true" />
         ) : (
-          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+          <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
         )}
       </div>
     </div>
@@ -185,6 +191,7 @@ function UnlockCelebration() {
             ["--ty" as string]: particle.ty,
             animationDelay: particle.delay,
           }}
+          aria-hidden="true"
         />
       ))}
     </div>
@@ -198,21 +205,24 @@ function AchievementCard({
   achievement: UnlockedAchievement | PendingAchievement;
   unlocked: boolean;
 }) {
+  const category = "category" in achievement ? achievement.category : undefined;
+  const categoryStyle = category ? categoryConfig[category] : null;
+
   return (
     <Card
       className={cn(
         "surface-elevated-2 relative overflow-hidden rounded-xl border-border transition-all hover:shadow-md",
         unlocked
           ? "border-l-4 border-l-primary"
-          : "opacity-90 grayscale-[0.15]"
+          : "grayscale-[0.15]"
       )}
     >
       {unlocked && <UnlockCelebration />}
-      <CardContent className="flex flex-col gap-3 p-5">
-        <div className="flex items-start justify-between">
+      <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
           <div
             className={cn(
-              "relative flex h-11 w-11 items-center justify-center rounded-full transition-transform",
+              "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform",
               unlocked ? "bg-primary/10" : "bg-muted",
               unlocked && "animate-achievement-pop"
             )}
@@ -226,7 +236,7 @@ function AchievementCard({
               )}
             />
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex min-w-0 flex-col items-end gap-2">
             <Badge variant={unlocked ? "default" : "secondary"}>
               {unlocked ? "Completado" : "Pendiente"}
             </Badge>
@@ -236,7 +246,15 @@ function AchievementCard({
             />
           </div>
         </div>
-        <div>
+        <div className="min-w-0">
+          {categoryStyle && (
+            <Badge
+              variant="outline"
+              className={cn("mb-2 text-xs", categoryStyle.color)}
+            >
+              {categoryStyle.label}
+            </Badge>
+          )}
           <p
             className={cn(
               "font-semibold",
@@ -254,7 +272,7 @@ function AchievementCard({
               unlocked ? "text-primary" : "text-muted-foreground"
             )}
           >
-            <Zap className="h-3.5 w-3.5" />
+            <Zap className="h-3.5 w-3.5" aria-hidden="true" />
             {achievement.xpAwarded} XP
           </span>
           {unlocked && "unlockedAt" in achievement && achievement.unlockedAt && (
@@ -281,7 +299,7 @@ function AchievementGrid({
 }) {
   if (achievements.length === 0) return empty;
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {achievements.map((achievement) => (
         <AchievementCard
           key={achievement.type}
@@ -326,21 +344,23 @@ export default function AchievementsPage() {
 
   const totalPossible = data?.stats.total ?? unlocked.length + pending.length;
   const totalXp = data?.stats.xpEarned ?? unlocked.reduce((s, a) => s + a.xpAwarded, 0);
+  const progressPercentage = totalPossible > 0 ? Math.round((unlocked.length / totalPossible) * 100) : 0;
 
   const skeleton = (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div role="status" aria-live="polite" aria-busy="true" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <span className="sr-only">Cargando logros...</span>
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="h-48 animate-pulse rounded-xl bg-muted" />
       ))}
     </div>
   );
 
-  const errorState = error && (
+  const errorState = (
     <EmptyStateCard
       variant="lg"
       icon={Trophy}
       title="No se pudieron cargar los logros"
-      description={error}
+      description={error ?? ""}
       hint="Revisa tu conexión e intenta de nuevo."
     />
   );
@@ -357,12 +377,12 @@ export default function AchievementsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col gap-2">
         <h1 className="heading-section">Logros</h1>
         <p className="body-default mt-1">Desbloquea logros, gana XP y sube de nivel</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard
           label="Desbloqueados"
           value={`${unlocked.length} / ${totalPossible}`}
@@ -372,8 +392,32 @@ export default function AchievementsPage() {
         <KpiCard label="Pendientes" value={pending.length} icon={Target} />
       </div>
 
+      <Card className="surface-elevated-2 rounded-xl border-border">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div id="achievements-progress-label" className="text-sm font-medium text-foreground">
+              Progreso general
+            </div>
+            <div id="achievements-progress-percent" className="text-xs font-medium text-muted-foreground">
+              {unlocked.length} de {totalPossible} logros · {progressPercentage}%
+            </div>
+          </div>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercentage}
+              aria-labelledby="achievements-progress-label achievements-progress-percent"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="all">
-        <TabsList className="w-full sm:w-auto">
+        <TabsList className="w-full min-h-11 sm:w-auto">
           <TabsTrigger value="all" className="flex-1 sm:flex-initial">
             Todos
           </TabsTrigger>

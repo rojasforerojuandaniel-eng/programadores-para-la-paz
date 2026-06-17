@@ -12,17 +12,18 @@ export interface WidgetDefinition {
 }
 
 export const DEFAULT_WIDGETS: WidgetDefinition[] = [
-  { id: "xp-bar", label: "Barra de XP", defaultVisible: true, defaultOrder: 0 },
-  { id: "health-score", label: "Health Score", defaultVisible: true, defaultOrder: 1 },
-  { id: "kpi-grid", label: "KPIs", defaultVisible: true, defaultOrder: 2 },
-  { id: "ai-copilot", label: "Copiloto AI", defaultVisible: true, defaultOrder: 3 },
-  { id: "anomalies", label: "Anomalías", defaultVisible: true, defaultOrder: 4 },
-  { id: "left-widget", label: "Transacciones / Facturas", defaultVisible: true, defaultOrder: 5 },
-  { id: "right-widget", label: "Presupuestos / Vencimientos", defaultVisible: true, defaultOrder: 6 },
-  { id: "ant-expenses", label: "Gastos Hormiga", defaultVisible: true, defaultOrder: 7 },
-  { id: "recent-events", label: "Próximos Eventos", defaultVisible: true, defaultOrder: 8 },
-  { id: "economic-indicators", label: "Indicadores Colombia", defaultVisible: true, defaultOrder: 9 },
-  { id: "upcoming-events", label: "Calendario de vencimientos", defaultVisible: false, defaultOrder: 10 },
+  { id: "daily-briefing", label: "Briefing diario", defaultVisible: true, defaultOrder: 0 },
+  { id: "xp-bar", label: "Barra de XP", defaultVisible: true, defaultOrder: 1 },
+  { id: "health-score", label: "Health Score", defaultVisible: true, defaultOrder: 2 },
+  { id: "kpi-grid", label: "KPIs", defaultVisible: true, defaultOrder: 3 },
+  { id: "ai-copilot", label: "Copiloto AI", defaultVisible: true, defaultOrder: 4 },
+  { id: "anomalies", label: "Anomalías", defaultVisible: true, defaultOrder: 5 },
+  { id: "left-widget", label: "Transacciones / Facturas", defaultVisible: true, defaultOrder: 6 },
+  { id: "right-widget", label: "Presupuestos / Vencimientos", defaultVisible: true, defaultOrder: 7 },
+  { id: "ant-expenses", label: "Gastos Hormiga", defaultVisible: true, defaultOrder: 8 },
+  { id: "recent-events", label: "Próximos Eventos", defaultVisible: true, defaultOrder: 9 },
+  { id: "economic-indicators", label: "Indicadores Colombia", defaultVisible: true, defaultOrder: 10 },
+  { id: "upcoming-events", label: "Calendario de vencimientos", defaultVisible: false, defaultOrder: 11 },
 ];
 
 export function buildDefaultLayout(): WidgetLayoutItem[] {
