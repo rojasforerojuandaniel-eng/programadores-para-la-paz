@@ -46,7 +46,14 @@ export async function requireAuth() {
     where: { slug: userId },
   });
 
-  return org ?? null;
+  if (org) return org;
+
+  const membership = await prisma.organizationMember.findFirst({
+    where: { userId },
+    include: { organization: true },
+  });
+
+  return membership?.organization ?? null;
 }
 
 export async function getOrCreateAuthOrg() {

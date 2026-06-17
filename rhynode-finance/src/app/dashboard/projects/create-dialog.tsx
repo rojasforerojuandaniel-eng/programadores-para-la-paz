@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 export function CreateProjectDialog() {
   const [open, setOpen] = useState(false);
@@ -74,6 +75,9 @@ export function CreateProjectDialog() {
       setLoading(false);
     }
   }
+
+  const { canEdit } = useOrganizationRole();
+  if (!canEdit) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

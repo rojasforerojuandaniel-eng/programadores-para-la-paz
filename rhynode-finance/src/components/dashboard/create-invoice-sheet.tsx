@@ -13,6 +13,7 @@ import {
   BottomSheetTrigger,
 } from "@/components/ui/bottom-sheet";
 import { InvoiceForm } from "@/components/dashboard/invoice-form";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 interface CreateInvoiceSheetProps {
   onCreate: () => void;
@@ -20,6 +21,7 @@ interface CreateInvoiceSheetProps {
 }
 
 export function CreateInvoiceSheet({ onCreate, trigger }: CreateInvoiceSheetProps) {
+  const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
@@ -27,6 +29,8 @@ export function CreateInvoiceSheet({ onCreate, trigger }: CreateInvoiceSheetProp
     setOpen(false);
     onCreate();
   }
+
+  if (!canEdit) return null;
 
   if (!isMobile) {
     return <CreateInvoiceDialog onCreate={onCreate} trigger={trigger} />;

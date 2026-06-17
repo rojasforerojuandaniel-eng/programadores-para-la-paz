@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 interface DeleteButtonProps {
   endpoint: string;
@@ -12,6 +13,7 @@ interface DeleteButtonProps {
 
 export function DeleteButton({ endpoint, confirmMessage, title = "Eliminar" }: DeleteButtonProps) {
   const router = useRouter();
+  const { canEdit } = useOrganizationRole();
 
   async function handleDelete() {
     if (!confirm(confirmMessage)) return;
@@ -26,6 +28,8 @@ export function DeleteButton({ endpoint, confirmMessage, title = "Eliminar" }: D
       toast.error("Error de red");
     }
   }
+
+  if (!canEdit) return null;
 
   return (
     <button

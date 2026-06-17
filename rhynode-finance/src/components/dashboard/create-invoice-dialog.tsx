@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { InvoiceForm } from "@/components/dashboard/invoice-form";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 interface CreateInvoiceDialogProps {
   onCreate: () => void;
@@ -24,6 +25,9 @@ export function CreateInvoiceDialog({ onCreate, trigger }: CreateInvoiceDialogPr
     setOpen(false);
     onCreate();
   }
+
+  const { canEdit } = useOrganizationRole();
+  if (!canEdit) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

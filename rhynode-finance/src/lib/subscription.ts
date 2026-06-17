@@ -39,6 +39,11 @@ export async function checkPlanLimit(
     current = await prisma.invoice.count({
       where: { organizationId: orgId },
     });
+  } else if (resource === "users") {
+    const memberCount = await prisma.organizationMember.count({
+      where: { organizationId: orgId },
+    });
+    current = 1 + memberCount;
   }
 
   return { allowed: current < limit, limit, current };

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   User,
+  Users,
   Building2,
   Globe,
   CreditCard,
@@ -24,6 +25,7 @@ import { LocalizationSection } from "@/components/dashboard/settings/localizatio
 import { BillingSection } from "@/components/dashboard/settings/billing-section";
 import { NotificationsSection } from "@/components/dashboard/settings/notifications-section";
 import { SecuritySection } from "@/components/dashboard/settings/security-section";
+import { MembersSection } from "@/components/dashboard/settings/members-section";
 
 interface Organization {
   name: string;
@@ -52,6 +54,7 @@ const tabs = [
   { id: "company", label: "Empresa", icon: Building2 },
   { id: "localization", label: "Localización", icon: Globe },
   { id: "billing", label: "Facturación", icon: CreditCard },
+  { id: "members", label: "Miembros", icon: Users },
   { id: "notifications", label: "Notificaciones", icon: Bell },
   { id: "security", label: "Seguridad", icon: Shield },
 ];
@@ -311,6 +314,10 @@ export default function SettingsPage() {
               saving={saving}
               onUpgrade={handleUpgrade}
             />
+          </TabsContent>
+
+          <TabsContent value="members">
+            <MembersSection />
           </TabsContent>
 
           <TabsContent value="notifications">

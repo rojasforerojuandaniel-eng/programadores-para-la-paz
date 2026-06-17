@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 interface CreateTransactionDialogProps {
   onCreate: () => void;
@@ -27,6 +28,9 @@ export function CreateTransactionDialog({
     setOpen(false);
     onCreate();
   }
+
+  const { canEdit } = useOrganizationRole();
+  if (!canEdit) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

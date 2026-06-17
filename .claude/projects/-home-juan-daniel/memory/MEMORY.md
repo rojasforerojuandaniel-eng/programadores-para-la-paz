@@ -34,3 +34,4 @@
 - [Rhynode Finance Polish 2026-06-16](rhynode-finance-polish-2026-06-16.md) — Fix auth middleware en producción, indicadores económicos reales Colombia, simulador con datos reales, logger estructurado, widget de indicadores, sitemap expandido. Build 0 errores.
 - [MARC v3 Documentación Técnica](marc-v3-documentacion-tecnica.md) — Documentación completa post-sesión 2026-06-15: 8 modelos en tiers, env vars críticas, optimizaciones, troubleshooting, checklist de cambios. REGLA DE ORO: siempre revisar antes de tocar nada.
 - [MARC v3 Real Agent Graph + Self-Healing](marc-v3-real-agent-graph-2026-06-15.md) — Grafo multiagente REAL de 8 nodos LangGraph + sistema self-healing completo con sandbox tsc+vitest, allowlist path-traversal-safe, rollback automático, 765 tests pasan.
+- [Rhynode Finance Autonomous Push Jun 16](rhynode-finance-autonomous-push-2026-06-16.md) — Sesión autónoma: 17 features deployadas, subscription manager v2 en branch pendiente de migración.
