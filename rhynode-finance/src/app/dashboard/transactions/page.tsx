@@ -12,6 +12,25 @@ import {
   TransactionsList,
   type Transaction,
 } from "@/components/dashboard/transactions-list";
+import {
+  type TransactionFiltersState,
+  type TransactionFilterOptions,
+} from "@/components/dashboard/transactions-filters";
+import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
+import { Prisma } from "@/generated/prisma/client";
+import { z } from "zod";
+import { KpiCard } from "@/components/dashboard/kpi-card";
+import {
+  TrendingUp,
+  TrendingDown,
+  Scale,
+  Plus,
+  Upload,
+} from "lucide-react";
+import {
+  KpiSkeleton,
+  TableRowsSkeleton,
+} from "@/components/dashboard/page-skeleton";
 
 const CreateTransactionButton = dynamic(
   () =>
@@ -42,18 +61,6 @@ const BankImportRefreshButton = dynamic(
     ),
   },
 );
-import { KpiCard } from "@/components/dashboard/kpi-card";
-import {
-  TrendingUp,
-  TrendingDown,
-  Scale,
-  Plus,
-  Upload,
-} from "lucide-react";
-import {
-  KpiSkeleton,
-  TableRowsSkeleton,
-} from "@/components/dashboard/page-skeleton";
 
 function scopeFilter(scope: UserScope) {
   if (scope === "PERSONAL") return { scope: "PERSONAL" };
@@ -69,13 +76,168 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
-export default function TransactionsPage() {
+function getParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string,
+): string {
+  const value = params[key];
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function isValidISODate(value: string): boolean {
+  if (!value) return true;
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
+function isValidAmount(value: string): boolean {
+  if (!value) return true;
+  return /^\d+(\.\d+)?$/.test(value) && !Number.isNaN(Number(value));
+}
+
+const filterSchema = z.object({
+  q: z.string().max(200).default(""),
+  from: z.string().max(20).default(""),
+  to: z.string().max(20).default(""),
+  type: z.enum(["all", "INCOME", "EXPENSE"]).default("all"),
+  category: z.string().max(100).default(""),
+  account: z.string().max(100).default(""),
+  min: z.string().max(20).default(""),
+  max: z.string().max(20).default(""),
+});
+
+function parseFilters(
+  params: Record<string, string | string[] | undefined>,
+): TransactionFiltersState {
+  const raw = {
+    q: getParam(params, "q"),
+    from: getParam(params, "from"),
+    to: getParam(params, "to"),
+    type: getParam(params, "type"),
+    category: getParam(params, "category"),
+    account: getParam(params, "account"),
+    min: getParam(params, "min"),
+    max: getParam(params, "max"),
+  };
+
+  const parsed = filterSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      q: "",
+      from: "",
+      to: "",
+      type: "all",
+      category: "",
+      account: "",
+      min: "",
+      max: "",
+    };
+  }
+
+  const data = parsed.data;
+  return {
+    q: data.q,
+    from: isValidISODate(data.from) ? data.from : "",
+    to: isValidISODate(data.to) ? data.to : "",
+    type: data.type,
+    category: data.category,
+    account: data.account,
+    min: isValidAmount(data.min) ? data.min : "",
+    max: isValidAmount(data.max) ? data.max : "",
+  };
+}
+
+function buildWhere(
+  filters: TransactionFiltersState,
+  orgId: string,
+  scope: UserScope,
+): Prisma.TransactionWhereInput {
+  const where: Prisma.TransactionWhereInput = {
+    organizationId: orgId,
+    ...scopeFilter(scope),
+  };
+
+  if (filters.type !== "all") {
+    where.type = filters.type;
+  }
+
+  if (filters.category) {
+    where.category = filters.category;
+  }
+
+  if (filters.account) {
+    where.bankAccountId = filters.account;
+  }
+
+  const query = filters.q.trim();
+  if (query) {
+    where.description = { contains: query, mode: "insensitive" };
+  }
+
+  if (filters.from || filters.to) {
+    where.date = {};
+    if (filters.from) {
+      where.date.gte = new Date(filters.from);
+    }
+    if (filters.to) {
+      const toEnd = new Date(filters.to);
+      toEnd.setHours(23, 59, 59, 999);
+      where.date.lte = toEnd;
+    }
+  }
+
+  if (filters.min || filters.max) {
+    where.amount = {};
+    if (filters.min) {
+      where.amount.gte = new Prisma.Decimal(filters.min);
+    }
+    if (filters.max) {
+      where.amount.lte = new Prisma.Decimal(filters.max);
+    }
+  }
+
+  return where;
+}
+
+interface TransactionsPageProps {
+  searchParams?:
+    | Promise<Record<string, string | string[] | undefined>>
+    | Record<string, string | string[] | undefined>;
+}
+
+export default async function TransactionsPage({
+  searchParams,
+}: TransactionsPageProps) {
+  const resolvedParams =
+    (await Promise.resolve(searchParams ?? {})) ??
+    ({} as Record<string, string | string[] | undefined>);
+  const filters = parseFilters(resolvedParams);
+  const defaultOpen = getParam(resolvedParams, "new") === "1";
+
+  const org = await requireAuth();
+  const bankAccounts = org
+    ? await getPrisma().bankAccount.findMany({
+        where: { organizationId: org.id },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, bankName: true },
+      })
+    : [];
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <Suspense
         fallback={<div className="h-16 animate-pulse rounded-xl bg-muted" />}
       >
-        <HeaderSection />
+        <HeaderSection defaultOpen={defaultOpen} bankAccounts={bankAccounts} />
       </Suspense>
 
       <Suspense fallback={<KpiSkeleton count={3} columns={3} />}>
@@ -95,22 +257,21 @@ export default function TransactionsPage() {
             </CardContent>
           }
         >
-          <TransactionsContent />
+          <TransactionsContent filters={filters} bankAccounts={bankAccounts} />
         </Suspense>
       </Card>
     </div>
   );
 }
 
-async function HeaderSection() {
-  const org = await requireAuth();
-  const bankAccounts = org
-    ? await getPrisma().bankAccount.findMany({
-        where: { organizationId: org.id },
-        orderBy: { name: "asc" },
-        select: { id: true, name: true, bankName: true },
-      })
-    : [];
+async function HeaderSection({
+  defaultOpen,
+  bankAccounts,
+}: {
+  defaultOpen?: boolean;
+  bankAccounts: { id: string; name: string; bankName: string }[];
+}) {
+  await requireAuth();
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -123,7 +284,7 @@ async function HeaderSection() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <ExportButtons />
         <BankImportRefreshButton bankAccounts={bankAccounts} />
-        <CreateTransactionButton />
+        <CreateTransactionButton defaultOpen={defaultOpen} />
       </div>
     </div>
   );
@@ -173,7 +334,13 @@ async function KpiSection() {
   );
 }
 
-async function TransactionsContent() {
+async function TransactionsContent({
+  filters,
+  bankAccounts,
+}: {
+  filters: TransactionFiltersState;
+  bankAccounts: { id: string; name: string; bankName: string }[];
+}) {
   const org = await requireAuth();
   if (!org) return notFound();
 
@@ -181,13 +348,25 @@ async function TransactionsContent() {
   const scope = (profile?.scope ?? "PERSONAL") as UserScope;
 
   const prisma = getPrisma();
-  const transactions = await prisma.transaction.findMany({
-    where: { organizationId: org.id, ...scopeFilter(scope) },
-    orderBy: { date: "desc" },
-    include: {
-      bankAccount: { select: { name: true } },
-    },
-  });
+  const where = buildWhere(filters, org.id, scope);
+
+  const [transactions, categoryGroups] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { date: "desc" },
+      include: {
+        bankAccount: { select: { name: true } },
+      },
+    }),
+    prisma.transaction.groupBy({
+      by: ["category"],
+      where: {
+        organizationId: org.id,
+        ...scopeFilter(scope),
+        category: { not: null },
+      },
+    }),
+  ]);
 
   const rows: Transaction[] = transactions.map((tx) => ({
     id: tx.id,
@@ -199,7 +378,27 @@ async function TransactionsContent() {
     currency: tx.currency,
     isRecurring: tx.isRecurring,
     bankAccountName: tx.bankAccount?.name,
+    bankAccountId: tx.bankAccountId ?? undefined,
   }));
 
-  return <TransactionsList transactions={rows} orgCurrency={org.currency} />;
+  const distinctCategories = categoryGroups
+    .map((group) => group.category)
+    .filter((category): category is string => Boolean(category));
+
+  const categoryOptions = Array.from(
+    new Set([...COMMON_CATEGORIES, ...distinctCategories]),
+  );
+
+  const filterOptions: TransactionFilterOptions = {
+    categories: categoryOptions,
+    accounts: bankAccounts,
+  };
+
+  return (
+    <TransactionsList
+      transactions={rows}
+      orgCurrency={org.currency}
+      filterOptions={filterOptions}
+    />
+  );
 }

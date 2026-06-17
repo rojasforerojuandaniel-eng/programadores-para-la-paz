@@ -10,16 +10,32 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { InvoiceForm } from "@/components/dashboard/invoice-form";
+import {
+  InvoiceForm,
+  type InvoiceFormDefaultValues,
+} from "@/components/dashboard/invoice-form";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 
-interface CreateInvoiceDialogProps {
+export interface CreateInvoiceDialogProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  defaultValues?: InvoiceFormDefaultValues;
 }
 
-export function CreateInvoiceDialog({ onCreate, trigger }: CreateInvoiceDialogProps) {
-  const [open, setOpen] = useState(false);
+export function CreateInvoiceDialog({
+  onCreate,
+  trigger,
+  defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
+  defaultValues,
+}: CreateInvoiceDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   function handleSuccess() {
     setOpen(false);
@@ -31,19 +47,27 @@ export function CreateInvoiceDialog({ onCreate, trigger }: CreateInvoiceDialogPr
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
+      {trigger !== undefined ? (
+        trigger !== null ? (
+          <DialogTrigger asChild>{trigger}</DialogTrigger>
+        ) : null
+      ) : (
+        <DialogTrigger asChild>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Nueva Factura
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent className="w-full max-w-[calc(100%-1rem)] p-4 sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle className="heading-card">Nueva Factura</DialogTitle>
         </DialogHeader>
-        <InvoiceForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} />
+        <InvoiceForm
+          onSuccess={handleSuccess}
+          onCancel={() => setOpen(false)}
+          defaultValues={defaultValues}
+        />
       </DialogContent>
     </Dialog>
   );

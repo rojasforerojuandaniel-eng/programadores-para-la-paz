@@ -27,7 +27,11 @@ export function ScopeToggle() {
   };
 
   return (
-    <div className="flex min-w-0 shrink items-center gap-0.5 rounded-lg border border-border bg-background p-0.5">
+    <div
+      className="flex min-w-0 shrink items-center gap-0.5 rounded-lg border border-border bg-background p-0.5"
+      role="group"
+      aria-label="Ámbito de visualización"
+    >
       {scopes.map((s) => {
         const disabled = s.value === "BUSINESS" && !hasBusiness;
         return (
@@ -43,6 +47,7 @@ export function ScopeToggle() {
                 : "text-muted-foreground hover:text-foreground",
               disabled && "pointer-events-none opacity-40"
             )}
+            aria-pressed={scope === s.value}
             title={
               s.value === "BUSINESS"
                 ? "Ver solo finanzas empresariales"

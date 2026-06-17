@@ -111,5 +111,5 @@ interface CategoryIconProps {
 
 export function CategoryIcon({ name, className }: CategoryIconProps) {
   const Icon = (name && iconMap[name]) || Tags;
-  return <Icon className={className} />;
+  return <Icon className={className} aria-hidden="true" />;
 }

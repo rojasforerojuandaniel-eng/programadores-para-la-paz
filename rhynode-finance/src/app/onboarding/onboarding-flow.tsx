@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,52 +21,18 @@ import {
   ArrowRight,
   ArrowLeft,
   Loader2,
-  ShieldCheck,
-  FileCheck,
-  CreditCard,
+  Check,
+  Target,
   Globe,
   Coins,
   Clock,
-  Lock,
-  Pencil,
-  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserScope } from "@/lib/scope";
+import { canAccessPersonal } from "@/lib/scope";
 import { trackEvent } from "@/lib/analytics";
-
-const MODES: {
-  id: UserScope;
-  label: string;
-  description: string;
-  icon: typeof User;
-}[] = [
-  {
-    id: "PERSONAL",
-    label: "Personal",
-    description: "Gestiona tus finanzas, presupuestos y metas de ahorro.",
-    icon: User,
-  },
-  {
-    id: "BUSINESS",
-    label: "Empresa",
-    description: "Facturación, impuestos y control de tu negocio.",
-    icon: Building2,
-  },
-  {
-    id: "BOTH",
-    label: "Ambas",
-    description: "Finanzas personales y empresariales en un solo lugar.",
-    icon: Briefcase,
-  },
-];
-
-interface LocaleMap {
-  country: string;
-  currency: string;
-  timezone: string;
-}
+import { z } from "zod";
 
 const COUNTRY_OPTIONS = [
   { value: "CO", label: "Colombia" },
@@ -95,39 +62,117 @@ const TIMEZONE_OPTIONS = [
   { value: "America/Lima", label: "Lima" },
 ] as const;
 
-const LOCALE_MAP: Record<string, LocaleMap> = {
+const LOCALE_MAP: Record<
+  string,
+  { country: string; currency: string; timezone: string }
+> = {
   CO: { country: "CO", currency: "COP", timezone: "America/Bogota" },
   MX: { country: "MX", currency: "MXN", timezone: "America/Mexico_City" },
   BR: { country: "BR", currency: "BRL", timezone: "America/Sao_Paulo" },
-  AR: { country: "AR", currency: "ARS", timezone: "America/Argentina/Buenos_Aires" },
+  AR: {
+    country: "AR",
+    currency: "ARS",
+    timezone: "America/Argentina/Buenos_Aires",
+  },
   CL: { country: "CL", currency: "CLP", timezone: "America/Santiago" },
   PE: { country: "PE", currency: "PEN", timezone: "America/Lima" },
   US: { country: "US", currency: "USD", timezone: "America/New_York" },
 };
 
-function detectLocale(): LocaleMap {
-  const lang = typeof navigator !== "undefined" ? navigator.language : "es-CO";
+const MODES: {
+  id: UserScope;
+  label: string;
+  description: string;
+  icon: typeof User;
+}[] = [
+  {
+    id: "PERSONAL",
+    label: "Personal",
+    description: "Tus finanzas, presupuestos y metas de ahorro.",
+    icon: User,
+  },
+  {
+    id: "BUSINESS",
+    label: "Empresa",
+    description: "Facturación, impuestos y control de tu negocio.",
+    icon: Building2,
+  },
+  {
+    id: "BOTH",
+    label: "Ambas",
+    description: "Finanzas personales y empresariales en un solo lugar.",
+    icon: Briefcase,
+  },
+];
+
+function detectLocale() {
+  const lang =
+    typeof navigator !== "undefined" ? navigator.language : "es-CO";
   const region = lang.split("-")[1]?.toUpperCase() || "CO";
   return LOCALE_MAP[region] || LOCALE_MAP.CO;
 }
 
-function fieldErrorId(id: string) {
-  return `${id}-error`;
+const initialLocale = detectLocale();
+
+const step1Schema = z
+  .object({
+    mode: z.enum(["PERSONAL", "BUSINESS", "BOTH"], {
+      message: "Selecciona un modo para continuar.",
+    }),
+    personalName: z.string(),
+    businessName: z.string(),
+    taxId: z.string(),
+    country: z.enum(["CO", "MX", "BR", "AR", "CL", "PE"], {
+      message: "Selecciona un país.",
+    }),
+    currency: z.enum(["COP", "MXN", "BRL", "ARS", "CLP", "PEN", "USD"], {
+      message: "Selecciona una moneda.",
+    }),
+    timezone: z.string().min(1, "Selecciona una zona horaria."),
+  })
+  .superRefine((data, ctx) => {
+    if (data.mode === "PERSONAL" || data.mode === "BOTH") {
+      if (!data.personalName.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.too_small,
+          type: "string",
+          origin: "string",
+          minimum: 1,
+          inclusive: true,
+          message: "Tu nombre es obligatorio.",
+          path: ["personalName"],
+        });
+      }
+    }
+    if (data.mode === "BUSINESS" || data.mode === "BOTH") {
+      if (!data.businessName.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.too_small,
+          type: "string",
+          origin: "string",
+          minimum: 1,
+          inclusive: true,
+          message: "El nombre de la empresa es obligatorio.",
+          path: ["businessName"],
+        });
+      }
+    }
+  });
+
+const goalSchema = z.object({
+  name: z.string().min(1, "El nombre de la meta es obligatorio."),
+  targetAmount: z.number().min(1, "El monto objetivo debe ser mayor a 0."),
+  currency: z.string().min(1, "Selecciona una moneda."),
+});
+
+function fieldError(
+  errors: Record<string, string[] | undefined>,
+  key: string,
+) {
+  return errors[key]?.[0];
 }
 
-function getCountryLabel(value: string) {
-  return COUNTRY_OPTIONS.find((c) => c.value === value)?.label ?? value;
-}
-
-function getCurrencyLabel(value: string) {
-  return CURRENCY_OPTIONS.find((c) => c.value === value)?.label ?? value;
-}
-
-function getTimezoneLabel(value: string) {
-  return TIMEZONE_OPTIONS.find((t) => t.value === value)?.label ?? value;
-}
-
-function StepPanel({ children }: { children: ReactNode }) {
+function StepPanel({ children }: { children: React.ReactNode }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -141,7 +186,7 @@ function StepPanel({ children }: { children: ReactNode }) {
         "transition-all duration-300 ease-out motion-reduce:transition-none",
         visible
           ? "translate-y-0 opacity-100"
-          : "translate-y-3 opacity-0"
+          : "translate-y-3 opacity-0",
       )}
     >
       {children}
@@ -149,19 +194,12 @@ function StepPanel({ children }: { children: ReactNode }) {
   );
 }
 
-const initialLocale = detectLocale();
-
 export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [mode, setMode] = useState<UserScope | null>(null);
   const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const step1HeadingRef = useRef<HTMLHeadingElement>(null);
-  const step2HeadingRef = useRef<HTMLHeadingElement>(null);
-  const step3HeadingRef = useRef<HTMLHeadingElement>(null);
-  const firstModeButtonRef = useRef<HTMLButtonElement>(null);
-  const modeRadiogroupRef = useRef<HTMLDivElement>(null);
+  const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
 
   const [form, setForm] = useState({
     personalName: "",
@@ -172,20 +210,20 @@ export default function OnboardingFlow() {
     timezone: initialLocale.timezone,
   });
 
+  const [goal, setGoal] = useState<{
+    name: string;
+    targetAmount: string;
+  } | null>(null);
+
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const modeGroupRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (step === 3) {
-      step3HeadingRef.current?.focus();
-    } else if (step === 2) {
-      step2HeadingRef.current?.focus();
-    } else {
-      step1HeadingRef.current?.focus();
-    }
+    headingRef.current?.focus();
   }, [step]);
 
   const isBusiness = mode === "BUSINESS" || mode === "BOTH";
   const isPersonal = mode === "PERSONAL" || mode === "BOTH";
-  const selectedMode = MODES.find((m) => m.id === mode);
-  const SelectedIcon = selectedMode?.icon ?? Briefcase;
 
   function updateCountry(value: string) {
     const mapped = LOCALE_MAP[value];
@@ -197,31 +235,13 @@ export default function OnboardingFlow() {
     }));
   }
 
-  function validateStep(): Record<string, string> {
-    const errors: Record<string, string> = {};
-    if (!mode) {
-      errors.mode = "Selecciona un modo para continuar.";
-    }
-    if (step >= 2) {
-      if (isPersonal && !form.personalName.trim()) {
-        errors.personalName = "Tu nombre es obligatorio.";
-      }
-      if (isBusiness && !form.businessName.trim()) {
-        errors.businessName = "El nombre de la empresa es obligatorio.";
-      }
-      if (!form.country) errors.country = "Selecciona un país.";
-      if (!form.currency) errors.currency = "Selecciona una moneda.";
-      if (!form.timezone) errors.timezone = "Selecciona una zona horaria.";
-    }
-    return errors;
-  }
-
   function handleSelectMode(selected: UserScope) {
     setMode(selected);
+    setErrors((prev) => ({ ...prev, mode: undefined }));
   }
 
-  function focusModeRadio(index: number) {
-    const buttons = modeRadiogroupRef.current?.querySelectorAll('[role="radio"]');
+  function focusModeOption(index: number) {
+    const buttons = modeGroupRef.current?.querySelectorAll('[role="radio"]');
     const target = buttons?.[index] as HTMLElement | undefined;
     target?.focus();
   }
@@ -248,93 +268,87 @@ export default function OnboardingFlow() {
     if (targetMode && targetMode.id !== mode) {
       handleSelectMode(targetMode.id);
     }
-    focusModeRadio(nextIndex);
+    focusModeOption(nextIndex);
   }
 
-  function handleContinue() {
-    if (!mode) {
-      setTouched((t) => ({ ...t, mode: true }));
-      firstModeButtonRef.current?.focus();
-      toast.error("Selecciona un modo para continuar.");
+  function validateStep1() {
+    const parsed = step1Schema.safeParse({ ...form, mode });
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      setErrors(flattened as Record<string, string[] | undefined>);
+      return flattened;
+    }
+    setErrors({});
+    return null;
+  }
+
+  function handleContinueToStep2() {
+    const stepErrors = validateStep1();
+    if (stepErrors) {
+      const firstKey = Object.keys(stepErrors)[0];
+      const el = document.getElementById(firstKey ?? "mode");
+      el?.focus();
       return;
     }
     setStep(2);
   }
 
-  function handleBack() {
-    setStep(1);
+  function validateStep2() {
+    if (!goal || (!goal.name.trim() && !goal.targetAmount.trim())) {
+      // optional step
+      setErrors((prev) => ({ ...prev, goalName: undefined, goalAmount: undefined }));
+      return null;
+    }
+    const parsed = goalSchema.safeParse({
+      name: goal.name,
+      targetAmount: Number(goal.targetAmount),
+      currency: form.currency,
+    });
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      const nextErrors = {
+        goalName: flattened.name,
+        goalAmount: flattened.targetAmount,
+      } as Record<string, string[] | undefined>;
+      setErrors((prev) => ({ ...prev, ...nextErrors }));
+      return nextErrors;
+    }
+    setErrors((prev) => ({ ...prev, goalName: undefined, goalAmount: undefined }));
+    return null;
   }
 
-  function handleContinueToReview(e?: React.FormEvent) {
-    e?.preventDefault();
-    const errors = validateStep();
-    setTouched({
-      mode: true,
-      personalName: true,
-      businessName: true,
-      taxId: true,
-      country: true,
-      currency: true,
-      timezone: true,
-    });
-
-    if (Object.keys(errors).length > 0) {
-      const firstField = Object.keys(errors)[0];
-      const elementId = idForField[firstField] ?? firstField;
-      const el = document.getElementById(elementId);
-      el?.focus();
-      toast.error(errors[firstField]);
+  function handleContinueToStep3() {
+    const stepErrors = validateStep2();
+    if (stepErrors) {
+      document.getElementById("goal-name")?.focus();
       return;
     }
-
     setStep(3);
   }
 
-  function handleBackFromReview() {
-    setStep(2);
+  function handleBack() {
+    setStep((prev) => ((prev - 1) as 1 | 2 | 3));
+    setErrors({});
   }
 
-  const idForField: Record<string, string> = {
-    personalName: "personal-name",
-    businessName: "business-name",
-    country: "country",
-    currency: "currency",
-    timezone: "timezone",
-  };
-
   async function handleConfirm() {
-    const errors = validateStep();
-    setTouched({
-      mode: true,
-      personalName: true,
-      businessName: true,
-      taxId: true,
-      country: true,
-      currency: true,
-      timezone: true,
-    });
-
-    if (Object.keys(errors).length > 0) {
-      const firstField = Object.keys(errors)[0];
-      const elementId = idForField[firstField] ?? firstField;
-      setStep(2);
-      window.setTimeout(() => {
-        const el = document.getElementById(elementId);
-        el?.focus();
-      }, 0);
-      toast.error(errors[firstField]);
+    const step1Errors = validateStep1();
+    const step2Errors = validateStep2();
+    if (step1Errors || step2Errors) {
+      toast.error("Revisa los datos antes de continuar.");
       return;
     }
 
-    await submitOnboarding();
-  }
-
-  async function submitOnboarding() {
-    const name = isBusiness ? form.businessName : form.personalName;
+    if (!mode) {
+      toast.error("Selecciona un modo para continuar.");
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/organization", {
+      const name = isBusiness ? form.businessName : form.personalName;
+
+      const orgRes = await fetch("/api/organization", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -349,23 +363,65 @@ export default function OnboardingFlow() {
         }),
       });
 
-      if (res.ok) {
-        trackEvent("onboarding_complete", {
-          mode,
-          country: form.country,
-          currency: form.currency,
-          hasBusiness: isBusiness,
-          hasPersonal: isPersonal,
-        });
-        toast.success("¡Listo! Redirigiendo al dashboard...");
-        router.push("/dashboard");
-      } else if (res.status === 401) {
-        toast.error("Sesión expirada. Inicia sesión de nuevo.");
-        router.push("/sign-in");
-      } else {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Error al guardar. Intenta de nuevo.");
+      if (!orgRes.ok) {
+        if (orgRes.status === 401) {
+          toast.error("Sesión expirada. Inicia sesión de nuevo.");
+          router.push("/sign-in");
+          return;
+        }
+        const data = (await orgRes.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        toast.error(data.error || "Error al guardar tu perfil.");
+        return;
       }
+
+      let goalCreated = false;
+      if (
+        goal &&
+        goal.name.trim() &&
+        goal.targetAmount.trim() &&
+        mode &&
+        canAccessPersonal(mode)
+      ) {
+        const goalRes = await fetch("/api/personal/goals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: goal.name.trim(),
+            targetAmount: Number(goal.targetAmount),
+            currency: form.currency,
+          }),
+        });
+        if (goalRes.ok) {
+          goalCreated = true;
+        }
+      }
+
+      await fetch("/api/onboarding/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: {
+            "complete-profile": true,
+            "create-goal": goalCreated,
+            "explore-dashboard": true,
+          },
+          onboardingCompleted: true,
+        }),
+      });
+
+      trackEvent("onboarding_complete", {
+        mode,
+        country: form.country,
+        currency: form.currency,
+        hasBusiness: isBusiness,
+        hasPersonal: isPersonal,
+        goalCreated,
+      });
+
+      toast.success("¡Listo! Redirigiendo a tu dashboard...");
+      router.push("/dashboard/personal");
     } catch {
       toast.error("Error de red. Verifica tu conexión.");
     } finally {
@@ -373,18 +429,13 @@ export default function OnboardingFlow() {
     }
   }
 
-  const errors = validateStep();
-  const stepLabels = ["Elige tu modo", "Tus datos", "Revisa tu configuración"];
+  const stepLabels = ["Tus datos", "Objetivos", "Completado"];
   const totalSteps = 3;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-4 py-6 sm:px-6 sm:py-10">
-      <main className="flex w-full flex-1 flex-col items-center justify-center">
+      <main id="main-content" className="flex w-full flex-1 flex-col items-center justify-center">
         <div className="w-full max-w-md">
-          <div className="sr-only" aria-live="polite" aria-atomic="true">
-            Paso {step} de {totalSteps}: {stepLabels[step - 1]}
-          </div>
-
           <div className="mb-6 text-center sm:mb-8">
             <div className="mb-3 inline-flex items-center justify-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -415,23 +466,14 @@ export default function OnboardingFlow() {
                               ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background"
                               : completed
                                 ? "bg-emerald-500/15 text-emerald-500"
-                                : "bg-muted text-muted-foreground"
+                                : "bg-muted text-muted-foreground",
                           )}
                         >
                           {completed ? (
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                            <Check
+                              className="h-4 w-4"
                               aria-hidden="true"
-                            >
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
+                            />
                           ) : (
                             n
                           )}
@@ -441,7 +483,7 @@ export default function OnboardingFlow() {
                             "text-xs font-medium",
                             active || completed
                               ? "text-foreground"
-                              : "text-muted-foreground"
+                              : "text-muted-foreground",
                           )}
                         >
                           {stepLabels[idx]}
@@ -451,7 +493,7 @@ export default function OnboardingFlow() {
                         <div
                           className={cn(
                             "mx-2 h-px flex-1",
-                            step > n ? "bg-primary" : "bg-border"
+                            step > n ? "bg-primary" : "bg-border",
                           )}
                           aria-hidden="true"
                         />
@@ -465,28 +507,31 @@ export default function OnboardingFlow() {
 
           {step === 1 && (
             <StepPanel>
-              <section aria-labelledby="step1-heading" className="space-y-4">
+              <section aria-labelledby="step1-heading" className="space-y-5">
                 <div className="text-center">
                   <h1
                     id="step1-heading"
-                    ref={step1HeadingRef}
+                    ref={headingRef}
                     tabIndex={-1}
                     className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
                   >
-                    ¿Para qué usarás Rhynode?
+                    Configura tu perfil
                   </h1>
                   <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-                    Elige una opción para personalizar tu experiencia.
+                    Elige cómo usarás Rhynode y completa tus datos.
                   </p>
                 </div>
 
                 <div
-                  ref={modeRadiogroupRef}
+                  id="mode"
+                  ref={modeGroupRef}
+                  tabIndex={-1}
                   role="radiogroup"
                   aria-required="true"
                   aria-label="Modo de uso"
+                  aria-invalid={errors.mode ? true : undefined}
                   aria-describedby={
-                    touched.mode && errors.mode ? fieldErrorId("mode") : undefined
+                    errors.mode ? "mode-error" : undefined
                   }
                   className="space-y-3"
                   onKeyDown={handleModeKeyDown}
@@ -498,17 +543,18 @@ export default function OnboardingFlow() {
                       <button
                         key={m.id}
                         type="button"
-                        ref={idx === 0 ? firstModeButtonRef : undefined}
                         role="radio"
                         aria-checked={selected}
-                        tabIndex={selected || (mode === null && idx === 0) ? 0 : -1}
+                        tabIndex={
+                          selected || (mode === null && idx === 0) ? 0 : -1
+                        }
                         onClick={() => handleSelectMode(m.id)}
                         className={cn(
                           "group flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
                           "min-h-[72px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                           selected
                             ? "border-primary bg-primary/10"
-                            : "border-border bg-card hover:border-primary/40"
+                            : "border-border bg-card hover:border-primary/40",
                         )}
                       >
                         <div
@@ -516,7 +562,7 @@ export default function OnboardingFlow() {
                             "flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-colors",
                             selected
                               ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground group-hover:text-primary"
+                              : "bg-muted text-muted-foreground group-hover:text-primary",
                           )}
                         >
                           <Icon className="h-6 w-6" aria-hidden="true" />
@@ -534,7 +580,7 @@ export default function OnboardingFlow() {
                             "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
                             selected
                               ? "border-primary bg-primary"
-                              : "border-muted-foreground/30"
+                              : "border-muted-foreground/30",
                           )}
                           aria-hidden="true"
                         >
@@ -545,134 +591,108 @@ export default function OnboardingFlow() {
                       </button>
                     );
                   })}
-                  {touched.mode && errors.mode && (
+                  {errors.mode && (
                     <p
-                      id={fieldErrorId("mode")}
+                      id="mode-error"
                       className="text-sm font-medium text-destructive"
                       role="alert"
                     >
-                      {errors.mode}
+                      {fieldError(errors, "mode")}
                     </p>
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  size="lg"
-                  disabled={loading}
-                  onClick={handleContinue}
-                  className="mt-2 h-12 w-full gap-2 text-base"
-                >
-                  Continuar
-                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                </Button>
-              </section>
-            </StepPanel>
-          )}
-
-          {step === 2 && mode && (
-            <StepPanel>
-              <section aria-labelledby="step2-heading">
-                <div className="mb-4 text-center">
-                  <h1
-                    id="step2-heading"
-                    ref={step2HeadingRef}
-                    tabIndex={-1}
-                    className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-                  >
-                    Configura tu perfil
-                  </h1>
-                  <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-                    Completa estos datos para empezar a usar Rhynode.
-                  </p>
-                </div>
-
-                <form onSubmit={handleContinueToReview} className="space-y-5">
-                  {isPersonal && (
-                    <fieldset className="space-y-4 rounded-xl border border-border bg-card p-4">
-                      <legend className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <User className="h-4 w-4 text-primary" aria-hidden="true" />
+                {isPersonal && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="space-y-4 p-4">
+                      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <User
+                          className="h-4 w-4 text-primary"
+                          aria-hidden="true"
+                        />
                         Datos personales
-                      </legend>
+                      </h2>
                       <div className="space-y-2">
                         <Label htmlFor="personal-name">
-                          Tu nombre <span aria-hidden="true">*</span>
+                          Tu nombre{" "}
+                          <span className="text-destructive" aria-hidden="true">
+                            *
+                          </span>
                         </Label>
                         <Input
                           id="personal-name"
                           value={form.personalName}
                           onChange={(e) =>
-                            setForm({ ...form, personalName: e.target.value })
-                          }
-                          onBlur={() =>
-                            setTouched((t) => ({ ...t, personalName: true }))
+                            setForm((prev) => ({
+                              ...prev,
+                              personalName: e.target.value,
+                            }))
                           }
                           placeholder="Ej. Juan Pérez"
                           aria-required="true"
-                          aria-invalid={
-                            touched.personalName && !!errors.personalName
-                          }
+                          aria-invalid={errors.personalName ? true : undefined}
                           aria-describedby={
-                            touched.personalName && errors.personalName
-                              ? fieldErrorId("personal-name")
-                              : undefined
+                            errors.personalName ? "personal-name-error" : undefined
                           }
                           className="h-12"
                         />
-                        {touched.personalName && errors.personalName && (
+                        {errors.personalName && (
                           <p
-                            id={fieldErrorId("personal-name")}
+                            id="personal-name-error"
                             className="text-sm font-medium text-destructive"
                             role="alert"
                           >
-                            {errors.personalName}
+                            {fieldError(errors, "personalName")}
                           </p>
                         )}
                       </div>
-                    </fieldset>
-                  )}
+                    </CardContent>
+                  </Card>
+                )}
 
-                  {isBusiness && (
-                    <fieldset className="space-y-4 rounded-xl border border-border bg-card p-4">
-                      <legend className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                {isBusiness && (
+                  <Card className="border-border bg-card">
+                    <CardContent className="space-y-4 p-4">
+                      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <Building2
                           className="h-4 w-4 text-primary"
                           aria-hidden="true"
                         />
                         Datos de la empresa
-                      </legend>
+                      </h2>
                       <div className="space-y-2">
                         <Label htmlFor="business-name">
-                          Nombre de la empresa <span aria-hidden="true">*</span>
+                          Nombre de la empresa{" "}
+                          <span className="text-destructive" aria-hidden="true">
+                            *
+                          </span>
                         </Label>
                         <Input
                           id="business-name"
                           value={form.businessName}
                           onChange={(e) =>
-                            setForm({ ...form, businessName: e.target.value })
-                          }
-                          onBlur={() =>
-                            setTouched((t) => ({ ...t, businessName: true }))
+                            setForm((prev) => ({
+                              ...prev,
+                              businessName: e.target.value,
+                            }))
                           }
                           placeholder="Ej. Mi Empresa SAS"
                           aria-required="true"
-                          aria-invalid={
-                            touched.businessName && !!errors.businessName
-                          }
+                          aria-invalid={errors.businessName ? true : undefined}
                           aria-describedby={
-                            touched.businessName && errors.businessName
-                              ? fieldErrorId("business-name")
+                            errors.businessName
+                              ? "business-name-error"
                               : undefined
                           }
                           className="h-12"
                         />
-                        {touched.businessName && errors.businessName && (
+                        {errors.businessName && (
                           <p
-                            id={fieldErrorId("business-name")}
+                            id="business-name-error"
                             className="text-sm font-medium text-destructive"
                             role="alert"
                           >
-                            {errors.businessName}
+                            {fieldError(errors, "businessName")}
                           </p>
                         )}
                       </div>
@@ -685,360 +705,486 @@ export default function OnboardingFlow() {
                           id="tax-id"
                           value={form.taxId}
                           onChange={(e) =>
-                            setForm({ ...form, taxId: e.target.value })
+                            setForm((prev) => ({
+                              ...prev,
+                              taxId: e.target.value,
+                            }))
                           }
                           placeholder="Ej. 900.123.456-7"
                           className="h-12"
                         />
                       </div>
-                    </fieldset>
-                  )}
+                    </CardContent>
+                  </Card>
+                )}
 
-                  <Card className="border-border bg-card">
-                    <CardContent className="space-y-4 p-4">
-                      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Globe
-                          className="h-4 w-4 text-primary"
-                          aria-hidden="true"
-                        />
-                        Ubicación y moneda
-                      </h2>
+                <Card className="border-border bg-card">
+                  <CardContent className="space-y-4 p-4">
+                    <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Globe
+                        className="h-4 w-4 text-primary"
+                        aria-hidden="true"
+                      />
+                      Ubicación y moneda
+                    </h2>
+                    <div className="space-y-2">
+                      <Label htmlFor="country">
+                        País{" "}
+                        <span className="text-destructive" aria-hidden="true">*</span>
+                      </Label>
+                      <Select
+                        value={form.country}
+                        onValueChange={updateCountry}
+                      >
+                        <SelectTrigger
+                          id="country"
+                          aria-required="true"
+                          aria-invalid={errors.country ? true : undefined}
+                          aria-describedby={
+                            errors.country ? "country-error" : undefined
+                          }
+                          className="h-12"
+                        >
+                          <SelectValue placeholder="Selecciona un país" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRY_OPTIONS.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.country && (
+                        <p
+                          id="country-error"
+                          className="text-sm font-medium text-destructive"
+                          role="alert"
+                        >
+                          {fieldError(errors, "country")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor="country">
-                          País <span aria-hidden="true">*</span>
+                        <Label htmlFor="currency">
+                          Moneda{" "}
+                          <span className="text-destructive" aria-hidden="true">*</span>
                         </Label>
-                        <Select value={form.country} onValueChange={updateCountry}>
+                        <Select
+                          value={form.currency}
+                          onValueChange={(v) =>
+                            setForm((prev) => ({ ...prev, currency: v }))
+                          }
+                        >
                           <SelectTrigger
-                            id="country"
+                            id="currency"
                             aria-required="true"
-                            aria-invalid={touched.country && !!errors.country}
+                            aria-invalid={errors.currency ? true : undefined}
                             aria-describedby={
-                              touched.country && errors.country
-                                ? fieldErrorId("country")
-                                : undefined
+                              errors.currency ? "currency-error" : undefined
                             }
                             className="h-12"
                           >
-                            <SelectValue placeholder="Selecciona un país" />
+                            <SelectValue placeholder="Moneda" />
                           </SelectTrigger>
                           <SelectContent>
-                            {COUNTRY_OPTIONS.map((c) => (
+                            {CURRENCY_OPTIONS.map((c) => (
                               <SelectItem key={c.value} value={c.value}>
                                 {c.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        {touched.country && errors.country && (
+                        {errors.currency && (
                           <p
-                            id={fieldErrorId("country")}
+                            id="currency-error"
                             className="text-sm font-medium text-destructive"
                             role="alert"
                           >
-                            {errors.country}
+                            {fieldError(errors, "currency")}
                           </p>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label htmlFor="currency">
-                            Moneda <span aria-hidden="true">*</span>
-                          </Label>
-                          <Select
-                            value={form.currency}
-                            onValueChange={(v) =>
-                              setForm({ ...form, currency: v })
+                      <div className="space-y-2">
+                        <Label htmlFor="timezone">
+                          Zona horaria{" "}
+                          <span className="text-destructive" aria-hidden="true">*</span>
+                        </Label>
+                        <Select
+                          value={form.timezone}
+                          onValueChange={(v) =>
+                            setForm((prev) => ({ ...prev, timezone: v }))
+                          }
+                        >
+                          <SelectTrigger
+                            id="timezone"
+                            aria-required="true"
+                            aria-invalid={errors.timezone ? true : undefined}
+                            aria-describedby={
+                              errors.timezone ? "timezone-error" : undefined
                             }
+                            className="h-12"
                           >
-                            <SelectTrigger
-                              id="currency"
-                              aria-required="true"
-                              aria-invalid={touched.currency && !!errors.currency}
-                              aria-describedby={
-                                touched.currency && errors.currency
-                                  ? fieldErrorId("currency")
-                                  : undefined
-                              }
-                              className="h-12"
-                            >
-                              <SelectValue placeholder="Moneda" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CURRENCY_OPTIONS.map((c) => (
-                                <SelectItem key={c.value} value={c.value}>
-                                  {c.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {touched.currency && errors.currency && (
-                            <p
-                              id={fieldErrorId("currency")}
-                              className="text-sm font-medium text-destructive"
-                              role="alert"
-                            >
-                              {errors.currency}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="timezone">
-                            Zona horaria <span aria-hidden="true">*</span>
-                          </Label>
-                          <Select
-                            value={form.timezone}
-                            onValueChange={(v) =>
-                              setForm({ ...form, timezone: v })
-                            }
+                            <SelectValue placeholder="Zona" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TIMEZONE_OPTIONS.map((t) => (
+                              <SelectItem key={t.value} value={t.value}>
+                                {t.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {errors.timezone && (
+                          <p
+                            id="timezone-error"
+                            className="text-sm font-medium text-destructive"
+                            role="alert"
                           >
-                            <SelectTrigger
-                              id="timezone"
-                              aria-required="true"
-                              aria-invalid={
-                                touched.timezone && !!errors.timezone
-                              }
-                              aria-describedby={
-                                touched.timezone && errors.timezone
-                                  ? fieldErrorId("timezone")
-                                  : undefined
-                              }
-                              className="h-12"
-                            >
-                              <SelectValue placeholder="Zona" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {TIMEZONE_OPTIONS.map((t) => (
-                                <SelectItem key={t.value} value={t.value}>
-                                  {t.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {touched.timezone && errors.timezone && (
-                            <p
-                              id={fieldErrorId("timezone")}
-                              className="text-sm font-medium text-destructive"
-                              role="alert"
-                            >
-                              {errors.timezone}
-                            </p>
-                          )}
-                        </div>
+                            {fieldError(errors, "timezone")}
+                          </p>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      disabled={loading}
-                      onClick={handleBack}
-                      className="h-12 w-full gap-2 text-base sm:w-auto"
-                    >
-                      <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-                      Atrás
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={loading}
-                      className="h-12 w-full gap-2 text-base"
-                    >
-                      Continuar
-                      <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                    </Button>
-                  </div>
-                </form>
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled={loading}
+                  onClick={handleContinueToStep2}
+                  className="h-12 w-full gap-2 text-base"
+                >
+                  Continuar
+                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                </Button>
               </section>
             </StepPanel>
           )}
 
-          {step === 3 && mode && (
+          {step === 2 && (
             <StepPanel>
-              <section aria-labelledby="step3-heading">
-                <div className="mb-4 text-center">
+              <section aria-labelledby="step2-heading" className="space-y-5">
+                <div className="text-center">
                   <h1
-                    id="step3-heading"
-                    ref={step3HeadingRef}
+                    id="step2-heading"
+                    ref={headingRef}
                     tabIndex={-1}
                     className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
                   >
-                    Revisa tu configuración
+                    Define tu primer objetivo
                   </h1>
-                  <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-                    Confirma que todo esté correcto antes de continuar.
+                  <p className="mt-2 text-sm text-muted-foreground sm:text-base"
+>
+                    Opcional: crea una meta de ahorro para empezar con foco.
                   </p>
                 </div>
 
-                <div className="space-y-5">
-                  <Card className="border-border bg-card overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="flex items-center gap-4 border-b border-border bg-primary/5 p-4 sm:p-5">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                          <SelectedIcon className="h-6 w-6" aria-hidden="true" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Modo seleccionado
-                          </p>
-                          <h2 className="text-lg font-semibold text-foreground">
-                            {selectedMode?.label}
-                          </h2>
-                        </div>
+                <Card className="border-border bg-card">
+                  <CardContent className="space-y-4 p-4">
+                    <div className="flex items-center gap-2 pb-2">
+                      <Target
+                        className="h-5 w-5 text-primary"
+                        aria-hidden="true"
+                      />
+                      <h2 className="text-sm font-semibold text-foreground">
+                        Primera meta
+                      </h2>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="goal-name">
+                        Nombre de la meta{" "}
+                        <span className="text-muted-foreground">
+                          (opcional)
+                        </span>
+                      </Label>
+                      <Input
+                        id="goal-name"
+                        value={goal?.name ?? ""}
+                        onChange={(e) =>
+                          setGoal((prev) =>
+                            prev
+                              ? { ...prev, name: e.target.value }
+                              : { name: e.target.value, targetAmount: "" },
+                          )
+                        }
+                        placeholder="Ej. Vacaciones, fondo de emergencia..."
+                        aria-invalid={errors.goalName ? true : undefined}
+                        aria-describedby={
+                          errors.goalName ? "goal-name-error" : undefined
+                        }
+                        className="h-12"
+                      />
+                      {errors.goalName && (
+                        <p
+                          id="goal-name-error"
+                          className="text-sm font-medium text-destructive"
+                          role="alert"
+                        >
+                          {fieldError(errors, "goalName")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="goal-amount">
+                        Monto objetivo{" "}
+                        <span className="text-muted-foreground">
+                          (opcional)
+                        </span>
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="goal-amount"
+                          type="number"
+                          min={1}
+                          value={goal?.targetAmount ?? ""}
+                          onChange={(e) =>
+                            setGoal((prev) =>
+                              prev
+                                ? { ...prev, targetAmount: e.target.value }
+                                : { name: "", targetAmount: e.target.value },
+                            )
+                          }
+                          placeholder="Ej. 1000000"
+                          aria-invalid={errors.goalAmount ? true : undefined}
+                          aria-describedby={
+                            errors.goalAmount
+                              ? "goal-amount-error"
+                              : undefined
+                          }
+                          className="h-12"
+                        />
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {form.currency}
+                        </span>
                       </div>
+                      {errors.goalAmount && (
+                        <p
+                          id="goal-amount-error"
+                          className="text-sm font-medium text-destructive"
+                          role="alert"
+                        >
+                          {fieldError(errors, "goalAmount")}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                      <div className="space-y-4 p-4 sm:p-5">
-                        {isPersonal && (
-                          <div className="flex items-start gap-3">
-                            <User
-                              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Nombre personal
-                              </p>
-                              <p className="font-medium text-foreground">
-                                {form.personalName}
-                              </p>
-                            </div>
-                          </div>
+                <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    disabled={loading}
+                    onClick={handleBack}
+                    className="h-12 w-full gap-2 text-base sm:w-auto"
+                  >
+                    <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                    Atrás
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={loading}
+                    onClick={handleContinueToStep3}
+                    className="h-12 w-full gap-2 text-base"
+                  >
+                    Continuar
+                    <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                  </Button>
+                </div>
+              </section>
+            </StepPanel>
+          )}
+
+          {step === 3 && (
+            <StepPanel>
+              <section aria-labelledby="step3-heading" className="space-y-5">
+                <div className="text-center">
+                  <h1
+                    id="step3-heading"
+                    ref={headingRef}
+                    tabIndex={-1}
+                    className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+                  >
+                    Todo listo
+                  </h1>
+                  <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+                    Revisa tu configuración y entra a tu dashboard.
+                  </p>
+                </div>
+
+                <Card className="border-border bg-card overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex items-center gap-4 border-b border-border bg-primary/5 p-4 sm:p-5">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        {mode === "BUSINESS" ? (
+                          <Building2 className="h-6 w-6" aria-hidden="true" />
+                        ) : mode === "PERSONAL" ? (
+                          <User className="h-6 w-6" aria-hidden="true" />
+                        ) : (
+                          <Briefcase className="h-6 w-6" aria-hidden="true" />
                         )}
-
-                        {isBusiness && (
-                          <div className="flex items-start gap-3">
-                            <Building2
-                              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Empresa
-                              </p>
-                              <p className="font-medium text-foreground">
-                                {form.businessName}
-                              </p>
-                              {form.taxId && (
-                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                  NIT / RFC / CNPJ: {form.taxId}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="h-px bg-border" aria-hidden="true" />
-
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="flex items-start gap-3">
-                            <Globe
-                              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className="text-xs text-muted-foreground">País</p>
-                              <p className="font-medium text-foreground">
-                                {getCountryLabel(form.country)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <Coins
-                              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className="text-xs text-muted-foreground">Moneda</p>
-                              <p className="font-medium text-foreground">
-                                {getCurrencyLabel(form.currency)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <Clock
-                              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                              aria-hidden="true"
-                            />
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Zona horaria
-                              </p>
-                              <p className="font-medium text-foreground">
-                                {getTimezoneLabel(form.timezone)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Modo seleccionado
+                        </p>
+                        <h2 className="text-lg font-semibold text-foreground">
+                          {MODES.find((m) => m.id === mode)?.label}
+                        </h2>
+                      </div>
+                    </div>
 
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <h2 className="mb-3 text-center text-sm font-semibold text-foreground">
-                      Tu información está protegida
-                    </h2>
-                    <ul className="grid gap-3 sm:grid-cols-3">
-                      <li className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                        <Lock
-                          className="h-4 w-4 text-emerald-500"
-                          aria-hidden="true"
-                        />
-                        Encriptación de datos
-                      </li>
-                      <li className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                        <FileCheck
-                          className="h-4 w-4 text-primary"
-                          aria-hidden="true"
-                        />
-                        Cumplimiento DIAN
-                      </li>
-                      <li className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                        <CreditCard
-                          className="h-4 w-4 text-amber-500"
-                          aria-hidden="true"
-                        />
-                        Sin tarjeta de crédito
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      disabled={loading}
-                      onClick={handleBackFromReview}
-                      className="h-12 w-full gap-2 text-base sm:w-auto"
-                    >
-                      <Pencil className="h-5 w-5" aria-hidden="true" />
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      size="lg"
-                      disabled={loading}
-                      onClick={handleConfirm}
-                      className="h-12 w-full gap-2 text-base"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2
-                            className="h-5 w-5 animate-spin"
+                    <div className="space-y-4 p-4 sm:p-5">
+                      {isPersonal && (
+                        <div className="flex items-start gap-3">
+                          <User
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
                             aria-hidden="true"
                           />
-                          Guardando...
-                        </>
-                      ) : (
-                        <>
-                          Confirmar e ir al Dashboard
-                          <Check className="h-5 w-5" aria-hidden="true" />
-                        </>
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Nombre personal
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {form.personalName}
+                            </p>
+                          </div>
+                        </div>
                       )}
-                    </Button>
-                  </div>
+
+                      {isBusiness && (
+                        <div className="flex items-start gap-3">
+                          <Building2
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Empresa
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {form.businessName}
+                            </p>
+                            {form.taxId && (
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                NIT / RFC / CNPJ: {form.taxId}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="h-px bg-border" aria-hidden="true" />
+
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="flex items-start gap-3">
+                          <Globe
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">País</p>
+                            <p className="font-medium text-foreground">
+                              {COUNTRY_OPTIONS.find((c) => c.value === form.country)
+                                ?.label ?? form.country}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Coins
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Moneda
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {form.currency}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Clock
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Zona horaria
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {TIMEZONE_OPTIONS.find((t) => t.value === form.timezone)
+                                ?.label ?? form.timezone}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {goal && goal.name.trim() && (
+                        <div className="flex items-start gap-3">
+                          <Target
+                            className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              Meta inicial
+                            </p>
+                            <p className="font-medium text-foreground">
+                              {goal.name} ·{" "}
+                              {new Intl.NumberFormat("es-CO", {
+                                style: "currency",
+                                currency: form.currency,
+                                maximumFractionDigits: 0,
+                              }).format(Number(goal.targetAmount) || 0)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    disabled={loading}
+                    onClick={handleBack}
+                    className="h-12 w-full gap-2 text-base sm:w-auto"
+                  >
+                    <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                    Atrás
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={loading}
+                    onClick={handleConfirm}
+                    className="h-12 w-full gap-2 text-base"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2
+                          className="h-5 w-5 animate-spin"
+                          aria-hidden="true"
+                        />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        Ir al Dashboard
+                        <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                      </>
+                    )}
+                  </Button>
                 </div>
               </section>
             </StepPanel>
@@ -1047,20 +1193,17 @@ export default function OnboardingFlow() {
       </main>
 
       <footer className="mx-auto mt-8 w-full max-w-md">
-        <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-          <li className="inline-flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" aria-hidden="true" />
-            Encriptación de datos
-          </li>
-          <li className="inline-flex items-center gap-1.5">
-            <FileCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-            Cumplimiento DIAN
-          </li>
-          <li className="inline-flex items-center gap-1.5">
-            <CreditCard className="h-4 w-4 text-amber-500" aria-hidden="true" />
-            Sin tarjeta de crédito
-          </li>
-        </ul>
+        <p className="text-center text-xs text-muted-foreground">
+          Al continuar aceptas los{" "}
+          <Link href="/terms" className="underline hover:text-foreground">
+            Términos de servicio
+          </Link>{" "}
+          y{" "}
+          <Link href="/privacy" className="underline hover:text-foreground">
+            Política de privacidad
+          </Link>
+          .
+        </p>
       </footer>
     </div>
   );

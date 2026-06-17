@@ -1,12 +1,24 @@
 "use client";
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import {
   Bell,
   Check,
   Inbox,
   Loader2,
   Trash2,
+  Settings,
+  Wallet,
+  CreditCard,
+  Calendar,
+  Trophy,
+  ArrowLeftRight,
+  FileText,
+  Sparkles,
+  AlertCircle,
+  TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -56,6 +68,20 @@ const initialState: NotificationState = {
   unreadCount: 0,
   loading: false,
   error: false,
+};
+
+const notificationIcons: Record<string, LucideIcon> = {
+  budget: Wallet,
+  subscription: CreditCard,
+  weekly_summary: Calendar,
+  reminder: Bell,
+  achievement: Trophy,
+  transaction: ArrowLeftRight,
+  invoice: FileText,
+  insight: Sparkles,
+  alert: AlertCircle,
+  investment: TrendingUp,
+  system: Bell,
 };
 
 let storeState: NotificationState = { ...initialState };
@@ -129,11 +155,7 @@ function markAsReadOptimistically(id: string) {
   };
   emit();
 
-  fetch(`/api/notifications/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ read: true }),
-  }).catch(() => {
+  fetch(`/api/notifications/${id}/read`, { method: "POST" }).catch(() => {
     loadNotifications();
   });
 }
@@ -143,7 +165,7 @@ function markAllAsReadOptimistically() {
   storeState = { ...storeState, notifications: updated, unreadCount: 0 };
   emit();
 
-  fetch("/api/notifications/mark-all-read", { method: "POST" }).catch(() => {
+  fetch("/api/notifications/read-all", { method: "POST" }).catch(() => {
     loadNotifications();
   });
 }
@@ -187,6 +209,10 @@ function formatTimestamp(dateString: string): string {
   } catch {
     return dateString;
   }
+}
+
+function getNotificationIcon(type: string): LucideIcon {
+  return notificationIcons[type] ?? Bell;
 }
 
 function EmptyState({ onClose }: { onClose: () => void }) {
@@ -267,47 +293,73 @@ export function NotificationCenter() {
           <EmptyState onClose={() => setOpen(false)} />
         ) : (
           <ul className="divide-y divide-border" role="list">
-            {notifications.map((notification) => (
-              <li
-                key={notification.id}
-                className={cn(
-                  "flex gap-3 p-4 transition-colors",
-                  !notification.read && "bg-muted/40"
-                )}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{notification.title}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {notification.body}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatTimestamp(notification.createdAt)}
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col gap-1">
-                  {!notification.read && (
+            {notifications.map((notification) => {
+              const TypeIcon = getNotificationIcon(notification.type);
+              return (
+                <li
+                  key={notification.id}
+                  className={cn(
+                    "flex gap-3 p-4 transition-colors",
+                    !notification.read && "bg-muted/40"
+                  )}
+                >
+                  <div className="flex shrink-0 pt-0.5">
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-full",
+                        !notification.read
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <TypeIcon className="h-4 w-4" aria-hidden="true" />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{notification.title}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {notification.body}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatTimestamp(notification.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-1">
+                    {!notification.read && (
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => markAsReadOptimistically(notification.id)}
+                        aria-label={`Marcar como leída: ${notification.title}`}
+                      >
+                        <Check className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      onClick={() => markAsReadOptimistically(notification.id)}
-                      aria-label={`Marcar como leída: ${notification.title}`}
+                      onClick={() => deleteOptimistically(notification.id)}
+                      aria-label={`Eliminar notificación: ${notification.title}`}
                     >
-                      <Check className="h-4 w-4" aria-hidden="true" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => deleteOptimistically(notification.id)}
-                    aria-label={`Eliminar notificación: ${notification.title}`}
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </div>
-              </li>
-            ))}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
+      </div>
+      <Separator />
+      <div className="p-2">
+        <Link
+          href="/dashboard/settings"
+          onClick={() => setOpen(false)}
+          className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <Settings className="h-4 w-4" aria-hidden="true" />
+          Preferencias de notificaciones
+        </Link>
       </div>
     </div>
   );
@@ -337,7 +389,7 @@ export function NotificationCenter() {
       <div className="lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>{triggerButton}</SheetTrigger>
-          <SheetContent side="right" className="w-full p-0 sm:max-w-sm" role="dialog" aria-label="Centro de notificaciones">
+          <SheetContent side="right" className="w-full p-0 sm:max-w-sm" role="dialog" aria-modal="true" aria-label="Centro de notificaciones">
             <SheetHeader className="sr-only">
               <SheetTitle>Notificaciones</SheetTitle>
               <SheetDescription>Lista de notificaciones recientes.</SheetDescription>

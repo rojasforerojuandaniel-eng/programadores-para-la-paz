@@ -5,6 +5,7 @@ import { checkPlanLimit } from "@/lib/subscription";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { generateInvoiceNumber } from "@/lib/invoices";
 
 const createSchema = z.object({
   clientId: z.string(),
@@ -31,30 +32,6 @@ const createSchema = z.object({
     )
     .optional(),
 });
-
-async function generateInvoiceNumber(orgId: string): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `INV-${year}-`;
-
-  const latest = await prisma.invoice.findFirst({
-    where: {
-      organizationId: orgId,
-      number: { startsWith: prefix },
-    },
-    orderBy: { number: "desc" },
-  });
-
-  let sequence = 1;
-  if (latest) {
-    const parts = latest.number.split("-");
-    const lastSeq = parseInt(parts[parts.length - 1], 10);
-    if (!isNaN(lastSeq)) {
-      sequence = lastSeq + 1;
-    }
-  }
-
-  return `${prefix}${String(sequence).padStart(4, "0")}`;
-}
 
 export const GET = withRateLimit(
   async () => {

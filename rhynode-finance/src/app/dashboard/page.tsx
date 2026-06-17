@@ -27,9 +27,15 @@ import { calculateHealthScore } from "@/lib/health-score";
 import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
 import { DailyBriefing } from "@/components/dashboard/daily-briefing";
 import { SmartInsights } from "@/components/dashboard/smart-insights";
+import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { AiCopilot } from "@/components/dashboard/ai-copilot";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
-import type { UserScope } from "@/lib/scope";
+import { canAccessBusiness, type UserScope } from "@/lib/scope";
+import { BusinessKpiGrid } from "@/components/dashboard/business/business-kpi-grid";
+import { QuickActionsCard } from "@/components/dashboard/business/quick-actions-card";
+import { RevenueMiniChart } from "@/components/dashboard/business/revenue-mini-chart";
+import { RecentInvoicesCard } from "@/components/dashboard/business/recent-invoices-card";
+
 
 const Anomalies = dynamic(
   () => import("@/components/dashboard/anomalies").then((mod) => mod.Anomalies),
@@ -67,6 +73,16 @@ function KpiGridLoading() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
+      ))}
+    </div>
+  );
+}
+
+function BusinessKpiGridLoading() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
       ))}
     </div>
@@ -458,9 +474,37 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      <AiInsightsCard
+        userId={profile?.id}
+        orgId={org.id}
+        currency={org.currency}
+        scope={scope}
+      />
+
       <Suspense fallback={<WidgetLoading />}>
         <SmartInsights currency={org.currency} />
       </Suspense>
+
+      {canAccessBusiness(scope) && (
+        <div className="space-y-6">
+          <Suspense fallback={<BusinessKpiGridLoading />}>
+            <BusinessKpiGrid orgId={org.id} currency={org.currency} />
+          </Suspense>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <QuickActionsCard className="lg:col-span-1" />
+            <Suspense fallback={<WidgetLoading />}>
+              <RevenueMiniChart
+                orgId={org.id}
+                currency={org.currency}
+                className="lg:col-span-2"
+              />
+            </Suspense>
+          </div>
+          <Suspense fallback={<WidgetLoading />}>
+            <RecentInvoicesCard orgId={org.id} currency={org.currency} />
+          </Suspense>
+        </div>
+      )}
 
       <DraggableDashboard initialLayout={initialLayout} widgets={widgets} />
     </div>

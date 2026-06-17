@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import {
   CalendarDays,
@@ -29,6 +29,7 @@ import {
   Trash2,
   ArrowLeftRight,
   X,
+  FilterX,
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -70,10 +71,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import {
+  TransactionFilters,
+  type TransactionFiltersState,
+  type TransactionFilterOptions,
+} from "@/components/dashboard/transactions-filters";
 import { cn } from "@/lib/utils";
 
 type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
-type FilterType = "all" | "income" | "expense" | "recurring";
 
 export interface Transaction {
   id: string;
@@ -85,11 +90,13 @@ export interface Transaction {
   currency: string;
   isRecurring: boolean;
   bankAccountName?: string;
+  bankAccountId?: string;
 }
 
 interface TransactionsListProps {
   transactions: Transaction[];
   orgCurrency: string;
+  filterOptions: TransactionFilterOptions;
 }
 
 function formatCurrency(amount: number, currency: string) {
@@ -147,13 +154,6 @@ const categoryStyles: Record<string, { icon: LucideIcon; className: string }> = 
 function getCategoryMeta(category?: string) {
   return categoryStyles[category ?? ""] ?? categoryStyles.Otros;
 }
-
-const filterChips: { key: FilterType; label: string }[] = [
-  { key: "all", label: "Todos" },
-  { key: "income", label: "Ingresos" },
-  { key: "expense", label: "Gastos" },
-  { key: "recurring", label: "Recurrentes" },
-];
 
 function Checkbox({
   checked,
@@ -233,7 +233,7 @@ function BulkActionsBar({
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
           {count}
         </span>
-        <span className="hidden sm:inline">seleccionados</span>
+        <span className="hidden sm:inline">selectionados</span>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onChangeCategory}>
@@ -344,9 +344,9 @@ function EditTransactionDialog({
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Tipo</Label>
+              <Label htmlFor="edit-type">Tipo</Label>
               <Select defaultValue={tx.type} disabled>
-                <SelectTrigger>
+                <SelectTrigger id="edit-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -358,9 +358,9 @@ function EditTransactionDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Moneda</Label>
+              <Label htmlFor="edit-currency">Moneda</Label>
               <Select defaultValue={tx.currency} disabled>
-                <SelectTrigger>
+                <SelectTrigger id="edit-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -373,17 +373,17 @@ function EditTransactionDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Descripción</Label>
-            <Input defaultValue={tx.description} />
+            <Label htmlFor="edit-description">Descripción</Label>
+            <Input id="edit-description" defaultValue={tx.description} />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Monto</Label>
-              <Input type="number" defaultValue={tx.amount} />
+              <Label htmlFor="edit-amount">Monto</Label>
+              <Input id="edit-amount" type="number" defaultValue={tx.amount} />
             </div>
             <div className="space-y-2">
-              <Label>Categoría</Label>
-              <Input defaultValue={tx.category} />
+              <Label htmlFor="edit-category">Categoría</Label>
+              <Input id="edit-category" defaultValue={tx.category} />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -398,28 +398,54 @@ function EditTransactionDialog({
   );
 }
 
+function getSearchParam(params: URLSearchParams, key: string): string {
+  return params.get(key) ?? "";
+}
+
+function parseFiltersFromSearchParams(
+  params: URLSearchParams
+): TransactionFiltersState {
+  const type = getSearchParam(params, "type");
+  return {
+    q: getSearchParam(params, "q"),
+    from: getSearchParam(params, "from"),
+    to: getSearchParam(params, "to"),
+    type: type === "INCOME" || type === "EXPENSE" ? type : "all",
+    category: getSearchParam(params, "category"),
+    account: getSearchParam(params, "account"),
+    min: getSearchParam(params, "min"),
+    max: getSearchParam(params, "max"),
+  };
+}
+
 export function TransactionsList({
   transactions,
   orgCurrency,
+  filterOptions,
 }: TransactionsListProps) {
   const router = useRouter();
-  const [filter, setFilter] = useState<FilterType>("all");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [actionTx, setActionTx] = useState<Transaction | null>(null);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
 
-  const filtered = useMemo(() => {
-    switch (filter) {
-      case "income":
-        return transactions.filter((t) => t.type === "INCOME");
-      case "expense":
-        return transactions.filter((t) => t.type === "EXPENSE");
-      case "recurring":
-        return transactions.filter((t) => t.isRecurring);
-      default:
-        return transactions;
-    }
-  }, [transactions, filter]);
+  const filters = parseFiltersFromSearchParams(searchParams);
+  const filtered = transactions;
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.q.trim()) count += 1;
+    if (filters.type !== "all") count += 1;
+    if (filters.category) count += 1;
+    if (filters.account) count += 1;
+    if (filters.from) count += 1;
+    if (filters.to) count += 1;
+    if (filters.min) count += 1;
+    if (filters.max) count += 1;
+    return count;
+  }, [filters]);
 
   const allFilteredSelected =
     filtered.length > 0 && filtered.every((t) => selectedIds.has(t.id));
@@ -447,6 +473,34 @@ export function TransactionsList({
   }, [filtered, allFilteredSelected]);
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const handleFilterChange = useCallback(
+    (next: TransactionFiltersState) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const setOrDelete = (key: string, value: string) => {
+        if (value && value !== "all") params.set(key, value);
+        else params.delete(key);
+      };
+
+      setOrDelete("q", next.q);
+      setOrDelete("type", next.type);
+      setOrDelete("category", next.category);
+      setOrDelete("account", next.account);
+      setOrDelete("from", next.from);
+      setOrDelete("to", next.to);
+      setOrDelete("min", next.min);
+      setOrDelete("max", next.max);
+
+      const query = params.toString();
+      const targetUrl = query ? `${pathname}?${query}` : pathname;
+      router.replace(targetUrl, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
+
+  const handleResetFilters = useCallback(() => {
+    router.replace(pathname, { scroll: false });
+  }, [pathname, router]);
 
   const handleDelete = useCallback(
     async (tx: Transaction) => {
@@ -510,48 +564,49 @@ export function TransactionsList({
     clearSelection();
   }, [selectedIds.size, clearSelection]);
 
-  if (transactions.length === 0) {
-    return (
-      <CardContent>
-        <EmptyStateCard
-          variant="lg"
-          icon={ArrowLeftRight}
-          title="El centro de tus finanzas"
-          description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."
-          hint="Empieza creando tu primera transacción."
-        />
-      </CardContent>
-    );
-  }
-
   return (
     <CardContent className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {filterChips.map((chip) => (
-            <Button
-              key={chip.key}
-              variant={filter === chip.key ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter(chip.key)}
-            >
-              {chip.label}
-            </Button>
-          ))}
-        </div>
-        <span className="text-sm text-muted-foreground">
-          {filtered.length} de {transactions.length}
+      <TransactionFilters
+        filters={filters}
+        options={filterOptions}
+        onChange={handleFilterChange}
+        onReset={handleResetFilters}
+      />
+
+      <div className="flex items-center justify-between">
+        <span
+          className="text-sm text-muted-foreground"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {filtered.length} transacción{filtered.length === 1 ? "" : "es"}
+          {activeFilterCount > 0 && ` filtrada${filtered.length === 1 ? "" : "s"}`}
         </span>
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyStateCard
-          variant="md"
-          icon={ArrowLeftRight}
-          title="Sin resultados"
-          description={`No hay transacciones para el filtro "${filterChips.find((c) => c.key === filter)?.label}".`}
-          hint="Prueba con otro filtro."
-        />
+        activeFilterCount > 0 ? (
+          <EmptyStateCard
+            variant="md"
+            icon={FilterX}
+            title="Sin resultados"
+            description="Ninguna transacción coincide con los filtros seleccionados."
+            hint="Ajusta los filtros o límpialos para ver más resultados."
+            action={
+              <Button variant="outline" onClick={handleResetFilters}>
+                Limpiar filtros
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyStateCard
+            variant="lg"
+            icon={ArrowLeftRight}
+            title="El centro de tus finanzas"
+            description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."
+            hint="Empieza creando tu primera transacción."
+          />
+        )
       ) : (
         <>
           {hasSelection && (

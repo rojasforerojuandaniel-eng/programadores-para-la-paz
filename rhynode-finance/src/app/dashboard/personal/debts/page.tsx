@@ -7,9 +7,16 @@ import { Button } from "@/components/ui/button";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { ProgressBar } from "@/components/dashboard/progress-bar";
 import { TableCell } from "@/components/ui/table";
 import { CreateDebtDialog } from "./create-dialog";
 import { RecordPaymentDialog } from "./record-payment-dialog";
+import {
+  formatCurrency,
+  debtMonthlyPayment,
+  payoffEstimate,
+  monthsBetween,
+} from "@/lib/finance-math";
 import {
   Scale,
   AlertTriangle,
@@ -18,15 +25,8 @@ import {
   CalendarClock,
   Landmark,
   ArrowRight,
+  Percent,
 } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
 
 function formatShortDate(date: Date) {
   return new Intl.DateTimeFormat("es-CO", {
@@ -105,11 +105,13 @@ export default async function DebtsPage() {
 
   const columns = [
     { key: "name", header: "Nombre" },
-    { key: "type", header: "Tipo" },
     { key: "counterparty", header: "Acreedor" },
-    { key: "remaining", header: "Restante" },
+    { key: "remaining", header: "Saldo" },
+    { key: "rate", header: "Tasa" },
+    { key: "payment", header: "Cuota mensual" },
     { key: "progress", header: "Progreso" },
-    { key: "dueDate", header: "Próximo vencimiento" },
+    { key: "payoff", header: "Liquidación" },
+    { key: "dueDate", header: "Vencimiento" },
     { key: "status", header: "Estado" },
     { key: "action", header: "" },
   ];
@@ -156,20 +158,45 @@ export default async function DebtsPage() {
             const upcoming = isUpcoming(dueDate, debt.status);
             const status = debtStatusBadge(debt.status, overdue);
             const isPaid = debt.status === "PAID";
+            const payoffMonths = isPaid
+              ? 0
+              : dueDate
+                ? monthsBetween(new Date(), dueDate)
+                : 12;
+            const monthlyPayment = debtMonthlyPayment(
+              remaining,
+              debt.interestRate,
+              payoffMonths
+            );
+            const payoff = payoffEstimate(remaining, monthlyPayment);
 
             return (
               <>
                 <TableCell className="py-3 font-medium">{debt.name}</TableCell>
-                <TableCell className="py-3">
-                  <Badge variant={debt.type === "OWE" ? "destructive" : "default"}>
-                    {debt.type === "OWE" ? "Debo" : "Me deben"}
-                  </Badge>
-                </TableCell>
                 <TableCell className="py-3 text-muted-foreground">
                   {debt.counterparty || "—"}
                 </TableCell>
                 <TableCell className="py-3 font-semibold">
                   {formatCurrency(remaining, debt.currency)}
+                </TableCell>
+                <TableCell className="py-3">
+                  {debt.interestRate != null ? (
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <Percent className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                      {debt.interestRate.toFixed(2)}%
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="py-3">
+                  {isPaid ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <span className="font-medium">
+                      {formatCurrency(monthlyPayment, debt.currency)}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="w-full max-w-[140px]">
@@ -186,13 +213,30 @@ export default async function DebtsPage() {
                   </div>
                 </TableCell>
                 <TableCell className="py-3">
+                  {payoff ? (
+                    <span
+                      className={`text-sm ${
+                        payoff.months > 12
+                          ? "text-danger font-medium"
+                          : payoff.months > 6
+                            ? "text-warning"
+                            : "text-success"
+                      }`}
+                    >
+                      {payoff.days} días
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="py-3">
                   {dueDate ? (
                     <span
                       className={`inline-flex items-center gap-1 ${
                         overdue ? "text-warning font-medium" : "text-muted-foreground"
                       }`}
                     >
-                      <CalendarClock className="h-3.5 w-3.5" />
+                      <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
                       {formatShortDate(dueDate)}
                       {overdue && " · vencida"}
                       {!overdue && upcoming && " · próxima"}
@@ -215,14 +259,18 @@ export default async function DebtsPage() {
                       currency={debt.currency}
                       trigger={
                         <Button variant="outline" size="sm" className="gap-2">
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
                           Pagar
                         </Button>
                       }
                     />
                   )}
                   {isPaid && (
-                    <CheckCircle2 className="ml-auto h-5 w-5 text-success" aria-label="Pagada" />
+                    <CheckCircle2
+                      className="ml-auto h-5 w-5 text-success"
+                      aria-label="Pagada"
+                      role="img"
+                    />
                   )}
                 </TableCell>
               </>
@@ -237,6 +285,17 @@ export default async function DebtsPage() {
             const upcoming = isUpcoming(dueDate, debt.status);
             const status = debtStatusBadge(debt.status, overdue);
             const isPaid = debt.status === "PAID";
+            const payoffMonths = isPaid
+              ? 0
+              : dueDate
+                ? monthsBetween(new Date(), dueDate)
+                : 12;
+            const monthlyPayment = debtMonthlyPayment(
+              remaining,
+              debt.interestRate,
+              payoffMonths
+            );
+            const payoff = payoffEstimate(remaining, monthlyPayment);
 
             return (
               <div className="flex flex-col gap-4">
@@ -245,7 +304,7 @@ export default async function DebtsPage() {
                     <p className="font-semibold leading-tight">{debt.name}</p>
                     {debt.counterparty ? (
                       <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                        <Landmark className="h-3 w-3" />
+                        <Landmark className="h-3 w-3" aria-hidden="true" />
                         {debt.counterparty}
                       </p>
                     ) : null}
@@ -255,28 +314,40 @@ export default async function DebtsPage() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                  <div className="text-muted-foreground">Saldo restante</div>
-                  <div className="text-right font-semibold">
-                    {formatCurrency(remaining, debt.currency)}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-muted/40 p-2">
+                    <p className="text-xs text-muted-foreground">Saldo</p>
+                    <p className="text-sm font-semibold">
+                      {formatCurrency(remaining, debt.currency)}
+                    </p>
                   </div>
-
-                  <div className="text-muted-foreground">Progreso</div>
-                  <div className="text-right font-medium">{Math.round(progress)}% pagado</div>
+                  <div className="rounded-lg bg-muted/40 p-2">
+                    <p className="text-xs text-muted-foreground">Tasa</p>
+                    <p className="text-sm font-semibold">
+                      {debt.interestRate != null
+                        ? `${debt.interestRate.toFixed(2)}%`
+                        : "—"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted/40 p-2">
+                    <p className="text-xs text-muted-foreground">Cuota</p>
+                    <p className="text-sm font-semibold">
+                      {isPaid ? "—" : formatCurrency(monthlyPayment, debt.currency)}
+                    </p>
+                  </div>
                 </div>
 
                 <div>
-                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-success transition-all"
-                      style={{ width: `${progress}%` }}
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {formatCurrency(principal - remaining, debt.currency)} de{" "}
-                    {formatCurrency(principal, debt.currency)}
-                  </p>
+                  <ProgressBar
+                    value={progress}
+                    max={100}
+                    colorClassName="bg-success"
+                    showLabel
+                    label={`${Math.round(progress)}% pagado · ${formatCurrency(
+                      principal - remaining,
+                      debt.currency
+                    )} de ${formatCurrency(principal, debt.currency)}`}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -284,7 +355,9 @@ export default async function DebtsPage() {
                     <Badge variant={status.variant} className={status.className}>
                       {status.label}
                     </Badge>
-                    {overdue && <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" />}
+                    {overdue && (
+                      <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" />
+                    )}
                     {upcoming && !overdue && (
                       <CalendarClock className="h-4 w-4 text-info" aria-hidden="true" />
                     )}
@@ -300,6 +373,21 @@ export default async function DebtsPage() {
                   </span>
                 </div>
 
+                {payoff && !isPaid && (
+                  <div
+                    className={`text-sm ${
+                      payoff.months > 12
+                        ? "text-danger"
+                        : payoff.months > 6
+                          ? "text-warning"
+                          : "text-success"
+                    }`}
+                  >
+                    <span className="font-medium">Liquidación estimada:</span>{" "}
+                    {payoff.days} días
+                  </div>
+                )}
+
                 {!isPaid && (
                   <RecordPaymentDialog
                     debtId={debt.id}
@@ -308,7 +396,7 @@ export default async function DebtsPage() {
                     currency={debt.currency}
                     trigger={
                       <Button variant="outline" className="w-full gap-2">
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         Registrar pago
                       </Button>
                     }
@@ -316,7 +404,7 @@ export default async function DebtsPage() {
                 )}
                 {isPaid && (
                   <div className="flex items-center justify-center gap-2 rounded-lg border border-border bg-muted/40 py-2 text-sm font-medium text-success">
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                     Deuda saldada
                   </div>
                 )}

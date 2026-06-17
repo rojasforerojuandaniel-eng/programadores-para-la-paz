@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -14,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { addSavings } from "./actions";
 
 interface AddSavingsDialogProps {
   goalId: string;
@@ -22,7 +22,11 @@ interface AddSavingsDialogProps {
   currency: string;
 }
 
-export function AddSavingsDialog({ goalId, goalName, currency }: AddSavingsDialogProps) {
+export function AddSavingsDialog({
+  goalId,
+  goalName,
+  currency,
+}: AddSavingsDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState("");
@@ -37,16 +41,26 @@ export function AddSavingsDialog({ goalId, goalName, currency }: AddSavingsDialo
     }
 
     setLoading(true);
-    const result = await addSavings({ goalId, amount: value });
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/personal/goals/${goalId}/savings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: value }),
+      });
 
-    if (result.success) {
-      toast.success("Ahorro añadido");
-      setAmount("");
-      setOpen(false);
-      router.refresh();
-    } else {
-      toast.error(result.error || "No se pudo añadir el ahorro");
+      if (res.ok) {
+        toast.success("Ahorro añadido");
+        setAmount("");
+        setOpen(false);
+        router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "No se pudo añadir el ahorro");
+      }
+    } catch {
+      toast.error("Error de red");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -54,13 +68,18 @@ export function AddSavingsDialog({ goalId, goalName, currency }: AddSavingsDialo
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Añadir ahorro
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Añadir ahorro a &ldquo;{goalName}&rdquo;</DialogTitle>
+          <DialogTitle className="heading-card">
+            Añadir ahorro a &ldquo;{goalName}&rdquo;
+          </DialogTitle>
+          <DialogDescription>
+            Ingresa el monto que deseas sumar al ahorro de esta meta.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
@@ -76,9 +95,17 @@ export function AddSavingsDialog({ goalId, goalName, currency }: AddSavingsDialo
               placeholder="0"
               autoFocus
             />
+            <p className="text-xs text-muted-foreground">
+              Este monto se suma al ahorro actual de la meta.
+            </p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>

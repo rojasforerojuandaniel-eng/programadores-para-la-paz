@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -224,7 +225,7 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
 
   React.useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setIsOpen((prev) => !prev);
       }
@@ -254,7 +255,7 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           size="icon"
           className="h-10 w-10 shrink-0"
           onClick={() => setIsOpen(true)}
-          aria-label="Abrir búsqueda global (⌘K)"
+          aria-label="Abrir búsqueda global (⌘⇧K)"
         >
           <Search className="h-5 w-5" aria-hidden="true" />
         </Button>
@@ -286,6 +287,9 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           aria-modal="true"
         >
           <DialogTitle className="sr-only">Búsqueda global</DialogTitle>
+          <DialogDescription className="sr-only">
+            Busca transacciones, facturas, clientes, proyectos y cuentas.
+          </DialogDescription>
           <div className="flex items-center gap-3 border-b px-4 py-3">
             <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
             <Input

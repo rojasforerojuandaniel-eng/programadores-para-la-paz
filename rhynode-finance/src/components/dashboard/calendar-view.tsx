@@ -45,6 +45,7 @@ import {
   Scale,
   ChevronLeft,
   ChevronRight,
+  Star,
   Calendar,
   CalendarDays,
   List,
@@ -55,7 +56,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-type CalendarEventType = "debt" | "recurring" | "goal" | "invoice" | "tax";
+type CalendarEventType = "debt" | "recurring" | "goal" | "invoice" | "tax" | "subscription";
 type View = "month" | "week" | "list";
 type EventStatus = "upcoming" | "overdue" | "paid";
 
@@ -90,6 +91,12 @@ const typeConfig: Record<
     icon: Repeat,
     color: "bg-blue-500/15 text-blue-500 border-blue-500/20",
     href: "/dashboard/personal/recurring",
+  },
+  subscription: {
+    label: "Suscripción",
+    icon: Star,
+    color: "bg-pink-500/15 text-pink-500 border-pink-500/20",
+    href: "/dashboard/personal/subscriptions",
   },
   goal: {
     label: "Meta",
@@ -787,7 +794,7 @@ function EmptyState() {
       variant="lg"
       icon={Calendar}
       title="Sin vencimientos en este periodo"
-      description="Aquí aparecerán deudas, pagos recurrentes, metas, facturas e impuestos con fecha de vencimiento."
+      description="Aquí aparecerán deudas, pagos recurrentes, suscripciones, metas, facturas e impuestos con fecha de vencimiento."
       hint="Navega a otro periodo o crea tus primeros registros."
     />
   );

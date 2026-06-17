@@ -1,0 +1,118 @@
+import Link from "next/link";
+import { decimalToNumber } from "@/lib/decimal";
+import { getPrisma } from "@/lib/prisma";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { FileText, Plus, Receipt } from "lucide-react";
+
+function formatCurrency(amount: number, currency: string) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+const statusConfig: Record<string, { label: string; className: string }> = {
+  DRAFT: { label: "Borrador", className: "bg-slate-100 text-slate-700" },
+  SENT: { label: "Enviada", className: "bg-amber-50 text-amber-800" },
+  PAID: { label: "Pagada", className: "bg-emerald-50 text-emerald-800" },
+  OVERDUE: { label: "Vencida", className: "bg-rose-50 text-rose-700" },
+  CANCELLED: { label: "Anulada", className: "bg-slate-100 text-slate-700" },
+  PARTIAL: { label: "Parcial", className: "bg-blue-50 text-blue-700" },
+};
+
+function StatusBadge({ status }: { status: string }) {
+  const config = statusConfig[status] || statusConfig.DRAFT;
+  return (
+    <Badge variant="outline" className={config.className}>
+      {config.label}
+    </Badge>
+  );
+}
+
+interface RecentInvoicesCardProps {
+  orgId: string;
+  currency: string;
+  className?: string;
+}
+
+export async function RecentInvoicesCard({
+  orgId,
+  currency,
+  className,
+}: RecentInvoicesCardProps) {
+  const prisma = getPrisma();
+  const invoices = await prisma.invoice.findMany({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { client: { select: { name: true } } },
+  });
+
+  const empty = invoices.length === 0;
+
+  return (
+    <Card className={cn("surface-elevated-2", className)}>
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="heading-card flex items-center gap-2">
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          Facturas Recientes
+        </CardTitle>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/invoices">Ver todas</Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {empty ? (
+          <EmptyStateCard
+            variant="sm"
+            className="border-0 bg-transparent shadow-none"
+            icon={Receipt}
+            title="Sin facturas"
+            description="Crea tu primera factura para empezar a cobrar."
+            action={
+              <Button size="sm" className="gap-1" asChild>
+                <Link href="/dashboard/invoices">
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Crear primera factura
+                </Link>
+              </Button>
+            }
+          />
+        ) : (
+          <ul className="space-y-3">
+            {invoices.map((invoice) => (
+              <li
+                key={invoice.id}
+                className="flex items-center justify-between rounded-lg border border-border p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {invoice.client?.name || "Cliente"}
+                  </p>
+                  <p className="body-small text-muted-foreground">
+                    {invoice.number} ·{" "}
+                    {new Date(invoice.issueDate).toLocaleDateString("es-CO")}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <StatusBadge status={invoice.status} />
+                  <span className="text-sm font-semibold">
+                    {formatCurrency(
+                      decimalToNumber(invoice.total),
+                      invoice.currency || currency,
+                    )}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

@@ -14,7 +14,9 @@ export interface SubscriptionItem {
   lastDetectedAt: string;
   increased: boolean;
   unused: boolean;
+  matched: boolean;
   nextRenewal: string | null;
+  daysRemaining: number | null;
 }
 
 export function formatCurrency(amount: number, currency: string) {
@@ -91,6 +93,34 @@ export function yearlyEquivalent(amount: number, frequency: string): number {
   }
 }
 
+
+export function subtractFrequency(date: Date, frequency: string): Date {
+  const prev = new Date(date);
+  switch (frequency) {
+    case "DAILY":
+      prev.setDate(prev.getDate() - 1);
+      break;
+    case "WEEKLY":
+      prev.setDate(prev.getDate() - 7);
+      break;
+    case "BIWEEKLY":
+      prev.setDate(prev.getDate() - 14);
+      break;
+    case "MONTHLY":
+      prev.setMonth(prev.getMonth() - 1);
+      break;
+    case "QUARTERLY":
+      prev.setMonth(prev.getMonth() - 3);
+      break;
+    case "YEARLY":
+      prev.setFullYear(prev.getFullYear() - 1);
+      break;
+    default:
+      prev.setMonth(prev.getMonth() - 1);
+  }
+  return prev;
+}
+
 export function addFrequency(date: Date, frequency: string): Date {
   const next = new Date(date);
   switch (frequency) {
@@ -165,17 +195,60 @@ export function detectPriceIncrease(
   return last > prev;
 }
 
+
+export function daysUntil(date: string | Date | null): number | null {
+  if (!date) return null;
+  const target = new Date(date);
+  const now = new Date();
+  return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+export function detectAmountMatch(
+  subscription: DetectedSubscription,
+  transactions: Transaction[]
+): boolean {
+  if (!transactions.length) return false;
+  const subAmount = Number(subscription.amount);
+  if (!Number.isFinite(subAmount) || subAmount === 0) return false;
+  const threshold = subAmount * 0.2;
+  return transactions.some((tx) => {
+    const txAmount = Number(tx.amount);
+    return Math.abs(txAmount - subAmount) <= threshold;
+  });
+}
+
+export function getOccurrencesInRange(
+  lastPaidAt: Date,
+  frequency: string,
+  from: Date,
+  to: Date
+): Date[] {
+  let current = addFrequency(new Date(lastPaidAt), frequency);
+  while (current < from) {
+    current = addFrequency(current, frequency);
+  }
+  const dates: Date[] = [];
+  while (current <= to) {
+    dates.push(new Date(current));
+    current = addFrequency(current, frequency);
+  }
+  return dates;
+}
+
 export function computeSubscriptionMeta(
   subscription: DetectedSubscription,
-  transactionsByDescription: Map<string, Transaction[]>
-): Pick<SubscriptionItem, "increased" | "unused" | "nextRenewal"> {
+  transactionsByDescription: Map<string, Transaction[]>,
+  allTransactions: Transaction[]
+): Pick<SubscriptionItem, "increased" | "unused" | "matched" | "nextRenewal" | "daysRemaining"> {
   const increased = detectPriceIncrease(subscription, transactionsByDescription);
   const unused = daysSince(subscription.lastPaidAt) > 45;
+  const matched = detectAmountMatch(subscription, allTransactions);
   const nextRenewal = subscription.lastPaidAt
     ? addFrequency(new Date(subscription.lastPaidAt), subscription.frequency).toISOString()
     : null;
+  const daysRemaining = nextRenewal ? daysUntil(nextRenewal) : null;
 
-  return { increased, unused, nextRenewal };
+  return { increased, unused, matched, nextRenewal, daysRemaining };
 }
 
 export function statusLabel(status: string) {

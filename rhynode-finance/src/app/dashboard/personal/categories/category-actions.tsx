@@ -50,7 +50,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
         onClick={() => { setOpenActions(false); setOpenEdit(true); }}
         className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <Pencil className="h-4 w-4 text-muted-foreground" />
+        <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         Editar
       </button>
       <button
@@ -58,7 +58,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
         onClick={() => { setOpenActions(false); setOpenDelete(true); }}
         className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive outline-hidden transition-colors hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-4 w-4" aria-hidden="true" />
         Eliminar
       </button>
     </>
@@ -84,7 +84,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
               onClick={() => setOpenEdit(true)}
               className="h-10 cursor-pointer px-3"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="h-4 w-4" aria-hidden="true" />
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -92,7 +92,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
               className="h-10 cursor-pointer px-3"
               variant="destructive"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
               Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -187,12 +187,12 @@ export function QuickActionsFab() {
         aria-hidden="true"
         onClick={handleCloseMenu}
         className={cn(
-          "fixed inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out",
+          "fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out",
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
       />
 
-      <div className="fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-40 flex flex-col items-end lg:hidden">
+      <div className="fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-end lg:hidden">
         <div
           id={MENU_ID}
           role="menu"

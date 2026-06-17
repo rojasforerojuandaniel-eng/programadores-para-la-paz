@@ -14,6 +14,7 @@ import { ReminderDialog, type ReminderRow } from "./reminder-dialog";
 
 interface RemindersViewProps {
   reminders: ReminderRow[];
+  defaultOpen?: boolean;
 }
 
 function repeatLabel(repeat: ReminderRow["repeat"]) {
@@ -42,7 +43,7 @@ function formatScheduled(iso: string) {
   }
 }
 
-function EmptyState() {
+function EmptyState({ defaultOpen }: { defaultOpen?: boolean }) {
   return (
     <EmptyStateCard
       variant="lg"
@@ -50,12 +51,12 @@ function EmptyState() {
       title="Crea recordatorios personalizados"
       description="Programa alertas para pagos, metas o cualquier recordatorio financiero."
       hint="Empieza creando tu primer recordatorio."
-      action={<ReminderDialog onSuccess={() => window.location.reload()} />}
+      action={<ReminderDialog onSuccess={() => window.location.reload()} defaultOpen={defaultOpen} />}
     />
   );
 }
 
-export function RemindersView({ reminders }: RemindersViewProps) {
+export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
   const router = useRouter();
   const [items, setItems] = useState(reminders);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -117,7 +118,7 @@ export function RemindersView({ reminders }: RemindersViewProps) {
           <h1 className="heading-section">Recordatorios</h1>
           <p className="body-default mt-1">Administra tus recordatorios programados</p>
         </div>
-        <ReminderDialog onSuccess={refresh} />
+        <ReminderDialog onSuccess={refresh} defaultOpen={defaultOpen} />
       </div>
 
       {items.length > 0 && (
