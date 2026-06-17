@@ -9,6 +9,7 @@ if (!DATABASE_URL) {
 const sql = neon(DATABASE_URL);
 
 async function seed() {
+  // eslint-disable-next-line no-console
   console.log("Seeding data...");
 
   // Organization
@@ -94,6 +95,7 @@ async function seed() {
     ON CONFLICT (id) DO NOTHING;
   `;
 
+  // eslint-disable-next-line no-console
   console.log("Seed completed successfully!");
 }
 

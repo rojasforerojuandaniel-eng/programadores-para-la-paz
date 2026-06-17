@@ -9,6 +9,7 @@ if (!DATABASE_URL) {
 const sql = neon(DATABASE_URL);
 
 async function init() {
+  // eslint-disable-next-line no-console
   console.log("Creating tables...");
 
   await sql`
@@ -181,6 +182,7 @@ async function init() {
     );
   `;
 
+  // eslint-disable-next-line no-console
   console.log("Tables created successfully!");
 }
 

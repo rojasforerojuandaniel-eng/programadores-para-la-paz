@@ -43,6 +43,7 @@ function fixMapInSchema(filePath: string) {
   }
 
   writeFileSync(filePath, out.join("\n"));
+  // eslint-disable-next-line no-console
   console.log(`Fixed ${filePath}`);
 }
 

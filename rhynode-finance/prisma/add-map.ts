@@ -46,6 +46,7 @@ function addMapToSchema(filePath: string) {
   }
 
   writeFileSync(filePath, out.join("\n"));
+  // eslint-disable-next-line no-console
   console.log(`Updated ${filePath}`);
 }
 
