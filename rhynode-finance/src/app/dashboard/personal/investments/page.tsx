@@ -8,11 +8,22 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateInvestmentDialog } from "./create-dialog";
-import { TrendingUp, TrendingDown, Minus, Briefcase, Clock } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Briefcase,
+  Wallet,
+  Bitcoin,
+  Layers,
+  Home,
+  Shield,
+  Clock,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { InvestmentAllocationChartSkeleton } from "@/components/dashboard/investment-allocation-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveInvestmentPrices, ResolvedInvestment } from "@/lib/market-prices";
+import { cn } from "@/lib/utils";
 
 const InvestmentAllocationChart = dynamic(
   () =>
@@ -78,15 +89,60 @@ const investmentTypeColors: Record<string, string> = {
   OTHER: "bg-muted text-muted-foreground border-border",
 };
 
+const investmentTypeIcons: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  STOCK: TrendingUp,
+  BOND: Shield,
+  CRYPTO: Bitcoin,
+  ETF: Layers,
+  REAL_ESTATE: Home,
+  OTHER: Briefcase,
+};
+
 function sourceBadge(source: ResolvedInvestment["marketPrice"]["source"]) {
   switch (source) {
     case "real":
-      return { label: "Precio real", className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20" };
+      return {
+        label: "Precio real",
+        className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20",
+      };
     case "estimated":
-      return { label: "Estimado", className: "bg-amber-500/15 text-amber-600 border-amber-500/20" };
+      return {
+        label: "Estimado",
+        className: "bg-amber-500/15 text-amber-600 border-amber-500/20",
+      };
     default:
       return { label: "N/A", className: "bg-muted text-muted-foreground border-border" };
   }
+}
+
+function MiniSparkline({ positive }: { positive: boolean }) {
+  // Simple SVG mini chart: deterministic shape based on gain direction.
+  const path = positive
+    ? "M2 14 L6 10 L10 11 L14 6 L18 8 L22 2"
+    : "M2 4 L6 6 L10 5 L14 10 L18 8 L22 14";
+  return (
+    <svg
+      viewBox="0 0 24 16"
+      className="h-8 w-16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path
+        d={path}
+        className={cn(
+          positive ? "text-success" : "text-danger",
+          "opacity-80"
+        )}
+      />
+    </svg>
+  );
 }
 
 export default async function InvestmentsPage() {
@@ -136,7 +192,7 @@ export default async function InvestmentsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label="Total Invertido" value={formatCurrency(totalInvested, org.currency)} icon={Minus} />
+        <KpiCard label="Total Invertido" value={formatCurrency(totalInvested, org.currency)} icon={Wallet} />
         <KpiCard label="Valor Actual" value={formatCurrency(totalCurrent, org.currency)} icon={Briefcase} />
         <KpiCard
           label="Retorno Total"
@@ -163,20 +219,26 @@ export default async function InvestmentsPage() {
         columns={[
           { key: "name", header: "Nombre" },
           { key: "type", header: "Tipo" },
-          { key: "price", header: "Precio / unidad" },
-          { key: "value", header: "Valor estimado" },
+          { key: "price", header: "Precio mercado" },
+          { key: "value", header: "Valor actual" },
+          { key: "invested", header: "Invertido" },
           { key: "gain", header: "Ganancia" },
           { key: "return", header: "Retorno %" },
-          { key: "updated", header: "Actualizado" },
           { key: "source", header: "Fuente" },
         ]}
         data={resolvedInvestments}
         renderRow={(item) => {
           const { marketPrice, gainAmount, gainPercent } = item;
           const source = sourceBadge(marketPrice.source);
+          const TypeIcon = investmentTypeIcons[item.investmentType] || Briefcase;
           return (
             <>
-              <TableCell className="py-3 text-sm font-medium">{item.name}</TableCell>
+              <TableCell className="py-3">
+                <div className="flex items-center gap-2">
+                  <TypeIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </div>
+              </TableCell>
               <TableCell className="py-3">
                 <Badge
                   variant="outline"
@@ -199,18 +261,17 @@ export default async function InvestmentsPage() {
                   <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
-              <TableCell className="py-3 text-sm">{formatCurrency(item.estimatedValue, item.currency)}</TableCell>
+              <TableCell className="py-3 text-sm font-medium">
+                {formatCurrency(item.estimatedValue, item.currency)}
+              </TableCell>
+              <TableCell className="py-3 text-sm text-muted-foreground">
+                {formatCurrency(item.investedAmount, item.currency)}
+              </TableCell>
               <TableCell className={`py-3 text-sm font-medium ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
                 {formatCurrency(gainAmount, item.currency)}
               </TableCell>
               <TableCell className={`py-3 text-sm font-medium ${gainPercent >= 0 ? "text-success" : "text-danger"}`}>
                 {formatPercent(gainPercent)}
-              </TableCell>
-              <TableCell className="py-3 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatDateTime(marketPrice.updatedAt)}
-                </span>
               </TableCell>
               <TableCell className="py-3">
                 <Badge
@@ -227,51 +288,86 @@ export default async function InvestmentsPage() {
         renderCard={(item) => {
           const { marketPrice, gainAmount, gainPercent } = item;
           const source = sourceBadge(marketPrice.source);
+          const positive = gainPercent >= 0;
+          const TypeIcon = investmentTypeIcons[item.investmentType] || Briefcase;
           return (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-3">
-                <span className="font-medium">{item.name}</span>
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <TypeIcon className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold leading-tight">{item.name}</p>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "mt-1",
+                        investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-400 border-slate-500/20"
+                      )}
+                    >
+                      {investmentTypeLabels[item.investmentType] || item.investmentType}
+                    </Badge>
+                  </div>
+                </div>
                 <Badge
                   variant="outline"
-                  className={investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-400 border-slate-500/20"}
+                  className={source.className}
+                  title={marketPrice.note}
                 >
-                  {investmentTypeLabels[item.investmentType] || item.investmentType}
+                  {source.label}
                 </Badge>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="text-muted-foreground">Precio / unidad</div>
-                <div className="text-right font-medium">
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div className="text-muted-foreground">Valor actual</div>
+                <div className="text-right font-semibold">
+                  {formatCurrency(item.estimatedValue, item.currency)}
+                </div>
+
+                <div className="text-muted-foreground">Invertido</div>
+                <div className="text-right">{formatCurrency(item.investedAmount, item.currency)}</div>
+
+                <div className="text-muted-foreground">Ganancia / Pérdida</div>
+                <div className={`text-right font-semibold ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
+                  {formatCurrency(gainAmount, item.currency)}
+                </div>
+
+                <div className="text-muted-foreground">Retorno</div>
+                <div className={`text-right font-semibold ${positive ? "text-success" : "text-danger"}`}>
+                  {formatPercent(gainPercent)}
+                </div>
+
+                <div className="text-muted-foreground">Precio mercado</div>
+                <div className="text-right">
                   {marketPrice.price !== null ? (
                     formatPrice(marketPrice.price, marketPrice.currency)
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
                 </div>
-                {item.estimatedQuantity !== null && (
-                  <>
-                    <div className="text-muted-foreground">Unidades estimadas</div>
-                    <div className="text-right font-medium">{item.estimatedQuantity.toLocaleString("es-CO")}</div>
-                  </>
-                )}
-                <div className="text-muted-foreground">Valor estimado</div>
-                <div className="text-right font-medium">{formatCurrency(item.estimatedValue, item.currency)}</div>
-                <div className="text-muted-foreground">Invertido</div>
-                <div className="text-right font-medium">{formatCurrency(item.investedAmount, item.currency)}</div>
-                <div className="text-muted-foreground">Ganancia</div>
-                <div className={`text-right font-medium ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
-                  {formatCurrency(gainAmount, item.currency)}
-                </div>
-                <div className="text-muted-foreground">Retorno</div>
-                <div className={`text-right font-medium ${gainPercent >= 0 ? "text-success" : "text-danger"}`}>
-                  {formatPercent(gainPercent)}
-                </div>
+
                 <div className="text-muted-foreground">Actualizado</div>
-                <div className="text-right text-muted-foreground">{formatDateTime(marketPrice.updatedAt)}</div>
-                <div className="text-muted-foreground">Fuente</div>
+                <div className="text-right text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDateTime(marketPrice.updatedAt)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
+                <MiniSparkline positive={positive} />
                 <div className="text-right">
-                  <Badge variant="outline" className={source.className} title={marketPrice.note}>
-                    {source.label}
-                  </Badge>
+                  <p className={`text-sm font-semibold ${positive ? "text-success" : "text-danger"}`}>
+                    {positive ? "+" : ""}
+                    {formatPercent(gainPercent)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.estimatedQuantity !== null
+                      ? `~${item.estimatedQuantity.toLocaleString("es-CO")} unid.`
+                      : marketPrice.note || "Sin cotización"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -279,7 +375,7 @@ export default async function InvestmentsPage() {
         }}
         emptyState={
           <EmptyStateCard
-            variant="lg"
+            variant="md"
             icon={TrendingUp}
             title="Haz crecer tu patrimonio"
             description="Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar."
