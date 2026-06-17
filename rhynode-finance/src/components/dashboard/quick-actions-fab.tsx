@@ -1,49 +1,122 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ElementType, ReactNode } from "react";
+import { forwardRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X, ArrowLeftRight, FileText, TrendingUp, Wallet } from "lucide-react";
+import { Plus, ArrowLeftRight, FileText, Target, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CreateTransactionSheet } from "@/components/dashboard/create-transaction-sheet";
 import { CreateInvoiceSheet } from "@/components/dashboard/create-invoice-sheet";
-import { CreateInvestmentDialog } from "@/app/dashboard/personal/investments/create-dialog";
+import { CreateGoalDialog } from "@/app/dashboard/personal/goals/create-dialog";
 import { CreateBudgetDialog } from "@/app/dashboard/personal/budgets/create-dialog";
 
 interface QuickActionItem {
   id: string;
   label: string;
-  icon: React.ElementType;
-  dialog: React.ReactNode;
+  icon: ElementType;
+  dialog: ReactNode;
 }
+
+const MENU_ID = "quick-actions-menu";
 
 export function QuickActionsFab() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleCreated = useCallback(() => {
     router.refresh();
   }, [router]);
 
-  const handleToggle = useCallback(() => {
-    setOpen((prev) => !prev);
-  }, []);
-
   const handleCloseMenu = useCallback(() => {
     setOpen(false);
   }, []);
 
+  const handleToggle = useCallback(() => {
+    setOpen((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      const first = itemRefs.current[0];
+      if (first) first.focus();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open && fabRef.current) {
+      const wasInside = itemRefs.current.some(
+        (item) => item === document.activeElement
+      );
+      if (wasInside) {
+        fabRef.current.focus();
+      }
+    }
+  }, [open]);
+
+  const setItemRef = useCallback(
+    (index: number) => (el: HTMLButtonElement | null) => {
+      itemRefs.current[index] = el;
+    },
+    []
+  );
+
+  const labelId = useCallback((id: string) => `${id}-label`, []);
+
+  const handleMenuKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!open) return;
+      const items = itemRefs.current.filter(Boolean) as HTMLButtonElement[];
+      if (items.length === 0) return;
+      const currentIndex = items.findIndex(
+        (item) => item === document.activeElement
+      );
+      if (currentIndex === -1) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        items[(currentIndex + 1) % items.length].focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        items[(currentIndex - 1 + items.length) % items.length].focus();
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        items[0].focus();
+      } else if (e.key === "End") {
+        e.preventDefault();
+        items[items.length - 1].focus();
+      }
+    },
+    [open]
+  );
+
   const actions: QuickActionItem[] = [
     {
       id: "transaction",
-      label: "Nueva transacción",
+      label: "Nueva transacci\u00f3n",
       icon: ArrowLeftRight,
       dialog: (
         <CreateTransactionSheet
           onCreate={handleCreated}
           trigger={
             <QuickActionButton
+              ref={setItemRef(0)}
               icon={ArrowLeftRight}
-              label="Nueva transacción"
+              label="Nueva transacci\u00f3n"
+              labelledBy={labelId("transaction")}
               onClick={handleCloseMenu}
             />
           }
@@ -59,8 +132,10 @@ export function QuickActionsFab() {
           onCreate={handleCreated}
           trigger={
             <QuickActionButton
+              ref={setItemRef(1)}
               icon={FileText}
               label="Nueva factura"
+              labelledBy={labelId("invoice")}
               onClick={handleCloseMenu}
             />
           }
@@ -68,15 +143,17 @@ export function QuickActionsFab() {
       ),
     },
     {
-      id: "investment",
-      label: "Nueva inversión",
-      icon: TrendingUp,
+      id: "goal",
+      label: "Nueva meta",
+      icon: Target,
       dialog: (
-        <CreateInvestmentDialog
+        <CreateGoalDialog
           trigger={
             <QuickActionButton
-              icon={TrendingUp}
-              label="Nueva inversión"
+              ref={setItemRef(2)}
+              icon={Target}
+              label="Nueva meta"
+              labelledBy={labelId("goal")}
               onClick={handleCloseMenu}
             />
           }
@@ -91,8 +168,10 @@ export function QuickActionsFab() {
         <CreateBudgetDialog
           trigger={
             <QuickActionButton
+              ref={setItemRef(3)}
               icon={Wallet}
               label="Nuevo presupuesto"
+              labelledBy={labelId("budget")}
               onClick={handleCloseMenu}
             />
           }
@@ -102,77 +181,102 @@ export function QuickActionsFab() {
   ];
 
   return (
-    <div className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom))] right-4 z-40 flex flex-col items-end gap-3 lg:hidden">
-      {/* Menu */}
+    <>
       <div
+        role="presentation"
+        aria-hidden="true"
+        onClick={handleCloseMenu}
         className={cn(
-          "mb-2 flex flex-col items-end gap-2 transition-all duration-200 ease-out",
-          open
-            ? "visible translate-y-0 opacity-100"
-            : "invisible translate-y-4 opacity-0 pointer-events-none"
+          "fixed inset-0 z-30 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out",
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
-        aria-hidden={!open}
-      >
-        {actions.map((action) => (
-          <div
-            key={action.id}
-            className={cn(
-              "flex items-center gap-3 transition-all duration-200 ease-out",
-              open ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
-            )}
-          >
-            <span className="rounded-md bg-background px-2 py-1 text-xs font-medium shadow-sm ring-1 ring-border">
-              {action.label}
-            </span>
-            {action.dialog}
-          </div>
-        ))}
-      </div>
+      />
 
-      {/* Backdrop */}
-      {open && (
+      <div className="fixed right-[calc(1rem+env(safe-area-inset-right))] bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-40 flex flex-col items-end lg:hidden">
+        <div
+          id={MENU_ID}
+          role="menu"
+          aria-label="Acciones r\u00e1pidas"
+          aria-orientation="vertical"
+          aria-hidden={!open}
+          onKeyDown={handleMenuKeyDown}
+          className={cn(
+            "mb-3 flex flex-col items-end gap-3 transition-opacity duration-300 ease-out",
+            open ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+        >
+          {actions.map((action, index) => (
+            <div
+              key={action.id}
+              className={cn(
+                "flex items-center gap-3 transition-all duration-300 ease-out",
+                open
+                  ? "translate-y-0 opacity-100 scale-100"
+                  : "translate-y-2 opacity-0 scale-90 pointer-events-none"
+              )}
+              style={{ transitionDelay: open ? `${index * 60}ms` : "0ms" }}
+            >
+              <span
+                id={labelId(action.id)}
+                className="rounded-md bg-background px-2 py-1 text-xs font-medium text-foreground shadow-sm ring-1 ring-border"
+              >
+                {action.label}
+              </span>
+              {action.dialog}
+            </div>
+          ))}
+        </div>
+
         <button
+          ref={fabRef}
           type="button"
-          className="fixed inset-0 z-[-1] bg-black/20 backdrop-blur-[1px] transition-opacity duration-200"
-          onClick={handleCloseMenu}
-          aria-label="Cerrar menú de acciones rápidas"
-        />
-      )}
-
-      {/* FAB */}
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-label={open ? "Cerrar acciones rápidas" : "Abrir acciones rápidas"}
-        aria-expanded={open}
-        className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          open ? "rotate-45 bg-muted text-foreground hover:bg-muted/80" : "bg-primary text-primary-foreground hover:bg-primary/90"
-        )}
-      >
-        {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
-      </button>
-    </div>
+          onClick={handleToggle}
+          aria-label={open ? "Cerrar acciones r\u00e1pidas" : "Abrir acciones r\u00e1pidas"}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-controls={MENU_ID}
+          className={cn(
+            "flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            open
+              ? "bg-muted text-foreground hover:bg-muted/80"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+        >
+          <Plus
+            className={cn(
+              "h-6 w-6 transition-transform duration-300 ease-out",
+              open && "rotate-45"
+            )}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+    </>
   );
 }
 
-function QuickActionButton({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: React.ElementType;
+interface QuickActionButtonProps {
+  icon: ElementType;
   label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-12 w-12 items-center justify-center rounded-full bg-background text-foreground shadow-md ring-1 ring-border transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label={label}
-    >
-      <Icon className="h-5 w-5" />
-    </button>
-  );
+  labelledBy?: string;
+  onClick?: () => void;
 }
+
+const QuickActionButton = forwardRef<HTMLButtonElement, QuickActionButtonProps>(
+  function QuickActionButton({ icon: Icon, label, labelledBy, onClick }, ref) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        role="menuitem"
+        onClick={onClick}
+        aria-label={labelledBy ? undefined : label}
+        aria-labelledby={labelledBy}
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-background text-foreground shadow-md ring-1 ring-border transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </button>
+    );
+  }
+);
+QuickActionButton.displayName = "QuickActionButton";

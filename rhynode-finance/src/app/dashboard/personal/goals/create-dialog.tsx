@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-export function CreateGoalDialog() {
+export function CreateGoalDialog({ trigger }: { trigger?: ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -65,10 +65,12 @@ export function CreateGoalDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Meta
-        </Button>
+        {trigger ?? (
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Meta
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
