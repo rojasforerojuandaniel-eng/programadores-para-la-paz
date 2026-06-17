@@ -25,6 +25,7 @@ import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
 import { calculateHealthScore } from "@/lib/health-score";
 import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
+import { DailyBriefing } from "@/components/dashboard/daily-briefing";
 import { SmartInsights } from "@/components/dashboard/smart-insights";
 import { AiCopilot } from "@/components/dashboard/ai-copilot";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
@@ -325,6 +326,19 @@ export default async function DashboardPage() {
   const initialLayout = mergeLayouts(metadata.widgets);
 
   const widgets: DashboardWidget[] = [
+    {
+      id: "daily-briefing",
+      label: "Briefing diario",
+      content:
+        scope === "PERSONAL" || scope === "BOTH" ? (
+          <DailyBriefing
+            userId={profile?.id}
+            currency={org.currency}
+            name={profile?.name}
+            timezone={org.timezone}
+          />
+        ) : null,
+    },
     {
       id: "xp-bar",
       label: "Barra de XP",
