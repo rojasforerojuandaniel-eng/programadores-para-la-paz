@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useIsClient } from "@/hooks/use-is-client";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   CreditCard,
   Bell,
   Shield,
+  Webhook,
   CheckCircle,
   Loader2,
 } from "lucide-react";
@@ -57,6 +59,7 @@ const tabs = [
   { id: "members", label: "Miembros", icon: Users },
   { id: "notifications", label: "Notificaciones", icon: Bell },
   { id: "security", label: "Seguridad", icon: Shield },
+  { id: "webhooks", label: "Webhooks", icon: Webhook, href: "/dashboard/settings/webhook-logs" },
 ];
 
 export default function SettingsPage() {
@@ -275,14 +278,26 @@ export default function SettingsPage() {
         <TabsList className="w-full shrink-0 flex-row overflow-x-auto lg:w-64 lg:flex-col lg:overflow-visible">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const trigger = (
+              <>
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </>
+            );
             return (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
                 className="justify-start gap-2 max-lg:after:hidden lg:w-full"
+                asChild={!!tab.href}
               >
-                <Icon className="h-4 w-4" />
-                {tab.label}
+                {tab.href ? (
+                  <Link href={tab.href}>
+                    {trigger}
+                  </Link>
+                ) : (
+                  trigger
+                )}
               </TabsTrigger>
             );
           })}
