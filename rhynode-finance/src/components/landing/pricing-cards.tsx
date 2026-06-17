@@ -49,7 +49,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
     <section id="pricing" className="bg-muted/30 px-4 py-16 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Plan simple, cero sorpresas</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">Plan simple, cero sorpresas</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             Empieza gratis y escala cuando lo necesites. Sin contratos ni cargos ocultos.
           </p>
@@ -59,7 +59,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-              className={`relative flex flex-col ${plan.featured ? "border-primary/50 ring-1 ring-primary/30" : "border-border/50"}`}
+              className={`relative flex flex-col ${plan.featured ? "border-primary/50 ring-1 ring-primary/30 dark:border-primary dark:ring-primary" : "border-border/50 dark:border-border"}`}
             >
               {plan.badge && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2" variant="secondary">
@@ -70,7 +70,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Más popular</Badge>
               )}
               <CardContent className="flex flex-1 flex-col p-6">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold text-card-foreground">
                   {plan.name}
                   {plan.badge ? (
                     <span className="sr-only"> — {plan.badge}</span>
@@ -80,14 +80,14 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
                 <div className="my-4">
-                  <span className="text-3xl font-bold">{plan.price}</span>
+                  <span className="text-3xl font-bold text-card-foreground">{plan.price}</span>
                   {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
                 </div>
                 <ul className="mb-6 flex-1 space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                      <span>{feature}</span>
+                      <span className="text-card-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>

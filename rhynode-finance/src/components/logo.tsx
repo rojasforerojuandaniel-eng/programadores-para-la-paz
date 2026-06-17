@@ -26,7 +26,7 @@ export function Logo({ className, href = "/", size = "md" }: LogoProps) {
       >
         <TrendingUp className={s.icon} />
       </div>
-      <span className={cn("font-bold tracking-tight", s.text)}>Rhynode</span>
+      <span className={cn("font-bold tracking-tight text-foreground", s.text)}>Rhynode</span>
     </div>
   );
 

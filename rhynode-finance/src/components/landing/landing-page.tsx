@@ -294,7 +294,7 @@ function BanksStrip() {
 function Avatar({ initials }: { initials: string }) {
   return (
     <div
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
       aria-hidden="true"
     >
       {initials}
@@ -355,7 +355,7 @@ function FeaturesGrid() {
           <Badge variant="secondary" className="mb-3">
             Todo lo que necesitas
           </Badge>
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Finanzas personales y de negocio, juntas
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
@@ -370,11 +370,11 @@ function FeaturesGrid() {
             return (
               <Card
                 key={f.title}
-                className="border-border/50 bg-card transition hover:border-primary/30"
+                className="border-border/50 bg-card transition hover:border-primary/30 dark:border-border"
               >
                 <CardContent className="p-5">
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </div>
                     <Badge
@@ -384,7 +384,7 @@ function FeaturesGrid() {
                       {f.audience}
                     </Badge>
                   </div>
-                  <h3 className="mb-1 font-semibold">{f.title}</h3>
+                  <h3 className="mb-1 font-semibold text-card-foreground">{f.title}</h3>
                   <p className="text-sm text-muted-foreground">{f.description}</p>
                 </CardContent>
               </Card>
@@ -421,7 +421,7 @@ function HowItWorks() {
   return (
     <section className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
-        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight md:mb-14 md:text-4xl">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground md:mb-14 md:text-4xl">
           Empieza en minutos, no en días
         </h2>
 
@@ -429,12 +429,12 @@ function HowItWorks() {
           {steps.map((step) => (
             <div
               key={step.number}
-              className="relative rounded-2xl border border-border/50 bg-card p-6"
+              className="relative rounded-2xl border border-border/50 bg-card p-6 dark:border-border"
             >
-              <span className="text-3xl font-bold text-primary">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
                 {step.number}
               </span>
-              <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+              <h3 className="mt-4 text-lg font-semibold text-card-foreground">{step.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 {step.description}
               </p>
@@ -478,7 +478,7 @@ function TestimonialsSection() {
     <section id="testimonials" className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Lo que dicen nuestros usuarios
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
@@ -488,9 +488,9 @@ function TestimonialsSection() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {testimonials.map((t) => (
-            <Card key={t.name} className="border-border/50 bg-card">
+            <Card key={t.name} className="border-border/50 bg-card dark:border-border">
               <CardContent className="p-5">
-                <div className="flex items-center gap-1 text-[var(--warning)]">
+                <div className="flex items-center gap-1 text-warning">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star
                       key={i}
@@ -500,13 +500,13 @@ function TestimonialsSection() {
                   ))}
                   <span className="sr-only">{t.rating} de 5 estrellas</span>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-foreground">
+                <p className="mt-4 text-sm leading-relaxed text-card-foreground">
                   “{t.quote}”
                 </p>
                 <div className="mt-5 flex items-center gap-3">
                   <Avatar initials={t.initials} />
                   <div>
-                    <p className="font-semibold">{t.name}</p>
+                    <p className="font-semibold text-card-foreground">{t.name}</p>
                     <p className="text-xs text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
@@ -624,7 +624,7 @@ function Faq() {
     <section id="faq" className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-3xl">
         <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Preguntas frecuentes
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
@@ -636,9 +636,9 @@ function Faq() {
           {items.map((item) => (
             <details
               key={item.question}
-              className="group rounded-xl border border-border/50 bg-card"
+              className="group rounded-xl border border-border/50 bg-card dark:border-border"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-semibold transition-colors hover:bg-muted/30 focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+              <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-semibold text-card-foreground transition-colors hover:bg-muted focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
                 {item.question}
                 <ChevronDown
                   className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
@@ -659,8 +659,8 @@ function Faq() {
 function Cta() {
   return (
     <section className="px-4 py-14 md:py-24">
-      <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary/20 to-accent/30 p-8 text-center md:p-12">
-        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+      <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary/20 to-accent/30 p-8 text-center md:p-12 dark:from-primary/40 dark:to-accent/50">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           Listo para tomar el control de tus finanzas?
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
@@ -722,7 +722,7 @@ function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <TrendingUp className="h-5 w-5" aria-hidden="true" />
               </div>
-              <span className="text-lg font-bold">Rhynode</span>
+              <span className="text-lg font-bold text-foreground">Rhynode</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Finanzas personales e inteligencia contable para personas y pymes
@@ -759,7 +759,7 @@ function Footer() {
 
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="mb-3 text-sm font-semibold">{category}</h3>
+              <h3 className="mb-3 text-sm font-semibold text-foreground">{category}</h3>
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.label}>
