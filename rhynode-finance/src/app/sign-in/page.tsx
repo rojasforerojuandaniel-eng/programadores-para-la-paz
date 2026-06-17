@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo-metadata";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
-export const metadata: Metadata = {
-  title: "Iniciar sesión — Rhynode",
+export const metadata: Metadata = buildMetadata({
+  title: "Iniciar sesión",
   description:
-    "Accede a tu cuenta de Rhynode. Gestiona tus finanzas personales y empresariales de forma segura.",
-};
+    "Accede de forma segura a tu cuenta de Rhynode. Gestiona tus finanzas personales y empresariales desde Colombia.",
+  path: "/sign-in",
+  keywords: ["iniciar sesión", "login", "autenticación segura", "finanzas Colombia"],
+});
 
 export default function SignInPage() {
   return (

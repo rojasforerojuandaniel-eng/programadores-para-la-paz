@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo-metadata";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, HelpCircle } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Soporte — Rhynode",
+export const metadata: Metadata = buildMetadata({
+  title: "Soporte",
   description:
-    "Contacta al equipo de soporte de Rhynode. Estamos aquí para ayudarte con tus finanzas personales y empresariales.",
-};
+    "Contacta al equipo de soporte de Rhynode. Estamos aquí para ayudarte con tus finanzas personales y empresariales en Colombia.",
+  path: "/support",
+  keywords: ["soporte", "ayuda", "contacto", "finanzas Colombia"],
+});
 
 export default function SupportPage() {
   return (

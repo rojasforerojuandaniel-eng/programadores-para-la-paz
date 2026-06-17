@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo-metadata";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const metadata: Metadata = {
-  title: "Política de privacidad — Rhynode",
+export const metadata: Metadata = buildMetadata({
+  title: "Política de privacidad",
   description:
-    "Conoce cómo Rhynode recopila, usa y protege tu información financiera personal y empresarial.",
-};
+    "Conoce cómo Rhynode recopila, usa y protege tu información financiera personal y empresarial en Colombia.",
+  path: "/privacy",
+  keywords: ["privacidad", "protección de datos", "finanzas Colombia", "seguridad"],
+});
 
 export default function PrivacyPage() {
   return (

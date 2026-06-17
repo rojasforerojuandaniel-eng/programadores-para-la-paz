@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
+import { buildMetadata } from "@/lib/seo-metadata";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { QuickActionsFab } from "@/components/dashboard/quick-actions-fab";
 import { PullToRefresh } from "@/components/dashboard/pull-to-refresh";
@@ -9,11 +10,20 @@ import type { UserScope } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Dashboard — Rhynode",
+export const metadata: Metadata = buildMetadata({
+  title: "Dashboard",
   description:
-    "Gestiona tus finanzas personales y empresariales: transacciones, presupuestos, facturas, impuestos, inversiones y asesoría con IA.",
-};
+    "Gestiona tus finanzas personales y empresariales en Colombia: transacciones, presupuestos, facturas electrónicas, impuestos DIAN, inversiones y asesoría con IA.",
+  path: "/dashboard",
+  keywords: [
+    "dashboard financiero",
+    "finanzas personales",
+    "finanzas empresariales",
+    "gestión financiera Colombia",
+    "contabilidad DIAN",
+    "Wompi",
+  ],
+});
 
 export default async function DashboardLayout({
   children,
