@@ -2,40 +2,13 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import { Badge } from "@/components/ui/badge";
-import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-import { TableCell } from "@/components/ui/table";
 import { CreateRecurringDialog } from "./create-dialog";
+import { RecurringList } from "./recurring-list";
+import type { RecurringItem } from "./recurring-utils";
+import { formatCurrency } from "./recurring-utils";
 import { Repeat, Calendar, Wallet, Activity } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
-function frequencyLabel(frequency: string) {
-  switch (frequency) {
-    case "DAILY":
-      return "Diario";
-    case "WEEKLY":
-      return "Semanal";
-    case "BIWEEKLY":
-      return "Quincenal";
-    case "MONTHLY":
-      return "Mensual";
-    case "QUARTERLY":
-      return "Trimestral";
-    case "YEARLY":
-      return "Anual";
-    default:
-      return frequency;
-  }
-}
 
 function EmptyState() {
   return (
@@ -43,8 +16,8 @@ function EmptyState() {
       variant="lg"
       icon={Repeat}
       title="Automatiza tus pagos recurrentes"
-      description="Registra suscripciones y pagos periódicos para nunca perder un vencimiento."
-      hint="Empieza creando tu primera transacción recurrente."
+      description="Registra alquiler, suscripciones y servicios para nunca perder un vencimiento y mantener el control de tu flujo de caja."
+      hint="Crea tu primera transacción recurrente en segundos."
       action={<CreateRecurringDialog />}
     />
   );
@@ -58,8 +31,22 @@ export default async function RecurringPage() {
   const recurring = await prisma.recurringTransaction.findMany({
     where: { userId: profile.id },
     include: { category: true, account: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { nextDueDate: "asc" },
   });
+
+  const items: RecurringItem[] = recurring.map((r) => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    amount: decimalToNumber(r.amount),
+    type: r.type,
+    frequency: r.frequency,
+    nextDueDate: r.nextDueDate.toISOString(),
+    isSubscription: r.isSubscription,
+    provider: r.provider,
+    status: r.status,
+    accountCurrency: r.account?.currency || null,
+  }));
 
   const totalMonthly = recurring
     .filter((r) => r.status === "ACTIVE")
@@ -73,15 +60,6 @@ export default async function RecurringPage() {
       new Date(r.nextDueDate).getTime() - now <= 7 * 24 * 60 * 60 * 1000
   ).length;
 
-  const columns = [
-    { key: "name", header: "Nombre" },
-    { key: "amount", header: "Monto" },
-    { key: "frequency", header: "Frecuencia" },
-    { key: "nextDue", header: "Próximo vencimiento" },
-    { key: "isSubscription", header: "Suscripción" },
-    { key: "status", header: "Estado" },
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -92,9 +70,13 @@ export default async function RecurringPage() {
         <CreateRecurringDialog />
       </div>
 
-      {recurring.length > 0 && (
+      {items.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <KpiCard label="Monto mensual" value={formatCurrency(totalMonthly, "COP")} icon={Wallet} />
+          <KpiCard
+            label="Monto mensual"
+            value={formatCurrency(totalMonthly, "COP")}
+            icon={Wallet}
+          />
           <KpiCard label="Activas" value={activeCount} icon={Activity} />
           <KpiCard
             label="Próximos 7 días"
@@ -106,63 +88,10 @@ export default async function RecurringPage() {
       )}
 
       <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-        <ServerDataTable
-          columns={columns}
-          data={recurring}
+        <RecurringList
+          key={items.map((item) => item.id).join("-")}
+          items={items}
           emptyState={<EmptyState />}
-          renderRow={(item) => (
-            <>
-              <TableCell className="py-3 font-medium">{item.name}</TableCell>
-              <TableCell className="py-3">
-                {formatCurrency(decimalToNumber(item.amount), item.account?.currency || "COP")}
-              </TableCell>
-              <TableCell className="py-3">
-                <Badge variant="outline">{frequencyLabel(item.frequency)}</Badge>
-              </TableCell>
-              <TableCell className="py-3">
-                {new Date(item.nextDueDate).toLocaleDateString("es-CO")}
-              </TableCell>
-              <TableCell className="py-3">
-                {item.isSubscription ? (
-                  <Badge variant="default">Sí</Badge>
-                ) : (
-                  <Badge variant="outline">No</Badge>
-                )}
-              </TableCell>
-              <TableCell className="py-3">
-                <Badge variant={item.status === "ACTIVE" ? "default" : "secondary"}>
-                  {item.status === "ACTIVE" ? "Activo" : "Inactivo"}
-                </Badge>
-              </TableCell>
-            </>
-          )}
-          renderCard={(item) => (
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <span className="font-medium">{item.name}</span>
-                <Badge variant={item.status === "ACTIVE" ? "default" : "secondary"}>
-                  {item.status === "ACTIVE" ? "Activo" : "Inactivo"}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="text-muted-foreground">Monto</div>
-                <div className="text-right font-medium">
-                  {formatCurrency(decimalToNumber(item.amount), item.account?.currency || "COP")}
-                </div>
-                <div className="text-muted-foreground">Frecuencia</div>
-                <div className="text-right">{frequencyLabel(item.frequency)}</div>
-                <div className="text-muted-foreground">Próximo</div>
-                <div className="text-right">
-                  {new Date(item.nextDueDate).toLocaleDateString("es-CO")}
-                </div>
-                <div className="text-muted-foreground">Suscripción</div>
-                <div className="text-right">{item.isSubscription ? "Sí" : "No"}</div>
-              </div>
-              {item.provider && (
-                <p className="text-sm text-muted-foreground">Proveedor: {item.provider}</p>
-              )}
-            </div>
-          )}
         />
       </Suspense>
     </div>

@@ -7,6 +7,14 @@ import {
   sendSubscriptionReminder,
   sendInvoiceOverdueReminder,
 } from "@/lib/push-events";
+import { sendPushNotification } from "@/lib/notifications";
+import type { Notification } from "@/generated/prisma/client";
+import {
+  decodeReminderMeta,
+  encodeReminderMeta,
+  isReminderDue,
+  toReminder,
+} from "@/lib/reminders";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
@@ -24,6 +32,7 @@ export async function GET(request: Request) {
       goalAlerts: 0,
       subscriptionReminders: 0,
       invoiceOverdueReminders: 0,
+      reminders: 0,
       totalSent: 0,
       totalErrors: 0,
     };
@@ -110,6 +119,18 @@ export async function GET(request: Request) {
           results.totalErrors += res.errors;
         }
       }
+
+      const reminders = await prisma.notification.findMany({
+        where: { userId, type: "REMINDER", read: false },
+      });
+      for (const reminder of reminders) {
+        const res = await sendScheduledReminder(userId, reminder);
+        if (!res.skipped) {
+          results.reminders++;
+          results.totalSent += res.sent;
+          results.totalErrors += res.errors;
+        }
+      }
     }
 
     return NextResponse.json({
@@ -124,6 +145,68 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function sendScheduledReminder(
+  userId: string,
+  notification: Notification
+): Promise<{ sent: number; errors: number; skipped: boolean }> {
+  const reminder = toReminder(notification);
+  if (!reminder || !reminder.active) return { sent: 0, errors: 0, skipped: true };
+  if (!isReminderDue(reminder)) return { sent: 0, errors: 0, skipped: true };
+
+  const prisma = getPrisma();
+  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+  let sent = 0;
+  let errors = 0;
+
+  const payload = {
+    title: reminder.title,
+    body: reminder.message,
+    tag: `reminder-${reminder.id}`,
+    url: `/dashboard/personal/reminders?reminder=${reminder.id}`,
+    actions: [
+      { action: "view", title: "Ver" },
+      { action: "dismiss", title: "Descartar" },
+    ],
+  };
+
+  for (const sub of subs) {
+    const res = await sendPushNotification(
+      { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+      payload
+    );
+    if (res.success) {
+      sent++;
+    } else {
+      errors++;
+    }
+  }
+
+  const meta = decodeReminderMeta(notification.actionUrl) ?? {
+    scheduledAt: reminder.scheduledAt.toISOString(),
+    repeat: reminder.repeat,
+    active: reminder.active,
+  };
+
+  if (reminder.repeat === "NONE") {
+    await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        read: true,
+        actionUrl: encodeReminderMeta({ ...meta, active: false }),
+      },
+    });
+  } else {
+    await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        actionUrl: encodeReminderMeta({ ...meta, lastSentAt: new Date().toISOString() }),
+      },
+    });
+  }
+
+  return { sent, errors, skipped: false };
 }
 
 function endOfDay(date: Date): Date {
