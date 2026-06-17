@@ -1,4 +1,5 @@
 import { decimalToNumber } from "@/lib/decimal";
+import { toReminder } from "@/lib/reminders";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
@@ -168,7 +169,7 @@ async function UpcomingEvents({
     Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
   );
 
-  const [debts, recurring, goals] = await Promise.all([
+  const [debts, recurring, goals, reminderNotifications] = await Promise.all([
     prisma.debt.findMany({
       where: { userId, status: "ACTIVE", dueDate: { gte: now, lte: monthEnd } },
       select: {
@@ -204,9 +205,28 @@ async function UpcomingEvents({
       },
       take: 2,
     }),
+    prisma.notification.findMany({
+      where: { userId, type: "REMINDER" },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
   ]);
 
+    const reminders = reminderNotifications
+    .map(toReminder)
+    .filter((r): r is NonNullable<typeof r> => r !== null && r.active)
+    .map((r) => ({
+      id: `reminder-${r.id}`,
+      title: r.title,
+      date: r.scheduledAt,
+      amount: undefined,
+      currency,
+      type: "Recordatorio",
+    }))
+    .filter((r) => r.date.getTime() <= monthEnd.getTime());
+
   const events = [
+    ...reminders,
     ...debts.map((d) => ({
       id: `debt-${d.id}`,
       title: d.name,
@@ -243,8 +263,8 @@ async function UpcomingEvents({
           variant="sm"
           icon={Calendar}
           title="Sin eventos próximos"
-          description="Aquí verás deudas, pagos recurrentes y deadlines de metas que vencen este mes."
-          hint="Crea transacciones, deudas o metas para llenar tu calendario."
+          description="Aquí verás recordatorios, deudas, pagos recurrentes y deadlines de metas que vencen este mes."
+          hint="Crea recordatorios, transacciones, deudas o metas para llenar tu calendario."
           className="border-dashed"
         />
       </div>

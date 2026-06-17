@@ -22,6 +22,7 @@ import {
   Trophy,
   Medal,
   Calculator,
+  Bell,
   Link as LinkIcon,
   X,
   Wallet,
@@ -71,6 +72,12 @@ const allNavItems = [
     href: "/dashboard/personal/calendar",
     label: "Calendario",
     icon: Calendar,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/reminders",
+    label: "Recordatorios",
+    icon: Bell,
     scopes: ["PERSONAL", "BOTH"] as const,
   },
   {
