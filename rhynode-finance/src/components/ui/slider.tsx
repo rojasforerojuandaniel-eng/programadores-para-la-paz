@@ -7,6 +7,7 @@ function Slider({
   className,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
+  const ariaLabel = props["aria-label"]
   return (
     <SliderPrimitive.Root
       data-slot="slider"
@@ -29,6 +30,13 @@ function Slider({
         <SliderPrimitive.Thumb
           key={index}
           data-slot="slider-thumb"
+          aria-label={
+            typeof ariaLabel === "string"
+              ? ariaLabel
+              : Array.isArray(ariaLabel)
+                ? ariaLabel[index]
+                : undefined
+          }
           className="block h-4 w-4 rounded-full border border-primary bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         />
       ))}
