@@ -6,6 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { DataTable } from "@/components/dashboard/data-table";
+import { TableCell } from "@/components/ui/table";
+import { InvoicesSkeleton } from "@/components/dashboard/page-skeleton";
+import {
+  FileText,
+  DollarSign,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  Plus,
+} from "lucide-react";
+import { usePlanLimit } from "@/hooks/use-plan-limit";
+import { PlanLimitUpgradeCard } from "@/components/dashboard/plan-limit-upgrade-card";
+import { InvoiceActions } from "@/components/dashboard/invoice-actions";
+import type { Invoice } from "@/components/dashboard/edit-invoice-dialog";
 
 const CreateInvoiceSheet = dynamic(
   () =>
@@ -21,47 +37,6 @@ const CreateInvoiceSheet = dynamic(
     ),
   },
 );
-import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-import { DataTable } from "@/components/dashboard/data-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { TableCell } from "@/components/ui/table";
-import { InvoicesSkeleton } from "@/components/dashboard/page-skeleton";
-import {
-  FileText,
-  Trash2,
-  CheckCircle,
-  Send,
-  Ban,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  PenLine,
-  Plus,
-} from "lucide-react";
-import { toast } from "sonner";
-import { usePlanLimit } from "@/hooks/use-plan-limit";
-import { PlanLimitUpgradeCard } from "@/components/dashboard/plan-limit-upgrade-card";
-
-interface Invoice {
-  id: string;
-  number: string;
-  status: string;
-  currency: string;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  issueDate: string;
-  client?: { name?: string };
-  project?: { name?: string };
-}
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Borrador", className: "bg-muted text-muted-foreground" },
@@ -72,6 +47,15 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   PARTIAL: { label: "Parcial", className: "bg-info/10 text-info" },
 };
 
+const FILTER_OPTIONS = [
+  { key: "ALL", label: "Todos" },
+  { key: "PENDING", label: "Pendientes" },
+  { key: "OVERDUE", label: "Vencidas" },
+  { key: "PAID", label: "Pagadas" },
+] as const;
+
+type FilterKey = (typeof FILTER_OPTIONS)[number]["key"];
+
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -80,10 +64,29 @@ function formatCurrency(amount: number, currency: string) {
   }).format(amount);
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const config = statusConfig[status] || statusConfig.DRAFT;
+  return (
+    <Badge variant="outline" className={config.className}>
+      {config.label}
+    </Badge>
+  );
+}
+
+async function fetchInvoices(signal?: AbortSignal): Promise<Invoice[]> {
+  try {
+    const res = await fetch("/api/invoices", { signal });
+    const data = await res.json();
+    return data.invoices || [];
+  } catch {
+    return [];
+  }
+}
+
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [filter, setFilter] = useState<FilterKey>("ALL");
   const {
     allowed: canCreateInvoice,
     limit,
@@ -94,84 +97,67 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/invoices", { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => setInvoices(data.invoices || []))
-      .catch(() => setInvoices([]))
+    fetchInvoices(controller.signal)
+      .then((data) => setInvoices(data))
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
 
-  async function updateStatus(id: string, status: string) {
-    try {
-      const res = await fetch(`/api/invoices/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) window.location.reload();
-      else toast.error("Error al actualizar estado");
-    } catch {
-      toast.error("Error de red");
-    }
-  }
+  const refreshInvoices = () => {
+    setLoading(true);
+    fetchInvoices()
+      .then((data) => setInvoices(data))
+      .finally(() => setLoading(false));
+  };
 
-  async function deleteInvoice(id: string) {
-    if (!confirm("¿Eliminar esta factura permanentemente?")) return;
-    try {
-      const res = await fetch(`/api/invoices/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        toast.success("Factura eliminada");
-        window.location.reload();
-      } else toast.error("Error al eliminar factura");
-    } catch {
-      toast.error("Error de red");
+  const filteredInvoices = useMemo(() => {
+    switch (filter) {
+      case "PENDING":
+        return invoices.filter((inv) =>
+          ["SENT", "PARTIAL"].includes(inv.status),
+        );
+      case "OVERDUE":
+        return invoices.filter((inv) => inv.status === "OVERDUE");
+      case "PAID":
+        return invoices.filter((inv) => inv.status === "PAID");
+      default:
+        return invoices;
     }
-  }
-
-  const filteredInvoices = useMemo(
-    () =>
-      statusFilter === "ALL"
-        ? invoices
-        : invoices.filter((inv) => inv.status === statusFilter),
-    [invoices, statusFilter],
-  );
+  }, [invoices, filter]);
 
   const kpis = useMemo(() => {
     const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
-    const pending = invoices.filter((inv) =>
-      ["SENT", "OVERDUE", "PARTIAL"].includes(inv.status),
-    ).length;
-    const paid = invoices.filter((inv) => inv.status === "PAID").length;
-    const drafts = invoices.filter((inv) => inv.status === "DRAFT").length;
-    return { total, pending, paid, drafts };
+    const pending = invoices
+      .filter((inv) => ["SENT", "PARTIAL"].includes(inv.status))
+      .reduce((sum, inv) => sum + inv.total, 0);
+    const overdue = invoices
+      .filter((inv) => inv.status === "OVERDUE")
+      .reduce((sum, inv) => sum + inv.total, 0);
+    const paid = invoices
+      .filter((inv) => inv.status === "PAID")
+      .reduce((sum, inv) => sum + inv.total, 0);
+    return { total, pending, overdue, paid };
   }, [invoices]);
 
   const columns = [
     { key: "number", header: "Número" },
     { key: "client", header: "Cliente" },
-    { key: "project", header: "Proyecto" },
     { key: "status", header: "Estado" },
     { key: "total", header: "Total", className: "text-right" },
     { key: "date", header: "Fecha" },
     { key: "actions", header: "Acciones", className: "text-right" },
   ];
 
-  function StatusBadge({ status }: { status: string }) {
-    const config = statusConfig[status] || statusConfig.DRAFT;
-    return (
-      <Badge variant="outline" className={config.className}>
-        {config.label}
-      </Badge>
-    );
-  }
-
   function renderRow(inv: Invoice) {
     return (
       <>
         <TableCell className="font-mono text-sm">{inv.number}</TableCell>
-        <TableCell>{inv.client?.name || "—"}</TableCell>
-        <TableCell className="text-sm">{inv.project?.name || "—"}</TableCell>
+        <TableCell>
+          <div className="font-medium">{inv.client?.name || "Sin cliente"}</div>
+          {inv.project?.name && (
+            <div className="text-xs text-muted-foreground">{inv.project.name}</div>
+          )}
+        </TableCell>
         <TableCell>
           <StatusBadge status={inv.status} />
         </TableCell>
@@ -179,55 +165,12 @@ export default function InvoicesPage() {
           <div className="font-medium">
             {formatCurrency(inv.total, inv.currency)}
           </div>
-          <div className="text-xs text-muted-foreground">
-            IVA {inv.taxRate || 19}%:{" "}
-            {formatCurrency(inv.taxAmount || 0, inv.currency)}
-          </div>
         </TableCell>
         <TableCell className="text-sm text-muted-foreground">
           {new Date(inv.issueDate).toLocaleDateString("es-CO")}
         </TableCell>
         <TableCell className="text-right">
-          <div className="flex items-center justify-end gap-1">
-            {inv.status === "DRAFT" && (
-              <button
-                onClick={() => updateStatus(inv.id, "SENT")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                title="Marcar como Enviada"
-                aria-label="Marcar como Enviada"
-              >
-                <Send className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-            {inv.status === "SENT" && (
-              <button
-                onClick={() => updateStatus(inv.id, "PAID")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-success transition-colors hover:bg-success/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                title="Marcar como Pagada"
-                aria-label="Marcar como Pagada"
-              >
-                <CheckCircle className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-            {(inv.status === "SENT" || inv.status === "DRAFT") && (
-              <button
-                onClick={() => updateStatus(inv.id, "CANCELLED")}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                title="Anular"
-                aria-label="Anular"
-              >
-                <Ban className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-            <button
-              onClick={() => deleteInvoice(inv.id)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Eliminar"
-              aria-label="Eliminar"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
+          <InvoiceActions invoice={inv} onRefresh={refreshInvoices} />
         </TableCell>
       </>
     );
@@ -237,74 +180,29 @@ export default function InvoicesPage() {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <div className="font-mono text-sm text-muted-foreground">
               {inv.number}
             </div>
-            <div className="font-medium">
+            <div className="truncate font-medium">
               {inv.client?.name || "Sin cliente"}
             </div>
           </div>
           <StatusBadge status={inv.status} />
         </div>
         {inv.project?.name && (
-          <div className="text-sm text-muted-foreground">
-            {inv.project.name}
-          </div>
+          <div className="text-sm text-muted-foreground">{inv.project.name}</div>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-lg font-semibold">
               {formatCurrency(inv.total, inv.currency)}
             </div>
             <div className="text-xs text-muted-foreground">
-              IVA {inv.taxRate || 19}%:{" "}
-              {formatCurrency(inv.taxAmount || 0, inv.currency)}
+              {new Date(inv.issueDate).toLocaleDateString("es-CO")}
             </div>
           </div>
-          <div className="text-right text-sm text-muted-foreground">
-            {new Date(inv.issueDate).toLocaleDateString("es-CO")}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-3">
-          {inv.status === "DRAFT" && (
-            <button
-              onClick={() => updateStatus(inv.id, "SENT")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-warning transition-colors hover:bg-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Marcar como Enviada"
-              aria-label="Marcar como Enviada"
-            >
-              <Send className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
-          {inv.status === "SENT" && (
-            <button
-              onClick={() => updateStatus(inv.id, "PAID")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-success transition-colors hover:bg-success/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Marcar como Pagada"
-              aria-label="Marcar como Pagada"
-            >
-              <CheckCircle className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
-          {(inv.status === "SENT" || inv.status === "DRAFT") && (
-            <button
-              onClick={() => updateStatus(inv.id, "CANCELLED")}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Anular"
-              aria-label="Anular"
-            >
-              <Ban className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
-          <button
-            onClick={() => deleteInvoice(inv.id)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            title="Eliminar"
-            aria-label="Eliminar"
-          >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
-          </button>
+          <InvoiceActions invoice={inv} onRefresh={refreshInvoices} />
         </div>
       </div>
     );
@@ -322,7 +220,7 @@ export default function InvoicesPage() {
           </p>
         </div>
         {planLoading || canCreateInvoice ? (
-          <CreateInvoiceSheet onCreate={() => window.location.reload()} />
+          <CreateInvoiceSheet onCreate={refreshInvoices} />
         ) : (
           <PlanLimitUpgradeCard
             planName={planName}
@@ -339,68 +237,62 @@ export default function InvoicesPage() {
           value={formatCurrency(kpis.total, "COP")}
           icon={DollarSign}
         />
-        <KpiCard label="Pendientes" value={kpis.pending} icon={Clock} />
-        <KpiCard label="Pagadas" value={kpis.paid} icon={CheckCircle2} />
-        <KpiCard label="Borradores" value={kpis.drafts} icon={PenLine} />
+        <KpiCard
+          label="Pendiente"
+          value={formatCurrency(kpis.pending, "COP")}
+          icon={Clock}
+        />
+        <KpiCard
+          label="Vencido"
+          value={formatCurrency(kpis.overdue, "COP")}
+          icon={AlertCircle}
+        />
+        <KpiCard
+          label="Pagado"
+          value={formatCurrency(kpis.paid, "COP")}
+          icon={CheckCircle2}
+        />
       </div>
 
       <Card className="surface-elevated-2">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="heading-card">Todas las Facturas</CardTitle>
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="invoice-status-filter"
-                className="sr-only sm:not-sr-only"
-              >
-                Filtrar por estado
-              </Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger
-                  id="invoice-status-filter"
-                  className="w-full sm:w-40"
+            <div className="flex flex-wrap gap-2">
+              {FILTER_OPTIONS.map((option) => (
+                <Button
+                  key={option.key}
+                  variant={filter === option.key ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter(option.key)}
+                  className="h-8"
                 >
-                  <SelectValue placeholder="Filtrar por estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos</SelectItem>
-                  <SelectItem value="DRAFT">Borrador</SelectItem>
-                  <SelectItem value="SENT">Enviada</SelectItem>
-                  <SelectItem value="PAID">Pagada</SelectItem>
-                  <SelectItem value="OVERDUE">Vencida</SelectItem>
-                </SelectContent>
-              </Select>
+                  {option.label}
+                </Button>
+              ))}
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex h-40 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={filteredInvoices}
-              renderRow={renderRow}
-              renderCard={renderCard}
-              loading={loading}
-              emptyState={
-                <EmptyStateCard
-                  variant="lg"
-                  icon={FileText}
-                  title="Factura electrónicamente"
-                  description="Crea facturas compatibles con DIAN, SAT o AFIP y da seguimiento a sus pagos."
-                  hint="Empieza creando tu primera factura."
-                  action={
-                    <CreateInvoiceSheet
-                      onCreate={() => window.location.reload()}
-                    />
-                  }
-                />
-              }
-            />
-          )}
+          <DataTable
+            columns={columns}
+            data={filteredInvoices}
+            renderRow={renderRow}
+            renderCard={renderCard}
+            loading={loading}
+            emptyState={
+              <EmptyStateCard
+                variant="lg"
+                icon={FileText}
+                title="No hay facturas aún"
+                description="Crea tu primera factura para empezar a facturar y dar seguimiento a pagos."
+                hint="Todas tus facturas electrónicas aparecerán aquí."
+                action={
+                  <CreateInvoiceSheet onCreate={refreshInvoices} />
+                }
+              />
+            }
+          />
         </CardContent>
       </Card>
     </div>
