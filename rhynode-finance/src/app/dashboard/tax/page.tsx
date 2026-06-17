@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -341,39 +342,48 @@ export default function TaxPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="heading-card">Reporte Fiscal Colombia</CardTitle>
             <div className="flex flex-wrap items-center gap-2">
-              <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-                <SelectTrigger className="w-[100px]" aria-label="Año">
-                  <SelectValue placeholder="Año" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((y) => (
-                    <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Label htmlFor="tax-year" className="sr-only">Año</Label>
+                <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+                  <SelectTrigger id="tax-year" className="w-[100px]">
+                    <SelectValue placeholder="Año" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((y) => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-                <SelectTrigger className="w-[130px]" aria-label="Mes">
-                  <SelectValue placeholder="Mes" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <SelectItem key={m} value={String(m)}>
-                      {new Date(2024, m - 1, 1).toLocaleDateString("es-CO", { month: "long" })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Label htmlFor="tax-month" className="sr-only">Mes</Label>
+                <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
+                  <SelectTrigger id="tax-month" className="w-[130px]">
+                    <SelectValue placeholder="Mes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {new Date(2024, m - 1, 1).toLocaleDateString("es-CO", { month: "long" })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={periodType} onValueChange={(v) => setPeriodType(v as "MONTHLY" | "BIMONTHLY")}>
-                <SelectTrigger className="w-[130px]" aria-label="Periodicidad">
-                  <SelectValue placeholder="Periodicidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MONTHLY">Mensual</SelectItem>
-                  <SelectItem value="BIMONTHLY">Bimestral</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Label htmlFor="tax-period" className="sr-only">Periodicidad</Label>
+                <Select value={periodType} onValueChange={(v) => setPeriodType(v as "MONTHLY" | "BIMONTHLY")}>
+                  <SelectTrigger id="tax-period" className="w-[130px]">
+                    <SelectValue placeholder="Periodicidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MONTHLY">Mensual</SelectItem>
+                    <SelectItem value="BIMONTHLY">Bimestral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardHeader>
