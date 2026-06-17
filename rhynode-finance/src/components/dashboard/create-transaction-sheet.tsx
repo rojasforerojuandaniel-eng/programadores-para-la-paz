@@ -13,6 +13,7 @@ import {
   BottomSheetTrigger,
 } from "@/components/ui/bottom-sheet";
 import { TransactionForm } from "@/components/dashboard/transaction-form";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 interface CreateTransactionSheetProps {
   onCreate: () => void;
@@ -23,6 +24,7 @@ export function CreateTransactionSheet({
   onCreate,
   trigger,
 }: CreateTransactionSheetProps) {
+  const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
@@ -30,6 +32,8 @@ export function CreateTransactionSheet({
     setOpen(false);
     onCreate();
   }
+
+  if (!canEdit) return null;
 
   // Desktop keeps the centered dialog; mobile gets the bottom sheet.
   if (!isMobile) {

@@ -22,6 +22,7 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { LeftWidget } from "@/components/dashboard/left-widget";
 import { RightWidget } from "@/components/dashboard/right-widget";
 import { HealthScore } from "@/components/dashboard/health-score";
+import { calculateHealthScore } from "@/lib/health-score";
 import { EconomicIndicatorsWidget } from "@/components/dashboard/economic-indicators-widget";
 import { SmartInsights } from "@/components/dashboard/smart-insights";
 import { AiCopilot } from "@/components/dashboard/ai-copilot";
@@ -72,13 +73,7 @@ function getMonthRange() {
 
 async function getHealthScores(userId: string | undefined, orgId: string, scope: UserScope) {
   if (!userId || (scope !== "PERSONAL" && scope !== "BOTH")) {
-    return {
-      savingsScore: 50,
-      debtScore: 50,
-      budgetScore: 50,
-      goalsScore: 50,
-      diversificationScore: 50,
-    };
+    return calculateHealthScore({ income: 0, expense: 0 });
   }
 
   const prisma = getPrisma();
@@ -93,7 +88,6 @@ async function getHealthScores(userId: string | undefined, orgId: string, scope:
     expenseAgg,
     debts,
     budgets,
-    goals,
     accounts,
   ] = await Promise.all([
     prisma.transaction.aggregate({
@@ -112,74 +106,28 @@ async function getHealthScores(userId: string | undefined, orgId: string, scope:
       where: { userId },
       select: { spent: true, amount: true },
     }),
-    prisma.goal.findMany({
-      where: { userId, status: "ACTIVE" },
-      select: { currentAmount: true, targetAmount: true },
-    }),
     prisma.account.findMany({
       where: { userId },
-      select: { id: true },
+      select: { balance: true, type: true },
     }),
   ]);
 
-  const income = decimalToNumber(incomeAgg._sum.amount);
-  const expense = decimalToNumber(expenseAgg._sum.amount);
-
-  let savingsScore: number;
-  if (income <= 0) {
-    savingsScore = expense <= 0 ? 100 : 0;
-  } else {
-    const ratio = (income - expense) / income;
-    savingsScore = Math.round(Math.max(0, Math.min(100, 50 + ratio * 50)));
-  }
-
-  let debtScore: number;
-  if (debts.length === 0) {
-    debtScore = 100;
-  } else {
-    const totalPrincipal = debts.reduce((s, d) => s + decimalToNumber(d.principalAmount), 0);
-    const totalRemaining = debts.reduce((s, d) => s + decimalToNumber(d.remainingAmount), 0);
-    if (totalPrincipal <= 0) {
-      debtScore = totalRemaining <= 0 ? 100 : 50;
-    } else {
-      debtScore = Math.round(Math.max(0, Math.min(100, (1 - totalRemaining / totalPrincipal) * 100)));
-    }
-  }
-
-  let budgetScore: number;
-  if (budgets.length === 0) {
-    budgetScore = 100;
-  } else {
-    const budgetScores = budgets.map((b) => {
-      const amount = decimalToNumber(b.amount);
-      if (amount <= 0) return 100;
-      const ratio = decimalToNumber(b.spent) / amount;
-      return Math.max(0, Math.min(100, (1 - Math.max(0, ratio - 1)) * 100));
-    });
-    budgetScore = Math.round(budgetScores.reduce((s, sc) => s + sc, 0) / budgetScores.length);
-  }
-
-  let goalsScore: number;
-  if (goals.length === 0) {
-    goalsScore = 100;
-  } else {
-    const goalScores = goals.map((g) => {
-      const targetAmount = decimalToNumber(g.targetAmount);
-      if (targetAmount <= 0) return 100;
-      return Math.max(0, Math.min(100, (decimalToNumber(g.currentAmount) / targetAmount) * 100));
-    });
-    goalsScore = Math.round(goalScores.reduce((s, sc) => s + sc, 0) / goalScores.length);
-  }
-
-  const diversificationScore = Math.min(100, Math.max(0, accounts.length * 25));
-
-  return {
-    savingsScore,
-    debtScore,
-    budgetScore,
-    goalsScore,
-    diversificationScore,
-  };
+  return calculateHealthScore({
+    income: decimalToNumber(incomeAgg._sum.amount),
+    expense: decimalToNumber(expenseAgg._sum.amount),
+    debts: debts.map((d) => ({
+      principalAmount: decimalToNumber(d.principalAmount),
+      remainingAmount: decimalToNumber(d.remainingAmount),
+    })),
+    budgets: budgets.map((b) => ({
+      amount: decimalToNumber(b.amount),
+      spent: decimalToNumber(b.spent),
+    })),
+    accounts: accounts.map((a) => ({
+      balance: decimalToNumber(a.balance),
+      type: a.type,
+    })),
+  });
 }
 
 async function UpcomingEvents({ userId, currency }: { userId: string | undefined; currency: string }) {
@@ -263,7 +211,6 @@ export default async function DashboardPage() {
   const level = profile?.level ?? 1;
   const xp = profile?.xp ?? 0;
   const streakDays = profile?.streakDays ?? 0;
-  const nextLevelXp = level * 100;
 
   const healthScores = await getHealthScores(profile?.id, org.id, scope);
 
@@ -276,14 +223,14 @@ export default async function DashboardPage() {
     {
       id: "xp-bar",
       label: "Barra de XP",
-      content: <XPBar level={level} xp={xp} nextLevelXp={nextLevelXp} streakDays={streakDays} />,
+      content: <XPBar level={level} xp={xp} streakDays={streakDays} />,
     },
     {
       id: "health-score",
       label: "Health Score",
       content:
         scope === "PERSONAL" || scope === "BOTH" ? (
-          <HealthScore {...healthScores} />
+          <HealthScore result={healthScores} />
         ) : null,
     },
     {

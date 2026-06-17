@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Trash2, Plus, Sparkles, Bell, Tag, FolderOpen, ListFilter } from "lucide-react";
+import { useOrganizationRole } from "@/hooks/use-organization-role";
 import {
   type Rule,
   type RuleConditionType,
@@ -55,6 +56,8 @@ const actionIcons: Record<RuleActionType, typeof Plus> = {
 export default function RulesPage() {
   const [rules, setRules] = useState<Rule[]>(() => getRules());
   const [editing, setEditing] = useState<Rule | null>(null);
+  const { canEdit } = useOrganizationRole();
+
   const [form, setForm] = useState({
     name: "",
     conditionType: "contains" as RuleConditionType,
@@ -145,6 +148,7 @@ export default function RulesPage() {
         </Button>
       </div>
 
+      {canEdit && (
       <Card className="surface-elevated-2">
         <CardHeader>
           <CardTitle className="heading-card">
@@ -263,6 +267,7 @@ export default function RulesPage() {
           </form>
         </CardContent>
       </Card>
+      )}
 
       <Card className="surface-elevated-2">
         <CardHeader>
@@ -284,7 +289,8 @@ export default function RulesPage() {
                   >
                     <button
                       type="button"
-                      onClick={() => handleEdit(rule)}
+                      onClick={canEdit ? () => handleEdit(rule) : undefined}
+                      disabled={!canEdit}
                       className="min-w-0 flex-1 text-left"
                     >
                       <div className="flex items-center gap-2">
@@ -311,6 +317,7 @@ export default function RulesPage() {
                         </span>
                       </p>
                     </button>
+                    {canEdit && (
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={rule.enabled}
@@ -326,6 +333,7 @@ export default function RulesPage() {
                         <Trash2 className="h-4 w-4 text-danger" />
                       </Button>
                     </div>
+                    )}
                   </li>
                 );
               })}
