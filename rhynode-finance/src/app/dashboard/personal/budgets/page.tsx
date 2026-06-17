@@ -11,7 +11,7 @@ import { ProgressBar } from "@/components/dashboard/progress-bar";
 import { ProgressRowsSkeleton } from "@/components/dashboard/page-skeleton";
 import { TableCell } from "@/components/ui/table";
 import { CreateBudgetDialog, ShareBudgetDialog } from "./create-dialog";
-import { PiggyBank, Receipt, AlertTriangle } from "lucide-react";
+import { PiggyBank, Receipt, AlertTriangle, Tag } from "lucide-react";
 
 export const metadata = dashboardMetadata(
   "Presupuestos",
@@ -39,18 +39,21 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
         label: "Excedido",
         colorClass: "bg-danger",
         textClass: "text-danger",
+        badge: "destructive" as const,
       };
     case "WARNING":
       return {
         label: "Alerta",
         colorClass: "bg-warning",
         textClass: "text-warning",
+        badge: "secondary" as const,
       };
     default:
       return {
         label: "OK",
         colorClass: "bg-success",
         textClass: "text-success",
+        badge: "outline" as const,
       };
   }
 }
@@ -58,8 +61,8 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
 function EmptyState() {
   return (
     <EmptyStateCard
-          variant="lg"
-          icon={PiggyBank}
+      variant="lg"
+      icon={PiggyBank}
       title="Controla tus gastos con presupuestos"
       description="Establece límites por categoría y recibe alertas antes de excederte."
       hint="Empieza creando tu primer presupuesto."
@@ -88,9 +91,10 @@ export default async function BudgetsPage() {
 
   const columns = [
     { key: "name", header: "Nombre" },
-    { key: "amount", header: "Monto" },
+    { key: "category", header: "Categoría" },
+    { key: "amount", header: "Total" },
     { key: "spent", header: "Gastado" },
-    { key: "period", header: "Periodo" },
+    { key: "used", header: "% Usado" },
     { key: "status", header: "Estado" },
     { key: "actions", header: "Acciones" },
   ];
@@ -134,16 +138,24 @@ export default async function BudgetsPage() {
             const progress = amount > 0 ? (spent / amount) * 100 : 0;
             const status = getBudgetStatus(progress);
             const meta = statusMeta(status);
+
             return (
               <>
                 <TableCell className="py-3 font-medium">{budget.name}</TableCell>
-                <TableCell className="py-3">{formatCurrency(amount, "COP")}</TableCell>
-                <TableCell className="py-3">{formatCurrency(spent, "COP")}</TableCell>
                 <TableCell className="py-3">
-                  <Badge variant="outline">{budget.period}</Badge>
+                  {budget.category ? (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Tag className="h-3 w-3" />
+                      {budget.category.name}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
+                <TableCell className="py-3">{formatCurrency(amount, "COP")}</TableCell>
+                <TableCell className="py-3 font-medium">{formatCurrency(spent, "COP")}</TableCell>
                 <TableCell className="py-3">
-                  <div className="w-full max-w-[160px] space-y-1">
+                  <div className="w-full max-w-[180px] space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">{progress.toFixed(0)}%</span>
                       <span className={meta.textClass}>{meta.label}</span>
@@ -157,6 +169,9 @@ export default async function BudgetsPage() {
                   </div>
                 </TableCell>
                 <TableCell className="py-3">
+                  <Badge variant={meta.badge}>{meta.label}</Badge>
+                </TableCell>
+                <TableCell className="py-3">
                   <ShareBudgetDialog budgetId={budget.id} budgetName={budget.name} />
                 </TableCell>
               </>
@@ -168,26 +183,56 @@ export default async function BudgetsPage() {
             const progress = amount > 0 ? (spent / amount) * 100 : 0;
             const status = getBudgetStatus(progress);
             const meta = statusMeta(status);
+            const remaining = amount - spent;
+
             return (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
-                  <span className="font-medium">{budget.name}</span>
-                  <Badge variant="outline">{budget.period}</Badge>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold leading-tight">{budget.name}</h3>
+                    {budget.category && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Tag className="h-3 w-3" />
+                        {budget.category.name}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant={meta.badge}>{meta.label}</Badge>
                 </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold tracking-tight">{formatCurrency(spent, "COP")}</span>
+                  <span className="text-sm text-muted-foreground">/ {formatCurrency(amount, "COP")}</span>
+                </div>
+
                 <ProgressBar
                   value={spent}
                   max={amount}
                   colorClassName={meta.colorClass}
                   label={
                     <span className={meta.textClass}>
-                      {progress.toFixed(0)}% · {meta.label}
+                      {progress.toFixed(0)}% usado · {meta.label}
                     </span>
                   }
                 />
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {formatCurrency(spent, "COP")} / {formatCurrency(amount, "COP")}
-                  </span>
+
+                {(status === "EXCEEDED" || status === "WARNING") && (
+                  <div
+                    className={`rounded-lg px-3 py-2 text-sm ${
+                      status === "EXCEEDED"
+                        ? "bg-danger/10 text-danger"
+                        : "bg-warning/10 text-warning"
+                    }`}
+                    role="status"
+                  >
+                    {status === "EXCEEDED"
+                      ? `Has excedido el presupuesto en ${formatCurrency(Math.abs(remaining), "COP")}.`
+                      : `Te quedan ${formatCurrency(remaining, "COP")} antes de alcanzar el límite.`}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <Badge variant="outline">{budget.period}</Badge>
                   <ShareBudgetDialog budgetId={budget.id} budgetName={budget.name} />
                 </div>
               </div>
