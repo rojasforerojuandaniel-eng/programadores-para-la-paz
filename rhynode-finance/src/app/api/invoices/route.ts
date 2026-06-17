@@ -5,6 +5,7 @@ import { checkPlanLimit } from "@/lib/subscription";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 import { generateInvoiceNumber } from "@/lib/invoices";
 
 const createSchema = z.object({
@@ -145,6 +146,12 @@ export const POST = withRateLimit(
         computedTotal = computedSubtotal + computedTaxAmount;
       }
 
+      auditLog({
+        userId: org.id,
+        action: "CREATE_INVOICE",
+        resource: "invoice",
+        metadata: { number, clientId, total: computedTotal, currency },
+      });
       const invoice = await prisma.invoice.create({
         data: {
           organizationId: org.id,

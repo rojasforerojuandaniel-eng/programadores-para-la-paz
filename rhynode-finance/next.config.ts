@@ -11,6 +11,7 @@ const csp = [
   "form-action 'self' https://checkout.stripe.com https://sandbox.wompi.co https://checkout.wompi.co",
   "base-uri 'self'",
   "frame-ancestors 'none'",
+  "manifest-src 'self'",
 ].join("; ");
 
 const nextConfig: NextConfig = {

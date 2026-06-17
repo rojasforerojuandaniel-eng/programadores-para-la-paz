@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
+import { auditLog } from "@/lib/audit-log";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -13,7 +15,7 @@ const createSchema = z.object({
   balance: z.number().optional(),
 });
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -33,9 +35,9 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const org = await requireAuth();
     if (!org) {
@@ -52,6 +54,17 @@ export async function POST(request: Request) {
       );
     }
 
+    auditLog({
+      userId: org.id,
+      action: "CREATE_BANK_ACCOUNT",
+      resource: "bankAccount",
+      metadata: {
+        name: parsed.data.name,
+        bankName: parsed.data.bankName,
+        type: parsed.data.type,
+        currency: parsed.data.currency,
+      },
+    });
     const account = await prisma.bankAccount.create({
       data: {
         organizationId: org.id,
@@ -69,4 +82,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

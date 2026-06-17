@@ -3,8 +3,10 @@ import { requireAuth } from "@/lib/auth";
 import { checkPlanLimit } from "@/lib/subscription";
 import { duplicateInvoice } from "@/lib/invoices";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
+import { auditLog } from "@/lib/audit-log";
 
-export async function POST(
+export const POST = withRateLimit(async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -26,6 +28,13 @@ export async function POST(
     }
 
     const { id } = await params;
+    auditLog({
+      userId: org.id,
+      action: "DUPLICATE_INVOICE",
+      resource: "invoice",
+      resourceId: id,
+      metadata: { originalId: id },
+    });
     const invoice = await duplicateInvoice(org.id, id);
 
     return NextResponse.json({ invoice });
@@ -43,4 +52,4 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

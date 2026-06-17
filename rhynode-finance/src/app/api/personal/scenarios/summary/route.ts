@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { decimalToNumber } from "@/lib/decimal";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 function getMonthRange() {
   const now = new Date();
@@ -12,7 +13,7 @@ function getMonthRange() {
   };
 }
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   let profile: Awaited<ReturnType<typeof getUserProfile>> | null = null;
 
   try {
@@ -70,4 +71,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});

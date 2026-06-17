@@ -6,6 +6,7 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { getOccurrencesInRange } from "@/app/dashboard/personal/subscriptions/subscription-utils";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const querySchema = z.object({
   from: z.coerce.date().optional(),
@@ -27,7 +28,7 @@ interface CalendarEvent {
   meta?: Record<string, unknown>;
 }
 
-export async function GET(request: Request) {
+export const GET = withRateLimit(async function GET(request: Request) {
   try {
     const org = await requireAuth();
     const profile = await getUserProfile();
@@ -251,7 +252,7 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {

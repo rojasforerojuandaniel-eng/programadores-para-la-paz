@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const deleteSchema = z.object({
   budgetId: z.string().min(1),
@@ -21,7 +22,7 @@ interface BudgetMetadata {
   inviteEmail?: string;
 }
 
-export async function GET(request: Request) {
+export const GET = withRateLimit(async function GET(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -81,9 +82,9 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(request: Request) {
+export const DELETE = withRateLimit(async function DELETE(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -141,4 +142,4 @@ export async function DELETE(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

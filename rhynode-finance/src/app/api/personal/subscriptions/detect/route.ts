@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { detectSubscriptions } from "@/lib/subscription-detector";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function POST() {
+export const POST = withRateLimit(async function POST() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -61,4 +62,4 @@ export async function POST() {
     logger.error("Subscription detection error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to detect subscriptions" }, { status: 500 });
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});

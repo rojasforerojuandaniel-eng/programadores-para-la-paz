@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const postSchema = z.object({
   inviteCode: z.string().min(1),
@@ -20,7 +21,7 @@ interface BudgetMetadata {
   inviteEmail?: string;
 }
 
-export async function POST(request: Request) {
+export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -91,4 +92,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

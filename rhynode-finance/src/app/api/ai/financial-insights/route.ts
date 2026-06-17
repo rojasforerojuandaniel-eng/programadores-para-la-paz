@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
 import { computeFinancialInsights } from "@/lib/ai-financial-insights";
 import {
@@ -11,47 +11,23 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const MAX_REQUESTS = 30;
-const WINDOW_MS = 60000;
-
-export async function GET(request: Request): Promise<NextResponse> {
-  const profile = await getUserProfile();
-  if (!profile) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const ip = getClientIp(request);
-  const limit = await rateLimit(
-    `ai-financial-insights:${profile.id}:${ip}`,
-    MAX_REQUESTS,
-    WINDOW_MS
-  );
-
-  if (!limit.success) {
-    return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      {
-        status: 429,
-        headers: {
-          "X-RateLimit-Limit": String(limit.limit),
-          "X-RateLimit-Remaining": String(limit.remaining),
-          "X-RateLimit-Reset": String(limit.resetAt),
-        },
-      }
-    );
-  }
-
-  const prisma = getPrisma();
-  const org = await prisma.organization.findUnique({
-    where: { userId: profile.id },
-    select: { id: true, currency: true },
-  });
-
-  if (!org) {
-    return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-  }
-
+export const GET = withRateLimit(async function GET(): Promise<NextResponse> {
   try {
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const prisma = getPrisma();
+    const org = await prisma.organization.findUnique({
+      where: { userId: profile.id },
+      select: { id: true, currency: true },
+    });
+
+    if (!org) {
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+    }
+
     const insights: FinancialInsights = await computeFinancialInsights({
       userId: profile.id,
       orgId: org.id,
@@ -61,17 +37,10 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     const validated = FinancialInsightsSchema.parse(insights);
 
-    return NextResponse.json(validated, {
-      status: 200,
-      headers: {
-        "X-RateLimit-Limit": String(limit.limit),
-        "X-RateLimit-Remaining": String(limit.remaining),
-        "X-RateLimit-Reset": String(limit.resetAt),
-      },
-    });
+    return NextResponse.json(validated, { status: 200 });
   } catch (error) {
     logger.error("Failed to compute financial insights", {
-      userId: profile.id,
+      userId: (await getUserProfile())?.id,
       error: error instanceof Error ? error.message : String(error),
     });
     return NextResponse.json(
@@ -79,4 +48,4 @@ export async function GET(request: Request): Promise<NextResponse> {
       { status: 500 }
     );
   }
-}
+}, { maxRequests: 10, windowMs: 60000 });

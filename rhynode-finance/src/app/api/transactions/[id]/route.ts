@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
+import { auditLog } from "@/lib/audit-log";
 
 const updateSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"]).optional(),
@@ -13,7 +15,7 @@ const updateSchema = z.object({
   reference: z.string().optional(),
 });
 
-export async function PATCH(
+export const PATCH = withRateLimit(async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -28,6 +30,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
+    auditLog({
+      userId: org.id,
+      action: "UPDATE_TRANSACTION",
+      resource: "transaction",
+      resourceId: id,
+      metadata: parsed.data,
+    });
     const transaction = await prisma.transaction.update({
       where: { id, organizationId: org.id },
       data: parsed.data,
@@ -38,9 +47,9 @@ export async function PATCH(
     logger.error("Failed to update transaction", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update transaction" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(
+export const DELETE = withRateLimit(async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -49,10 +58,16 @@ export async function DELETE(
     if (!org) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { id } = await params;
 
+    auditLog({
+      userId: org.id,
+      action: "DELETE_TRANSACTION",
+      resource: "transaction",
+      resourceId: id,
+    });
     await prisma.transaction.delete({ where: { id, organizationId: org.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Failed to delete transaction", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to delete transaction" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

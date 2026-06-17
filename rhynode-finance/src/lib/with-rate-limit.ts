@@ -6,7 +6,7 @@ export type RouteContext<T = Record<string, string | string[]>> = {
 };
 
 export function withRateLimit<T = Record<string, string | string[]>>(
-  handler: (request: Request, context?: RouteContext<T>) => Promise<Response> | Response,
+  handler: (request: Request, context: RouteContext<T>) => Promise<Response> | Response,
   options: { key?: string; maxRequests?: number; windowMs?: number } = {}
 ) {
   return async function (request: Request, context?: RouteContext<T>): Promise<Response> {
@@ -28,7 +28,7 @@ export function withRateLimit<T = Record<string, string | string[]>>(
       );
     }
 
-    const response = await handler(request, context);
+    const response = await handler(request, context ?? ({ params: Promise.resolve({} as T) } as RouteContext<T>));
 
     // Attach rate limit headers if possible
     if (response.headers) {

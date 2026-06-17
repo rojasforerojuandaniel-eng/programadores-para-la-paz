@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const INVESTMENT_TYPES = [
   "INVESTMENT",
@@ -14,7 +15,7 @@ const INVESTMENT_TYPES = [
   "OTHER",
 ] as const;
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const profile = await getUserProfile();
     if (!profile) {
@@ -83,4 +84,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 10,"windowMs": 60000});

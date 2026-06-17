@@ -12,6 +12,7 @@ import {
 import { suggestCategory } from "@/lib/categorizer";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -213,6 +214,12 @@ export const PUT = withRateLimit(
         };
       });
 
+      auditLog({
+        userId: profile?.id,
+        action: "IMPORT_TRANSACTIONS",
+        resource: "transaction",
+        metadata: { count: transactions.length },
+      });
       const created = await prisma.$transaction(async (txClient) => {
         await txClient.transaction.createMany({
           data: createData,

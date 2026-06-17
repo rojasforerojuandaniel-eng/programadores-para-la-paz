@@ -5,6 +5,7 @@ import { withRateLimit } from "@/lib/with-rate-limit";
 import { checkAndNotifyGoalThresholds } from "@/lib/push-events";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -60,6 +61,12 @@ export const POST = withRateLimit(
 
       const { name, targetAmount, currency, deadline, icon, color } = parsed.data;
 
+      auditLog({
+        userId: profile?.id,
+        action: "CREATE_GOAL",
+        resource: "goal",
+        metadata: { name, targetAmount, currency, deadline },
+      });
       const goal = await prisma.goal.create({
         data: {
           userId: profile.id,

@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -58,6 +59,12 @@ export const POST = withRateLimit(
         );
       }
 
+      auditLog({
+        userId: org.id,
+        action: "CREATE_CLIENT",
+        resource: "client",
+        metadata: { name: parsed.data.name, email: parsed.data.email, country: parsed.data.country },
+      });
       const client = await prisma.client.create({
         data: {
           organizationId: org.id,

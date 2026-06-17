@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
-export async function GET() {
+export const GET = withRateLimit(async function GET() {
   try {
     const result = await fetchEconomicIndicators();
     logger.info("Economic indicators served", {
@@ -19,4 +20,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 100,"windowMs": 60000});

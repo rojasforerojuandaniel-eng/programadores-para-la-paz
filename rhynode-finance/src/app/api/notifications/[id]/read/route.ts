@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function POST(_request: Request, { params }: RouteContext) {
+export const POST = withRateLimit(async function POST(_request: Request, { params }: RouteContext) {
   try {
     const { id } = await params;
     const profile = await getUserProfile();
@@ -35,4 +36,4 @@ export async function POST(_request: Request, { params }: RouteContext) {
       { status: 500 }
     );
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});

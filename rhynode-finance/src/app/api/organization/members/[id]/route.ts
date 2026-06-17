@@ -5,6 +5,8 @@ import { getPrisma } from "@/lib/prisma";
 import { normalizeRole, canAdmin } from "@/lib/organization";
 import { getCurrentOrganization } from "@/lib/organization.server";
 import { logger } from "@/lib/logger";
+import { auditLog } from "@/lib/audit-log";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 const updateSchema = z.object({
   role: z.enum(["ADMIN", "MANAGER", "VIEWER"]),
@@ -14,7 +16,7 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
+export const PATCH = withRateLimit(async function PATCH(request: Request, context: RouteContext) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -52,6 +54,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    auditLog({
+      userId,
+      action: "UPDATE_MEMBER_ROLE",
+      resource: "organizationMember",
+      resourceId: id,
+      metadata: { role: parsed.data.role },
+    });
     const updated = await prisma.organizationMember.update({
       where: { id },
       data: { role: parsed.data.role },
@@ -69,9 +78,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     logger.error("Failed to update member", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update member" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
 
-export async function DELETE(_request: Request, context: RouteContext) {
+export const DELETE = withRateLimit(async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -100,6 +109,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
+    auditLog({
+      userId,
+      action: "REMOVE_MEMBER",
+      resource: "organizationMember",
+      resourceId: id,
+    });
     await prisma.organizationMember.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
@@ -107,4 +122,4 @@ export async function DELETE(_request: Request, context: RouteContext) {
     logger.error("Failed to remove member", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to remove member" }, { status: 500 });
   }
-}
+}, {"maxRequests": 60,"windowMs": 60000});
