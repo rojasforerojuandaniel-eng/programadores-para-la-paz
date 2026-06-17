@@ -1,5 +1,7 @@
 "use client";
 
+import { ErrorFallback } from "@/components/error-fallback";
+
 export default function DashboardError({
   error,
   reset,
@@ -8,18 +10,13 @@ export default function DashboardError({
   reset: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 px-4 py-12 text-center">
-      <h1 className="text-xl font-semibold text-red-400">Algo salió mal en el dashboard</h1>
-      <p className="max-w-md text-sm text-muted-foreground">{error.message}</p>
-      {error.digest && (
-        <p className="text-xs text-muted-foreground">Digest: {error.digest}</p>
-      )}
-      <button
-        onClick={reset}
-        className="mt-4 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        Intentar de nuevo
-      </button>
-    </div>
+    <ErrorFallback
+      error={error}
+      reset={reset}
+      title="Algo salió mal en el dashboard"
+      description="No pudimos cargar esta sección. Intenta de nuevo o selecciona otra opción en el menú."
+      fullScreen={false}
+      context="dashboard-error-boundary"
+    />
   );
 }
