@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -143,44 +143,37 @@ const integrationsSeed: Integration[] = [
   },
 ];
 
-const WAITLIST_STORAGE_KEY = "rhynode_integration_waitlist_v1";
-
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function getStoredWaitlist(): Record<string, WaitlistEntry> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(WAITLIST_STORAGE_KEY);
-    if (raw) {
-      return JSON.parse(raw) as Record<string, WaitlistEntry>;
-    }
-  } catch {
-    // Ignore corrupted localStorage data.
-  }
-  return {};
 }
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] =
     useState<Integration[]>(integrationsSeed);
-  const [waitlist, setWaitlist] = useState<Record<string, WaitlistEntry>>(
-    getStoredWaitlist
-  );
+  const [waitlist, setWaitlist] = useState<Record<string, WaitlistEntry>>({});
   const [expandedWaitlist, setExpandedWaitlist] = useState<string | null>(null);
   const [waitlistForm, setWaitlistForm] = useState<WaitlistFormState>({
     name: "",
     email: "",
   });
 
-  function updateWaitlistStorage(next: Record<string, WaitlistEntry>) {
-    try {
-      localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // Ignore if localStorage is unavailable.
-    }
-  }
+  useEffect(() => {
+    fetch("/api/personal/preferences")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: unknown) => {
+        if (
+          data &&
+          typeof data === "object" &&
+          "integrationWaitlist" in data &&
+          data.integrationWaitlist &&
+          typeof data.integrationWaitlist === "object" &&
+          !Array.isArray(data.integrationWaitlist)
+        ) {
+          setWaitlist(data.integrationWaitlist as Record<string, WaitlistEntry>);
+        }
+      })
+      .catch(() => null);
+  }, []);
 
   function handleConnect(id: string) {
     setIntegrations((prev) =>
@@ -228,7 +221,11 @@ export default function IntegrationsPage() {
 
     const next = { ...waitlist, [id]: entry };
     setWaitlist(next);
-    updateWaitlistStorage(next);
+    fetch("/api/personal/preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ integrationWaitlist: next }),
+    }).catch(() => null);
     setExpandedWaitlist(null);
     setWaitlistForm({ name: "", email: "" });
     toast.success("Te notificaremos cuando esté disponible");
