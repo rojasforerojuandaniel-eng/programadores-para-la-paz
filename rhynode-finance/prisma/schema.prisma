@@ -553,6 +553,8 @@ model DetectedSubscription {
   provider        String?
   category        String?
   status          String   @default("ACTIVE")
+  canceledAt      DateTime? @map("canceled_at")
+  cancellationUrl String?  @map("cancellation_url")
   lastDetectedAt  DateTime @default(now()) @map("last_detected_at")
   lastPaidAt      DateTime? @map("last_paid_at")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -560,6 +562,7 @@ model DetectedSubscription {
 
   @@index([userId])
   @@index([status])
+  @@index([userId, status])
   @@map("detected_subscriptions")
 }
 

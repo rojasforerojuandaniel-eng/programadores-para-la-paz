@@ -45,6 +45,8 @@ export type DetectedSubscriptionMinAggregateOutputType = {
   provider: string | null
   category: string | null
   status: string | null
+  canceledAt: Date | null
+  cancellationUrl: string | null
   lastDetectedAt: Date | null
   lastPaidAt: Date | null
   createdAt: Date | null
@@ -62,6 +64,8 @@ export type DetectedSubscriptionMaxAggregateOutputType = {
   provider: string | null
   category: string | null
   status: string | null
+  canceledAt: Date | null
+  cancellationUrl: string | null
   lastDetectedAt: Date | null
   lastPaidAt: Date | null
   createdAt: Date | null
@@ -79,6 +83,8 @@ export type DetectedSubscriptionCountAggregateOutputType = {
   provider: number
   category: number
   status: number
+  canceledAt: number
+  cancellationUrl: number
   lastDetectedAt: number
   lastPaidAt: number
   createdAt: number
@@ -106,6 +112,8 @@ export type DetectedSubscriptionMinAggregateInputType = {
   provider?: true
   category?: true
   status?: true
+  canceledAt?: true
+  cancellationUrl?: true
   lastDetectedAt?: true
   lastPaidAt?: true
   createdAt?: true
@@ -123,6 +131,8 @@ export type DetectedSubscriptionMaxAggregateInputType = {
   provider?: true
   category?: true
   status?: true
+  canceledAt?: true
+  cancellationUrl?: true
   lastDetectedAt?: true
   lastPaidAt?: true
   createdAt?: true
@@ -140,6 +150,8 @@ export type DetectedSubscriptionCountAggregateInputType = {
   provider?: true
   category?: true
   status?: true
+  canceledAt?: true
+  cancellationUrl?: true
   lastDetectedAt?: true
   lastPaidAt?: true
   createdAt?: true
@@ -244,6 +256,8 @@ export type DetectedSubscriptionGroupByOutputType = {
   provider: string | null
   category: string | null
   status: string
+  canceledAt: Date | null
+  cancellationUrl: string | null
   lastDetectedAt: Date
   lastPaidAt: Date | null
   createdAt: Date
@@ -284,6 +298,8 @@ export type DetectedSubscriptionWhereInput = {
   provider?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   category?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   status?: Prisma.StringFilter<"DetectedSubscription"> | string
+  canceledAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
+  cancellationUrl?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   lastDetectedAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
   lastPaidAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
@@ -302,6 +318,8 @@ export type DetectedSubscriptionOrderByWithRelationInput = {
   provider?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  canceledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   lastDetectedAt?: Prisma.SortOrder
   lastPaidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -323,6 +341,8 @@ export type DetectedSubscriptionWhereUniqueInput = Prisma.AtLeast<{
   provider?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   category?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   status?: Prisma.StringFilter<"DetectedSubscription"> | string
+  canceledAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
+  cancellationUrl?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   lastDetectedAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
   lastPaidAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
@@ -341,6 +361,8 @@ export type DetectedSubscriptionOrderByWithAggregationInput = {
   provider?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  canceledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   lastDetectedAt?: Prisma.SortOrder
   lastPaidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -366,6 +388,8 @@ export type DetectedSubscriptionScalarWhereWithAggregatesInput = {
   provider?: Prisma.StringNullableWithAggregatesFilter<"DetectedSubscription"> | string | null
   category?: Prisma.StringNullableWithAggregatesFilter<"DetectedSubscription"> | string | null
   status?: Prisma.StringWithAggregatesFilter<"DetectedSubscription"> | string
+  canceledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DetectedSubscription"> | Date | string | null
+  cancellationUrl?: Prisma.StringNullableWithAggregatesFilter<"DetectedSubscription"> | string | null
   lastDetectedAt?: Prisma.DateTimeWithAggregatesFilter<"DetectedSubscription"> | Date | string
   lastPaidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DetectedSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DetectedSubscription"> | Date | string
@@ -382,6 +406,8 @@ export type DetectedSubscriptionCreateInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -400,6 +426,8 @@ export type DetectedSubscriptionUncheckedCreateInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -416,6 +444,8 @@ export type DetectedSubscriptionUpdateInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -434,6 +464,8 @@ export type DetectedSubscriptionUncheckedUpdateInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -451,6 +483,8 @@ export type DetectedSubscriptionCreateManyInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -467,6 +501,8 @@ export type DetectedSubscriptionUpdateManyMutationInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -484,6 +520,8 @@ export type DetectedSubscriptionUncheckedUpdateManyInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -511,6 +549,8 @@ export type DetectedSubscriptionCountOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  canceledAt?: Prisma.SortOrder
+  cancellationUrl?: Prisma.SortOrder
   lastDetectedAt?: Prisma.SortOrder
   lastPaidAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -532,6 +572,8 @@ export type DetectedSubscriptionMaxOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  canceledAt?: Prisma.SortOrder
+  cancellationUrl?: Prisma.SortOrder
   lastDetectedAt?: Prisma.SortOrder
   lastPaidAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -549,6 +591,8 @@ export type DetectedSubscriptionMinOrderByAggregateInput = {
   provider?: Prisma.SortOrder
   category?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  canceledAt?: Prisma.SortOrder
+  cancellationUrl?: Prisma.SortOrder
   lastDetectedAt?: Prisma.SortOrder
   lastPaidAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -611,6 +655,8 @@ export type DetectedSubscriptionCreateWithoutUserInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -627,6 +673,8 @@ export type DetectedSubscriptionUncheckedCreateWithoutUserInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -673,6 +721,8 @@ export type DetectedSubscriptionScalarWhereInput = {
   provider?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   category?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   status?: Prisma.StringFilter<"DetectedSubscription"> | string
+  canceledAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
+  cancellationUrl?: Prisma.StringNullableFilter<"DetectedSubscription"> | string | null
   lastDetectedAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
   lastPaidAt?: Prisma.DateTimeNullableFilter<"DetectedSubscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DetectedSubscription"> | Date | string
@@ -689,6 +739,8 @@ export type DetectedSubscriptionCreateManyUserInput = {
   provider?: string | null
   category?: string | null
   status?: string
+  canceledAt?: Date | string | null
+  cancellationUrl?: string | null
   lastDetectedAt?: Date | string
   lastPaidAt?: Date | string | null
   createdAt?: Date | string
@@ -705,6 +757,8 @@ export type DetectedSubscriptionUpdateWithoutUserInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -721,6 +775,8 @@ export type DetectedSubscriptionUncheckedUpdateWithoutUserInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -737,6 +793,8 @@ export type DetectedSubscriptionUncheckedUpdateManyWithoutUserInput = {
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastDetectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lastPaidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -756,6 +814,8 @@ export type DetectedSubscriptionSelect<ExtArgs extends runtime.Types.Extensions.
   provider?: boolean
   category?: boolean
   status?: boolean
+  canceledAt?: boolean
+  cancellationUrl?: boolean
   lastDetectedAt?: boolean
   lastPaidAt?: boolean
   createdAt?: boolean
@@ -774,6 +834,8 @@ export type DetectedSubscriptionSelectCreateManyAndReturn<ExtArgs extends runtim
   provider?: boolean
   category?: boolean
   status?: boolean
+  canceledAt?: boolean
+  cancellationUrl?: boolean
   lastDetectedAt?: boolean
   lastPaidAt?: boolean
   createdAt?: boolean
@@ -792,6 +854,8 @@ export type DetectedSubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtim
   provider?: boolean
   category?: boolean
   status?: boolean
+  canceledAt?: boolean
+  cancellationUrl?: boolean
   lastDetectedAt?: boolean
   lastPaidAt?: boolean
   createdAt?: boolean
@@ -810,13 +874,15 @@ export type DetectedSubscriptionSelectScalar = {
   provider?: boolean
   category?: boolean
   status?: boolean
+  canceledAt?: boolean
+  cancellationUrl?: boolean
   lastDetectedAt?: boolean
   lastPaidAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DetectedSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "amount" | "currency" | "frequency" | "provider" | "category" | "status" | "lastDetectedAt" | "lastPaidAt" | "createdAt" | "updatedAt", ExtArgs["result"]["detectedSubscription"]>
+export type DetectedSubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "amount" | "currency" | "frequency" | "provider" | "category" | "status" | "canceledAt" | "cancellationUrl" | "lastDetectedAt" | "lastPaidAt" | "createdAt" | "updatedAt", ExtArgs["result"]["detectedSubscription"]>
 export type DetectedSubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserProfileDefaultArgs<ExtArgs>
 }
@@ -843,6 +909,8 @@ export type $DetectedSubscriptionPayload<ExtArgs extends runtime.Types.Extension
     provider: string | null
     category: string | null
     status: string
+    canceledAt: Date | null
+    cancellationUrl: string | null
     lastDetectedAt: Date
     lastPaidAt: Date | null
     createdAt: Date
@@ -1281,6 +1349,8 @@ export interface DetectedSubscriptionFieldRefs {
   readonly provider: Prisma.FieldRef<"DetectedSubscription", 'String'>
   readonly category: Prisma.FieldRef<"DetectedSubscription", 'String'>
   readonly status: Prisma.FieldRef<"DetectedSubscription", 'String'>
+  readonly canceledAt: Prisma.FieldRef<"DetectedSubscription", 'DateTime'>
+  readonly cancellationUrl: Prisma.FieldRef<"DetectedSubscription", 'String'>
   readonly lastDetectedAt: Prisma.FieldRef<"DetectedSubscription", 'DateTime'>
   readonly lastPaidAt: Prisma.FieldRef<"DetectedSubscription", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"DetectedSubscription", 'DateTime'>
