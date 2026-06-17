@@ -89,7 +89,7 @@ Sesión autónoma 2026-06-16 tras el prompt "no pares hasta mejorar el máximo l
 - `npm run lint`: 0 errores, 0 warnings.
 - `npm test`: 6 archivos, 61 tests pasan.
 - `npm run build`: pasa.
-- Deploy Vercel production: pendiente finalización en sesión.
+- Deploy Vercel production: completado — `https://rhynode-finance.vercel.app` READY.
 - Pendiente para v1.1/v2: `feat/subscription-manager-v2`, `feat/quotes-v2`.
 
 **How to apply:** Para futuras sesiones autónomas, mantener el patrón de 1 agente/worktree por feature, verificar build/lint antes de cada commit, y separar inmediatamente cualquier cambio que requiera migración de DB hasta tener `DATABASE_URL` disponible.
