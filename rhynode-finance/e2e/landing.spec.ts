@@ -7,8 +7,8 @@ test("landing page loads with correct title and hero heading", async ({ page }) 
 
   const hero = page.getByRole("heading", {
     level: 1,
-    name: /Tu dinero, tu reglas/,
+    name: /Ahorra más, cobra rápido y haz crecer tu patrimonio/,
   });
   await expect(hero).toBeVisible();
-  await expect(hero).toContainText("tu crecimiento");
+  await expect(hero).toContainText("desde una sola app");
 });
