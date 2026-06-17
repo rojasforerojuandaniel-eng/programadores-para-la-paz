@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserScope } from "@/lib/scope";
+import { trackEvent } from "@/lib/analytics";
 
 const MODES: {
   id: UserScope;
@@ -349,6 +350,13 @@ export default function OnboardingFlow() {
       });
 
       if (res.ok) {
+        trackEvent("onboarding_complete", {
+          mode,
+          country: form.country,
+          currency: form.currency,
+          hasBusiness: isBusiness,
+          hasPersonal: isPersonal,
+        });
         toast.success("¡Listo! Redirigiendo al dashboard...");
         router.push("/dashboard");
       } else if (res.status === 401) {

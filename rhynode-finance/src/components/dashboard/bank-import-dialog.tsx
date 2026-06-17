@@ -29,6 +29,7 @@ import {
   type RowState,
 } from "@/components/dashboard/bank-import-preview";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
 import type { ParsedBankRow } from "@/lib/bank-import";
 
@@ -183,6 +184,9 @@ export function BankImportDialog({
         return;
       }
 
+      trackEvent("bank_import_confirmed", {
+        count: data.imported ?? selectedRows.length,
+      });
       toast.success(`${data.imported ?? selectedRows.length} transacciones importadas`);
       setOpen(false);
       reset();

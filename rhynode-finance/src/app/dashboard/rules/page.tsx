@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Trash2, Plus, Sparkles, Bell, Tag, FolderOpen, ListFilter } from "lucide-react";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
+import { trackEvent } from "@/lib/analytics";
 import {
   type Rule,
   type RuleConditionType,
@@ -100,6 +101,13 @@ export default function RulesPage() {
       return [rule, ...next];
     });
     resetForm();
+    if (!editing) {
+      trackEvent("rules_engine_rule_created", {
+        conditionType: form.conditionType,
+        actionType: form.actionType,
+        enabled: form.enabled,
+      });
+    }
   }
 
   function handleEdit(rule: Rule) {

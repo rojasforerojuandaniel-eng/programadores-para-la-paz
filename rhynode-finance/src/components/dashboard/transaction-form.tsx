@@ -15,6 +15,7 @@ import {
 import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { type Suggestion, applyRules } from "@/lib/rules-engine";
+import { trackEvent } from "@/lib/analytics";
 
 export const COMMON_CATEGORIES = [
   "Ventas",
@@ -199,6 +200,12 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
         }),
       });
       if (res.ok) {
+        trackEvent("transaction_created", {
+          type: form.type,
+          currency: form.currency,
+          category: form.category || "none",
+          hasReference: Boolean(form.reference),
+        });
         resetForm();
         onSuccess();
       } else {

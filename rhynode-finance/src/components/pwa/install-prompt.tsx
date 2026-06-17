@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { track } from "@vercel/analytics";
+import { trackEvent } from "@/lib/analytics";
 
 const DISMISS_KEY = "rhynode-pwa-install-dismissed-v2";
 const DISMISS_DAYS = 7;
@@ -52,16 +52,15 @@ function isMobileOrTablet(): boolean {
 }
 
 function logPwaEvent(
-  event: "pwa_install_prompted" | "pwa_install_accepted" | "pwa_install_dismissed",
+  event:
+    | "pwa_install_prompted"
+    | "pwa_install_completed"
+    | "pwa_install_prompt_dismissed",
   properties?: Record<string, string | number | boolean | null>
 ): void {
   const payload = { event, properties, timestamp: Date.now() };
 
-  try {
-    track(event, properties);
-  } catch {
-    // Vercel Analytics unavailable; emit structured console log below.
-  }
+  trackEvent(event, properties ?? undefined);
 
   if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
@@ -143,7 +142,7 @@ export default function InstallPrompt() {
     const outcome = choice.outcome;
 
     logPwaEvent(
-      outcome === "accepted" ? "pwa_install_accepted" : "pwa_install_dismissed",
+      outcome === "accepted" ? "pwa_install_completed" : "pwa_install_prompt_dismissed",
       { outcome, platform: choice.platform }
     );
 
@@ -156,13 +155,13 @@ export default function InstallPrompt() {
   function handleDismiss() {
     setDismissed();
     setVisible(false);
-    logPwaEvent("pwa_install_dismissed", { trigger: "later_button" });
+    logPwaEvent("pwa_install_prompt_dismissed", { trigger: "later_button" });
   }
 
   function handleClose() {
     setDismissed();
     setVisible(false);
-    logPwaEvent("pwa_install_dismissed", { trigger: "close_button" });
+    logPwaEvent("pwa_install_prompt_dismissed", { trigger: "close_button" });
   }
 
   if (!visible) return null;
