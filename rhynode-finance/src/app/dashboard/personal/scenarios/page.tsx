@@ -14,22 +14,28 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { KpiCard } from "@/components/dashboard/kpi-card";
+  BottomSheet,
+  BottomSheetTrigger,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetDescription,
+  BottomSheetClose,
+} from "@/components/ui/bottom-sheet";
 import {
   TrendingUp,
   PiggyBank,
-  DollarSign,
   RotateCcw,
   AlertTriangle,
-  Lightbulb,
   Calendar,
+  ChevronDown,
+  Gift,
+  Sun,
+  Receipt,
+  BarChart3,
+  Table2,
+  SlidersHorizontal,
+  RefreshCw,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { parseISO, format } from "date-fns";
@@ -37,6 +43,7 @@ import {
   type ScenarioData,
   ScenarioChartSkeleton,
 } from "@/components/dashboard/scenario-chart";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const ScenarioChart = dynamic(
@@ -91,17 +98,7 @@ interface ForecastResponse {
   hasInvoices: boolean;
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function monthLabel(month: string) {
-  return format(parseISO(`${month}-01`), "MMM yyyy");
-}
+const HORIZON_OPTIONS = [3, 6, 12, 24];
 
 const defaultSummary: ScenarioSummary = {
   currentBalance: 5_000_000,
@@ -111,6 +108,365 @@ const defaultSummary: ScenarioSummary = {
   currency: "COP",
 };
 
+function formatCurrency(amount: number, currency = "COP") {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDelta(delta: number) {
+  if (!Number.isFinite(delta)) return "—";
+  const sign = delta >= 0 ? "+" : "-";
+  return `${sign}${Math.abs(delta).toFixed(1)}%`;
+}
+
+function monthLabel(month: string) {
+  return format(parseISO(`${month}-01`), "MMM yyyy");
+}
+
+interface ScenarioSummaryCardProps {
+  variant: "optimistic" | "base" | "pessimistic";
+  title: string;
+  balance: number;
+  currentBalance: number;
+  currency: string;
+  loading: boolean;
+}
+
+function ScenarioSummaryCard({
+  variant,
+  title,
+  balance,
+  currentBalance,
+  currency,
+  loading,
+}: ScenarioSummaryCardProps) {
+  const delta =
+    currentBalance > 0 ? ((balance - currentBalance) / currentBalance) * 100 : 0;
+  const positive = delta >= 0;
+
+  const styles = {
+    optimistic: {
+      border: "border-emerald-500/20",
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-600",
+      iconColor: "text-emerald-500",
+    },
+    base: {
+      border: "border-primary/20",
+      bg: "bg-primary/10",
+      text: "text-primary",
+      iconColor: "text-primary",
+    },
+    pessimistic: {
+      border: "border-rose-500/20",
+      bg: "bg-rose-500/10",
+      text: "text-rose-600",
+      iconColor: "text-rose-500",
+    },
+  }[variant];
+
+  const Icon =
+    variant === "optimistic"
+      ? TrendingUp
+      : variant === "pessimistic"
+        ? AlertTriangle
+        : PiggyBank;
+
+  return (
+    <Card
+      className={cn(
+        "surface-elevated-2 rounded-xl border-border",
+        styles.border
+      )}
+    >
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-muted-foreground sm:text-base">
+              {title}
+            </p>
+            {loading ? (
+              <div className="mt-2 h-7 w-32 animate-pulse rounded bg-muted sm:h-8 sm:w-40" />
+            ) : (
+              <p
+                className={cn(
+                  "mt-1 text-xl font-bold tracking-tight sm:mt-2 sm:text-2xl",
+                  styles.text
+                )}
+              >
+                {formatCurrency(balance, currency)}
+              </p>
+            )}
+            {loading ? (
+              <div className="mt-2 h-5 w-20 animate-pulse rounded bg-muted" />
+            ) : (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "mt-2 text-xs font-medium",
+                  positive
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+                    : "border-rose-500/20 bg-rose-500/10 text-rose-600"
+                )}
+              >
+                {formatDelta(delta)} vs hoy
+              </Badge>
+            )}
+          </div>
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full sm:h-11 sm:w-11",
+              styles.bg,
+              styles.iconColor
+            )}
+            aria-hidden="true"
+          >
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface EventToggleProps {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled?: boolean;
+}
+
+function EventToggle({
+  id,
+  icon: Icon,
+  title,
+  description,
+  checked,
+  onCheckedChange,
+  disabled,
+}: EventToggleProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-4 rounded-xl border p-4 transition-colors",
+        checked ? "border-primary/30 bg-primary/5" : "border-border bg-card",
+        disabled && "opacity-60"
+      )}
+      onClick={() => !disabled && onCheckedChange(!checked)}
+    >
+      <div
+        className={cn(
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full",
+          checked
+            ? "bg-primary/10 text-primary"
+            : "bg-muted text-muted-foreground"
+        )}
+        aria-hidden="true"
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <Label className="text-base font-medium">
+          {title}
+        </Label>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <span onClick={(e) => e.stopPropagation()}>
+        <Switch
+          id={id}
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          disabled={disabled}
+          aria-label={title}
+        />
+      </span>
+    </div>
+  );
+}
+
+interface CompactScenarioTableProps {
+  projection: ForecastProjectionMonth[];
+  currency: string;
+}
+
+function CompactScenarioTable({
+  projection,
+  currency,
+}: CompactScenarioTableProps) {
+  return (
+    <div className="relative overflow-auto rounded-xl border max-h-[45vh] sm:max-h-[55vh] lg:max-h-[65vh]">
+      <table className="w-full caption-bottom text-sm">
+        <thead className="sticky top-0 z-10 bg-card [&_tr]:border-b">
+          <tr className="border-b">
+            <th scope="col" className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
+              Mes
+            </th>
+            <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
+              Neto
+            </th>
+            <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
+              Base
+            </th>
+            <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
+              Optimista
+            </th>
+            <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
+              Pesimista
+            </th>
+            <th scope="col" className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
+              Eventos
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {projection.map((p) => (
+            <tr
+              key={p.month}
+              className="border-b transition-colors hover:bg-muted/50"
+            >
+              <td className="p-2 align-middle font-medium">{monthLabel(p.month)}</td>
+              <td
+                className={cn(
+                  "p-2 text-right align-middle",
+                  p.net >= 0 ? "text-emerald-500" : "text-rose-500"
+                )}
+              >
+                {p.net >= 0 ? "+" : ""}
+                {formatCurrency(p.net, currency)}
+              </td>
+              <td className="p-2 text-right align-middle font-medium">
+                {formatCurrency(p.baseBalance, currency)}
+              </td>
+              <td className="p-2 text-right align-middle text-emerald-500">
+                {formatCurrency(p.optimisticBalance, currency)}
+              </td>
+              <td className="p-2 text-right align-middle text-rose-500">
+                {formatCurrency(p.pessimisticBalance, currency)}
+              </td>
+              <td className="p-2 align-middle">
+                <div className="flex flex-wrap gap-1">
+                  {p.events.map((event) => (
+                    <Badge key={event} variant="outline" className="text-xs">
+                      {event}
+                    </Badge>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ScenarioTableSkeleton() {
+  return (
+    <div className="relative overflow-auto rounded-xl border max-h-[45vh] sm:max-h-[55vh] lg:max-h-[65vh]">
+      <table className="w-full caption-bottom text-sm">
+        <thead className="sticky top-0 z-10 bg-card">
+          <tr>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <th key={i} className="h-10 px-2">
+                <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <tr key={i}>
+              {Array.from({ length: 6 }).map((__, j) => (
+                <td key={j} className="p-2">
+                  <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+interface MobileHorizonSelectorProps {
+  value: number;
+  onChange: (value: number) => void;
+}
+
+function MobileHorizonSelector({ value, onChange }: MobileHorizonSelectorProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <BottomSheet open={open} onOpenChange={setOpen}>
+      <BottomSheetTrigger asChild>
+        <Button
+          variant="outline"
+          className="h-12 w-full justify-between gap-2 text-base"
+          aria-label="Seleccionar horizonte de proyección"
+        >
+          <span className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            {value} meses
+          </span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </BottomSheetTrigger>
+      <BottomSheetContent>
+        <BottomSheetHeader>
+          <BottomSheetTitle>Horizonte de proyección</BottomSheetTitle>
+          <BottomSheetDescription>
+            Selecciona cuántos meses quieres proyectar
+          </BottomSheetDescription>
+        </BottomSheetHeader>
+        <div className="space-y-2 py-4">
+          {HORIZON_OPTIONS.map((m) => (
+            <BottomSheetClose asChild key={m}>
+              <Button
+                variant={value === m ? "default" : "outline"}
+                className="h-12 w-full justify-start text-base"
+                onClick={() => onChange(m)}
+              >
+                {m} meses
+              </Button>
+            </BottomSheetClose>
+          ))}
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+}
+
+interface ForecastEmptyStateProps {
+  onRetry: () => void;
+}
+
+function ForecastEmptyState({ onRetry }: ForecastEmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <div className="space-y-1">
+        <p className="font-medium">No se pudo cargar la proyección</p>
+        <p className="text-sm text-muted-foreground">
+          Verifica tu conexión e intenta de nuevo.
+        </p>
+      </div>
+      <Button variant="outline" onClick={onRetry} className="gap-2">
+        <RefreshCw className="h-4 w-4" />
+        Reintentar
+      </Button>
+    </div>
+  );
+}
+
 export default function ScenariosPage() {
   const [summary, setSummary] = useState<ScenarioSummary | null>(null);
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
@@ -119,6 +475,7 @@ export default function ScenariosPage() {
   const [includeAguinaldo, setIncludeAguinaldo] = useState(true);
   const [includePrima, setIncludePrima] = useState(true);
   const [includeIva, setIncludeIva] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
   const activeSummary = summary ?? defaultSummary;
 
@@ -158,7 +515,7 @@ export default function ScenariosPage() {
       }
     }
     loadForecast();
-  }, [monthsToProject, includeAguinaldo, includePrima, includeIva]);
+  }, [monthsToProject, includeAguinaldo, includePrima, includeIva, retryCount]);
 
   const chartData: ScenarioData[] = useMemo(() => {
     if (!forecast) return [];
@@ -177,18 +534,17 @@ export default function ScenariosPage() {
     setIncludeIva(true);
   }
 
-  const finalBalance = forecast?.summary.finalBaseBalance ?? activeSummary.currentBalance;
-  const riskMonth = forecast?.summary.riskMonth ?? null;
-  const recommendation = forecast?.summary.recommendation ?? "";
   const currency = forecast?.currency ?? activeSummary.currency;
+  const currentBalance = activeSummary.currentBalance;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="heading-section">Simulador de Escenarios</h1>
           <p className="body-default mt-1">
-            Proyección de flujo de caja con estacionalidad, recurrentes y eventos Colombianos
+            Proyección de flujo de caja con estacionalidad, recurrentes y
+            eventos Colombianos
           </p>
         </div>
         <Button variant="outline" onClick={reset} className="gap-2">
@@ -197,79 +553,101 @@ export default function ScenariosPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label="Balance actual"
-          value={
-            loading ? (
-              <div className="h-6 w-24 animate-pulse rounded bg-muted" />
-            ) : (
-              formatCurrency(activeSummary.currentBalance)
-            )
-          }
-          icon={DollarSign}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <ScenarioSummaryCard
+          variant="optimistic"
+          title="Escenario optimista"
+          balance={forecast?.summary.finalOptimisticBalance ?? currentBalance}
+          currentBalance={currentBalance}
+          currency={currency}
+          loading={loading}
         />
-        <KpiCard
-          label="Proyección final (base)"
-          value={loading ? <div className="h-6 w-24 animate-pulse rounded bg-muted" /> : formatCurrency(finalBalance)}
-          icon={TrendingUp}
-          valueClassName={finalBalance >= activeSummary.currentBalance ? "text-emerald-500" : "text-rose-500"}
+        <ScenarioSummaryCard
+          variant="base"
+          title="Escenario base"
+          balance={forecast?.summary.finalBaseBalance ?? currentBalance}
+          currentBalance={currentBalance}
+          currency={currency}
+          loading={loading}
         />
-        <KpiCard
-          label="Mes de riesgo"
-          value={
-            loading ? (
-              <div className="h-6 w-24 animate-pulse rounded bg-muted" />
-            ) : riskMonth ? (
-              monthLabel(riskMonth)
-            ) : (
-              "Sin riesgo"
-            )
-          }
-          icon={AlertTriangle}
-          valueClassName={riskMonth ? "text-rose-500" : "text-emerald-500"}
-        />
-        <KpiCard
-          label="Recomendación"
-          value={
-            loading ? (
-              <div className="h-6 w-24 animate-pulse rounded bg-muted" />
-            ) : (
-              <span className="line-clamp-2 text-sm font-normal leading-snug">{recommendation}</span>
-            )
-          }
-          icon={Lightbulb}
-          className="sm:col-span-2 lg:col-span-1"
+        <ScenarioSummaryCard
+          variant="pessimistic"
+          title="Escenario pesimista"
+          balance={forecast?.summary.finalPessimisticBalance ?? currentBalance}
+          currentBalance={currentBalance}
+          currency={currency}
+          loading={loading}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-1">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="space-y-5">
           <Card className="surface-elevated-2 rounded-xl border-border">
             <CardHeader className="pb-3">
               <CardTitle className="heading-card flex items-center gap-2 text-base">
-                <Calendar className="h-4 w-4 text-primary" />
-                Horizonte
+                <SlidersHorizontal className="h-4 w-4 text-primary" />
+                Configuración
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-3">
-                <Label className="text-sm">Meses a proyectar</Label>
-                <Select
-                  value={String(monthsToProject)}
-                  onValueChange={(v) => setMonthsToProject(Number(v))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona meses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[3, 6, 12, 24].map((m) => (
-                      <SelectItem key={m} value={String(m)}>
-                        {m} meses
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-sm font-medium">
+                  Horizonte de proyección
+                </Label>
+                <div className="block sm:hidden">
+                  <MobileHorizonSelector
+                    value={monthsToProject}
+                    onChange={setMonthsToProject}
+                  />
+                </div>
+                <div className="hidden sm:block">
+                  <Select
+                    value={String(monthsToProject)}
+                    onValueChange={(v) => setMonthsToProject(Number(v))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona meses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HORIZON_OPTIONS.map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {m} meses
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Eventos Colombianos</Label>
+                <div className="space-y-3">
+                  <EventToggle
+                    id="aguinaldo-toggle"
+                    icon={Gift}
+                    title="Aguinaldo"
+                    description="+1 ingreso medio en diciembre"
+                    checked={includeAguinaldo}
+                    onCheckedChange={setIncludeAguinaldo}
+                  />
+                  <EventToggle
+                    id="prima-toggle"
+                    icon={Sun}
+                    title="Prima de vacaciones"
+                    description="+1 ingreso medio en junio"
+                    checked={includePrima}
+                    onCheckedChange={setIncludePrima}
+                  />
+                  <EventToggle
+                    id="iva-toggle"
+                    icon={Receipt}
+                    title="IVA bimestral"
+                    description="Solo si tienes facturas emitidas"
+                    checked={includeIva}
+                    onCheckedChange={setIncludeIva}
+                    disabled={!forecast?.hasInvoices}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -277,142 +655,39 @@ export default function ScenariosPage() {
           <Card className="surface-elevated-2 rounded-xl border-border">
             <CardHeader className="pb-3">
               <CardTitle className="heading-card flex items-center gap-2 text-base">
-                <PiggyBank className="h-4 w-4 text-primary" />
-                Eventos Colombianos
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Evolución del saldo
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Aguinaldo (diciembre)</Label>
-                  <p className="text-xs text-muted-foreground">
-                    +1 ingreso medio en diciembre
-                  </p>
-                </div>
-                <Switch
-                  checked={includeAguinaldo}
-                  onCheckedChange={setIncludeAguinaldo}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Prima (junio)</Label>
-                  <p className="text-xs text-muted-foreground">
-                    +1 ingreso medio en junio
-                  </p>
-                </div>
-                <Switch
-                  checked={includePrima}
-                  onCheckedChange={setIncludePrima}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">IVA bimestral</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Solo si tienes facturas emitidas
-                  </p>
-                </div>
-                <Switch
-                  checked={includeIva}
-                  onCheckedChange={setIncludeIva}
-                  disabled={!forecast?.hasInvoices}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="surface-elevated-2 rounded-xl border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="heading-card text-base">Sobre la proyección</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                La línea <strong className="text-foreground">Base</strong> usa tu historial,
-                transacciones recurrentes e índices de estacionalidad.
-              </p>
-              <p>
-                <strong className="text-emerald-500">Optimista</strong> (+10% ingresos, -5% gastos)
-                y <strong className="text-rose-500">Pesimista</strong> (-10% ingresos, +10% gastos)
-                muestran rangos de confianza.
-              </p>
-              {forecast && (
-                <p>
-                  {forecast.recurringCount} recurrentes activas consideradas · moneda {currency}
-                </p>
+            <CardContent>
+              {loading ? (
+                <ScenarioChartSkeleton />
+              ) : (
+                <ScenarioChart data={chartData} />
               )}
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-6 lg:col-span-2">
-          <Card className="surface-elevated-2 rounded-xl border-border">
+        <div className="space-y-5">
+          <Card className="surface-elevated-2 rounded-xl border-border flex h-full flex-col">
             <CardHeader className="pb-3">
-              <CardTitle className="heading-card text-base">Evolución del saldo</CardTitle>
+              <CardTitle className="heading-card flex items-center gap-2 text-base">
+                <Table2 className="h-4 w-4 text-primary" />
+                Proyección mensual
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              {loading ? <ScenarioChartSkeleton /> : <ScenarioChart data={chartData} />}
-            </CardContent>
-          </Card>
-
-          <Card className="surface-elevated-2 rounded-xl border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="heading-card text-base">Proyección mensual</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mes</TableHead>
-                    <TableHead className="text-right">Ingresos</TableHead>
-                    <TableHead className="text-right">Gastos</TableHead>
-                    <TableHead className="text-right">Neto</TableHead>
-                    <TableHead className="text-right">Base</TableHead>
-                    <TableHead className="text-right">Optimista</TableHead>
-                    <TableHead className="text-right">Pesimista</TableHead>
-                    <TableHead>Eventos</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 4 }).map((_, i) => (
-                      <TableRow key={i}>
-                        {Array.from({ length: 8 }).map((__, j) => (
-                          <TableCell key={j}>
-                            <div className="h-4 w-16 animate-pulse rounded bg-muted" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : forecast ? (
-                    forecast.projection.map((p) => (
-                      <TableRow key={p.month}>
-                        <TableCell className="font-medium">{monthLabel(p.month)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(p.baseIncome)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(p.baseExpenses)}</TableCell>
-                        <TableCell
-                          className={`text-right ${p.net >= 0 ? "text-emerald-500" : "text-rose-500"}`}
-                        >
-                          {p.net >= 0 ? "+" : ""}
-                          {formatCurrency(p.net)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(p.baseBalance)}</TableCell>
-                        <TableCell className="text-right text-emerald-500">{formatCurrency(p.optimisticBalance)}</TableCell>
-                        <TableCell className="text-right text-rose-500">{formatCurrency(p.pessimisticBalance)}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {p.events.map((event) => (
-                              <Badge key={event} variant="outline" className="text-xs">
-                                {event}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : null}
-                </TableBody>
-              </Table>
+            <CardContent className="flex-1 p-0 sm:p-0">
+              {loading ? (
+                <ScenarioTableSkeleton />
+              ) : forecast ? (
+                <CompactScenarioTable
+                  projection={forecast.projection}
+                  currency={currency}
+                />
+              ) : (
+                <ForecastEmptyState onRetry={() => setRetryCount((c) => c + 1)} />
+              )}
             </CardContent>
           </Card>
         </div>
