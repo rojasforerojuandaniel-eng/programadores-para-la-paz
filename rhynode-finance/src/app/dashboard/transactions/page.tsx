@@ -6,10 +6,40 @@ import { getPrisma } from "@/lib/prisma";
 import type { UserScope } from "@/lib/scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreateTransactionButton } from "@/components/dashboard/create-transaction-button";
-import { BankImportRefreshButton } from "@/components/dashboard/bank-import-dialog";
+import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
 import { DeleteButton } from "@/components/dashboard/delete-button";
 import { ExportButtons } from "@/components/dashboard/export-buttons";
+
+const CreateTransactionButton = dynamic(
+  () =>
+    import("@/components/dashboard/create-transaction-button").then(
+      (mod) => mod.CreateTransactionButton,
+    ),
+  {
+    loading: () => (
+      <Button className="gap-2" disabled>
+        <Plus className="h-4 w-4" />
+        Nueva Transacción
+      </Button>
+    ),
+  },
+);
+
+const BankImportRefreshButton = dynamic(
+  () =>
+    import("@/components/dashboard/bank-import-dialog").then(
+      (mod) => mod.BankImportRefreshButton,
+    ),
+  {
+    loading: () => (
+      <Button variant="outline" className="gap-2" disabled>
+        <Upload className="h-4 w-4" />
+        Importar
+      </Button>
+    ),
+  },
+);
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import {
@@ -20,8 +50,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeftRight, TrendingUp, TrendingDown, Scale } from "lucide-react";
-import { KpiSkeleton, TableRowsSkeleton } from "@/components/dashboard/page-skeleton";
+import {
+  ArrowLeftRight,
+  TrendingUp,
+  TrendingDown,
+  Scale,
+  Plus,
+  Upload,
+} from "lucide-react";
+import {
+  KpiSkeleton,
+  TableRowsSkeleton,
+} from "@/components/dashboard/page-skeleton";
 
 interface Transaction {
   id: string;
@@ -57,7 +97,9 @@ function formatCurrency(amount: number, currency: string) {
 export default function TransactionsPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
-      <Suspense fallback={<div className="h-16 animate-pulse rounded-xl bg-muted" />}>
+      <Suspense
+        fallback={<div className="h-16 animate-pulse rounded-xl bg-muted" />}
+      >
         <HeaderSection />
       </Suspense>
 
@@ -67,7 +109,9 @@ export default function TransactionsPage() {
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Todas las Transacciones</CardTitle>
+          <CardTitle className="heading-card">
+            Todas las Transacciones
+          </CardTitle>
         </CardHeader>
         <Suspense
           fallback={
@@ -97,7 +141,9 @@ async function HeaderSection() {
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="heading-section">Transacciones</h1>
-        <p className="body-default mt-1">Registro de ingresos, gastos y movimientos</p>
+        <p className="body-default mt-1">
+          Registro de ingresos, gastos y movimientos
+        </p>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <ExportButtons />
@@ -196,8 +242,12 @@ async function TransactionsContent() {
                   <TableHead scope="col">Tipo</TableHead>
                   <TableHead scope="col">Categoría</TableHead>
                   <TableHead scope="col">Descripción</TableHead>
-                  <TableHead scope="col" className="text-right">Monto</TableHead>
-                  <TableHead scope="col" className="text-right">Acciones</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Monto
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Acciones
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -213,15 +263,19 @@ async function TransactionsContent() {
                           {t.label}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">{tx.category || "—"}</TableCell>
-                      <TableCell className="max-w-xs truncate">{tx.description}</TableCell>
+                      <TableCell className="text-sm">
+                        {tx.category || "—"}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {tx.description}
+                      </TableCell>
                       <TableCell
                         className={`text-right font-medium ${
                           tx.type === "INCOME"
                             ? "text-success"
                             : tx.type === "EXPENSE"
-                            ? "text-danger"
-                            : ""
+                              ? "text-danger"
+                              : ""
                         }`}
                       >
                         {formatCurrency(tx.amount, tx.currency)}
@@ -258,7 +312,9 @@ async function TransactionsContent() {
                       </Badge>
                     </div>
                     {tx.category && (
-                      <div className="text-sm text-muted-foreground">{tx.category}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {tx.category}
+                      </div>
                     )}
                     <div className="flex items-center justify-between border-t border-border pt-3">
                       <div
@@ -266,8 +322,8 @@ async function TransactionsContent() {
                           tx.type === "INCOME"
                             ? "text-success"
                             : tx.type === "EXPENSE"
-                            ? "text-danger"
-                            : ""
+                              ? "text-danger"
+                              : ""
                         }`}
                       >
                         {formatCurrency(tx.amount, tx.currency)}

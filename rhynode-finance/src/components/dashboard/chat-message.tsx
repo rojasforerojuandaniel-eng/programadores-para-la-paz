@@ -24,14 +24,15 @@ export function ChatMessage({
     return (
       <div className="flex gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
-          <Brain className="h-4 w-4" />
+          <Brain className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="max-w-[80%] space-y-2 rounded-2xl px-4 py-2.5 text-sm surface-elevated-2">
           {toolResult === undefined ? (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               <span>
-                Usando <span className="font-medium text-foreground">{toolName}</span>…
+                Usando{" "}
+                <span className="font-medium text-foreground">{toolName}</span>…
               </span>
             </div>
           ) : (
@@ -43,22 +44,19 @@ export function ChatMessage({
   }
 
   return (
-    <div
-      className={cn(
-        "flex gap-3",
-        isUser ? "flex-row-reverse" : "flex-row"
-      )}
-    >
+    <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"
+          isUser
+            ? "bg-primary/10 text-primary"
+            : "bg-accent text-accent-foreground",
         )}
       >
         {isUser ? (
-          <User className="h-4 w-4" />
+          <User className="h-4 w-4" aria-hidden="true" />
         ) : (
-          <Brain className="h-4 w-4" />
+          <Brain className="h-4 w-4" aria-hidden="true" />
         )}
       </div>
 
@@ -67,16 +65,25 @@ export function ChatMessage({
           "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
           isUser
             ? "bg-primary/10 text-foreground"
-            : "surface-elevated-2 text-foreground"
+            : "surface-elevated-2 text-foreground",
         )}
       >
         {isLoading ? (
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">pensando</span>
             <span className="flex gap-1">
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "0ms" }} />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "150ms" }} />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "300ms" }} />
+              <span
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
+                style={{ animationDelay: "300ms" }}
+              />
             </span>
           </div>
         ) : (
@@ -97,8 +104,12 @@ function ToolResultView({
   if (!isObject(result)) {
     return (
       <div className="text-xs text-muted-foreground">
-        {toolName ? <span className="font-medium text-foreground">{toolName}</span> : null}
-        <pre className="mt-1 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+        {toolName ? (
+          <span className="font-medium text-foreground">{toolName}</span>
+        ) : null}
+        <pre className="mt-1 whitespace-pre-wrap">
+          {JSON.stringify(result, null, 2)}
+        </pre>
       </div>
     );
   }
@@ -138,7 +149,9 @@ function ValueView({ value }: { value: unknown }) {
                   .filter(([k]) => !k.toLowerCase().includes("id"))
                   .map(([k, v]) => (
                     <div key={k}>
-                      <span className="text-muted-foreground">{formatKey(k)}: </span>
+                      <span className="text-muted-foreground">
+                        {formatKey(k)}:{" "}
+                      </span>
                       <span className="font-medium">{formatValue(v)}</span>
                     </div>
                   ))}
@@ -152,9 +165,7 @@ function ValueView({ value }: { value: unknown }) {
     );
   }
 
-  return (
-    <p className="text-sm font-medium">{formatValue(value)}</p>
-  );
+  return <p className="text-sm font-medium">{formatValue(value)}</p>;
 }
 
 function formatKey(key: string): string {

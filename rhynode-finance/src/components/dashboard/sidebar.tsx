@@ -43,30 +43,127 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const allNavItems = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/personal/net-worth", label: "Patrimonio", icon: Wallet, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/personal/investments", label: "Inversiones", icon: TrendingUp, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/personal/subscriptions", label: "Suscripciones", icon: CreditCard, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/personal/calendar", label: "Calendario", icon: Calendar, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/personal/scenarios", label: "Escenarios", icon: Calculator, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/personal/achievements", label: "Logros", icon: Trophy, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/transactions", label: "Transacciones", icon: ArrowLeftRight, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/rules", label: "Reglas", icon: Workflow, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/accounts", label: "Cuentas bancarias", icon: Landmark, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/invoices", label: "Facturas", icon: FileText, scopes: ["BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/clients", label: "Clientes", icon: Users, scopes: ["BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/tax", label: "Impuestos", icon: ShieldCheck, scopes: ["BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/payment-links", label: "Cobros", icon: CreditCard, scopes: ["BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/advisor", label: "AI Advisor", icon: Brain, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/economic-indicators", label: "Indicadores", icon: Globe, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/integrations", label: "Integraciones", icon: LinkIcon, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
-  { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Medal, scopes: ["PERSONAL", "BOTH"] as const },
-  { href: "/dashboard/settings", label: "Configuración", icon: Settings, scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const },
+  {
+    href: "/dashboard",
+    label: "Inicio",
+    icon: LayoutDashboard,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/net-worth",
+    label: "Patrimonio",
+    icon: Wallet,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/investments",
+    label: "Inversiones",
+    icon: TrendingUp,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/subscriptions",
+    label: "Suscripciones",
+    icon: CreditCard,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/calendar",
+    label: "Calendario",
+    icon: Calendar,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/scenarios",
+    label: "Escenarios",
+    icon: Calculator,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/achievements",
+    label: "Logros",
+    icon: Trophy,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/transactions",
+    label: "Transacciones",
+    icon: ArrowLeftRight,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/rules",
+    label: "Reglas",
+    icon: Workflow,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/accounts",
+    label: "Cuentas bancarias",
+    icon: Landmark,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/invoices",
+    label: "Facturas",
+    icon: FileText,
+    scopes: ["BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/clients",
+    label: "Clientes",
+    icon: Users,
+    scopes: ["BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/tax",
+    label: "Impuestos",
+    icon: ShieldCheck,
+    scopes: ["BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/payment-links",
+    label: "Cobros",
+    icon: CreditCard,
+    scopes: ["BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/advisor",
+    label: "AI Advisor",
+    icon: Brain,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/economic-indicators",
+    label: "Indicadores",
+    icon: Globe,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/integrations",
+    label: "Integraciones",
+    icon: LinkIcon,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/leaderboard",
+    label: "Leaderboard",
+    icon: Medal,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/settings",
+    label: "Configuración",
+    icon: Settings,
+    scopes: ["PERSONAL", "BUSINESS", "BOTH"] as const,
+  },
 ];
 
 function useFilteredNavItems() {
   const { scope } = useScope();
-  return allNavItems.filter((item) => (item.scopes as readonly string[]).includes(scope));
+  return allNavItems.filter((item) =>
+    (item.scopes as readonly string[]).includes(scope),
+  );
 }
 
 function NavLinks({ onClick }: { onClick?: () => void }) {
@@ -76,7 +173,8 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
   return (
     <nav className="flex-1 space-y-1 px-3 py-4">
       {items.map((item) => {
-        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+        const isActive =
+          pathname === item.href || pathname?.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
           <Link
@@ -87,10 +185,10 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
               "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
                 ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="truncate">{item.label}</span>
           </Link>
         );
@@ -106,7 +204,10 @@ function UserSection({ mobile = false }: { mobile?: boolean }) {
   if (!user) return null;
 
   const initials =
-    user.firstName?.[0] || user.lastName?.[0] || user.emailAddresses?.[0]?.emailAddress?.[0] || "?";
+    user.firstName?.[0] ||
+    user.lastName?.[0] ||
+    user.emailAddresses?.[0]?.emailAddress?.[0] ||
+    "?";
 
   return (
     <div className={cn("border-t border-border", mobile ? "p-4" : "p-4")}>
@@ -116,7 +217,9 @@ function UserSection({ mobile = false }: { mobile?: boolean }) {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">
-            {user.fullName || user.primaryEmailAddress?.emailAddress || "Usuario"}
+            {user.fullName ||
+              user.primaryEmailAddress?.emailAddress ||
+              "Usuario"}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {user.primaryEmailAddress?.emailAddress}
@@ -128,13 +231,12 @@ function UserSection({ mobile = false }: { mobile?: boolean }) {
         className="h-10 w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
         onClick={() => signOut({ redirectUrl: "/" })}
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-4 w-4" aria-hidden="true" />
         Cerrar sesión
       </Button>
     </div>
   );
 }
-
 
 function MobileHeader() {
   return (
@@ -166,7 +268,11 @@ function BottomNav() {
       ? { href: "/dashboard/invoices", label: "Facturas", icon: FileText }
       : { href: "/dashboard/accounts", label: "Cuentas", icon: Landmark },
     isPersonal
-      ? { href: "/dashboard/transactions", label: "Movimientos", icon: ArrowLeftRight }
+      ? {
+          href: "/dashboard/transactions",
+          label: "Movimientos",
+          icon: ArrowLeftRight,
+        }
       : { href: "/dashboard/clients", label: "Clientes", icon: Users },
     { href: "#menu", label: "Menú", icon: Menu, sheet: true },
   ];
@@ -177,9 +283,15 @@ function BottomNav() {
         <div className="grid h-[calc(3.5rem+env(safe-area-inset-bottom))] min-h-14 grid-cols-4 items-center">
           {tabs.map((tab) => {
             const Icon = tab.icon;
-            const isActive = !tab.sheet && (pathname === tab.href || pathname?.startsWith(`${tab.href}/`));
+            const isActive =
+              !tab.sheet &&
+              (pathname === tab.href || pathname?.startsWith(`${tab.href}/`));
             return tab.sheet ? (
-              <Sheet open={sheetOpen} onOpenChange={setSheetOpen} key={tab.label}>
+              <Sheet
+                open={sheetOpen}
+                onOpenChange={setSheetOpen}
+                key={tab.label}
+              >
                 <SheetTrigger asChild>
                   <button
                     type="button"
@@ -187,19 +299,30 @@ function BottomNav() {
                       "mx-1 flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-medium transition-colors",
                       sheetOpen
                         ? "bg-primary/10 text-primary"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-6 w-6" aria-hidden="true" />
                     <span>{tab.label}</span>
                   </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[85dvh] max-h-[85dvh] rounded-t-2xl border-border bg-background p-0">
-                  <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+                <SheetContent
+                  side="bottom"
+                  className="h-[85dvh] max-h-[85dvh] rounded-t-2xl border-border bg-background p-0"
+                >
+                  <SheetTitle className="sr-only">
+                    Menú de navegación
+                  </SheetTitle>
                   <div className="flex h-full flex-col">
                     <div className="flex items-center justify-between border-b border-border p-4">
                       <Logo href="/dashboard" />
-                      <Button variant="ghost" size="icon" onClick={() => setSheetOpen(false)} aria-label="Cerrar menú de navegación" className="h-10 w-10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSheetOpen(false)}
+                        aria-label="Cerrar menú de navegación"
+                        className="h-10 w-10"
+                      >
                         <X className="h-5 w-5" aria-hidden="true" />
                       </Button>
                     </div>
@@ -219,10 +342,12 @@ function BottomNav() {
                 href={tab.href}
                 className={cn(
                   "flex h-full flex-col items-center justify-center gap-1.5 rounded-lg px-1 text-xs font-medium transition-colors",
-                  isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Icon className="h-6 w-6" />
+                <Icon className="h-6 w-6" aria-hidden="true" />
                 <span>{tab.label}</span>
               </Link>
             );

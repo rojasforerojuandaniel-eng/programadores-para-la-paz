@@ -39,7 +39,9 @@ function readDismissed(): string[] {
   try {
     const raw = window.localStorage.getItem(DISMISS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === "string")
+      : [];
   } catch {
     return [];
   }
@@ -84,30 +86,34 @@ function useDismissedNudges(): string[] {
   return useSyncExternalStore(
     (callback) => dismissedStore.subscribe(callback),
     () => dismissedStore.getSnapshot(),
-    () => []
+    () => [],
   );
 }
 
 function NudgeIcon({ name, className }: { name: string; className?: string }) {
   switch (name) {
     case "alert-triangle":
-      return <AlertTriangle className={className} />;
+      return <AlertTriangle className={className} aria-hidden="true" />;
     case "bug":
-      return <Bug className={className} />;
+      return <Bug className={className} aria-hidden="true" />;
     case "credit-card":
-      return <CreditCard className={className} />;
+      return <CreditCard className={className} aria-hidden="true" />;
     case "target":
-      return <Target className={className} />;
+      return <Target className={className} aria-hidden="true" />;
     case "piggy-bank":
-      return <PiggyBank className={className} />;
+      return <PiggyBank className={className} aria-hidden="true" />;
     case "trending-up":
-      return <TrendingUp className={className} />;
+      return <TrendingUp className={className} aria-hidden="true" />;
     default:
-      return <Lightbulb className={className} />;
+      return <Lightbulb className={className} aria-hidden="true" />;
   }
 }
 
-export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] }) {
+export function AiCopilotClient({
+  initialInsights,
+}: {
+  initialInsights: Nudge[];
+}) {
   const [nudges, setNudges] = useState<Nudge[]>(initialInsights);
   const [loading, setLoading] = useState(false);
   const dismissed = useDismissedNudges();
@@ -128,14 +134,16 @@ export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] 
     dismissedStore.dismiss(id);
   }, []);
 
-  const visibleNudges = nudges.filter((n) => !dismissed.includes(n.id)).slice(0, 3);
+  const visibleNudges = nudges
+    .filter((n) => !dismissed.includes(n.id))
+    .slice(0, 3);
 
   return (
     <Card className="surface-elevated-2 rounded-xl border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="heading-card flex items-center gap-2 text-base">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
             Copiloto financiero
           </CardTitle>
           <Button
@@ -146,7 +154,10 @@ export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] 
             onClick={refresh}
             disabled={loading}
           >
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            <RefreshCw
+              className={cn("h-4 w-4", loading && "animate-spin")}
+              aria-hidden="true"
+            />
           </Button>
         </div>
       </CardHeader>
@@ -168,7 +179,11 @@ export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] 
         ) : (
           <ul className="space-y-3">
             {visibleNudges.map((nudge) => (
-              <NudgeItem key={nudge.id} nudge={nudge} onDismiss={handleDismiss} />
+              <NudgeItem
+                key={nudge.id}
+                nudge={nudge}
+                onDismiss={handleDismiss}
+              />
             ))}
           </ul>
         )}
@@ -177,12 +192,18 @@ export function AiCopilotClient({ initialInsights }: { initialInsights: Nudge[] 
   );
 }
 
-function NudgeItem({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: string) => void }) {
+function NudgeItem({
+  nudge,
+  onDismiss,
+}: {
+  nudge: Nudge;
+  onDismiss: (id: string) => void;
+}) {
   const iconClass = cn(
     "h-5 w-5",
     nudge.type === "warning" && "text-amber-500",
     nudge.type === "tip" && "text-primary",
-    nudge.type === "positive" && "text-emerald-500"
+    nudge.type === "positive" && "text-emerald-500",
   );
 
   return (
@@ -191,7 +212,7 @@ function NudgeItem({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: string)
         "relative flex items-start gap-3 rounded-xl border p-4",
         nudge.type === "warning" && "border-amber-400/20 bg-amber-400/10",
         nudge.type === "tip" && "border-primary/20 bg-primary/10",
-        nudge.type === "positive" && "border-emerald-400/20 bg-emerald-400/10"
+        nudge.type === "positive" && "border-emerald-400/20 bg-emerald-400/10",
       )}
     >
       <div className="mt-0.5 shrink-0">
@@ -202,7 +223,10 @@ function NudgeItem({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: string)
         <p className="text-sm text-muted-foreground">{nudge.description}</p>
         <div className="mt-2 flex items-center gap-3">
           <Button variant="link" size="sm" className="h-auto p-0" asChild>
-            <Link href={nudge.actionHref} className="inline-flex items-center gap-1">
+            <Link
+              href={nudge.actionHref}
+              className="inline-flex items-center gap-1"
+            >
               {nudge.actionLabel}
             </Link>
           </Button>
@@ -215,7 +239,7 @@ function NudgeItem({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: string)
         aria-label={`Ocultar ${nudge.title}`}
         onClick={() => onDismiss(nudge.id)}
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4" aria-hidden="true" />
       </Button>
     </li>
   );

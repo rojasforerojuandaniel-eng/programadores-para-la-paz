@@ -73,7 +73,11 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
     setItems((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function updateItem(index: number, field: keyof InvoiceItemForm, value: string) {
+  function updateItem(
+    index: number,
+    field: keyof InvoiceItemForm,
+    value: string,
+  ) {
     setItems((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
@@ -109,7 +113,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
           ...form,
           items: validItems,
           issueDate: new Date(form.issueDate).toISOString(),
-          dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
+          dueDate: form.dueDate
+            ? new Date(form.dueDate).toISOString()
+            : undefined,
         }),
       });
       if (res.ok) {
@@ -122,7 +128,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
           notes: "",
           terms: "",
         });
-        setItems([{ description: "", quantity: "1", unitPrice: "", taxRate: "19" }]);
+        setItems([
+          { description: "", quantity: "1", unitPrice: "", taxRate: "19" },
+        ]);
         onSuccess();
       } else {
         toast.error("Error al crear factura");
@@ -161,7 +169,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
             id="inv-number"
             required
             value={form.number}
-            onChange={(event) => setForm({ ...form, number: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, number: event.target.value })
+            }
             placeholder="Ej. F-001"
           />
         </div>
@@ -191,7 +201,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
             id="inv-issue"
             type="date"
             value={form.issueDate}
-            onChange={(event) => setForm({ ...form, issueDate: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, issueDate: event.target.value })
+            }
           />
         </div>
         <div className="space-y-2">
@@ -200,7 +212,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
             id="inv-due"
             type="date"
             value={form.dueDate}
-            onChange={(event) => setForm({ ...form, dueDate: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, dueDate: event.target.value })
+            }
           />
         </div>
       </div>
@@ -208,7 +222,12 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label>Ítems</Label>
-          <Button type="button" variant="outline" className="h-10" onClick={addItem}>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10"
+            onClick={addItem}
+          >
             <Plus className="mr-1.5 h-4 w-4" /> Agregar ítem
           </Button>
         </div>
@@ -223,7 +242,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
                   placeholder="Descripción"
                   aria-label={`Descripción del ítem ${idx + 1}`}
                   value={item.description}
-                  onChange={(event) => updateItem(idx, "description", event.target.value)}
+                  onChange={(event) =>
+                    updateItem(idx, "description", event.target.value)
+                  }
                 />
               </div>
               <div className="sm:col-span-2">
@@ -233,7 +254,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
                   placeholder="Cant."
                   aria-label={`Cantidad del ítem ${idx + 1}`}
                   value={item.quantity}
-                  onChange={(event) => updateItem(idx, "quantity", event.target.value)}
+                  onChange={(event) =>
+                    updateItem(idx, "quantity", event.target.value)
+                  }
                 />
               </div>
               <div className="sm:col-span-2">
@@ -243,7 +266,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
                   placeholder="Precio"
                   aria-label={`Precio unitario del ítem ${idx + 1}`}
                   value={item.unitPrice}
-                  onChange={(event) => updateItem(idx, "unitPrice", event.target.value)}
+                  onChange={(event) =>
+                    updateItem(idx, "unitPrice", event.target.value)
+                  }
                 />
               </div>
               <div className="sm:col-span-2">
@@ -253,7 +278,9 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
                   placeholder="IVA %"
                   aria-label={`Porcentaje de impuesto del ítem ${idx + 1}`}
                   value={item.taxRate}
-                  onChange={(event) => updateItem(idx, "taxRate", event.target.value)}
+                  onChange={(event) =>
+                    updateItem(idx, "taxRate", event.target.value)
+                  }
                 />
               </div>
               <div className="flex justify-end sm:col-span-1">
@@ -266,7 +293,7 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
                   disabled={items.length <= 1}
                   aria-label={`Eliminar ítem ${idx + 1}`}
                 >
-                  <Trash2 className="h-5 w-5 text-red-400" />
+                  <Trash2 className="h-5 w-5 text-red-400" aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -293,7 +320,11 @@ export function InvoiceForm({ onSuccess, onCancel }: InvoiceFormProps) {
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading} className="h-10 w-full sm:w-auto">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="h-10 w-full sm:w-auto"
+        >
           {loading ? "Guardando..." : "Guardar Factura"}
         </Button>
       </div>

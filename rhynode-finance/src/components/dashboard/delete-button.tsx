@@ -11,7 +11,11 @@ interface DeleteButtonProps {
   title?: string;
 }
 
-export function DeleteButton({ endpoint, confirmMessage, title = "Eliminar" }: DeleteButtonProps) {
+export function DeleteButton({
+  endpoint,
+  confirmMessage,
+  title = "Eliminar",
+}: DeleteButtonProps) {
   const router = useRouter();
   const { canEdit } = useOrganizationRole();
 
@@ -38,7 +42,7 @@ export function DeleteButton({ endpoint, confirmMessage, title = "Eliminar" }: D
       title={title}
       aria-label={title}
     >
-      <Trash2 className="h-4 w-4" />
+      <Trash2 className="h-4 w-4" aria-hidden="true" />
     </button>
   );
 }

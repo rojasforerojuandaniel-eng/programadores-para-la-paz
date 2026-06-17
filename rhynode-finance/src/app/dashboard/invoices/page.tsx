@@ -3,8 +3,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreateInvoiceSheet } from "@/components/dashboard/create-invoice-sheet";
+import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+
+const CreateInvoiceSheet = dynamic(
+  () =>
+    import("@/components/dashboard/create-invoice-sheet").then(
+      (mod) => mod.CreateInvoiceSheet,
+    ),
+  {
+    loading: () => (
+      <Button className="gap-2" disabled>
+        <Plus className="h-4 w-4" />
+        Nueva Factura
+      </Button>
+    ),
+  },
+);
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { DataTable } from "@/components/dashboard/data-table";
 import {
@@ -27,6 +43,7 @@ import {
   Clock,
   CheckCircle2,
   PenLine,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePlanLimit } from "@/hooks/use-plan-limit";
@@ -117,13 +134,13 @@ export default function InvoicesPage() {
       statusFilter === "ALL"
         ? invoices
         : invoices.filter((inv) => inv.status === statusFilter),
-    [invoices, statusFilter]
+    [invoices, statusFilter],
   );
 
   const kpis = useMemo(() => {
     const total = invoices.reduce((sum, inv) => sum + inv.total, 0);
     const pending = invoices.filter((inv) =>
-      ["SENT", "OVERDUE", "PARTIAL"].includes(inv.status)
+      ["SENT", "OVERDUE", "PARTIAL"].includes(inv.status),
     ).length;
     const paid = invoices.filter((inv) => inv.status === "PAID").length;
     const drafts = invoices.filter((inv) => inv.status === "DRAFT").length;
@@ -159,9 +176,12 @@ export default function InvoicesPage() {
           <StatusBadge status={inv.status} />
         </TableCell>
         <TableCell className="text-right">
-          <div className="font-medium">{formatCurrency(inv.total, inv.currency)}</div>
+          <div className="font-medium">
+            {formatCurrency(inv.total, inv.currency)}
+          </div>
           <div className="text-xs text-muted-foreground">
-            IVA {inv.taxRate || 19}%: {formatCurrency(inv.taxAmount || 0, inv.currency)}
+            IVA {inv.taxRate || 19}%:{" "}
+            {formatCurrency(inv.taxAmount || 0, inv.currency)}
           </div>
         </TableCell>
         <TableCell className="text-sm text-muted-foreground">
@@ -176,7 +196,7 @@ export default function InvoicesPage() {
                 title="Marcar como Enviada"
                 aria-label="Marcar como Enviada"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
             {inv.status === "SENT" && (
@@ -186,7 +206,7 @@ export default function InvoicesPage() {
                 title="Marcar como Pagada"
                 aria-label="Marcar como Pagada"
               >
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
             {(inv.status === "SENT" || inv.status === "DRAFT") && (
@@ -196,7 +216,7 @@ export default function InvoicesPage() {
                 title="Anular"
                 aria-label="Anular"
               >
-                <Ban className="h-4 w-4" />
+                <Ban className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
             <button
@@ -205,7 +225,7 @@ export default function InvoicesPage() {
               title="Eliminar"
               aria-label="Eliminar"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </TableCell>
@@ -218,19 +238,28 @@ export default function InvoicesPage() {
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="font-mono text-sm text-muted-foreground">{inv.number}</div>
-            <div className="font-medium">{inv.client?.name || "Sin cliente"}</div>
+            <div className="font-mono text-sm text-muted-foreground">
+              {inv.number}
+            </div>
+            <div className="font-medium">
+              {inv.client?.name || "Sin cliente"}
+            </div>
           </div>
           <StatusBadge status={inv.status} />
         </div>
         {inv.project?.name && (
-          <div className="text-sm text-muted-foreground">{inv.project.name}</div>
+          <div className="text-sm text-muted-foreground">
+            {inv.project.name}
+          </div>
         )}
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-lg font-semibold">{formatCurrency(inv.total, inv.currency)}</div>
+            <div className="text-lg font-semibold">
+              {formatCurrency(inv.total, inv.currency)}
+            </div>
             <div className="text-xs text-muted-foreground">
-              IVA {inv.taxRate || 19}%: {formatCurrency(inv.taxAmount || 0, inv.currency)}
+              IVA {inv.taxRate || 19}%:{" "}
+              {formatCurrency(inv.taxAmount || 0, inv.currency)}
             </div>
           </div>
           <div className="text-right text-sm text-muted-foreground">
@@ -245,7 +274,7 @@ export default function InvoicesPage() {
               title="Marcar como Enviada"
               aria-label="Marcar como Enviada"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
           {inv.status === "SENT" && (
@@ -255,7 +284,7 @@ export default function InvoicesPage() {
               title="Marcar como Pagada"
               aria-label="Marcar como Pagada"
             >
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
           {(inv.status === "SENT" || inv.status === "DRAFT") && (
@@ -265,7 +294,7 @@ export default function InvoicesPage() {
               title="Anular"
               aria-label="Anular"
             >
-              <Ban className="h-4 w-4" />
+              <Ban className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
           <button
@@ -274,7 +303,7 @@ export default function InvoicesPage() {
             title="Eliminar"
             aria-label="Eliminar"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -288,7 +317,9 @@ export default function InvoicesPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="heading-section">Facturas</h1>
-          <p className="body-default mt-1">Gestiona tus facturas electrónicas</p>
+          <p className="body-default mt-1">
+            Gestiona tus facturas electrónicas
+          </p>
         </div>
         {planLoading || canCreateInvoice ? (
           <CreateInvoiceSheet onCreate={() => window.location.reload()} />
@@ -308,21 +339,9 @@ export default function InvoicesPage() {
           value={formatCurrency(kpis.total, "COP")}
           icon={DollarSign}
         />
-        <KpiCard
-          label="Pendientes"
-          value={kpis.pending}
-          icon={Clock}
-        />
-        <KpiCard
-          label="Pagadas"
-          value={kpis.paid}
-          icon={CheckCircle2}
-        />
-        <KpiCard
-          label="Borradores"
-          value={kpis.drafts}
-          icon={PenLine}
-        />
+        <KpiCard label="Pendientes" value={kpis.pending} icon={Clock} />
+        <KpiCard label="Pagadas" value={kpis.paid} icon={CheckCircle2} />
+        <KpiCard label="Borradores" value={kpis.drafts} icon={PenLine} />
       </div>
 
       <Card className="surface-elevated-2">
@@ -330,11 +349,17 @@ export default function InvoicesPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="heading-card">Todas las Facturas</CardTitle>
             <div className="space-y-1.5">
-              <Label htmlFor="invoice-status-filter" className="sr-only sm:not-sr-only">
+              <Label
+                htmlFor="invoice-status-filter"
+                className="sr-only sm:not-sr-only"
+              >
                 Filtrar por estado
               </Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger id="invoice-status-filter" className="w-full sm:w-40">
+                <SelectTrigger
+                  id="invoice-status-filter"
+                  className="w-full sm:w-40"
+                >
                   <SelectValue placeholder="Filtrar por estado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -362,12 +387,16 @@ export default function InvoicesPage() {
               loading={loading}
               emptyState={
                 <EmptyStateCard
-          variant="lg"
-          icon={FileText}
+                  variant="lg"
+                  icon={FileText}
                   title="Factura electrónicamente"
                   description="Crea facturas compatibles con DIAN, SAT o AFIP y da seguimiento a sus pagos."
                   hint="Empieza creando tu primera factura."
-                  action={<CreateInvoiceSheet onCreate={() => window.location.reload()} />}
+                  action={
+                    <CreateInvoiceSheet
+                      onCreate={() => window.location.reload()}
+                    />
+                  }
                 />
               }
             />
