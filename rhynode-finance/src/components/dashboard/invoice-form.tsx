@@ -209,6 +209,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           currency: form.currency,
           itemCount: validItems.length,
         });
+        toast.success("Factura creada correctamente");
         setForm({
           clientId: "",
           number: "",

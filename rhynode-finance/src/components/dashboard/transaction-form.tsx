@@ -206,6 +206,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
           category: form.category || "none",
           hasReference: Boolean(form.reference),
         });
+        toast.success("Transacción creada correctamente");
         resetForm();
         onSuccess();
       } else {
