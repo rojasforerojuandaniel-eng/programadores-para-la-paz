@@ -4,26 +4,64 @@ import { getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-import {
-  CreditCard,
-  RefreshCw,
-  CalendarDays,
-  Wallet,
-  BarChart3,
-  Layers,
-} from "lucide-react";
-import type { SubscriptionItem } from "./subscription-utils";
-import {
-  buildTransactionIndex,
-  computeSubscriptionMeta,
-  formatCurrency,
-  monthlyEquivalent,
-  yearlyEquivalent,
-  formatDate,
-} from "./subscription-utils";
-import { SubscriptionList } from "./subscription-list";
+import { CreditCard, RefreshCw } from "lucide-react";
+import { addMonths } from "date-fns";
+import { SubscriptionManager, SubscriptionView } from "./subscription-manager";
+
+interface PageProps {
+  searchParams: Promise<{ filter?: string }>;
+}
+
+const VALID_FILTERS = ["ACTIVE", "PENDING_CANCELLATION", "CANCELED", "ALL"];
+
+function normalizeDescription(text: string | null): string {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\d+/g, "")
+    .replace(/[^a-z\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function daysSince(date: Date | null): number {
+  if (!date) return Infinity;
+  return Math.floor(
+    (Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
+  );
+}
+
+function monthlyEquivalent(amount: number, frequency: string): number {
+  switch (frequency) {
+    case "MONTHLY":
+      return amount;
+    case "QUARTERLY":
+      return amount / 3;
+    case "YEARLY":
+      return amount / 12;
+    default:
+      return amount;
+  }
+}
+
+function nextChargeDate(
+  lastPaidAt: Date | null,
+  fallback: Date,
+  frequency: string
+): Date | null {
+  const base = lastPaidAt || fallback;
+  const months =
+    frequency === "QUARTERLY" ? 3 : frequency === "YEARLY" ? 12 : 1;
+  const msPerPeriod = months * 30 * 24 * 60 * 60 * 1000;
+  const periods = Math.max(
+    1,
+    Math.ceil((Date.now() - base.getTime()) / msPerPeriod)
+  );
+  return addMonths(base, periods * months);
+}
 
 function DetectButton({ className }: { className?: string }) {
   return (
@@ -36,13 +74,22 @@ function DetectButton({ className }: { className?: string }) {
   );
 }
 
-async function SubscriptionsContent() {
+async function SubscriptionsContent({ filter }: { filter: string }) {
   const profile = await getUserProfile();
   if (!profile) return null;
 
+  const whereClause: { userId: string; status?: string | { in: string[] } } = {
+    userId: profile.id,
+  };
+  if (filter === "CANCELED") {
+    whereClause.status = { in: ["CANCELED", "CANCELLED"] };
+  } else if (filter !== "ALL") {
+    whereClause.status = filter;
+  }
+
   const [subscriptions, transactions] = await Promise.all([
     prisma.detectedSubscription.findMany({
-      where: { userId: profile.id },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
     }),
     prisma.transaction.findMany({
@@ -51,106 +98,123 @@ async function SubscriptionsContent() {
     }),
   ]);
 
-  const txByNormalizedDesc = buildTransactionIndex(transactions);
+  const txByNormalizedDesc = new Map<string, typeof transactions>();
+  for (const tx of transactions) {
+    const key = normalizeDescription(tx.description);
+    if (!key) continue;
+    const list = txByNormalizedDesc.get(key) || [];
+    list.push(tx);
+    txByNormalizedDesc.set(key, list);
+  }
 
-  const items: SubscriptionItem[] = subscriptions.map((sub) => {
-    const meta = computeSubscriptionMeta(sub, txByNormalizedDesc, transactions);
+  if (subscriptions.length === 0 && filter === "ACTIVE") {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="heading-section">Suscripciones</h1>
+            <p className="body-default mt-1">
+              Detecta y monitorea tus suscripciones automáticas
+            </p>
+          </div>
+          <DetectButton />
+        </div>
+        <EmptyStateCard
+          icon={CreditCard}
+          title="Detecta suscripciones automáticamente"
+          description="Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar."
+          hint="Presiona detectar para descubrir tus suscripciones."
+          action={<DetectButton className="w-full" />}
+        />
+      </div>
+    );
+  }
+
+  const activeSubscriptions = subscriptions.filter(
+    (sub) => sub.status === "ACTIVE"
+  );
+
+  const totalMonthly = activeSubscriptions.reduce((sum, sub) => {
+    return sum + monthlyEquivalent(decimalToNumber(sub.amount), sub.frequency);
+  }, 0);
+
+  const annualSpend = totalMonthly * 12;
+
+  const nextRenewal = activeSubscriptions
+    .map((sub) =>
+      nextChargeDate(sub.lastPaidAt, sub.lastDetectedAt, sub.frequency)
+    )
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => a.getTime() - b.getTime())[0] || null;
+
+  const subsWithMeta: SubscriptionView[] = subscriptions.map((sub) => {
+    const key = normalizeDescription(sub.description);
+    const txs = txByNormalizedDesc.get(key) || [];
+    let increased = false;
+    if (txs.length >= 2) {
+      const sorted = [...txs].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      const last = decimalToNumber(sorted[0].amount);
+      const prev = decimalToNumber(sorted[1].amount);
+      increased = last > prev;
+    }
+    const unused = sub.lastPaidAt ? daysSince(sub.lastPaidAt) > 45 : false;
+
     return {
       id: sub.id,
       name: sub.name,
       description: sub.description,
       amount: decimalToNumber(sub.amount),
       currency: sub.currency,
-      frequency: sub.frequency,
+      frequency: sub.frequency as "MONTHLY" | "QUARTERLY" | "YEARLY",
       provider: sub.provider,
       category: sub.category,
-      status: sub.status,
-      lastPaidAt: sub.lastPaidAt?.toISOString() ?? null,
-      lastDetectedAt: sub.lastDetectedAt.toISOString(),
-      ...meta,
+      status: (sub.status === "CANCELLED" ? "CANCELED" : sub.status) as
+        | "ACTIVE"
+        | "PENDING_CANCELLATION"
+        | "CANCELED",
+      canceledAt: sub.canceledAt,
+      cancellationUrl: sub.cancellationUrl,
+      lastDetectedAt: sub.lastDetectedAt,
+      lastPaidAt: sub.lastPaidAt,
+      createdAt: sub.createdAt,
+      nextChargeDate: nextChargeDate(
+        sub.lastPaidAt,
+        sub.lastDetectedAt,
+        sub.frequency
+      ),
+      increased,
+      unused,
     };
   });
 
-  const activeItems = items.filter((item) => item.status !== "CANCELLED");
-
-  const totalMonthly = activeItems.reduce((sum, item) => {
-    return sum + monthlyEquivalent(item.amount, item.frequency);
-  }, 0);
-
-  const totalYearly = activeItems.reduce((sum, item) => {
-    return sum + yearlyEquivalent(item.amount, item.frequency);
-  }, 0);
-
-  const upcomingRenewal = activeItems
-    .filter((item) => item.nextRenewal)
-    .sort(
-      (a, b) =>
-        new Date(a.nextRenewal!).getTime() - new Date(b.nextRenewal!).getTime()
-    )[0]?.nextRenewal ?? null;
-
-  const emptyState = (
-    <EmptyStateCard
-      variant="lg"
-      icon={CreditCard}
-      title="Detecta suscripciones automáticamente"
-      description="Analizamos tus transacciones para encontrar pagos recurrentes, detectar subidas de precio y ayudarte a ahorrar."
-      hint="Presiona detectar para descubrir tus suscripciones."
-      action={<DetectButton className="w-full" />}
-    />
-  );
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="heading-section">Suscripciones</h1>
-          <p className="body-default mt-1">
-            Detecta y monitorea tus suscripciones automáticas
-          </p>
-        </div>
-        <DetectButton />
-      </div>
-
-      {items.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            label="Gasto mensual estimado"
-            value={formatCurrency(totalMonthly, "COP")}
-            icon={Wallet}
-          />
-          <KpiCard
-            label="Gasto anual estimado"
-            value={formatCurrency(totalYearly, "COP")}
-            icon={BarChart3}
-          />
-          <KpiCard
-            label="Suscripciones activas"
-            value={activeItems.length}
-            icon={Layers}
-          />
-          <KpiCard
-            label="Próxima renovación"
-            value={<div className="flex items-center gap-1.5">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <span>{formatDate(upcomingRenewal)}</span>
-              </div>
-            }
-            icon={CalendarDays}
-          />
-        </div>
-      )}
-
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-        <SubscriptionList items={items} emptyState={emptyState} />
-      </Suspense>
-    </div>
+    <SubscriptionManager
+      subscriptions={subsWithMeta}
+      currency="COP"
+      initialFilter={filter}
+      kpis={{
+        monthlySpend: totalMonthly,
+        annualSpend,
+        activeCount: activeSubscriptions.length,
+        nextRenewal,
+        totalCount: subscriptions.length,
+      }}
+    />
   );
 }
 
-export default function SubscriptionsPage() {
+export default async function SubscriptionsPage({ searchParams }: PageProps) {
+  const { filter: rawFilter } = await searchParams;
+  const filter =
+    rawFilter && VALID_FILTERS.includes(rawFilter) ? rawFilter : "ACTIVE";
+
   return (
-    <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}>
-      <SubscriptionsContent />
+    <Suspense
+      fallback={<div className="h-40 animate-pulse rounded-xl bg-muted" />}
+    >
+      <SubscriptionsContent filter={filter} />
     </Suspense>
   );
 }
