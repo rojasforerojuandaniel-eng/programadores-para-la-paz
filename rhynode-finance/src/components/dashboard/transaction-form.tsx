@@ -16,7 +16,7 @@ import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { type Suggestion, applyRules } from "@/lib/rules-engine";
 
-const COMMON_CATEGORIES = [
+export const COMMON_CATEGORIES = [
   "Ventas",
   "Nómina",
   "Servicios",

@@ -7,6 +7,7 @@ import type { UserScope } from "@/lib/scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateTransactionButton } from "@/components/dashboard/create-transaction-button";
+import { BankImportRefreshButton } from "@/components/dashboard/bank-import-dialog";
 import { DeleteButton } from "@/components/dashboard/delete-button";
 import { ExportButtons } from "@/components/dashboard/export-buttons";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -56,16 +57,9 @@ function formatCurrency(amount: number, currency: string) {
 export default function TransactionsPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="heading-section">Transacciones</h1>
-          <p className="body-default mt-1">Registro de ingresos, gastos y movimientos</p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <ExportButtons />
-          <CreateTransactionButton />
-        </div>
-      </div>
+      <Suspense fallback={<div className="h-16 animate-pulse rounded-xl bg-muted" />}>
+        <HeaderSection />
+      </Suspense>
 
       <Suspense fallback={<KpiSkeleton count={3} columns={3} />}>
         <KpiSection />
@@ -85,6 +79,31 @@ export default function TransactionsPage() {
           <TransactionsContent />
         </Suspense>
       </Card>
+    </div>
+  );
+}
+
+async function HeaderSection() {
+  const org = await requireAuth();
+  const bankAccounts = org
+    ? await getPrisma().bankAccount.findMany({
+        where: { organizationId: org.id },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, bankName: true },
+      })
+    : [];
+
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 className="heading-section">Transacciones</h1>
+        <p className="body-default mt-1">Registro de ingresos, gastos y movimientos</p>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <ExportButtons />
+        <BankImportRefreshButton bankAccounts={bankAccounts} />
+        <CreateTransactionButton />
+      </div>
     </div>
   );
 }
