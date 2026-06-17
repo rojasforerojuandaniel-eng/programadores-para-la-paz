@@ -2,12 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetDescription,
+} from "@/components/ui/bottom-sheet";
+import { useIsMobile } from "@/hooks/use-media-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -174,9 +182,14 @@ async function loadEvents(view: View, date: Date): Promise<CalendarEvent[]> {
 }
 
 function DayHeader({ day }: { day: Date }) {
+  const narrow = format(day, "EEEEE", { locale: es }).toUpperCase();
+  const full = format(day, "EEEE", { locale: es });
   return (
-    <div className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider py-2">
-      {format(day, "EEE", { locale: es })}
+    <div
+      className="py-2 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs"
+      title={full}
+    >
+      {narrow}
     </div>
   );
 }
@@ -202,10 +215,12 @@ function EventCard({
   event,
   onPay,
   paying,
+  showLabels = false,
 }: {
   event: CalendarEvent;
   onPay?: (event: CalendarEvent) => void;
   paying?: boolean;
+  showLabels?: boolean;
 }) {
   const cfg = typeConfig[event.type];
   const Icon = cfg.icon;
@@ -246,8 +261,8 @@ function EventCard({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={cfg.href}>
-              <Eye className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Ver detalle</span>
+              <Eye className={cn("h-4 w-4", showLabels ? "mr-1" : "sm:mr-1")} />
+              <span className={cn(!showLabels && "hidden sm:inline")}>Ver detalle</span>
             </Link>
           </Button>
           {payable && onPay && (
@@ -257,8 +272,10 @@ function EventCard({
               disabled={paying}
               aria-label={`Marcar ${event.title} como pagado`}
             >
-              <CheckCircle className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">{event.type === "tax" ? "Presentar" : "Pagar"}</span>
+              <CheckCircle className={cn("h-4 w-4", showLabels ? "mr-1" : "sm:mr-1")} />
+              <span className={cn(!showLabels && "hidden sm:inline")}>
+                {event.type === "tax" ? "Presentar" : "Pagar"}
+              </span>
             </Button>
           )}
         </div>
@@ -267,12 +284,163 @@ function EventCard({
   );
 }
 
+function DayCell({
+  day,
+  currentDate,
+  selectedDate,
+  events,
+  onSelect,
+}: {
+  day: Date;
+  currentDate: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelect: (day: Date) => void;
+}) {
+  const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), day));
+  const muted = !isSameMonth(day, currentDate);
+  const selected = isSameDay(day, selectedDate);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(day)}
+      aria-label={`${formatLongDate(day)}, ${dayEvents.length} vencimientos`}
+      aria-pressed={selected}
+      className={cn(
+        "relative flex min-h-[4.5rem] flex-col items-start justify-start rounded-lg border p-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary sm:min-h-[6rem] sm:p-2",
+        muted ? "bg-muted/30 text-muted-foreground" : "bg-card hover:bg-accent/50",
+        selected && "border-primary ring-1 ring-primary",
+        isToday(day) && !selected && "ring-1 ring-primary/50"
+      )}
+    >
+      <span
+        className={cn(
+          "text-sm font-medium",
+          isToday(day) && "text-primary"
+        )}
+      >
+        {format(day, "d")}
+      </span>
+      <div className="mt-auto flex w-full flex-wrap items-center justify-center gap-1">
+        {dayEvents.slice(0, 4).map((ev) => (
+          <EventDot key={ev.id} event={ev} />
+        ))}
+        {dayEvents.length > 4 && (
+          <span className="text-[10px] leading-none text-muted-foreground">+</span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function SelectedDayPanel({
+  date,
+  events,
+  onPay,
+  payingId,
+}: {
+  date: Date;
+  events: CalendarEvent[];
+  onPay?: (event: CalendarEvent) => void;
+  payingId?: string | null;
+}) {
+  const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), date));
+
+  return (
+    <Card className="surface-elevated-2 h-fit">
+      <CardHeader className="p-4 pb-2">
+        <CardTitle className="text-base sm:text-lg">{formatLongDate(date)}</CardTitle>
+        <CardDescription>
+          {dayEvents.length} vencimiento{dayEvents.length !== 1 ? "s" : ""}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">
+        {dayEvents.length === 0 ? (
+          <EmptyStateCard
+            variant="sm"
+            icon={Calendar}
+            title="Sin vencimientos"
+            description="Selecciona otro día con actividad."
+          />
+        ) : (
+          <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
+            {dayEvents.map((ev) => (
+              <EventCard
+                key={ev.id}
+                event={ev}
+                onPay={onPay}
+                paying={payingId === ev.id}
+                showLabels
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MobileDaySheet({
+  open,
+  onOpenChange,
+  date,
+  events,
+  onPay,
+  payingId,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  date: Date;
+  events: CalendarEvent[];
+  onPay?: (event: CalendarEvent) => void;
+  payingId?: string | null;
+}) {
+  const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), date));
+
+  return (
+    <BottomSheet open={open} onOpenChange={onOpenChange}>
+      <BottomSheetContent side="bottom" snapPoints={["75dvh", "50dvh"]}>
+        <BottomSheetHeader>
+          <BottomSheetTitle>{formatLongDate(date)}</BottomSheetTitle>
+          <BottomSheetDescription>
+            {dayEvents.length} vencimiento{dayEvents.length !== 1 ? "s" : ""}
+          </BottomSheetDescription>
+        </BottomSheetHeader>
+        <div className="flex flex-col gap-3">
+          {dayEvents.length === 0 ? (
+            <EmptyStateCard
+              variant="sm"
+              icon={Calendar}
+              title="Sin vencimientos"
+              description="Toca un día con color para ver sus detalles."
+            />
+          ) : (
+            dayEvents.map((ev) => (
+              <EventCard
+                key={ev.id}
+                event={ev}
+                onPay={onPay}
+                paying={payingId === ev.id}
+                showLabels
+              />
+            ))
+          )}
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+}
+
 export function CalendarView({ orgCurrency }: CalendarViewProps) {
+  const isMobile = useIsMobile();
   const [view, setView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -325,30 +493,46 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
   }, [view, from, to, currentDate]);
 
   const kpis = useMemo(() => {
-    const totalAmount = events.reduce((sum, ev) => {
-      return getDisplayStatus(ev) !== "paid" ? sum + ev.amount : sum;
-    }, 0);
-    const overdue = events.filter((ev) => getDisplayStatus(ev) === "overdue").length;
-    const paid = events.filter((ev) => getDisplayStatus(ev) === "paid").length;
+    let totalAmount = 0;
+    let overdue = 0;
+    let paid = 0;
+    for (const ev of events) {
+      if (getDisplayStatus(ev) !== "paid") totalAmount += ev.amount;
+      if (getDisplayStatus(ev) === "overdue") overdue += 1;
+      if (getDisplayStatus(ev) === "paid") paid += 1;
+    }
     return { totalAmount, overdue, paid, count: events.length };
   }, [events]);
 
+  function movePeriod(next: Date) {
+    setCurrentDate(next);
+    if (!isSameMonth(selectedDate, next)) {
+      setSelectedDate(startOfMonth(next));
+    }
+  }
+
   function navigatePrev() {
-    if (view === "week") setCurrentDate((d) => subWeeks(d, 1));
-    else setCurrentDate((d) => subMonths(d, 1));
+    const next = view === "week" ? subWeeks(currentDate, 1) : subMonths(currentDate, 1);
+    movePeriod(next);
   }
 
   function navigateNext() {
-    if (view === "week") setCurrentDate((d) => addWeeks(d, 1));
-    else setCurrentDate((d) => addMonths(d, 1));
+    const next = view === "week" ? addWeeks(currentDate, 1) : addMonths(currentDate, 1);
+    movePeriod(next);
   }
 
   function goToToday() {
-    setCurrentDate(new Date());
+    movePeriod(new Date());
   }
 
-  function eventsForDay(day: Date) {
-    return events.filter((ev) => isSameDay(parseISO(ev.date), day));
+  function selectDay(day: Date) {
+    setSelectedDate(day);
+    if (!isSameMonth(day, currentDate)) {
+      setCurrentDate(day);
+    }
+    if (isMobile) {
+      setSheetOpen(true);
+    }
   }
 
   if (loading) {
@@ -408,16 +592,28 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={navigatePrev} aria-label="Anterior">
-              <ChevronLeft className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon-lg"
+              onClick={navigatePrev}
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="h-6 w-6" />
             </Button>
-            <span className="min-w-[8rem] text-center text-sm font-medium capitalize">
+            <span className="min-w-[9rem] text-center text-sm font-medium capitalize sm:text-base">
               {periodLabel}
             </span>
-            <Button variant="outline" size="icon" onClick={navigateNext} aria-label="Siguiente">
-              <ChevronRight className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon-lg"
+              onClick={navigateNext}
+              aria-label="Siguiente"
+            >
+              <ChevronRight className="h-6 w-6" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={goToToday}>Hoy</Button>
+            <Button variant="ghost" size="sm" onClick={goToToday}>
+              Hoy
+            </Button>
           </div>
         </div>
 
@@ -425,61 +621,36 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
           {events.length === 0 ? (
             <EmptyState />
           ) : (
-            <Card className="surface-elevated-2">
-              <CardContent className="p-3 sm:p-4">
-                <div className="grid grid-cols-7 gap-1">
-                  {days.slice(0, 7).map((day) => (
-                    <DayHeader key={day.toISOString()} day={day} />
-                  ))}
-                  {days.map((day) => {
-                    const dayEvents = eventsForDay(day);
-                    const muted = !isSameMonth(day, currentDate);
-                    return (
-                      <div
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_360px]">
+              <Card className="surface-elevated-2">
+                <CardContent className="p-2 sm:p-4">
+                  <div className="grid grid-cols-7 gap-1">
+                    {days.slice(0, 7).map((day) => (
+                      <DayHeader key={day.toISOString()} day={day} />
+                    ))}
+                    {days.map((day) => (
+                      <DayCell
                         key={day.toISOString()}
-                        className={cn(
-                          "min-h-[5.5rem] rounded-lg border p-2 transition-colors",
-                          muted ? "bg-muted/30 text-muted-foreground" : "bg-card",
-                          isToday(day) && "ring-1 ring-primary"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-sm font-medium",
-                              isToday(day) && "text-primary"
-                            )}
-                          >
-                            {format(day, "d")}
-                          </span>
-                          {dayEvents.length > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              {dayEvents.length}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 flex flex-col gap-1">
-                          {dayEvents.slice(0, 2).map((ev) => (
-                            <div
-                              key={ev.id}
-                              className="flex items-center gap-1.5 rounded-md border border-border px-1.5 py-1 text-xs"
-                            >
-                              <EventDot event={ev} />
-                              <span className="truncate flex-1">{ev.title}</span>
-                            </div>
-                          ))}
-                          {dayEvents.length > 2 && (
-                            <span className="text-xs text-muted-foreground pl-1">
-                              +{dayEvents.length - 2} más
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                        day={day}
+                        currentDate={currentDate}
+                        selectedDate={selectedDate}
+                        events={events}
+                        onSelect={selectDay}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="hidden md:block">
+                <SelectedDayPanel
+                  date={selectedDate}
+                  events={events}
+                  onPay={handlePay}
+                  payingId={payingId}
+                />
+              </div>
+            </div>
           )}
         </TabsContent>
 
@@ -489,7 +660,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-7">
               {days.map((day) => {
-                const dayEvents = eventsForDay(day);
+                const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), day));
                 return (
                   <Card
                     key={day.toISOString()}
@@ -538,6 +709,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
                         event={ev}
                         onPay={handlePay}
                         paying={payingId === ev.id}
+                        showLabels
                       />
                     ))}
                   </div>
@@ -549,6 +721,17 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
       </Tabs>
 
       <EventLegend />
+
+      {isMobile && (
+        <MobileDaySheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          date={selectedDate}
+          events={events}
+          onPay={handlePay}
+          payingId={payingId}
+        />
+      )}
     </div>
   );
 }
@@ -563,12 +746,19 @@ function MiniEvent({ event }: { event: CalendarEvent }) {
       href={cfg.href}
       className="flex items-center gap-2 rounded-md border border-border p-2 text-sm transition-colors hover:bg-accent"
     >
-      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full border", cfg.color)}>
+      <div
+        className={cn(
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border",
+          cfg.color
+        )}
+      >
         <Icon className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{event.title}</p>
-        <p className="truncate text-xs text-muted-foreground">{formatCurrency(event.amount, event.currency)}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {formatCurrency(event.amount, event.currency)}
+        </p>
       </div>
       <Badge variant="outline" className={statusCfg.className}>
         {statusCfg.label}
@@ -579,11 +769,15 @@ function MiniEvent({ event }: { event: CalendarEvent }) {
 
 function groupEventsByDate(events: CalendarEvent[]): [string, CalendarEvent[]][] {
   const groups = new Map<string, CalendarEvent[]>();
-  events.forEach((ev) => {
+  for (const ev of events) {
     const key = ev.date.slice(0, 10);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(ev);
-  });
+    let list = groups.get(key);
+    if (!list) {
+      list = [];
+      groups.set(key, list);
+    }
+    list.push(ev);
+  }
   return Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0]));
 }
 

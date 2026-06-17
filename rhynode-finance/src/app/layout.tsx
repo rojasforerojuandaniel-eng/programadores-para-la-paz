@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { JsonLdScripts } from "@/components/seo/json-ld";
 import dynamic from "next/dynamic";
 import "./globals.css";
 
@@ -32,26 +33,37 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
   description:
-    "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
+    "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia. Integra Wompi, cumple con la DIAN y gestiona tu contabilidad y facturación electrónica en minutos.",
   keywords: [
-    "finanzas personales",
-    "contabilidad",
-    "facturación electrónica",
-    "Colombia",
-    "DIAN",
-    "impuestos",
-    "IA",
-    "Pyme",
+    "finanzas personales Colombia",
+    "contabilidad Colombia",
+    "fintech Colombia",
+    "facturación electrónica DIAN",
+    "impuestos Colombia",
+    "Wompi",
+    "Stripe",
+    "software contable",
     "presupuesto",
-    "inversiones",
+    "inversiones Colombia",
+    "pymes Colombia",
+    "IA financiera",
+    "gestión de gastos",
+    "control de ingresos",
+    "estados financieros",
+    "contabilidad electrónica",
   ],
   authors: [{ name: "Rhynode" }],
   creator: "Rhynode",
+  publisher: "Rhynode",
   metadataBase: new URL("https://rhynode.finance"),
+  alternates: {
+    canonical: "https://rhynode.finance/",
+  },
   openGraph: {
     title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
-    description: "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
-    url: "/",
+    description:
+      "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia. Integra Wompi, cumple con la DIAN y gestiona tu contabilidad y facturación electrónica en minutos.",
+    url: "https://rhynode.finance/",
     siteName: "Rhynode",
     locale: "es_CO",
     type: "website",
@@ -59,7 +71,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Rhynode — Finanzas personales e inteligencia contable para Colombia",
-    description: "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
+    description:
+      "Controla tu dinero, ahorra más inteligente y haz crecer tu negocio. Rhynode une finanzas personales y empresariales con IA para Colombia.",
     creator: "@rhynode",
   },
   manifest: "/manifest.json",
@@ -87,10 +100,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="es"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <JsonLdScripts />
       </head>
       <body className="antialiased">
         <a

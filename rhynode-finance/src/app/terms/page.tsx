@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo-metadata";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent } from "@/components/ui/card";
 
-export const metadata: Metadata = {
-  title: "Términos de servicio — Rhynode",
+export const metadata: Metadata = buildMetadata({
+  title: "Términos de servicio",
   description:
     "Lee los términos y condiciones de uso de Rhynode para personas y empresas en Colombia.",
-};
+  path: "/terms",
+  keywords: ["términos de servicio", "condiciones de uso", "fintech Colombia"],
+});
 
 export default function TermsPage() {
   return (
