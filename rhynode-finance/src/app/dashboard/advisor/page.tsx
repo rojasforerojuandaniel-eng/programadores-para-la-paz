@@ -7,12 +7,33 @@ import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/components/dashboard/chat-message";
 import { ChatInput } from "@/components/dashboard/chat-input";
 
-interface Message {
+interface UserMessage {
   id: string;
-  role: "user" | "assistant";
+  role: "user";
+  content: string;
+}
+
+interface AssistantMessage {
+  id: string;
+  role: "assistant";
   content: string;
   isLoading?: boolean;
 }
+
+interface ToolStartMessage {
+  id: string;
+  role: "tool";
+  toolName: string;
+}
+
+interface ToolResultMessage {
+  id: string;
+  role: "tool";
+  toolName: string;
+  toolResult: unknown;
+}
+
+type Message = UserMessage | AssistantMessage | ToolStartMessage | ToolResultMessage;
 
 function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -27,7 +48,9 @@ export default function AdvisorPage() {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasStreamedContent, setHasStreamedContent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const assistantMessageIdRef = useRef<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -37,7 +60,7 @@ export default function AdvisorPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, isLoading, scrollToBottom]);
 
   async function handleSend(message: string) {
     const userMessage: Message = {
@@ -46,15 +69,10 @@ export default function AdvisorPage() {
       content: message,
     };
 
-    const loadingMessage: Message = {
-      id: generateId(),
-      role: "assistant",
-      content: "",
-      isLoading: true,
-    };
-
-    setMessages((prev) => [...prev, userMessage, loadingMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+    setHasStreamedContent(false);
+    assistantMessageIdRef.current = null;
 
     try {
       const response = await fetch("/api/ai/chat", {
@@ -69,16 +87,7 @@ export default function AdvisorPage() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let assistantMessage = "";
       let buffer = "";
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? { ...msg, isLoading: false, content: "" }
-            : msg
-        )
-      );
 
       while (true) {
         const { done, value } = await reader.read();
@@ -96,59 +105,79 @@ export default function AdvisorPage() {
           if (dataStr === "[DONE]") continue;
 
           try {
-            const event = JSON.parse(dataStr);
-            if (event.type === "content_block_delta" && event.delta?.text) {
-              assistantMessage += event.delta.text;
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === loadingMessage.id
-                    ? { ...msg, content: assistantMessage }
-                    : msg
-                )
-              );
+            const event = JSON.parse(dataStr) as unknown;
+            if (!isObject(event)) continue;
+
+            if (event.type === "content_block_delta" && isObject(event.delta) && typeof event.delta.text === "string") {
+              setHasStreamedContent(true);
+              const text = event.delta.text;
+              setMessages((prev) => {
+                const currentId = assistantMessageIdRef.current;
+                if (currentId && prev.some((msg) => msg.id === currentId && msg.role === "assistant")) {
+                  return prev.map((msg) =>
+                    msg.id === currentId && msg.role === "assistant"
+                      ? { ...msg, content: msg.content + text }
+                      : msg
+                  );
+                }
+                const newAssistant: AssistantMessage = {
+                  id: generateId(),
+                  role: "assistant",
+                  content: text,
+                };
+                assistantMessageIdRef.current = newAssistant.id;
+                return [...prev, newAssistant];
+              });
+            } else if (event.type === "tool_start" && typeof event.tool === "string") {
+              setHasStreamedContent(true);
+              assistantMessageIdRef.current = null;
+              const toolName = event.tool;
+              setMessages((prev) => [
+                ...prev,
+                { id: generateId(), role: "tool", toolName },
+              ]);
+            } else if (event.type === "tool_result" && typeof event.tool === "string") {
+              setHasStreamedContent(true);
+              assistantMessageIdRef.current = null;
+              const toolName = event.tool;
+              const toolResult = event.result;
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: generateId(),
+                  role: "tool",
+                  toolName,
+                  toolResult,
+                },
+              ]);
+            } else if (event.type === "error" && typeof event.message === "string") {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: generateId(),
+                  role: "assistant",
+                  content: `Error: ${event.message}`,
+                },
+              ]);
             }
           } catch {
             // Ignorar líneas que no son JSON válido
           }
         }
       }
-
-      // Procesar buffer restante
-      if (buffer.trim().startsWith("data: ")) {
-        const dataStr = buffer.trim().slice(6).trim();
-        if (dataStr !== "[DONE]") {
-          try {
-            const event = JSON.parse(dataStr);
-            if (event.type === "content_block_delta" && event.delta?.text) {
-              assistantMessage += event.delta.text;
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === loadingMessage.id
-                    ? { ...msg, content: assistantMessage }
-                    : msg
-                )
-              );
-            }
-          } catch {
-            // Ignorar
-          }
-        }
-      }
     } catch {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? {
-                ...msg,
-                isLoading: false,
-                content:
-                  "Lo siento, ocurrió un error al procesar tu mensaje. Inténtalo de nuevo.",
-              }
-            : msg
-        )
-      );
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "assistant",
+          content:
+            "Lo siento, ocurrió un error al procesar tu mensaje. Inténtalo de nuevo.",
+        },
+      ]);
     } finally {
       setIsLoading(false);
+      assistantMessageIdRef.current = null;
     }
   }
 
@@ -180,14 +209,27 @@ export default function AdvisorPage() {
           <ChatMessage
             key={msg.id}
             role={msg.role}
-            content={msg.content}
-            isLoading={msg.isLoading}
+            content={"content" in msg ? msg.content : ""}
+            isLoading={msg.role === "assistant" ? msg.isLoading : false}
+            toolName={msg.role === "tool" ? msg.toolName : undefined}
+            toolResult={msg.role === "tool" && "toolResult" in msg ? msg.toolResult : undefined}
           />
         ))}
+        {isLoading && !hasStreamedContent && (
+          <ChatMessage
+            role="assistant"
+            content=""
+            isLoading={true}
+          />
+        )}
       </div>
 
       {/* Input */}
       <ChatInput onSend={handleSend} isLoading={isLoading} />
     </div>
   );
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
