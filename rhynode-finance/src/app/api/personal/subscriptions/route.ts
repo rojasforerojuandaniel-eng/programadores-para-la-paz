@@ -23,6 +23,12 @@ const updateSchema = baseSchema.extend({
   status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELLED"]).optional(),
 });
 
+const patchSchema = z.object({
+  id: z.string().min(1),
+  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELED"]),
+  cancellationUrl: z.string().url().optional(),
+});
+
 function parseNextDueDate(value: string | undefined): Date | null {
   if (!value) return null;
   const date = new Date(value);
@@ -144,6 +150,49 @@ export async function PUT(request: Request) {
   } catch (error) {
     logger.error("Failed to update subscription", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { id, status, cancellationUrl } = parsed.data;
+
+    const existing = await prisma.detectedSubscription.findFirst({
+      where: { id, userId: profile.id },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const canceledAt = status === "CANCELED" ? new Date() : null;
+
+    const subscription = await prisma.detectedSubscription.update({
+      where: { id },
+      data: {
+        status,
+        canceledAt,
+        ...(cancellationUrl !== undefined ? { cancellationUrl } : {}),
+      },
+    });
+
+    return NextResponse.json({ subscription });
+  } catch (error) {
+    logger.error("Failed to update subscription status", { error: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ error: "Failed to update subscription status" }, { status: 500 });
   }
 }
 

@@ -257,6 +257,7 @@ export function statusLabel(status: string) {
       return "Activa";
     case "PENDING_CANCELLATION":
       return "Para cancelar";
+    case "CANCELED":
     case "CANCELLED":
       return "Cancelada";
     default:

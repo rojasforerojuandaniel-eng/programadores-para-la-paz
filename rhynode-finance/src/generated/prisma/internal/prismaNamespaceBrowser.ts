@@ -540,6 +540,8 @@ export const DetectedSubscriptionScalarFieldEnum = {
   provider: 'provider',
   category: 'category',
   status: 'status',
+  canceledAt: 'canceledAt',
+  cancellationUrl: 'cancellationUrl',
   lastDetectedAt: 'lastDetectedAt',
   lastPaidAt: 'lastPaidAt',
   createdAt: 'createdAt',
