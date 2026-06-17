@@ -242,7 +242,7 @@ export default async function InvestmentsPage() {
               <TableCell className="py-3">
                 <Badge
                   variant="outline"
-                  className={investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-400 border-slate-500/20"}
+                  className={investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-600 border-slate-500/20"}
                 >
                   {investmentTypeLabels[item.investmentType] || item.investmentType}
                 </Badge>
@@ -303,7 +303,7 @@ export default async function InvestmentsPage() {
                       variant="outline"
                       className={cn(
                         "mt-1",
-                        investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-400 border-slate-500/20"
+                        investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-600 border-slate-500/20"
                       )}
                     >
                       {investmentTypeLabels[item.investmentType] || item.investmentType}

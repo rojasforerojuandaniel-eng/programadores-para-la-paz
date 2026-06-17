@@ -14,6 +14,7 @@ import {
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+import { executeMutation } from "@/lib/offline-queue";
 import { InvoicePreview } from "@/components/dashboard/invoice-preview";
 
 interface ClientOption {
@@ -192,44 +193,44 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
 
     setLoading(true);
     try {
-      const res = await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/invoices",
+        "POST",
+        {
           ...form,
           items: validItems,
           issueDate: new Date(form.issueDate).toISOString(),
           dueDate: form.dueDate
             ? new Date(form.dueDate).toISOString()
             : undefined,
-        }),
-      });
-      if (res.ok) {
-        trackEvent("invoice_created", {
-          currency: form.currency,
-          itemCount: validItems.length,
-        });
-        toast.success("Factura creada correctamente");
-        setForm({
-          clientId: "",
-          number: "",
-          currency: "COP",
-          issueDate: todayInputValue(),
-          dueDate: "",
-          notes: "",
-          terms: "",
-        });
-        setItems([
-          { description: "", quantity: "1", unitPrice: "", taxRate: "19" },
-        ]);
-        setShowPreview(false);
-        onSuccess();
-      } else {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error || "Error al crear factura");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            trackEvent("invoice_created", {
+              currency: form.currency,
+              itemCount: validItems.length,
+            });
+            toast.success("Factura creada correctamente");
+            setForm({
+              clientId: "",
+              number: "",
+              currency: "COP",
+              issueDate: todayInputValue(),
+              dueDate: "",
+              notes: "",
+              terms: "",
+            });
+            setItems([
+              { description: "", quantity: "1", unitPrice: "", taxRate: "19" },
+            ]);
+            setShowPreview(false);
+            onSuccess();
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear factura");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }
@@ -313,7 +314,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Ítems</Label>
+          <h3 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Ítems</h3>
           <Button
             type="button"
             variant="outline"

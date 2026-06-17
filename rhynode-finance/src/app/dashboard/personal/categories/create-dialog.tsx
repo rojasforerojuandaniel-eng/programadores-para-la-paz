@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { executeMutation } from "@/lib/offline-queue";
 
 interface Category {
   id: string;
@@ -45,27 +46,28 @@ export function CreateCategoryDialog({ categories }: { categories: Category[] })
     if (!form.name.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/personal/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/personal/categories",
+        "POST",
+        {
           name: form.name,
           type: form.type,
           parentId: form.parentId || undefined,
           icon: form.icon || undefined,
           color: form.color || undefined,
-        }),
-      });
-      if (res.ok) {
-        setOpen(false);
-        setForm({ name: "", type: "EXPENSE", parentId: "", icon: "", color: "" });
-        router.refresh();
-        toast.success("Categoría creada");
-      } else {
-        toast.error("Error al crear categoría");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            setForm({ name: "", type: "EXPENSE", parentId: "", icon: "", color: "" });
+            router.refresh();
+            toast.success("Categoría creada");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear categoría");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }

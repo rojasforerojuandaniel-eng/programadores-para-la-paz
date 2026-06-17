@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateDebtDialog() {
   const [open, setOpen] = useState(false);
@@ -46,10 +47,10 @@ export function CreateDebtDialog() {
     try {
       const principal = Number(form.principalAmount);
       const remaining = form.remainingAmount ? Number(form.remainingAmount) : principal;
-      const res = await fetch("/api/personal/debts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/personal/debts",
+        "POST",
+        {
           name: form.name,
           type: form.type,
           counterparty: form.counterparty || undefined,
@@ -59,21 +60,22 @@ export function CreateDebtDialog() {
           currency: form.currency,
           dueDate: form.dueDate || undefined,
           notes: form.notes || undefined,
-        }),
-      });
-      if (res.ok) {
-        setOpen(false);
-        setForm({
-          name: "", type: "OWE", counterparty: "", principalAmount: "",
-          interestRate: "", remainingAmount: "", currency: "COP", dueDate: "", notes: "",
-        });
-        router.refresh();
-        toast.success("Deuda creada");
-      } else {
-        toast.error("Error al crear deuda");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            setForm({
+              name: "", type: "OWE", counterparty: "", principalAmount: "",
+              interestRate: "", remainingAmount: "", currency: "COP", dueDate: "", notes: "",
+            });
+            router.refresh();
+            toast.success("Deuda creada");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear deuda");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }

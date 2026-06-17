@@ -127,12 +127,12 @@ export function CreateSubscriptionDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Frecuencia *</Label>
+              <Label htmlFor="cal-sub-frequency">Frecuencia *</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="cal-sub-frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

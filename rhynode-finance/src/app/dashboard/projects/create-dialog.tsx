@@ -21,6 +21,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
+import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateProjectDialog() {
   const [open, setOpen] = useState(false);
@@ -41,10 +42,10 @@ export function CreateProjectDialog() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/projects",
+        "POST",
+        {
           name: form.name,
           description: form.description || undefined,
           status: form.status,
@@ -52,25 +53,26 @@ export function CreateProjectDialog() {
           endDate: form.endDate ? new Date(form.endDate).toISOString() : undefined,
           budget: form.budget ? Number(form.budget) : undefined,
           color: form.color,
-        }),
-      });
-      if (res.ok) {
-        setOpen(false);
-        setForm({
-          name: "",
-          description: "",
-          status: "ACTIVE",
-          startDate: "",
-          endDate: "",
-          budget: "",
-          color: "#3b82f6",
-        });
-        window.location.reload();
-      } else {
-        toast.error("Error al crear proyecto");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            setForm({
+              name: "",
+              description: "",
+              status: "ACTIVE",
+              startDate: "",
+              endDate: "",
+              budget: "",
+              color: "#3b82f6",
+            });
+            window.location.reload();
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear proyecto");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }
@@ -115,14 +117,14 @@ export function CreateProjectDialog() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Estado</Label>
+              <Label htmlFor="project-status">Estado</Label>
               <Select
                 value={form.status}
                 onValueChange={(v) =>
                   setForm({ ...form, status: v as typeof form.status })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="project-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

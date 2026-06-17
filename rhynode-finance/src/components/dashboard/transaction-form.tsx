@@ -16,6 +16,7 @@ import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { type Suggestion, type Rule, applyRules } from "@/lib/rules-engine";
 import { trackEvent } from "@/lib/analytics";
+import { executeMutation } from "@/lib/offline-queue";
 
 export const COMMON_CATEGORIES = [
   "Ventas",
@@ -212,29 +213,30 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     if (!form.description.trim() || !form.amount) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await executeMutation(
+        "/api/transactions",
+        "POST",
+        {
           ...form,
           amount: Number(form.amount),
-        }),
-      });
-      if (res.ok) {
-        trackEvent("transaction_created", {
-          type: form.type,
-          currency: form.currency,
-          category: form.category || "none",
-          hasReference: Boolean(form.reference),
-        });
-        toast.success("Transacción creada correctamente");
-        resetForm();
-        onSuccess();
-      } else {
-        toast.error("Error al crear transacción");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            trackEvent("transaction_created", {
+              type: form.type,
+              currency: form.currency,
+              category: form.category || "none",
+              hasReference: Boolean(form.reference),
+            });
+            toast.success("Transacción creada correctamente");
+            resetForm();
+            onSuccess();
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al crear transacción");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }

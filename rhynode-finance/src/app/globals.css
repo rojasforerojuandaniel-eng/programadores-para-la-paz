@@ -405,6 +405,42 @@
   animation: circular-progress-fill 0.8s ease-out forwards;
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    color-mix(in srgb, var(--muted) 80%, var(--muted-foreground)) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-children > * {
+  animation: fade-in-up 0.35s ease-out both;
+  animation-delay: calc(var(--child-index, 0) * 60ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-achievement-pop,
   .animate-sparkle,
@@ -412,7 +448,9 @@
   .animate-level-up,
   .animate-shimmer,
   .animate-progress-fill,
-  .animate-circular-progress {
+  .animate-circular-progress,
+  .animate-skeleton-shimmer,
+  .stagger-children > * {
     animation: none;
   }
 }

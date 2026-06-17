@@ -33,6 +33,7 @@ import {
   Pencil,
   Check,
   Eye,
+  BookOpen,
 } from "lucide-react";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { trackEvent } from "@/lib/analytics";
@@ -44,6 +45,7 @@ import {
 } from "@/lib/rules-engine";
 import { type RuleSuggestion } from "@/lib/rules-suggestions";
 import { toast } from "sonner";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 
 const conditionLabels: Record<RuleConditionType, string> = {
   contains: "contiene",
@@ -525,9 +527,13 @@ export default function RulesClient({
         </CardHeader>
         <CardContent>
           {rules.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              No tienes reglas creadas. Crea una arriba, carga los ejemplos o usa una sugerencia.
-            </div>
+            <EmptyStateCard
+              variant="md"
+              icon={BookOpen}
+              title="No tienes reglas creadas"
+              description="Crea reglas de categorización para automatizar cómo Rhynode clasifica tus transacciones."
+              hint="También puedes cargar ejemplos o usar una sugerencia."
+            />
           ) : (
             <ul className="divide-y divide-border" role="list">
               {rules.map((rule) => {

@@ -21,6 +21,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { executeMutation } from "@/lib/offline-queue";
 
 export interface ReminderRow {
   id: string;
@@ -73,28 +74,27 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
     try {
       const url = isEdit ? `/api/personal/reminders/${reminder?.id}` : "/api/personal/reminders";
       const method = isEdit ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      await executeMutation(
+        url,
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        {
           title: form.title,
           message: form.message,
           scheduledAt: fromLocalInputValue(form.scheduledAt),
           repeat: form.repeat,
           active: form.active,
-        }),
-      });
-
-      if (res.ok) {
-        setOpen(false);
-        onSuccess();
-        toast.success(isEdit ? "Recordatorio actualizado" : "Recordatorio creado");
-      } else {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(data.error || "Error al guardar recordatorio");
-      }
-    } catch {
-      toast.error("Error de red");
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            onSuccess();
+            toast.success(isEdit ? "Recordatorio actualizado" : "Recordatorio creado");
+          },
+          onError: (err) => {
+            toast.error(err.message || "Error al guardar recordatorio");
+          },
+        },
+      );
     } finally {
       setLoading(false);
     }
@@ -155,12 +155,12 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
               />
             </div>
             <div className="space-y-2">
-              <Label>Repetición</Label>
+              <Label htmlFor="reminder-repeat">Repetición</Label>
               <Select
                 value={form.repeat}
                 onValueChange={(v) => setForm({ ...form, repeat: v as typeof form.repeat })}
               >
-                <SelectTrigger>
+                <SelectTrigger id="reminder-repeat">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,11 +174,11 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
           </div>
           <div className="flex items-center gap-3 pt-1">
             <Switch
+              id="reminder-active"
               checked={form.active}
               onCheckedChange={(checked) => setForm({ ...form, active: checked })}
-              aria-label="Recordatorio activo"
             />
-            <Label className="text-sm">{form.active ? "Activo" : "Inactivo"}</Label>
+            <Label htmlFor="reminder-active" className="text-sm">{form.active ? "Activo" : "Inactivo"}</Label>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
