@@ -1,0 +1,783 @@
+"use client";
+
+import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  CalendarDays,
+  Check,
+  Tag,
+  Bus,
+  Film,
+  Coffee,
+  ShoppingCart,
+  Zap,
+  Wifi,
+  ShieldCheck,
+  Heart,
+  GraduationCap,
+  Plane,
+  Dog,
+  Briefcase,
+  Building2,
+  Utensils,
+  Landmark,
+  Repeat,
+  MoreVertical,
+  Pencil,
+  Copy,
+  Trash2,
+  ArrowLeftRight,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+} from "@/components/ui/bottom-sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { cn } from "@/lib/utils";
+
+type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
+type FilterType = "all" | "income" | "expense" | "recurring";
+
+export interface Transaction {
+  id: string;
+  date: string;
+  type: TransactionType;
+  category?: string;
+  description: string;
+  amount: number;
+  currency: string;
+  isRecurring: boolean;
+  bankAccountName?: string;
+}
+
+interface TransactionsListProps {
+  transactions: Transaction[];
+  orgCurrency: string;
+}
+
+function formatCurrency(amount: number, currency: string) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+const typeConfig: Record<
+  TransactionType,
+  { label: string; className: string }
+> = {
+  INCOME: { label: "Ingreso", className: "bg-success/10 text-success" },
+  EXPENSE: { label: "Gasto", className: "bg-danger/10 text-danger" },
+  TRANSFER: { label: "Transferencia", className: "bg-info/10 text-info" },
+  ADJUSTMENT: { label: "Ajuste", className: "bg-muted text-muted-foreground" },
+};
+
+const categoryStyles: Record<string, { icon: LucideIcon; className: string }> = {
+  "Transporte / Delivery": {
+    icon: Bus,
+    className: "bg-blue-500/10 text-blue-600",
+  },
+  Transporte: { icon: Bus, className: "bg-blue-500/10 text-blue-600" },
+  Entretenimiento: { icon: Film, className: "bg-purple-500/10 text-purple-600" },
+  Café: { icon: Coffee, className: "bg-amber-700/10 text-amber-700" },
+  Mercado: { icon: ShoppingCart, className: "bg-green-500/10 text-green-600" },
+  Restaurante: { icon: Utensils, className: "bg-orange-500/10 text-orange-600" },
+  Telecomunicaciones: { icon: Wifi, className: "bg-cyan-500/10 text-cyan-600" },
+  "Servicios públicos": {
+    icon: Zap,
+    className: "bg-yellow-500/10 text-yellow-600",
+  },
+  Seguros: { icon: ShieldCheck, className: "bg-indigo-500/10 text-indigo-600" },
+  Salud: { icon: Heart, className: "bg-rose-500/10 text-rose-600" },
+  Educación: { icon: GraduationCap, className: "bg-teal-500/10 text-teal-600" },
+  "Transferencia/Finanzas": {
+    icon: Building2,
+    className: "bg-slate-500/10 text-slate-600",
+  },
+  Ropa: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
+  Viajes: { icon: Plane, className: "bg-sky-500/10 text-sky-600" },
+  Mascotas: { icon: Dog, className: "bg-emerald-500/10 text-emerald-600" },
+  Compras: { icon: ShoppingCart, className: "bg-violet-500/10 text-violet-600" },
+  Ventas: { icon: Briefcase, className: "bg-success/10 text-success" },
+  Nómina: { icon: Briefcase, className: "bg-primary/10 text-primary" },
+  Servicios: { icon: Briefcase, className: "bg-blue-500/10 text-blue-600" },
+  Materiales: { icon: Tag, className: "bg-orange-500/10 text-orange-600" },
+  Marketing: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
+  Otros: { icon: Tag, className: "bg-muted text-muted-foreground" },
+};
+
+function getCategoryMeta(category?: string) {
+  return categoryStyles[category ?? ""] ?? categoryStyles.Otros;
+}
+
+const filterChips: { key: FilterType; label: string }[] = [
+  { key: "all", label: "Todos" },
+  { key: "income", label: "Ingresos" },
+  { key: "expense", label: "Gastos" },
+  { key: "recurring", label: "Recurrentes" },
+];
+
+function Checkbox({
+  checked,
+  onCheckedChange,
+  ariaLabel,
+}: {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  ariaLabel?: string;
+}) {
+  return (
+    <label className="relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border border-input bg-background transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary focus-within:ring-2 focus-within:ring-ring/50">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={(e) => onCheckedChange(e.target.checked)}
+        aria-label={ariaLabel}
+      />
+      <Check className="h-3.5 w-3.5 text-primary-foreground opacity-0 transition-opacity peer-checked:opacity-100" />
+    </label>
+  );
+}
+
+function CategoryBadge({ category }: { category?: string }) {
+  const meta = getCategoryMeta(category);
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+        meta.className
+      )}
+    >
+      <meta.icon className="h-3 w-3" />
+      {category || "Sin categoría"}
+    </span>
+  );
+}
+
+function TypeBadge({ type }: { type: TransactionType }) {
+  const config = typeConfig[type] ?? typeConfig.ADJUSTMENT;
+  return (
+    <Badge variant="outline" className={cn(config.className)}>
+      {config.label}
+    </Badge>
+  );
+}
+
+function Amount({ tx, fallbackCurrency }: { tx: Transaction; fallbackCurrency: string }) {
+  const className =
+    tx.type === "INCOME"
+      ? "text-success"
+      : tx.type === "EXPENSE"
+        ? "text-danger"
+        : "text-foreground";
+  return (
+    <span className={cn("font-semibold", className)}>
+      {formatCurrency(tx.amount, tx.currency || fallbackCurrency)}
+    </span>
+  );
+}
+
+function BulkActionsBar({
+  count,
+  onDelete,
+  onChangeCategory,
+  onClear,
+}: {
+  count: number;
+  onDelete: () => void;
+  onChangeCategory: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="surface-elevated-3 fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 rounded-2xl p-3 shadow-lg sm:bottom-6 sm:inset-x-6 md:static md:mb-4 md:w-full md:shadow-none">
+      <div className="flex flex-1 items-center gap-2 text-sm font-medium">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+          {count}
+        </span>
+        <span className="hidden sm:inline">seleccionados</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onChangeCategory}>
+          Cambiar categoría
+        </Button>
+        <Button variant="destructive" size="sm" onClick={onDelete}>
+          Eliminar
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClear}
+          aria-label="Limpiar selección"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function TransactionActionsSheet({
+  tx,
+  open,
+  onOpenChange,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}: {
+  tx: Transaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (tx: Transaction) => void;
+  onDuplicate: (tx: Transaction) => void;
+  onDelete: (tx: Transaction) => void;
+}) {
+  if (!tx) return null;
+  return (
+    <BottomSheet open={open} onOpenChange={onOpenChange}>
+      <BottomSheetContent snapPoints={["45dvh"]} className="rounded-t-2xl">
+        <BottomSheetHeader>
+          <BottomSheetTitle className="heading-card">Acciones</BottomSheetTitle>
+          <p className="text-sm text-muted-foreground">{tx.description}</p>
+        </BottomSheetHeader>
+        <div className="flex flex-col gap-1 py-4">
+          <Button
+            variant="ghost"
+            className="justify-start gap-3"
+            onClick={() => {
+              onOpenChange(false);
+              onEdit(tx);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start gap-3"
+            onClick={() => {
+              onOpenChange(false);
+              onDuplicate(tx);
+            }}
+          >
+            <Copy className="h-4 w-4" />
+            Duplicar
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start gap-3 text-destructive hover:text-destructive"
+            onClick={() => {
+              onOpenChange(false);
+              onDelete(tx);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar
+          </Button>
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+}
+
+function EditTransactionDialog({
+  tx,
+  open,
+  onOpenChange,
+}: {
+  tx: Transaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!tx) return null;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    toast.info("Edición disponible próximamente");
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="heading-card">Editar Transacción</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select defaultValue={tx.type} disabled>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INCOME">Ingreso</SelectItem>
+                  <SelectItem value="EXPENSE">Gasto</SelectItem>
+                  <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                  <SelectItem value="ADJUSTMENT">Ajuste</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Moneda</Label>
+              <Select defaultValue={tx.currency} disabled>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="COP">COP</SelectItem>
+                  <SelectItem value="MXN">MXN</SelectItem>
+                  <SelectItem value="BRL">BRL</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Descripción</Label>
+            <Input defaultValue={tx.description} />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Monto</Label>
+              <Input type="number" defaultValue={tx.amount} />
+            </div>
+            <div className="space-y-2">
+              <Label>Categoría</Label>
+              <Input defaultValue={tx.category} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cerrar
+            </Button>
+            <Button type="submit">Guardar cambios</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function TransactionsList({
+  transactions,
+  orgCurrency,
+}: TransactionsListProps) {
+  const router = useRouter();
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [actionTx, setActionTx] = useState<Transaction | null>(null);
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
+
+  const filtered = useMemo(() => {
+    switch (filter) {
+      case "income":
+        return transactions.filter((t) => t.type === "INCOME");
+      case "expense":
+        return transactions.filter((t) => t.type === "EXPENSE");
+      case "recurring":
+        return transactions.filter((t) => t.isRecurring);
+      default:
+        return transactions;
+    }
+  }, [transactions, filter]);
+
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((t) => selectedIds.has(t.id));
+  const hasSelection = selectedIds.size > 0;
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleAllFiltered = useCallback(() => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allFilteredSelected) {
+        filtered.forEach((t) => next.delete(t.id));
+      } else {
+        filtered.forEach((t) => next.add(t.id));
+      }
+      return next;
+    });
+  }, [filtered, allFilteredSelected]);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const handleDelete = useCallback(
+    async (tx: Transaction) => {
+      if (!confirm("¿Eliminar esta transacción permanentemente?")) return;
+      try {
+        const res = await fetch(`/api/transactions/${tx.id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          toast.success("Transacción eliminada");
+          router.refresh();
+        } else {
+          toast.error("Error al eliminar");
+        }
+      } catch {
+        toast.error("Error de red");
+      }
+    },
+    [router]
+  );
+
+  const handleDuplicate = useCallback(
+    async (tx: Transaction) => {
+      try {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: tx.type,
+            category: tx.category,
+            description: `${tx.description} (copia)`,
+            amount: tx.amount,
+            currency: tx.currency,
+            date: new Date().toISOString(),
+          }),
+        });
+        if (res.ok) {
+          toast.success("Transacción duplicada");
+          router.refresh();
+        } else {
+          toast.error("Error al duplicar");
+        }
+      } catch {
+        toast.error("Error de red");
+      }
+    },
+    [router]
+  );
+
+  const handleEdit = useCallback((tx: Transaction) => setEditTx(tx), []);
+
+  const handleBulkDelete = useCallback(() => {
+    toast.info(`Eliminar ${selectedIds.size} transacciones — próximamente`);
+    clearSelection();
+  }, [selectedIds.size, clearSelection]);
+
+  const handleBulkChangeCategory = useCallback(() => {
+    toast.info(
+      `Cambiar categoría de ${selectedIds.size} transacciones — próximamente`
+    );
+    clearSelection();
+  }, [selectedIds.size, clearSelection]);
+
+  if (transactions.length === 0) {
+    return (
+      <CardContent>
+        <EmptyStateCard
+          variant="lg"
+          icon={ArrowLeftRight}
+          title="El centro de tus finanzas"
+          description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."
+          hint="Empieza creando tu primera transacción."
+        />
+      </CardContent>
+    );
+  }
+
+  return (
+    <CardContent className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {filterChips.map((chip) => (
+            <Button
+              key={chip.key}
+              variant={filter === chip.key ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter(chip.key)}
+            >
+              {chip.label}
+            </Button>
+          ))}
+        </div>
+        <span className="text-sm text-muted-foreground">
+          {filtered.length} de {transactions.length}
+        </span>
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyStateCard
+          variant="md"
+          icon={ArrowLeftRight}
+          title="Sin resultados"
+          description={`No hay transacciones para el filtro "${filterChips.find((c) => c.key === filter)?.label}".`}
+          hint="Prueba con otro filtro."
+        />
+      ) : (
+        <>
+          {hasSelection && (
+            <BulkActionsBar
+              count={selectedIds.size}
+              onDelete={handleBulkDelete}
+              onChangeCategory={handleBulkChangeCategory}
+              onClear={clearSelection}
+            />
+          )}
+
+          <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allFilteredSelected}
+                      onCheckedChange={toggleAllFiltered}
+                      ariaLabel="Seleccionar todas las transacciones visibles"
+                    />
+                  </TableHead>
+                  <TableHead scope="col">Fecha</TableHead>
+                  <TableHead scope="col">Tipo</TableHead>
+                  <TableHead scope="col">Categoría</TableHead>
+                  <TableHead scope="col">Descripción</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Monto
+                  </TableHead>
+                  <TableHead scope="col">Cuenta</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Acciones
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((tx) => {
+                  const meta = getCategoryMeta(tx.category);
+                  return (
+                    <TableRow key={tx.id} className="group">
+                      <TableCell className="w-10">
+                        <Checkbox
+                          checked={selectedIds.has(tx.id)}
+                          onCheckedChange={() => toggleSelect(tx.id)}
+                          ariaLabel={`Seleccionar ${tx.description}`}
+                        />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {new Date(tx.date).toLocaleDateString("es-CO")}
+                      </TableCell>
+                      <TableCell>
+                        <TypeBadge type={tx.type} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-lg",
+                              meta.className
+                            )}
+                          >
+                            <meta.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="text-sm">
+                            {tx.category || "—"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate font-medium">
+                        {tx.description}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Amount tx={tx} fallbackCurrency={orgCurrency} />
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {tx.bankAccountName || "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setActionTx(tx)}
+                            aria-label="Acciones de transacción"
+                            className="md:hidden"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                          <div className="hidden md:block">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label="Acciones de transacción"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEdit(tx)}>
+                                  <Pencil className="h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDuplicate(tx)}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                  Duplicar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => handleDelete(tx)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <ul className="grid gap-3 md:hidden" role="list">
+            {filtered.map((tx) => {
+              const meta = getCategoryMeta(tx.category);
+              return (
+                <li
+                  key={tx.id}
+                  className="surface-elevated-2 relative rounded-xl p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="pt-1">
+                      <Checkbox
+                        checked={selectedIds.has(tx.id)}
+                        onCheckedChange={() => toggleSelect(tx.id)}
+                        ariaLabel={`Seleccionar ${tx.description}`}
+                      />
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                        meta.className
+                      )}
+                    >
+                      <meta.icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium leading-tight">
+                            {tx.description}
+                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <CalendarDays className="h-3 w-3" />
+                              {new Date(tx.date).toLocaleDateString("es-CO")}
+                            </span>
+                            {tx.bankAccountName && (
+                              <span className="inline-flex items-center gap-1 truncate">
+                                <Landmark className="h-3 w-3" />
+                                {tx.bankAccountName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <Amount tx={tx} fallbackCurrency={orgCurrency} />
+                          <div className="mt-1">
+                            <TypeBadge type={tx.type} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <CategoryBadge category={tx.category} />
+                          {tx.isRecurring && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
+                              <Repeat className="h-3 w-3" />
+                              Recurrente
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => setActionTx(tx)}
+                          aria-label="Acciones de transacción"
+                          className="shrink-0"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+
+      <TransactionActionsSheet
+        tx={actionTx}
+        open={actionTx !== null}
+        onOpenChange={(open) => {
+          if (!open) setActionTx(null);
+        }}
+        onEdit={handleEdit}
+        onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
+      />
+
+      <EditTransactionDialog
+        tx={editTx}
+        open={editTx !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditTx(null);
+        }}
+      />
+    </CardContent>
+  );
+}
