@@ -30,9 +30,15 @@ Sesión autónoma 2026-06-16 tras el prompt "no pares hasta mejorar el máximo l
 17. AI advisor con tool calls nativos (balance, transacciones, recordatorios, cashflow).
 18. Importación bancaria CSV/Excel con parser heurístico, deduplicación y 12 tests.
 19. Calendario de vencimientos unificado (deudas, recurrentes, metas, facturas, impuestos).
+20. Health score ampliado con 5 factores, recomendaciones y 26 tests unitarios.
+21. Widget de calendario de vencimientos en dashboard home.
+22. Multi-user teams + RBAC básico (ADMIN/MANAGER/VIEWER) con API y UI.
+23. Onboarding resumen visual en paso 3 con animaciones y a11y.
+24. Performance/a11y polish: dynamic imports, aria-hidden, aria-label, focus.
 
-**Branch pendiente:**
-- `feat/subscription-manager-v2` contiene subscription manager mejorado con KPIs, cancelación e insights. Requiere aplicar migración `prisma/migrations/20250615160000_subscription_status/migration.sql` (columnas `canceledAt`, `cancellationUrl` e índice en `DetectedSubscription`). No se puede deployar sin aplicar la migración en la base de datos de Neon/Prisma primero.
+**Branches pendientes:**
+- `feat/subscription-manager-v2` contiene subscription manager mejorado con KPIs, cancelación e insights. Requiere aplicar migración `prisma/migrations/20250615160000_subscription_status/migration.sql`.
+- `feat/quotes-v2` contiene cotizaciones/propuestas con modelos Quote/QuoteItem + API + UI. Requiere aplicar migración `prisma/migrations/20250616193000_add_quotes/migration.sql`. Actualmente la branch tiene un commit WIP con cambios mixtos; necesita limpieza antes de merge.
 
 **Estado de calidad:**
 - Cada feature pasó `tsc --noEmit` y `eslint` en archivos tocados.
