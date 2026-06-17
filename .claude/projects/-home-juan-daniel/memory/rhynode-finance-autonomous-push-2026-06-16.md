@@ -35,6 +35,37 @@ Sesión autónoma 2026-06-16 tras el prompt "no pares hasta mejorar el máximo l
 22. Multi-user teams + RBAC básico (ADMIN/MANAGER/VIEWER) con API y UI.
 23. Onboarding resumen visual en paso 3 con animaciones y a11y.
 24. Performance/a11y polish: dynamic imports, aria-hidden, aria-label, focus.
+25. PWA install prompt premium con dismiss persistente 7 días y tracking.
+26. Quick Actions FAB premium con backdrop, stagger animation y keyboard navigation.
+27. Webhook logs dashboard para Stripe/Wompi con filtros, paginación y reintentos.
+28. Exportar datos personales/empresariales en JSON/XLSX desde settings.
+29. Cuentas bancarias mobile-first con cards, bottom sheet actions y server actions.
+30. Advisor IA: layout flexible, safe-area, role=log aria-live, animaciones.
+31. Cleanup warnings preexistentes (smart-insights, logger).
+32. Dark mode landing page consistente.
+33. Página de pago público /pay/[slug] polish: pb-safe, estados, contraste AA.
+34. Cuentas bancarias mobile-first con server actions edit/delete.
+35. Advisor IA layout flexible con safe-area y a11y.
+36. Cleanup warnings preexistentes.
+37. Dark mode landing page.
+38. Clientes mobile-first con cards y edit dialog.
+39. Analytics events tracking con @vercel/analytics en 13 puntos clave.
+40. Proyectos mobile-first con cards, progreso, KPIs y ProjectActions.
+41. Budgets y Goals mobile-first; AddSavingsDialog con server action.
+42. Deudas e inversiones mobile-first; RecordPaymentDialog con server action.
+43. Categorías mobile-first con edit/delete server actions y iconos adaptativos.
+44. Recordatorios personalizados usando Notification type=REMINDER + cron push.
+45. Transacciones recurrentes mobile-first con toggle y cards.
+46. Payment links mobile-first: cards, copiar, QR, acciones bottom sheet.
+47. Calculadora impuestos mobile-first: wizard 4 pasos, export PDF/Excel, a11y selects/slider.
+48. Daily Briefing widget en dashboard con 6 tarjetas de resumen matutino.
+49. Net Worth y Achievements mobile-first con KPIs y a11y.
+50. Escenarios mobile-first con cards de escenarios, gráfico accesible y tabla mensual.
+51. Integraciones page mejorada con categorías, estados y waitlist.
+52. Subscriptions page actual mobile-first con KPIs, badges y server actions (sin schema migration).
+53. Error boundaries globales con ErrorFallback reusable, Sentry y UI amigable.
+54. README.md actualizado con stack, features, setup y deploy.
+55. Not-found y offline pages polish con branding y funciones offline.
 
 **Branches pendientes:**
 - `feat/subscription-manager-v2` contiene subscription manager mejorado con KPIs, cancelación e insights. Requiere aplicar migración `prisma/migrations/20250615160000_subscription_status/migration.sql`.
