@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useSyncExternalStore } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,64 +32,6 @@ export interface Nudge {
   priority: number;
 }
 
-const DISMISS_KEY = "rhynode:dismissed-nudges";
-
-function readDismissed(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(DISMISS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === "string")
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeDismissed(ids: string[]) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(DISMISS_KEY, JSON.stringify(ids));
-  } catch {
-    // ignore storage errors
-  }
-}
-
-const dismissedStore = {
-  listeners: new Set<() => void>(),
-  subscribe(callback: () => void): () => void {
-    if (typeof window === "undefined") return () => {};
-    this.listeners.add(callback);
-    const storageHandler = (event: StorageEvent) => {
-      if (event.key === DISMISS_KEY) callback();
-    };
-    window.addEventListener("storage", storageHandler);
-    return () => {
-      this.listeners.delete(callback);
-      window.removeEventListener("storage", storageHandler);
-    };
-  },
-  getSnapshot(): string[] {
-    return readDismissed();
-  },
-  dismiss(id: string) {
-    const current = readDismissed();
-    if (current.includes(id)) return;
-    const next = [...current, id];
-    writeDismissed(next);
-    this.listeners.forEach((cb) => cb());
-  },
-};
-
-function useDismissedNudges(): string[] {
-  return useSyncExternalStore(
-    (callback) => dismissedStore.subscribe(callback),
-    () => dismissedStore.getSnapshot(),
-    () => [],
-  );
-}
-
 function NudgeIcon({ name, className }: { name: string; className?: string }) {
   switch (name) {
     case "alert-triangle":
@@ -116,7 +58,23 @@ export function AiCopilotClient({
 }) {
   const [nudges, setNudges] = useState<Nudge[]>(initialInsights);
   const [loading, setLoading] = useState(false);
-  const dismissed = useDismissedNudges();
+  const [dismissed, setDismissed] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/personal/preferences")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: unknown) => {
+        if (
+          data &&
+          typeof data === "object" &&
+          "dismissedNudges" in data &&
+          Array.isArray(data.dismissedNudges)
+        ) {
+          setDismissed(data.dismissedNudges as string[]);
+        }
+      })
+      .catch(() => null);
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -131,7 +89,16 @@ export function AiCopilotClient({
   }, []);
 
   const handleDismiss = useCallback((id: string) => {
-    dismissedStore.dismiss(id);
+    setDismissed((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      fetch("/api/personal/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dismissedNudges: next }),
+      }).catch(() => null);
+      return next;
+    });
   }, []);
 
   const visibleNudges = nudges

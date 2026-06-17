@@ -11,19 +11,6 @@ interface ScopeContextValue {
 
 const ScopeContext = createContext<ScopeContextValue | null>(null);
 
-const STORAGE_KEY = "rhynode-scope";
-
-function getStoredScope(): UserScope | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === "PERSONAL" || raw === "BUSINESS" || raw === "BOTH") return raw;
-  } catch {
-    // localStorage puede fallar en modo privado
-  }
-  return null;
-}
-
 export function ScopeProvider({
   children,
   initialScope,
@@ -33,15 +20,10 @@ export function ScopeProvider({
   initialScope: UserScope;
   hasBusiness: boolean;
 }) {
-  const [scope, setScopeState] = useState<UserScope>(() => getStoredScope() ?? initialScope);
+  const [scope, setScopeState] = useState<UserScope>(initialScope);
 
   const setScope = useCallback((newScope: UserScope) => {
     setScopeState(newScope);
-    try {
-      localStorage.setItem(STORAGE_KEY, newScope);
-    } catch {
-      // noop
-    }
   }, []);
 
   return (

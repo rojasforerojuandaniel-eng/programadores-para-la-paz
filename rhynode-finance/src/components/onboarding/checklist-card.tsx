@@ -65,8 +65,6 @@ const CHECKLIST_ITEMS = [
   },
 ] as const;
 
-const STORAGE_KEY = "rhynode_onboarding_checklist";
-
 function defaultItems(): Record<string, boolean> {
   return CHECKLIST_ITEMS.reduce(
     (acc, item) => {
@@ -82,21 +80,9 @@ export interface ChecklistCardProps {
 }
 
 export function ChecklistCard({ initialItems }: ChecklistCardProps) {
-  const [items, setItems] = useState<Record<string, boolean>>(() => {
-    const stored = (() => {
-      if (typeof window === "undefined") return null;
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        return raw ? (JSON.parse(raw) as Record<string, boolean>) : null;
-      } catch {
-        return null;
-      }
-    })();
-    return {
-      ...defaultItems(),
-      ...initialItems,
-      ...stored,
-    };
+  const [items, setItems] = useState<Record<string, boolean>>({
+    ...defaultItems(),
+    ...initialItems,
   });
   const [pending, setPending] = useState(false);
 
@@ -132,12 +118,6 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
     const next = { ...items, [id]: !items[id] };
     setItems(next);
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore localStorage errors
-    }
-
     setPending(true);
     try {
       const res = await fetch("/api/onboarding/progress", {
@@ -150,7 +130,7 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
         toast.error(data.error || "No se pudo guardar el progreso.");
       }
     } catch {
-      toast.error("Error de red. El cambio se guardó localmente.");
+      toast.error("Error de red. No se pudo guardar el progreso.");
     } finally {
       setPending(false);
     }

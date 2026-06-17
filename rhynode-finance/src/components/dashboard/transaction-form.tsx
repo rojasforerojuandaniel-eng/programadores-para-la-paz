@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
-import { type Suggestion, applyRules } from "@/lib/rules-engine";
+import { type Suggestion, type Rule, applyRules } from "@/lib/rules-engine";
 import { trackEvent } from "@/lib/analytics";
 
 export const COMMON_CATEGORIES = [
@@ -70,6 +70,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
   const [appliedSuggestionIds, setAppliedSuggestionIds] = useState<Set<string>>(
     new Set(),
   );
+  const [rules, setRules] = useState<Rule[]>([]);
   const [form, setForm] = useState({
     type: "INCOME" as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
     category: "",
@@ -135,22 +136,42 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
     return () => clearTimeout(timeout);
   }, [form.description, form.amount, form.category, handleAiSuggest]);
 
+  useEffect(() => {
+    fetch("/api/personal/rules")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: unknown) => {
+        if (
+          data &&
+          typeof data === "object" &&
+          "rules" in data &&
+          Array.isArray(data.rules)
+        ) {
+          setRules(data.rules as Rule[]);
+        }
+      })
+      .catch(() => null);
+  }, []);
+
   const suggestions = useMemo(() => {
     if (!form.description.trim() || !form.amount) return [];
     const amount = Number(form.amount);
     if (Number.isNaN(amount)) return [];
-    return applyRules({
-      type: form.type,
-      amount,
-      description: form.description,
-      category: form.category,
-    }).filter((s) => !appliedSuggestionIds.has(s.ruleId));
+    return applyRules(
+      {
+        type: form.type,
+        amount,
+        description: form.description,
+        category: form.category,
+      },
+      rules,
+    ).filter((s) => !appliedSuggestionIds.has(s.ruleId));
   }, [
     form.description,
     form.amount,
     form.type,
     form.category,
     appliedSuggestionIds,
+    rules,
   ]);
 
   function applySuggestion(suggestion: Suggestion) {

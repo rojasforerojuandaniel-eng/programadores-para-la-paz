@@ -40,29 +40,6 @@ export interface Suggestion {
   action: RuleAction;
 }
 
-const STORAGE_KEY = "rhynode-finance:rules";
-
-export function getRules(): Rule[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Rule[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveRules(rules: Rule[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(rules));
-  } catch {
-    // localStorage can be unavailable in private mode or due to quotas.
-  }
-}
-
 export function generateRuleId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -89,8 +66,8 @@ export function evaluateCondition(transaction: TransactionLike, condition: RuleC
   }
 }
 
-export function applyRules(transaction: TransactionLike, rules?: Rule[]): Suggestion[] {
-  const activeRules = (rules ?? getRules()).filter((rule) => rule.enabled);
+export function applyRules(transaction: TransactionLike, rules: Rule[]): Suggestion[] {
+  const activeRules = rules.filter((rule) => rule.enabled);
   const suggestions: Suggestion[] = [];
 
   for (const rule of activeRules) {
