@@ -16,6 +16,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/payment-links/([^/]+)/pay",
   "/pay/(.*)",
   "/offline",
+  "/ciudad(.*)",
   "/privacy",
   "/terms",
   "/support",
