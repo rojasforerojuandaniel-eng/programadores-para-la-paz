@@ -116,7 +116,7 @@ model Invoice {
   currency       String       @default("COP")
   subtotal       Decimal      @default(0) @db.Decimal(19,4)
   taxRate        Decimal      @default(0) @db.Decimal(5,2) @map("tax_rate")
-  taxAmount      Decimal      @default(0) @db.Decimal(19,4)
+  taxAmount      Decimal      @default(0) @db.Decimal(19,4) @map("tax_amount")
   total          Decimal      @default(0) @db.Decimal(19,4)
   issueDate      DateTime     @default(now()) @map("issue_date")
   dueDate        DateTime?    @map("due_date")
