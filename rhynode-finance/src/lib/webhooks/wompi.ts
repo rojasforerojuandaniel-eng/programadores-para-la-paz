@@ -42,7 +42,10 @@ export function verifyWompiWebhook(body: WompiBody, key: string): boolean {
     .update(values)
     .digest("hex");
 
-  return signature.checksum === expected;
+  const received = Buffer.from(signature.checksum);
+  const expectedBuf = Buffer.from(expected);
+  if (received.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(received, expectedBuf);
 }
 
 export async function resolveWompiOrganizationId(

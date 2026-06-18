@@ -22,12 +22,12 @@ const createSchema = baseSchema;
 
 const updateSchema = baseSchema.extend({
   id: z.string().min(1),
-  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELLED"]).optional(),
+  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELED", "CANCELLED"]).optional(),
 });
 
 const patchSchema = z.object({
   id: z.string().min(1),
-  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELED"]),
+  status: z.enum(["ACTIVE", "PENDING_CANCELLATION", "CANCELED", "CANCELLED"]),
   cancellationUrl: z.string().url().optional(),
 });
 
@@ -77,6 +77,8 @@ export const POST = withRateLimit(async function POST(request: Request) {
       where: { userId: profile.id, name: parsed.data.name },
     });
 
+    const { nextDueDate: nextDueDateInput, ...subscriptionData } = parsed.data;
+    void nextDueDateInput;
     const nextDueDate = parseNextDueDate(parsed.data.nextDueDate);
     const lastPaidAt = nextDueDate
       ? subtractFrequency(nextDueDate, parsed.data.frequency)
@@ -94,7 +96,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
       subscription = await prisma.detectedSubscription.update({
         where: { id: existing.id },
         data: {
-          ...parsed.data,
+          ...subscriptionData,
           lastPaidAt,
           lastDetectedAt: new Date(),
         },
@@ -109,7 +111,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
       subscription = await prisma.detectedSubscription.create({
         data: {
           userId: profile.id,
-          ...parsed.data,
+          ...subscriptionData,
           lastPaidAt,
           lastDetectedAt: new Date(),
         },
@@ -200,19 +202,21 @@ export const PATCH = withRateLimit(async function PATCH(request: Request) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const canceledAt = status === "CANCELED" ? new Date() : null;
+    const isCancel = status === "CANCELED" || status === "CANCELLED";
+    const canceledAt = isCancel ? new Date() : null;
+    const normalizedStatus = isCancel ? "CANCELED" : status;
 
     auditLog({
       userId: profile?.id,
       action: "UPDATE_SUBSCRIPTION_STATUS",
       resource: "subscription",
       resourceId: id,
-      metadata: { status, cancellationUrl },
+      metadata: { status: normalizedStatus, cancellationUrl },
     });
     const subscription = await prisma.detectedSubscription.update({
       where: { id },
       data: {
-        status,
+        status: normalizedStatus,
         canceledAt,
         ...(cancellationUrl !== undefined ? { cancellationUrl } : {}),
       },

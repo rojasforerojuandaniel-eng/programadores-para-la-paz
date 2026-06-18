@@ -58,16 +58,16 @@ export const POST = withRateLimit(
       }
 
       const payment = parsed.data.amount;
-      const remaining = debt.remainingAmount.toNumber();
-      if (payment > remaining) {
+      const remaining = debt.remainingAmount;
+      if (remaining.lt(payment)) {
         return NextResponse.json(
           { error: "El pago no puede superar el saldo restante" },
           { status: 400 }
         );
       }
 
-      const nextRemaining = Math.max(0, remaining - payment);
-      const isPaid = nextRemaining === 0;
+      const nextRemaining = remaining.minus(payment);
+      const isPaid = nextRemaining.lte(0);
       const transactionType = debt.type === "OWE" ? "EXPENSE" : "INCOME";
       const metadata: Prisma.InputJsonValue = { debtId: debt.id };
 

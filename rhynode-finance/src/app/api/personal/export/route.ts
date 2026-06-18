@@ -17,7 +17,14 @@ export const GET = withRateLimit(
     const org = await getOrCreateAuthOrg().catch(() => null);
     const prisma = getPrisma();
     const orgId = org?.id ?? null;
-    const orgWhere = orgId ? { organizationId: orgId } : { userId: profile.id };
+    // Personal export: include the user's own transactions + shared business
+    // transactions, but never other members' personal transactions.
+    const transactionWhere = orgId
+      ? {
+          organizationId: orgId,
+          OR: [{ scope: "BUSINESS" }, { userId: profile.id }, { userId: null }],
+        }
+      : { userId: profile.id };
 
     const [
       accounts,
@@ -32,7 +39,7 @@ export const GET = withRateLimit(
       clients,
     ] = await Promise.all([
       prisma.account.findMany({ where: { userId: profile.id } }),
-      prisma.transaction.findMany({ where: orgWhere, orderBy: { date: "desc" } }),
+      prisma.transaction.findMany({ where: transactionWhere, orderBy: { date: "desc" } }),
       prisma.budget.findMany({ where: { userId: profile.id } }),
       prisma.goal.findMany({ where: { userId: profile.id } }),
       prisma.debt.findMany({ where: { userId: profile.id } }),

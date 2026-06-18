@@ -2,6 +2,8 @@ import { z } from "zod";
 import { getPrisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
 import { logger } from "@/lib/logger";
+import { sumInCop, convertToCop, getTrm } from "@/lib/currency";
+import { encodeReminderMeta } from "@/lib/reminders";
 import { planDebtPayoff, formatDebtPlan, type PayoffStrategy } from "@/lib/debt-strategy";
 import { projectGoal, formatGoalProjection } from "@/lib/goal-projection";
 
@@ -74,6 +76,13 @@ function formatCop(value: number): string {
   return `$${Math.round(value).toLocaleString("es-CO")} COP`;
 }
 
+/** Scope filter so an org member's advisor only sees business txns + their own
+ *  personal txns, never other members' personal transactions. */
+const orgScopeWhere = (orgId: string, userId: string) => ({
+  organizationId: orgId,
+  OR: [{ scope: "BUSINESS" }, { userId }, { userId: null }],
+});
+
 async function handleGetBalance(ctx: ToolContext) {
   const prisma = getPrisma();
   const accounts = await prisma.account.findMany({
@@ -88,10 +97,11 @@ async function handleGetBalance(ctx: ToolContext) {
     },
   });
 
-  const total = accounts.reduce(
-    (sum, account) => sum + decimalToNumber(account.balance),
-    0
-  );
+  const total = (
+    await sumInCop(
+      accounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency }))
+    )
+  ).totalCop;
 
   return {
     total,
@@ -116,7 +126,7 @@ async function handleListTransactions(
   const { limit, type, category } = listTransactionsParams.parse(params);
 
   const transactions = await prisma.transaction.findMany({
-    where: { organizationId: ctx.orgId },
+    where: orgScopeWhere(ctx.orgId, ctx.userId),
     orderBy: { date: "desc" },
     take: limit,
     include: { categoryRef: { select: { name: true } } },
@@ -141,6 +151,7 @@ async function handleListTransactions(
       amountFormatted: formatCop(decimalToNumber(transaction.amount)),
       type: transaction.type,
       category: transaction.categoryRef?.name ?? transaction.category ?? null,
+      currency: transaction.currency,
       date: transaction.date.toISOString(),
     })),
   };
@@ -153,13 +164,21 @@ async function handleCreateReminder(
   const prisma = getPrisma();
   const { title, body, dueDate } = createReminderParams.parse(params);
 
+  const actionUrl = dueDate
+    ? encodeReminderMeta({
+        scheduledAt: dueDate,
+        repeat: "NONE",
+        active: true,
+      })
+    : null;
+
   const notification = await prisma.notification.create({
     data: {
       userId: ctx.userId,
       type: "REMINDER",
       title,
       body,
-      actionUrl: dueDate ? `/dashboard/advisor?reminder=${dueDate}` : null,
+      actionUrl,
     },
     select: {
       id: true,
@@ -203,18 +222,21 @@ async function handleGetCashflowSummary(
 
   const transactions = await prisma.transaction.findMany({
     where: {
-      organizationId: ctx.orgId,
+      ...orgScopeWhere(ctx.orgId, ctx.userId),
       date: { gte: startDate, lte: endDate },
     },
     include: { categoryRef: { select: { name: true } } },
   });
 
+  const trm = await getTrm();
   let income = 0;
   let expense = 0;
   const categoryMap = new Map<string, number>();
 
   for (const transaction of transactions) {
-    const amount = decimalToNumber(transaction.amount);
+    const amount = (
+      await convertToCop(decimalToNumber(transaction.amount), transaction.currency, trm)
+    ).cop;
     if (transaction.type === "INCOME") {
       income += amount;
     } else if (transaction.type === "EXPENSE") {
