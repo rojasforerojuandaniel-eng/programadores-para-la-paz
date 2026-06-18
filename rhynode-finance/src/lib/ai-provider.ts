@@ -97,9 +97,22 @@ interface AnthropicTool {
   input_schema: Record<string, unknown>;
 }
 
-const DEFAULT_OLLAMA_MODEL = "gpt-oss:120b-cloud";
+const DEFAULT_OLLAMA_MODEL = "gpt-oss:20b";
 const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6-20251001";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+
+/**
+ * Resolve the Ollama model for a given purpose. gpt-oss has NO vision, so OCR
+ * must use a vision-capable model (qwen3.5:cloud by default). Text tasks use a
+ * small, cheap model (gpt-oss:20b). Both overridable via env vars.
+ */
+function resolveOllamaModel(purpose: "text" | "vision", override?: string): string {
+  if (override) return override;
+  if (purpose === "vision") {
+    return process.env.OLLAMA_VISION_MODEL ?? "qwen3.5:cloud";
+  }
+  return process.env.OLLAMA_TEXT_MODEL ?? DEFAULT_OLLAMA_MODEL;
+}
 const JSON_SYSTEM_PROMPT =
   "You must respond with a single valid JSON object. Do not include markdown, explanations, or any text outside the JSON object. Ensure the JSON matches the schema requested by the user.";
 
@@ -183,9 +196,21 @@ function flattenText(content: MessageContent): string {
     .join("\n");
 }
 
+function messagesContainImage(messages: ChatMessage[]): boolean {
+  return messages.some((message) => {
+    if (typeof message.content !== "string") {
+      return message.content.some((part) => part.type === "image");
+    }
+    return false;
+  });
+}
+
 function buildOllamaBody(options: CreateChatCompletionOptions): Record<string, unknown> {
+  const model =
+    options.model ??
+    resolveOllamaModel(messagesContainImage(options.messages) ? "vision" : "text");
   return {
-    model: options.model ?? DEFAULT_OLLAMA_MODEL,
+    model,
     messages: options.messages.map((message) => ({
       ...message,
       content: toOpenAIContent(message.content),

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { auditLog } from "@/lib/audit-log";
+import { learnCategoryFromCorrection } from "@/lib/rules-store";
 
 const updateSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"]).optional(),
@@ -41,6 +42,18 @@ export const PATCH = withRateLimit(async function PATCH(
       where: { id, organizationId: org.id },
       data: parsed.data,
     });
+
+    // Categorization learning: if the user corrected the category, persist a
+    // rule so future transactions with the same description auto-categorize.
+    if (parsed.data.category && transaction.userId && transaction.description) {
+      await learnCategoryFromCorrection(
+        transaction.userId,
+        transaction.description,
+        parsed.data.category
+      ).catch((error) => {
+        logger.error("Failed to learn category rule", { error: error instanceof Error ? error.message : String(error) });
+      });
+    }
 
     return NextResponse.json({ transaction });
   } catch (error) {
