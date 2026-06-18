@@ -5,6 +5,12 @@ import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { anthropicTools, executeTool, type ToolName } from "@/lib/ai-tools";
 
+// This endpoint intentionally calls the Anthropic API directly instead of going
+// through `@/lib/ai-provider`. The advisor runs a multi-round streaming tool-use
+// loop (Anthropic-native SSE event format), which is not portable to the
+// OpenAI-compatible shape used by the Ollama provider. Simple text/vision
+// endpoints (briefing, ocr) use the shared abstraction; this one stays Anthropic-only.
+
 const chatSchema = z.object({
   message: z.string().min(1).max(4000),
   history: z

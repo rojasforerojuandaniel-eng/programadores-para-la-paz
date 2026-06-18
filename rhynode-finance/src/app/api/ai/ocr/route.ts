@@ -1,5 +1,6 @@
 import { getUserProfile } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
 import { z } from "zod";
 
 interface OcrResult {
@@ -34,8 +35,7 @@ export const POST = withRateLimit(
 
     const { imageUrl } = parseResult.data;
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!isAIConfigured()) {
       return new Response(JSON.stringify({ error: "AI service not configured" }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
@@ -44,51 +44,27 @@ export const POST = withRateLimit(
 
     const userPrompt = `Extrae de este recibo: merchant (comercio), total (número), fecha (string ISO), items (array de objetos con description y amount). Responde solo JSON sin markdown ni explicaciones.`;
 
-    let imageContent: unknown;
-    const dataUrlMatch = imageUrl.match(/^data:([\w/\-+]+);base64,(.+)$/);
-    if (dataUrlMatch) {
-      const mediaType = dataUrlMatch[1];
-      const base64Data = dataUrlMatch[2];
-      imageContent = { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } };
-    } else {
-      imageContent = { type: "image", source: { type: "url", url: imageUrl } };
-    }
-
-    const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6-20251001",
-        max_tokens: 1024,
+    let textContent: string;
+    try {
+      textContent = await createChatCompletionText({
+        maxTokens: 1024,
         messages: [
           {
             role: "user",
             content: [
               { type: "text", text: userPrompt },
-              imageContent,
+              { type: "image", url: imageUrl },
             ],
           },
         ],
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const text = await aiResponse.text();
-      return new Response(JSON.stringify({ error: "AI request failed", detail: text }), {
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown error";
+      return new Response(JSON.stringify({ error: "AI request failed", detail }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    const aiJson = (await aiResponse.json()) as {
-      content?: Array<{ type?: string; text?: string }>;
-    };
-
-    const textContent = aiJson.content?.find((c) => c.type === "text")?.text ?? "";
 
     let result: OcrResult;
     try {

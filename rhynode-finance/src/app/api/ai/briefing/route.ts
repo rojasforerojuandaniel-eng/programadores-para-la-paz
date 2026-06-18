@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
 
 interface BriefingData {
   balance: number;
@@ -107,8 +108,7 @@ export const GET = withRateLimit(
       goalsProgress,
     };
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!isAIConfigured()) {
       return new Response(JSON.stringify({ error: "AI service not configured" }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
@@ -121,33 +121,21 @@ export const GET = withRateLimit(
       monthExpense
     ).toLocaleString("es-CO")} COP, presupuestos excedidos: ${budgetsExceeded.length}, deudas próximas: ${upcomingDebts.length}, metas activas: ${goalsProgress.length}. Responde en español, tono motivador pero realista. Solo el texto del briefing, sin formato especial.`;
 
-    const aiResponse = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6-20251001",
-        max_tokens: 512,
+    let briefingText: string;
+    try {
+      briefingText = await createChatCompletionText({
         messages: [{ role: "user", content: systemPrompt }],
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const text = await aiResponse.text();
-      return new Response(JSON.stringify({ error: "AI request failed", detail: text }), {
+        maxTokens: 512,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown error";
+      return new Response(JSON.stringify({ error: "AI request failed", detail }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const aiJson = (await aiResponse.json()) as {
-      content?: Array<{ type?: string; text?: string }>;
-    };
-
-    const briefingText = aiJson.content?.find((c) => c.type === "text")?.text?.trim() ?? "";
+    briefingText = briefingText.trim();
 
     briefingCache.set(cacheKey, {
       text: briefingText,
