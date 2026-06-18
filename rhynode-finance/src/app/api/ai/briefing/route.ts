@@ -2,16 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
-import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
-
-interface BriefingData {
-  balance: number;
-  monthIncome: number;
-  monthExpense: number;
-  budgetsExceeded: Array<{ name: string; spent: number; amount: number }>;
-  upcomingDebts: Array<{ name: string; remainingAmount: number; dueDate: string | null }>;
-  goalsProgress: Array<{ name: string; currentAmount: number; targetAmount: number }>;
-}
+import { generateBriefing, type BriefingData } from "@/lib/briefing";
 
 interface BriefingCacheEntry {
   text: string;
@@ -108,34 +99,8 @@ export const GET = withRateLimit(
       goalsProgress,
     };
 
-    if (!isAIConfigured()) {
-      return new Response(JSON.stringify({ error: "AI service not configured" }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const systemPrompt = `Eres Rhynode Briefing. Genera un resumen diario de 3-4 frases sobre las finanzas del usuario. Datos: balance $${Math.round(
-      balance
-    ).toLocaleString("es-CO")} COP, ingresos mes $${Math.round(monthIncome).toLocaleString("es-CO")} COP, gastos mes $${Math.round(
-      monthExpense
-    ).toLocaleString("es-CO")} COP, presupuestos excedidos: ${budgetsExceeded.length}, deudas próximas: ${upcomingDebts.length}, metas activas: ${goalsProgress.length}. Responde en español, tono motivador pero realista. Solo el texto del briefing, sin formato especial.`;
-
-    let briefingText: string;
-    try {
-      briefingText = await createChatCompletionText({
-        messages: [{ role: "user", content: systemPrompt }],
-        maxTokens: 512,
-      });
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : "Unknown error";
-      return new Response(JSON.stringify({ error: "AI request failed", detail }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    briefingText = briefingText.trim();
+    // Deterministic briefing — no LLM call, $0 per request.
+    const briefingText = generateBriefing(data).trim();
 
     briefingCache.set(cacheKey, {
       text: briefingText,

@@ -4,6 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
 import { anthropicTools, executeTool, type ToolName } from "@/lib/ai-tools";
+import { detectIntent, formatIntentReply } from "@/lib/chat-intents";
 
 // This endpoint intentionally calls the Anthropic API directly instead of going
 // through `@/lib/ai-provider`. The advisor runs a multi-round streaming tool-use
@@ -311,6 +312,52 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
       { role: "user", content: userMessage },
     ];
 
+    const toolContext = { userId: profile.id, orgId: org.id };
+
+    // Deterministic fast-path: resolve common queries directly with the tools,
+    // emitting the same SSE events the client expects — no LLM round-trip.
+    // Only applied to the latest message with no conversation history, so we
+    // never misread a follow-up that depends on prior context.
+    if (history.length === 0) {
+      const intent = detectIntent(userMessage);
+      if (intent) {
+        const fastStream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+            const write = (payload: unknown) => {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
+            };
+            try {
+              write({ type: "tool_start", tool: intent.tool });
+              const result = await executeTool(intent.tool, intent.input, toolContext);
+              write({ type: "tool_result", tool: intent.tool, result });
+              const reply = formatIntentReply(intent.tool, result);
+              const text = reply ?? "Listo — revisa el resultado arriba.";
+              const chunkSize = 60;
+              for (let i = 0; i < text.length; i += chunkSize) {
+                write({ type: "content_block_delta", delta: { text: text.slice(i, i + chunkSize) } });
+              }
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            } catch (error) {
+              write({
+                type: "error",
+                message: error instanceof Error ? error.message : "Error procesando la consulta",
+              });
+            }
+            controller.close();
+          },
+        });
+        return new Response(fastStream, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      }
+    }
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return new Response(
@@ -318,8 +365,6 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
         { status: 503, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    const toolContext = { userId: profile.id, orgId: org.id };
 
     const stream = new ReadableStream({
       async start(controller) {
