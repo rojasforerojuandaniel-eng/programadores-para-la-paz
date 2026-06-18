@@ -29,6 +29,7 @@ import { DailyBriefing } from "@/components/dashboard/daily-briefing";
 import { SmartInsights } from "@/components/dashboard/smart-insights";
 import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { AiCopilot } from "@/components/dashboard/ai-copilot";
+import { UpcomingBillsCard } from "@/components/dashboard/upcoming-bills-card";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import { canAccessBusiness, type UserScope } from "@/lib/scope";
 import { BusinessKpiGrid } from "@/components/dashboard/business/business-kpi-grid";
@@ -436,6 +437,15 @@ export default async function DashboardPage() {
       content: (
         <Suspense fallback={<WidgetLoading />}>
           <UpcomingEvents userId={profile?.id} currency={org.currency} />
+        </Suspense>
+      ),
+    },
+    {
+      id: "upcoming-bills",
+      label: "Próximos Pagos",
+      content: (
+        <Suspense fallback={<WidgetLoading />}>
+          <UpcomingBillsCard userId={profile?.id ?? ""} orgId={org?.id ?? null} />
         </Suspense>
       ),
     },
