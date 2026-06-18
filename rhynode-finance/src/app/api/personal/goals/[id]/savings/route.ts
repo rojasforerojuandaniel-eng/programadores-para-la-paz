@@ -42,10 +42,8 @@ export const POST = withRateLimit(
       }
 
       const amount = parsed.data.amount;
-      const currentAmount = goal.currentAmount.toNumber();
-      const targetAmount = goal.targetAmount.toNumber();
-      const nextAmount = currentAmount + amount;
-      const isCompleted = nextAmount >= targetAmount;
+      const nextAmount = goal.currentAmount.plus(amount);
+      const isCompleted = nextAmount.gte(goal.targetAmount);
 
       const updated = await prisma.goal.update({
         where: { id },

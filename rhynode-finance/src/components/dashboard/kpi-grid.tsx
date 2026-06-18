@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
-import { sumInCop } from "@/lib/currency";
+import { sumInCop, convertToCop, getTrm } from "@/lib/currency";
 import type { UserScope } from "@/lib/scope";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import type { LucideIcon } from "lucide-react";
@@ -112,8 +112,8 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
     };
     const [
       accounts,
-      incomeAgg,
-      expenseAgg,
+      incomeRows,
+      expenseRows,
       budgets,
       goals,
       debts,
@@ -122,13 +122,13 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
       transactionsTrend,
     ] = await Promise.all([
       prisma.account.findMany({ where: { userId }, select: { balance: true, currency: true } }),
-      prisma.transaction.aggregate({
+      prisma.transaction.findMany({
         where: { ...txnBaseWhere, type: "INCOME", date: { gte: start, lte: end } },
-        _sum: { amount: true },
+        select: { amount: true, currency: true },
       }),
-      prisma.transaction.aggregate({
+      prisma.transaction.findMany({
         where: { ...txnBaseWhere, type: "EXPENSE", date: { gte: start, lte: end } },
-        _sum: { amount: true },
+        select: { amount: true, currency: true },
       }),
       prisma.budget.findMany({ where: { userId }, select: { spent: true, amount: true } }),
       prisma.goal.count({ where: { userId, status: "ACTIVE" } }),
@@ -150,10 +150,18 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
     const balanceTotal = (
       await sumInCop(accounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency })))
     ).totalCop;
-    const incomeMonth = decimalToNumber(incomeAgg._sum.amount);
-    const expenseMonth = decimalToNumber(expenseAgg._sum.amount);
-    const budgetTotal = budgets.reduce((s, b) => s + decimalToNumber(b.amount), 0);
-    const budgetSpent = budgets.reduce((s, b) => s + decimalToNumber(b.spent), 0);
+    const incomeMonth = (
+      await sumInCop(incomeRows.map((t) => ({ amount: decimalToNumber(t.amount), currency: t.currency })))
+    ).totalCop;
+    const expenseMonth = (
+      await sumInCop(expenseRows.map((t) => ({ amount: decimalToNumber(t.amount), currency: t.currency })))
+    ).totalCop;
+    const budgetTotal = (
+      await sumInCop(budgets.map((b) => ({ amount: decimalToNumber(b.amount), currency: "COP" })))
+    ).totalCop;
+    const budgetSpent = (
+      await sumInCop(budgets.map((b) => ({ amount: decimalToNumber(b.spent), currency: "COP" })))
+    ).totalCop;
     const available = Math.max(0, budgetTotal - budgetSpent);
 
     const incomeSeries = buildMonthlySeries(
@@ -222,13 +230,13 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
       await Promise.all([
         prisma.invoice.findMany({
           where: { organizationId: orgId },
-          select: { total: true, status: true, issueDate: true },
+          select: { total: true, status: true, issueDate: true, currency: true },
         }),
         prisma.client.count({ where: { organizationId: orgId } }),
         prisma.taxReport.count({ where: { organizationId: orgId, status: "PENDING" } }),
         prisma.bankAccount.findMany({
           where: { organizationId: orgId },
-          select: { balance: true },
+          select: { balance: true, currency: true },
         }),
         prisma.invoice.count({ where: { organizationId: orgId } }),
         prisma.client.findMany({
@@ -237,43 +245,57 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
         }),
       ]);
 
-    const totalInvoiced = invoices.reduce((s, i) => s + decimalToNumber(i.total), 0);
-    const totalPaid = invoices
+    const trm = await getTrm();
+    const invoiceCop = await Promise.all(
+      invoices.map(async (i) => ({
+        status: i.status,
+        issueDate: i.issueDate,
+        cop: (await convertToCop(decimalToNumber(i.total), i.currency, trm)).cop,
+      }))
+    );
+
+    const totalInvoiced = invoiceCop.reduce((s, i) => s + i.cop, 0);
+    const totalPaid = invoiceCop
       .filter((i) => i.status === "PAID")
-      .reduce((s, i) => s + decimalToNumber(i.total), 0);
-    const totalPending = invoices
+      .reduce((s, i) => s + i.cop, 0);
+    const totalPending = invoiceCop
       .filter((i) => i.status === "SENT")
-      .reduce((s, i) => s + decimalToNumber(i.total), 0);
-    const totalOverdue = invoices
+      .reduce((s, i) => s + i.cop, 0);
+    const totalOverdue = invoiceCop
       .filter((i) => i.status === "OVERDUE")
-      .reduce((s, i) => s + decimalToNumber(i.total), 0);
-    const bankBalance = bankAccounts.reduce((s, b) => s + decimalToNumber(b.balance), 0);
+      .reduce((s, i) => s + i.cop, 0);
+    const bankBalance = (
+      await sumInCop(
+        bankAccounts.map((b) => ({ amount: decimalToNumber(b.balance), currency: b.currency })),
+        trm
+      )
+    ).totalCop;
 
     const invoiceSeries = buildMonthlySeries(
-      invoices,
+      invoiceCop,
       TREND_MONTHS,
-      (i) => decimalToNumber(i.total),
+      (i) => i.cop,
       () => true,
       (i) => i.issueDate
     );
     const paidSeries = buildMonthlySeries(
-      invoices,
+      invoiceCop,
       TREND_MONTHS,
-      (i) => decimalToNumber(i.total),
+      (i) => i.cop,
       (i) => i.status === "PAID",
       (i) => i.issueDate
     );
     const pendingSeries = buildMonthlySeries(
-      invoices,
+      invoiceCop,
       TREND_MONTHS,
-      (i) => decimalToNumber(i.total),
+      (i) => i.cop,
       (i) => i.status === "SENT",
       (i) => i.issueDate
     );
     const overdueSeries = buildMonthlySeries(
-      invoices,
+      invoiceCop,
       TREND_MONTHS,
-      (i) => decimalToNumber(i.total),
+      (i) => i.cop,
       (i) => i.status === "OVERDUE",
       (i) => i.issueDate
     );

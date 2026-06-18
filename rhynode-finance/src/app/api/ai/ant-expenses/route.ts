@@ -1,5 +1,5 @@
 import { decimalToNumber } from "@/lib/decimal";
-import { getUserProfile } from "@/lib/auth";
+import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 
@@ -37,9 +37,7 @@ export const GET = withRateLimit(
 
     const prisma = getPrisma();
 
-    const org = await prisma.organization.findUnique({
-      where: { userId: profile.id },
-    });
+    const org = await getOrCreateAuthOrg();
 
     if (!org) {
       const empty: AntExpensesResponse = {
