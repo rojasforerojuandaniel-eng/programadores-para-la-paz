@@ -84,7 +84,10 @@ export const ModelName = {
   ImportJob: 'ImportJob',
   WebhookEvent: 'WebhookEvent',
   CurrencyRate: 'CurrencyRate',
-  Integration: 'Integration'
+  Integration: 'Integration',
+  SplitGroup: 'SplitGroup',
+  SplitMember: 'SplitMember',
+  SplitExpense: 'SplitExpense'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -721,6 +724,40 @@ export const IntegrationScalarFieldEnum = {
 } as const
 
 export type IntegrationScalarFieldEnum = (typeof IntegrationScalarFieldEnum)[keyof typeof IntegrationScalarFieldEnum]
+
+
+export const SplitGroupScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SplitGroupScalarFieldEnum = (typeof SplitGroupScalarFieldEnum)[keyof typeof SplitGroupScalarFieldEnum]
+
+
+export const SplitMemberScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  name: 'name',
+  position: 'position'
+} as const
+
+export type SplitMemberScalarFieldEnum = (typeof SplitMemberScalarFieldEnum)[keyof typeof SplitMemberScalarFieldEnum]
+
+
+export const SplitExpenseScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  description: 'description',
+  amount: 'amount',
+  paidByMemberId: 'paidByMemberId',
+  createdAt: 'createdAt'
+} as const
+
+export type SplitExpenseScalarFieldEnum = (typeof SplitExpenseScalarFieldEnum)[keyof typeof SplitExpenseScalarFieldEnum]
 
 
 export const SortOrder = {

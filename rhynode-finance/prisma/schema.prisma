@@ -380,6 +380,7 @@ model UserProfile {
   detectedSubscriptions DetectedSubscription[]
   pushSubscriptions PushSubscription[]
   notificationPreference NotificationPreference?
+  splitGroups         SplitGroup[]
 
   @@map("user_profiles")
 }
@@ -765,4 +766,45 @@ model Integration {
   @@index([provider])
   @@index([status])
   @@map("integrations")
+}
+
+model SplitGroup {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @default("Grupo")
+  currency  String   @default("COP")
+  members   SplitMember[]
+  expenses  SplitExpense[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("split_groups")
+}
+
+model SplitMember {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  group     SplitGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name      String
+  position  Int      @default(0)
+  expenses  SplitExpense[]
+
+  @@index([groupId])
+  @@map("split_members")
+}
+
+model SplitExpense {
+  id            String   @id @default(cuid())
+  groupId       String   @map("group_id")
+  group         SplitGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  description   String
+  amount        Decimal  @db.Decimal(19,4)
+  paidByMemberId String @map("paid_by_member_id")
+  paidBy        SplitMember @relation(fields: [paidByMemberId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([groupId])
+  @@index([paidByMemberId])
+  @@map("split_expenses")
 }

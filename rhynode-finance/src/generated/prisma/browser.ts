@@ -187,3 +187,18 @@ export type CurrencyRate = Prisma.CurrencyRateModel
  * 
  */
 export type Integration = Prisma.IntegrationModel
+/**
+ * Model SplitGroup
+ * 
+ */
+export type SplitGroup = Prisma.SplitGroupModel
+/**
+ * Model SplitMember
+ * 
+ */
+export type SplitMember = Prisma.SplitMemberModel
+/**
+ * Model SplitExpense
+ * 
+ */
+export type SplitExpense = Prisma.SplitExpenseModel

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Trash2, ArrowRight } from "lucide-react";
+import { getSplitGroup, saveSplitGroup } from "./actions";
 
 interface Member {
   id: string;
@@ -56,29 +57,71 @@ export default function SplitPage() {
   const [amount, setAmount] = useState("");
   const [paidBy, setPaidBy] = useState("");
   const [memberName, setMemberName] = useState("");
+  // `migrated` tracks whether the DB split tables exist. Until the migration is
+  // applied, we keep using localStorage (zero regression).
+  const migratedRef = useRef<boolean | null>(null);
+  const hydratedRef = useRef(false);
 
-  // Load from localStorage (client-only hydration — safe to setState here).
-  /* eslint-disable react-hooks/set-state-in-effect */
+  // Load: prefer DB, fall back to localStorage if not migrated or empty.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const state = JSON.parse(saved) as SavedState;
-        if (Array.isArray(state.members) && state.members.length) setMembers(state.members);
-        if (Array.isArray(state.expenses)) setExpenses(state.expenses);
+    let cancelled = false;
+    async function load() {
+      try {
+        const result = await getSplitGroup();
+        if (cancelled) return;
+        if (result.migrated) {
+          migratedRef.current = true;
+          if (result.state.members.length) setMembers(result.state.members);
+          if (result.state.expenses.length) setExpenses(result.state.expenses);
+          // Seed localStorage as an offline cache.
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(result.state));
+          return;
+        }
+        migratedRef.current = false;
+      } catch {
+        migratedRef.current = false;
       }
-    } catch {
-      // ignore malformed storage
+      // Fallback to localStorage.
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const state = JSON.parse(saved) as SavedState;
+          if (Array.isArray(state.members) && state.members.length) setMembers(state.members);
+          if (Array.isArray(state.expenses)) setExpenses(state.expenses);
+        }
+      } catch {
+        // ignore malformed storage
+      }
     }
+    void load().finally(() => {
+      hydratedRef.current = true;
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Effective payer defaults to the first member when the selected one is removed.
   const effectivePaidBy = members.some((m) => m.id === paidBy) ? paidBy : (members[0]?.id ?? "");
 
   // Persist + recompute.
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ members, expenses }));
+    // Always mirror to localStorage (offline cache + pre-migration store).
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ members, expenses }));
+    } catch {
+      // ignore quota errors
+    }
+    // Persist to DB if migrated. Skip the first run before hydration to avoid
+    // overwriting server state with the default seed.
+    if (hydratedRef.current && migratedRef.current) {
+      void saveSplitGroup({ members, expenses }).catch(() => {
+        // migration may have been rolled back — silently fall back
+        migratedRef.current = false;
+      });
+    }
+    hydratedRef.current = true;
+
     let cancelled = false;
     async function compute() {
       if (members.length === 0) {
@@ -143,7 +186,7 @@ export default function SplitPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dividir Gastos</h1>
           <p className="text-sm text-muted-foreground">
-            Cuentas compartidas para parejas, roommates o viajes. Se guarda en este navegador.
+            Cuentas compartidas para parejas, roommates o viajes. Se guarda en tu cuenta.
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { getCopRates } from "@/lib/fx-rates";
 
 /**
  * Multi-currency conversion. Colombia is COP-centric but users may record
@@ -7,6 +8,8 @@ import { logger } from "@/lib/logger";
  *
  * TRM source is the same Colombian rates feed used by the economic indicators
  * widget (tasas.agentes-ai.com.co). Cached for 1 hour to avoid hammering it.
+ * Non-USD currencies (EUR, MXN, BRL, …) use cross-rates stored in the
+ * CurrencyRate table by the /api/cron/fx-rates job (see lib/fx-rates.ts).
  */
 
 const TRM_URL = "https://tasas.agentes-ai.com.co/api/snapshot.json";
@@ -51,14 +54,17 @@ export async function getTrm(): Promise<TrmResult | null> {
 export const FALLBACK_TRM = 4000;
 
 /**
- * Converts an amount in a given currency to COP using the live TRM.
- * Supports USD (via TRM) and COP (passthrough). Other currencies are returned
- * unchanged with a flag so callers can decide how to handle them.
+ * Converts an amount in a given currency to COP.
+ * - COP: passthrough.
+ * - USD: live TRM (Colombian source).
+ * - Other currencies: cross-rate from the CurrencyRate table (populated by
+ *   /api/cron/fx-rates). Falls back to unconverted if no rate is stored.
  */
 export async function convertToCop(
   amount: number,
   fromCurrency: string,
-  trm?: TrmResult | null
+  trm?: TrmResult | null,
+  rates?: Record<string, number>
 ): Promise<{ cop: number; converted: boolean }> {
   const currency = fromCurrency.toUpperCase();
   if (currency === "COP" || !currency) return { cop: amount, converted: false };
@@ -67,7 +73,12 @@ export async function convertToCop(
     const value = rate?.value ?? FALLBACK_TRM;
     return { cop: amount * value, converted: true };
   }
-  // Unknown currency — cannot convert without a rate; return as-is (unconverted).
+  const rateMap = rates ?? (await getCopRates());
+  const rate = rateMap[currency];
+  if (typeof rate === "number" && rate > 0) {
+    return { cop: amount * rate, converted: true };
+  }
+  // Unknown/unstored currency — cannot convert without a rate; return as-is.
   return { cop: amount, converted: false };
 }
 
@@ -78,21 +89,26 @@ export interface PricedItem {
 
 /**
  * Sums a list of {amount, currency} rows into COP, converting USD rows with the
- * live TRM. Items in currencies we cannot convert are summed separately so the
- * caller can surface "includes $X in unconverted <CUR>" if needed.
+ * live TRM and other currencies with stored cross-rates. Items in currencies we
+ * cannot convert are summed separately so the caller can surface "includes $X in
+ * unconverted <CUR>" if needed.
  */
 export async function sumInCop(
   items: PricedItem[],
-  trm?: TrmResult | null
+  trm?: TrmResult | null,
+  rates?: Record<string, number>
 ): Promise<{
   totalCop: number;
   unconvertedByCurrency: Record<string, number>;
 }> {
-  const rate = trm ?? (await getTrm());
+  const [rate, rateMap] = await Promise.all([
+    trm ?? getTrm(),
+    rates ?? getCopRates(),
+  ]);
   let totalCop = 0;
   const unconvertedByCurrency: Record<string, number> = {};
   for (const item of items) {
-    const { cop, converted } = await convertToCop(item.amount, item.currency, rate);
+    const { cop, converted } = await convertToCop(item.amount, item.currency, rate, rateMap);
     if (converted || item.currency.toUpperCase() === "COP" || !item.currency) {
       totalCop += cop;
     } else {
