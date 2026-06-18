@@ -71,6 +71,18 @@ export const allNavItems = [
     scopes: ["PERSONAL", "BOTH"] as const,
   },
   {
+    href: "/dashboard/personal/split",
+    label: "Dividir Gastos",
+    icon: Users,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
+    href: "/dashboard/personal/rent-declaration",
+    label: "Declaración Renta",
+    icon: FileText,
+    scopes: ["PERSONAL", "BOTH"] as const,
+  },
+  {
     href: "/dashboard/personal/achievements",
     label: "Logros",
     icon: Trophy,

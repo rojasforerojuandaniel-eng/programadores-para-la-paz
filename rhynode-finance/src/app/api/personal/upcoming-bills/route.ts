@@ -1,6 +1,7 @@
 import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { getUpcomingBills, type UpcomingBill } from "@/lib/upcoming-bills";
+import { sumInCop } from "@/lib/currency";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -23,9 +24,9 @@ export const GET = withRateLimit(
     const horizon = parsed.data.horizon ?? 60;
     const bills = await getUpcomingBills(profile.id, org?.id ?? null, horizon);
 
-    const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
     const overdue = bills.filter((bill) => bill.overdue);
-    const overdueTotal = overdue.reduce((sum, bill) => sum + bill.amount, 0);
+    const { totalCop: total } = await sumInCop(bills.map((b) => ({ amount: b.amount, currency: b.currency })));
+    const { totalCop: overdueTotal } = await sumInCop(overdue.map((b) => ({ amount: b.amount, currency: b.currency })));
 
     return Response.json({
       bills: bills as UpcomingBill[],

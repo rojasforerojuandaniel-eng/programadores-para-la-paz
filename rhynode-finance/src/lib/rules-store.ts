@@ -69,3 +69,41 @@ export async function saveUserRules(
     return { success: false, error: "Failed to save rules" };
   }
 }
+
+/**
+ * Categorization learning: when the user corrects a transaction's category,
+ * persist a "contains description → setCategory" rule so future transactions
+ * with the same description auto-categorize. No-op if an identical rule
+ * already exists (avoids duplicates on repeated corrections).
+ */
+export async function learnCategoryFromCorrection(
+  userId: string,
+  description: string,
+  category: string
+): Promise<{ learned: boolean }> {
+  const needle = description.toLowerCase().trim();
+  if (!needle || !category) return { learned: false };
+
+  const existing = await getUserRules();
+  if (!existing) return { learned: false };
+
+  const alreadyLearned = existing.rules.some(
+    (rule) =>
+      rule.condition.type === "contains" &&
+      rule.condition.value === needle &&
+      rule.action.type === "setCategory" &&
+      rule.action.value === category
+  );
+  if (alreadyLearned) return { learned: false };
+
+  const newRule: Rule = {
+    id: `learned-${needle.replace(/\s+/g, "-").slice(0, 24)}-${Date.now().toString(36)}`,
+    name: `Auto: "${needle}" → ${category}`,
+    enabled: true,
+    condition: { type: "contains", value: needle },
+    action: { type: "setCategory", value: category },
+  };
+
+  const result = await saveUserRules(existing.userId, [...existing.rules, newRule]);
+  return { learned: result.success };
+}
