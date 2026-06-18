@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { parseStatement, type BankType } from "@/lib/bank-statement-parser";
 import { findDuplicates } from "@/lib/transaction-dedup";
+import { suggestCategory } from "@/lib/categorizer";
 import { z } from "zod";
 
 const bodySchema = z.object({
@@ -10,6 +11,8 @@ const bodySchema = z.object({
   bank: z.enum(["bancolombia", "davivienda", "nequi", "auto"]).default("auto"),
   /** If true, returns only a preview (parsed + dedup flags) without inserting. */
   preview: z.boolean().default(true),
+  /** When preview=false, insert the non-duplicate rows as transactions. */
+  commit: z.boolean().default(false),
 });
 
 export const POST = withRateLimit(
@@ -24,7 +27,7 @@ export const POST = withRateLimit(
       return Response.json({ error: "Invalid input", details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { csv, bank, preview } = parsed.data;
+    const { csv, bank, preview, commit } = parsed.data;
     const statement = parseStatement(csv, bank as BankType);
 
     // Fetch existing transactions in the statement's date range to dedup against.
@@ -61,6 +64,32 @@ export const POST = withRateLimit(
       isDuplicate: duplicateIndices.has(index),
     }));
 
+    let inserted = 0;
+    if (!preview && commit && org) {
+      const toInsert = rows.filter((r) => !r.isDuplicate);
+      if (toInsert.length > 0) {
+        const created = await prisma.transaction.createMany({
+          data: toInsert.map((r) => {
+            const suggestion = suggestCategory(r.description, r.amount);
+            return {
+              organizationId: org.id,
+              userId: profile.id,
+              type: r.amount >= 0 ? "INCOME" : "EXPENSE",
+              description: r.description,
+              amount: Math.abs(r.amount),
+              currency: r.currency,
+              date: new Date(`${r.date}T12:00:00Z`),
+              category: suggestion?.category ?? null,
+              aiCategory: suggestion?.category ?? null,
+              aiConfidence: suggestion?.confidence ?? null,
+              tags: ["imported"] as unknown as never,
+            };
+          }),
+        });
+        inserted = created.count;
+      }
+    }
+
     return Response.json({
       bank: statement.bank,
       detectedBank: statement.bank,
@@ -68,11 +97,9 @@ export const POST = withRateLimit(
       skipped: statement.skipped,
       duplicates: duplicateIndices.size,
       newCount: statement.rows.length - duplicateIndices.size,
+      inserted,
       rows,
       preview,
-      // When preview=false callers should use the returned rows to insert via
-      // the standard /api/transactions endpoint (kept out of scope here to
-      // avoid a large unchecked insert).
     });
   },
   { key: "import-statement", maxRequests: 10, windowMs: 60000 }

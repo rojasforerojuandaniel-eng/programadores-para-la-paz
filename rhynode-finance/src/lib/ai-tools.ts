@@ -2,12 +2,16 @@ import { z } from "zod";
 import { getPrisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
 import { logger } from "@/lib/logger";
+import { planDebtPayoff, formatDebtPlan, type PayoffStrategy } from "@/lib/debt-strategy";
+import { projectGoal, formatGoalProjection } from "@/lib/goal-projection";
 
 const TOOL_NAMES = [
   "get_balance",
   "list_transactions",
   "create_reminder",
   "get_cashflow_summary",
+  "debt_payoff_strategy",
+  "goal_projection",
 ] as const;
 
 export type ToolName = (typeof TOOL_NAMES)[number];
@@ -47,11 +51,23 @@ const getCashflowSummaryParams = z.object({
   months: z.number().int().min(1).max(12).optional().default(1),
 });
 
+const debtPayoffStrategyParams = z.object({
+  strategy: z.enum(["avalanche", "snowball"]).optional().default("avalanche"),
+  monthlyBudget: z.number().min(0).optional(),
+});
+
+const goalProjectionParams = z.object({
+  goalId: z.string().min(1),
+  monthlyContribution: z.number().min(0).optional(),
+});
+
 type ParamsMap = {
   get_balance: z.infer<typeof getBalanceParams>;
   list_transactions: z.infer<typeof listTransactionsParams>;
   create_reminder: z.infer<typeof createReminderParams>;
   get_cashflow_summary: z.infer<typeof getCashflowSummaryParams>;
+  debt_payoff_strategy: z.infer<typeof debtPayoffStrategyParams>;
+  goal_projection: z.infer<typeof goalProjectionParams>;
 };
 
 function formatCop(value: number): string {
@@ -227,11 +243,68 @@ async function handleGetCashflowSummary(
   };
 }
 
+async function handleDebtPayoffStrategy(
+  ctx: ToolContext,
+  params: z.infer<typeof debtPayoffStrategyParams>
+) {
+  const prisma = getPrisma();
+  const debts = await prisma.debt.findMany({
+    where: { userId: ctx.userId, status: "ACTIVE" },
+    select: { id: true, name: true, remainingAmount: true, interestRate: true, type: true },
+  });
+  if (debts.length === 0) {
+    return { message: "No tienes deudas activas registradas.", plan: null };
+  }
+  // Estimate minimum payment as ~5% of balance when not stored, and rate defaults per debt type.
+  const inputs = debts.map((d) => {
+    const balance = decimalToNumber(d.remainingAmount);
+    const rate = d.interestRate ?? (d.type === "TAX" ? 0.22 : 0.0);
+    return {
+      id: d.id,
+      name: d.name,
+      balance,
+      rate,
+      minPayment: Math.max(10_000, Math.round(balance * 0.05)),
+    };
+  });
+  const budget = params.monthlyBudget ?? inputs.reduce((s, d) => s + d.minPayment, 0) + 50_000;
+  const result = planDebtPayoff(inputs, budget, params.strategy as PayoffStrategy);
+  return {
+    budget,
+    plan: result,
+    recommendation: formatDebtPlan(result),
+  };
+}
+
+async function handleGoalProjection(
+  ctx: ToolContext,
+  params: z.infer<typeof goalProjectionParams>
+) {
+  const prisma = getPrisma();
+  const goal = await prisma.goal.findFirst({
+    where: { id: params.goalId, userId: ctx.userId },
+    select: { id: true, name: true, currentAmount: true, targetAmount: true, deadline: true },
+  });
+  if (!goal) {
+    return { error: "No encontré una meta con ese ID." };
+  }
+  const result = projectGoal({
+    name: goal.name,
+    target: decimalToNumber(goal.targetAmount),
+    current: decimalToNumber(goal.currentAmount),
+    monthlyContribution: params.monthlyContribution,
+    deadline: goal.deadline ? goal.deadline.toISOString() : undefined,
+  });
+  return { goalId: goal.id, projection: result, summary: formatGoalProjection(result) };
+}
+
 const paramSchemas: { [T in ToolName]: z.ZodType<ParamsMap[T]> } = {
   get_balance: getBalanceParams,
   list_transactions: listTransactionsParams,
   create_reminder: createReminderParams,
   get_cashflow_summary: getCashflowSummaryParams,
+  debt_payoff_strategy: debtPayoffStrategyParams,
+  goal_projection: goalProjectionParams,
 };
 
 export const anthropicTools: AnthropicTool[] = [
@@ -304,6 +377,44 @@ export const anthropicTools: AnthropicTool[] = [
       },
     },
   },
+  {
+    name: "debt_payoff_strategy",
+    description:
+      "Plan de pago de deudas: avalancha (mayor interés primero, minimiza intereses) o bola de nieve (menor saldo primero). Devuelve el plan ordenado y el resumen legible.",
+    input_schema: {
+      type: "object",
+      properties: {
+        strategy: {
+          type: "string",
+          enum: ["avalanche", "snowball"],
+          description: "Estrategia. Por defecto avalanche.",
+        },
+        monthlyBudget: {
+          type: "number",
+          description: "Presupuesto mensual total para pagar deudas (COP). Opcional.",
+        },
+      },
+    },
+  },
+  {
+    name: "goal_projection",
+    description:
+      "Proyecta una meta de ahorro: si tiene deadline calcula el aporte mensual necesario; si recibe monthlyContribution proyecta la fecha de cumplimiento.",
+    input_schema: {
+      type: "object",
+      properties: {
+        goalId: {
+          type: "string",
+          description: "ID de la meta a proyectar.",
+        },
+        monthlyContribution: {
+          type: "number",
+          description: "Aporte mensual actual (COP) para proyectar fecha de cumplimiento.",
+        },
+      },
+      required: ["goalId"],
+    },
+  },
 ];
 
 export function isToolName(name: string): name is ToolName {
@@ -346,6 +457,16 @@ export async function executeTool(
         return await handleGetCashflowSummary(
           ctx,
           parsed.data as ParamsMap["get_cashflow_summary"]
+        );
+      case "debt_payoff_strategy":
+        return await handleDebtPayoffStrategy(
+          ctx,
+          parsed.data as ParamsMap["debt_payoff_strategy"]
+        );
+      case "goal_projection":
+        return await handleGoalProjection(
+          ctx,
+          parsed.data as ParamsMap["goal_projection"]
         );
     }
   } catch (error) {

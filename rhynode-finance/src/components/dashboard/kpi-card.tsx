@@ -67,7 +67,7 @@ export function KpiCard({
             </p>
             <div
               className={cn(
-                "mt-1 text-xl font-bold tracking-tight text-foreground sm:mt-2 sm:text-2xl",
+                "mt-1 text-xl font-bold tracking-tight tabular-nums text-foreground sm:mt-2 sm:text-2xl",
                 valueClassName,
               )}
             >
