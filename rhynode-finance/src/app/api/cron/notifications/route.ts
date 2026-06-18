@@ -17,6 +17,30 @@ import {
 } from "@/lib/reminders";
 import { logger } from "@/lib/logger";
 
+const FREQUENCY_MONTHS: Record<string, number> = {
+  WEEKLY: 0,
+  MONTHLY: 1,
+  QUARTERLY: 3,
+  SEMESTER: 6,
+  YEARLY: 12,
+};
+
+/** Advances a date by its frequency until it's strictly after the cap. */
+function advanceDate(from: Date, frequency: string, cap: Date): Date | null {
+  const months = FREQUENCY_MONTHS[frequency] ?? 1;
+  let date = new Date(from.getTime());
+  let guard = 0;
+  while (date <= cap && guard < 600) {
+    if (frequency === "WEEKLY") {
+      date = addDays(date, 7);
+    } else {
+      date.setMonth(date.getMonth() + months);
+    }
+    guard++;
+  }
+  return guard >= 600 ? null : date;
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -26,6 +50,27 @@ export async function GET(request: Request) {
   try {
     const now = new Date();
     const prisma = getPrisma();
+
+    // Auto-advance overdue recurring transactions: roll nextDueDate forward by
+    // its frequency until it's in the future, so recurring items don't stay
+    // permanently "due" after a missed period.
+    const overdue = await prisma.recurringTransaction.findMany({
+      where: { status: "ACTIVE", nextDueDate: { lt: now } },
+      select: { id: true, frequency: true, nextDueDate: true },
+    });
+    let advanced = 0;
+    for (const rec of overdue) {
+      if (!rec.nextDueDate) continue;
+      const next = advanceDate(rec.nextDueDate, rec.frequency, now);
+      if (next && next.getTime() !== rec.nextDueDate.getTime()) {
+        await prisma.recurringTransaction.update({
+          where: { id: rec.id },
+          data: { nextDueDate: next },
+        });
+        advanced++;
+      }
+    }
+    logger.info("Recurring auto-advance", { advanced, overdue: overdue.length });
 
     const results = {
       budgetAlerts: 0,

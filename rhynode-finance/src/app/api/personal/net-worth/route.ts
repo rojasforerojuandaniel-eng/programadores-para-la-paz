@@ -5,6 +5,7 @@ import { getUserProfile } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { sumInCop } from "@/lib/currency";
 
 const createSchema = z.object({
   date: z.string().datetime().or(z.string()).optional(),
@@ -59,11 +60,12 @@ export const POST = withRateLimit(async function POST(request: Request) {
       where: { userId: profile.id },
     });
 
-    const totalAssets = accounts.reduce((sum, a) => sum + decimalToNumber(a.balance), 0);
-    const totalLiabilities = debts.reduce(
-      (sum, d) => sum + decimalToNumber(d.remainingAmount),
-      0
-    );
+    const totalAssets = (
+      await sumInCop(accounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency })))
+    ).totalCop;
+    const totalLiabilities = (
+      await sumInCop(debts.map((d) => ({ amount: decimalToNumber(d.remainingAmount), currency: d.currency })))
+    ).totalCop;
     const netWorth = totalAssets - totalLiabilities;
 
     const cashAccounts = accounts.filter(
@@ -85,10 +87,16 @@ export const POST = withRateLimit(async function POST(request: Request) {
         !cashAccounts.includes(a) && !investmentAccounts.includes(a)
     );
 
+    const [cashTotal, investmentsTotal, otherTotal] = await Promise.all([
+      sumInCop(cashAccounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency }))),
+      sumInCop(investmentAccounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency }))),
+      sumInCop(otherAccounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency }))),
+    ]);
+
     const breakdown = {
-      cash: cashAccounts.reduce((sum, a) => sum + decimalToNumber(a.balance), 0),
-      investments: investmentAccounts.reduce((sum, a) => sum + decimalToNumber(a.balance), 0),
-      other: otherAccounts.reduce((sum, a) => sum + decimalToNumber(a.balance), 0),
+      cash: cashTotal.totalCop,
+      investments: investmentsTotal.totalCop,
+      other: otherTotal.totalCop,
       liabilities: totalLiabilities,
     };
 

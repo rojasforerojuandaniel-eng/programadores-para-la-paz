@@ -104,6 +104,32 @@ export function detectIntent(rawMessage: string): DetectedIntent | null {
     return { tool: "list_transactions", input };
   }
 
+  // debt_payoff_strategy — how to pay off debts (avalanche/snowball).
+  const budgetMatch = text.match(/(\d{4,})\s*(?:al\s*mes|por\s*mes|mensual|\/mes)?/);
+  if (
+    has(
+      text,
+      "como pago mis deudas",
+      "estrategia de deudas",
+      "pago de deudas",
+      "librarme de deudas",
+      "salir de deudas",
+      "plan de deudas",
+      "avalancha",
+      "bola de nieve",
+      "snowball"
+    ) ||
+    /\bdeudas?\b/.test(text) && has(text, "pago", "plan", "estrategia", "libre", "como")
+  ) {
+    return {
+      tool: "debt_payoff_strategy",
+      input: {
+        strategy: has(text, "bola de nieve", "snowball") ? "snowball" : "avalanche",
+        ...(budgetMatch ? { monthlyBudget: Number(budgetMatch[1]) } : {}),
+      },
+    };
+  }
+
   return null;
 }
 
@@ -174,6 +200,8 @@ export function formatIntentReply(tool: ToolName, result: unknown): string | nul
       return formatTransactions(data);
     case "get_cashflow_summary":
       return formatCashflow(data);
+    case "debt_payoff_strategy":
+      return (data.recommendation as string) ?? (data.message as string) ?? null;
     default:
       return null;
   }

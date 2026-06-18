@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { SeedDemoButton } from "@/components/dashboard/seed-demo-button";
 import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { Badge } from "@/components/ui/badge";
@@ -337,6 +338,8 @@ export default async function DashboardPage() {
 
   const indicatorsData = await fetchEconomicIndicators();
 
+  const txCount = await getPrisma().transaction.count({ where: { organizationId: org.id } });
+
   const metadata = (profile?.metadata ?? {}) as {
     widgets?: WidgetLayoutItem[];
   };
@@ -464,6 +467,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {txCount === 0 && (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-6 text-center sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <h2 className="text-base font-semibold">¡Bienvenido! Tu panel está vacío</h2>
+            <p className="text-sm text-muted-foreground">
+              Carga datos de ejemplo para explorar Rhynode (cuentas, transacciones, presupuesto, meta y deuda). Los puedes borrar cuando quieras.
+            </p>
+          </div>
+          <SeedDemoButton />
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">

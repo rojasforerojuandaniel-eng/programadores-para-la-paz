@@ -29,5 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/dashboard/advisor`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
   ];
 
-  return [...publicRoutes, ...appRoutes];
+  const cityRoutes: MetadataRoute.Sitemap = ["bogota", "medellin", "cali"].map((slug) => ({
+    url: `${baseUrl}/ciudad/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...publicRoutes, ...cityRoutes, ...appRoutes];
 }

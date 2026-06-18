@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
+import { sumInCop } from "@/lib/currency";
 import type { UserScope } from "@/lib/scope";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import type { LucideIcon } from "lucide-react";
@@ -120,7 +121,7 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
       transactionsCount,
       transactionsTrend,
     ] = await Promise.all([
-      prisma.account.findMany({ where: { userId }, select: { balance: true } }),
+      prisma.account.findMany({ where: { userId }, select: { balance: true, currency: true } }),
       prisma.transaction.aggregate({
         where: { ...txnBaseWhere, type: "INCOME", date: { gte: start, lte: end } },
         _sum: { amount: true },
@@ -146,7 +147,9 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
       }),
     ]);
 
-    const balanceTotal = accounts.reduce((s, a) => s + decimalToNumber(a.balance), 0);
+    const balanceTotal = (
+      await sumInCop(accounts.map((a) => ({ amount: decimalToNumber(a.balance), currency: a.currency })))
+    ).totalCop;
     const incomeMonth = decimalToNumber(incomeAgg._sum.amount);
     const expenseMonth = decimalToNumber(expenseAgg._sum.amount);
     const budgetTotal = budgets.reduce((s, b) => s + decimalToNumber(b.amount), 0);
