@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getOrCreateAuthOrg } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateProjectDialog } from "./create-dialog";
@@ -34,33 +37,29 @@ export interface ProjectWithInvoices {
   invoices: Array<{ id: string; total: Prisma.Decimal | null }>;
 }
 
-const statusConfig: Record<string, { label: string; className: string }> = {
+const statusConfig: Record<string, { labelKey: string; className: string }> = {
   ACTIVE: {
-    label: "Activo",
+    labelKey: "statuses.ACTIVE",
     className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
   COMPLETED: {
-    label: "Completado",
+    labelKey: "statuses.COMPLETED",
     className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   },
   ARCHIVED: {
-    label: "Archivado",
+    labelKey: "statuses.ARCHIVED",
     className: "bg-gray-500/10 text-gray-600 border-gray-500/20",
   },
 };
 
-function formatCOP(amount: number | null) {
+function formatCOP(amount: number | null, locale: Locale) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCurrency(amount, "COP", locale);
 }
 
-function formatDate(date: Date | null) {
+function formatDate(date: Date | null, locale: Locale) {
   if (!date) return "—";
-  return new Date(date).toLocaleDateString("es-CO");
+  return fmtDate(date, locale);
 }
 
 function projectSpent(project: ProjectWithInvoices): number {
@@ -74,6 +73,10 @@ export default async function ProjectsPage() {
   const org = await getOrCreateAuthOrg();
   if (!org) redirect("/sign-in");
 
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.projects" });
+
   const projects = await prisma.project.findMany({
     where: { organizationId: org.id },
     include: { invoices: { select: { id: true, total: true } } },
@@ -84,10 +87,8 @@ export default async function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Proyectos</h1>
-          <p className="body-default mt-1">
-            Gestiona tus proyectos, presupuestos y facturas asociadas
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateProjectDialog />
       </div>
@@ -98,7 +99,7 @@ export default async function ProjectsPage() {
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <FolderKanban className="h-5 w-5 text-primary" aria-hidden="true" />
-            Todos los Proyectos
+            {t("allTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -106,9 +107,9 @@ export default async function ProjectsPage() {
             <EmptyStateCard
               variant="lg"
               icon={FolderKanban}
-              title="Organiza tu trabajo en proyectos"
-              description="Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado."
-              hint="Empieza creando tu primer proyecto."
+              title={t("empty.title")}
+              description={t("empty.description")}
+              hint={t("empty.hint")}
               action={<CreateProjectDialog />}
             />
           ) : (
@@ -125,14 +126,14 @@ export default async function ProjectsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead scope="col">Proyecto</TableHead>
-                      <TableHead scope="col">Estado</TableHead>
-                      <TableHead scope="col">Presupuesto</TableHead>
-                      <TableHead scope="col">Gastado</TableHead>
-                      <TableHead scope="col">Avance</TableHead>
-                      <TableHead scope="col">Fechas</TableHead>
-                      <TableHead scope="col">Facturas</TableHead>
-                      <TableHead scope="col" className="text-right">Acciones</TableHead>
+                      <TableHead scope="col">{t("columns.project")}</TableHead>
+                      <TableHead scope="col">{t("columns.status")}</TableHead>
+                      <TableHead scope="col">{t("columns.budget")}</TableHead>
+                      <TableHead scope="col">{t("columns.spent")}</TableHead>
+                      <TableHead scope="col">{t("columns.progress")}</TableHead>
+                      <TableHead scope="col">{t("columns.dates")}</TableHead>
+                      <TableHead scope="col">{t("columns.invoices")}</TableHead>
+                      <TableHead scope="col" className="text-right">{t("columns.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -162,14 +163,14 @@ export default async function ProjectsPage() {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className={cn("text-xs", status.className)}>
-                              {status.label}
+                              {t(status.labelKey as never)}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-medium">
-                            {formatCOP(budget)}
+                            {formatCOP(budget, locale)}
                           </TableCell>
                           <TableCell className="font-medium">
-                            {formatCOP(spent)}
+                            {formatCOP(spent, locale)}
                           </TableCell>
                           <TableCell className="min-w-[8rem]">
                             <ProjectProgress spent={spent} budget={budget} />
@@ -177,7 +178,7 @@ export default async function ProjectsPage() {
                           <TableCell className="text-sm text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
                               <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                              {formatDate(project.startDate)} – {formatDate(project.endDate)}
+                              {formatDate(project.startDate, locale)} – {formatDate(project.endDate, locale)}
                             </span>
                           </TableCell>
                           <TableCell className="text-sm">

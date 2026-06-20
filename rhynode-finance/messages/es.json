@@ -318,6 +318,14 @@
       "unlockedEmpty": { "title": "Ningún logro desbloqueado", "description": "Completa acciones financieras para ver tus reconocimientos aquí.", "hint": "Cada transacción, meta o presupuesto te acerca a un nuevo logro." },
       "allDone": { "title": "¡Todos los logros completados!", "description": "Has desbloqueado cada reconocimiento disponible.", "hint": "Sigue usando Rhynode para mantener tu racha y subir de nivel." }
     },
+    "projects": {
+      "title": "Proyectos",
+      "subtitle": "Gestiona tus proyectos, presupuestos y facturas asociadas",
+      "allTitle": "Todos los Proyectos",
+      "statuses": { "ACTIVE": "Activo", "COMPLETED": "Completado", "ARCHIVED": "Archivado" },
+      "columns": { "project": "Proyecto", "status": "Estado", "budget": "Presupuesto", "spent": "Gastado", "progress": "Avance", "dates": "Fechas", "invoices": "Facturas", "actions": "Acciones" },
+      "empty": { "title": "Organiza tu trabajo en proyectos", "description": "Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado.", "hint": "Empieza creando tu primer proyecto." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",
