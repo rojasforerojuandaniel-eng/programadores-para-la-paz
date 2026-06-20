@@ -186,6 +186,49 @@
         "hint": "Start by creating your first debt."
       }
     },
+    "recurring": {
+      "title": "Recurring",
+      "subtitle": "Manage your recurring transactions",
+      "monthly": "Monthly amount",
+      "active": "Active",
+      "next7": "Next 7 days",
+      "subscription": "Subscription",
+      "no": "No",
+      "pause": "Pause",
+      "activate": "Activate",
+      "list": { "name": "Name", "amount": "Amount", "frequency": "Frequency", "next": "Next due", "type": "Type", "subscription": "Subscription", "status": "Status", "actions": "Actions" },
+      "toasts": { "activated": "Recurring activated", "paused": "Recurring paused", "statusError": "Couldn't change the status", "networkError": "Network error" },
+      "card": { "amount": "Amount", "next": "Next", "providerPrefix": "Provider: {name}" },
+      "frequencies": { "DAILY": "Daily", "WEEKLY": "Weekly", "BIWEEKLY": "Biweekly", "MONTHLY": "Monthly", "QUARTERLY": "Quarterly", "YEARLY": "Yearly" },
+      "types": { "EXPENSE": "Expense", "INCOME": "Income", "TRANSFER": "Transfer" },
+      "empty": {
+        "title": "Automate your recurring payments",
+        "description": "Log rent, subscriptions and services so you never miss a due date and keep your cash flow under control.",
+        "hint": "Create your first recurring transaction in seconds."
+      },
+      "dialog": {
+        "trigger": "New recurring",
+        "title": "New Recurring Transaction",
+        "name": "Name *",
+        "namePh": "e.g. Netflix, Rent",
+        "desc": "Description",
+        "descPh": "Optional description",
+        "amount": "Amount *",
+        "type": "Type",
+        "frequency": "Frequency",
+        "next": "Next due date *",
+        "start": "Start date",
+        "end": "End date",
+        "provider": "Provider",
+        "providerPh": "e.g. Netflix, Spotify",
+        "isSub": "Is a subscription",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "created": "Recurring transaction created",
+        "error": "Failed to create recurring transaction"
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",

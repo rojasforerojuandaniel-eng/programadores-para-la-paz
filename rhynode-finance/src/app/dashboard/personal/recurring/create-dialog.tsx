@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,8 @@ import { toast } from "sonner";
 import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateRecurringDialog() {
+  const t = useTranslations("dashboard.recurring.dialog");
+  const tr = useTranslations("dashboard.recurring");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -75,10 +78,10 @@ export function CreateRecurringDialog() {
               isSubscription: false, provider: "",
             });
             router.refresh();
-            toast.success("Transacción recurrente creada");
+            toast.success(t("created"));
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear transacción recurrente");
+            toast.error(err.message || t("error"));
           },
         },
       );
@@ -91,37 +94,37 @@ export function CreateRecurringDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Recurrente
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          {t("trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Transacción Recurrente</DialogTitle>
+          <DialogTitle className="heading-card">{t("title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="rec-name">Nombre *</Label>
+            <Label htmlFor="rec-name">{t("name")}</Label>
             <Input
               id="rec-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Netflix, Alquiler"
+              placeholder={t("namePh")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rec-desc">Descripción</Label>
+            <Label htmlFor="rec-desc">{t("desc")}</Label>
             <Input
               id="rec-desc"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Descripción opcional"
+              placeholder={t("descPh")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="rec-amount">Monto *</Label>
+              <Label htmlFor="rec-amount">{t("amount")}</Label>
               <Input
                 id="rec-amount"
                 type="number"
@@ -133,44 +136,38 @@ export function CreateRecurringDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rec-type">Tipo</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v })}
-              >
+              <Label htmlFor="rec-type">{t("type")}</Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger id="rec-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EXPENSE">Gasto</SelectItem>
-                  <SelectItem value="INCOME">Ingreso</SelectItem>
-                  <SelectItem value="TRANSFER">Transferencia</SelectItem>
+                  <SelectItem value="EXPENSE">{tr("types.EXPENSE")}</SelectItem>
+                  <SelectItem value="INCOME">{tr("types.INCOME")}</SelectItem>
+                  <SelectItem value="TRANSFER">{tr("types.TRANSFER")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="rec-freq">Frecuencia</Label>
-              <Select
-                value={form.frequency}
-                onValueChange={(v) => setForm({ ...form, frequency: v })}
-              >
+              <Label htmlFor="rec-freq">{t("frequency")}</Label>
+              <Select value={form.frequency} onValueChange={(v) => setForm({ ...form, frequency: v })}>
                 <SelectTrigger id="rec-freq">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DAILY">Diaria</SelectItem>
-                  <SelectItem value="WEEKLY">Semanal</SelectItem>
-                  <SelectItem value="BIWEEKLY">Quincenal</SelectItem>
-                  <SelectItem value="MONTHLY">Mensual</SelectItem>
-                  <SelectItem value="QUARTERLY">Trimestral</SelectItem>
-                  <SelectItem value="YEARLY">Anual</SelectItem>
+                  <SelectItem value="DAILY">{tr("frequencies.DAILY")}</SelectItem>
+                  <SelectItem value="WEEKLY">{tr("frequencies.WEEKLY")}</SelectItem>
+                  <SelectItem value="BIWEEKLY">{tr("frequencies.BIWEEKLY")}</SelectItem>
+                  <SelectItem value="MONTHLY">{tr("frequencies.MONTHLY")}</SelectItem>
+                  <SelectItem value="QUARTERLY">{tr("frequencies.QUARTERLY")}</SelectItem>
+                  <SelectItem value="YEARLY">{tr("frequencies.YEARLY")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rec-next">Próximo vencimiento *</Label>
+              <Label htmlFor="rec-next">{t("next")}</Label>
               <Input
                 id="rec-next"
                 type="date"
@@ -182,7 +179,7 @@ export function CreateRecurringDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="rec-start">Fecha inicio</Label>
+              <Label htmlFor="rec-start">{t("start")}</Label>
               <Input
                 id="rec-start"
                 type="date"
@@ -191,7 +188,7 @@ export function CreateRecurringDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rec-end">Fecha fin</Label>
+              <Label htmlFor="rec-end">{t("end")}</Label>
               <Input
                 id="rec-end"
                 type="date"
@@ -201,12 +198,12 @@ export function CreateRecurringDialog() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rec-provider">Proveedor</Label>
+            <Label htmlFor="rec-provider">{t("provider")}</Label>
             <Input
               id="rec-provider"
               value={form.provider}
               onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              placeholder="Ej. Netflix, Spotify"
+              placeholder={t("providerPh")}
             />
           </div>
           <div className="flex items-center gap-2 pt-1">
@@ -217,14 +214,14 @@ export function CreateRecurringDialog() {
               onChange={(e) => setForm({ ...form, isSubscription: e.target.checked })}
               className="h-4 w-4 rounded border-input"
             />
-            <Label htmlFor="rec-sub" className="text-sm">Es suscripción</Label>
+            <Label htmlFor="rec-sub" className="text-sm">{t("isSub")}</Label>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("saving") : t("save")}
             </Button>
           </div>
         </form>
