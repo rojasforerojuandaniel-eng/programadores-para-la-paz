@@ -289,6 +289,20 @@
       "card": { "assets": "Assets", "liabilities": "Liabilities", "ratioLabel": "Ratio {ratio} · {label}" },
       "empty": { "title": "Your net worth starts here", "description": "Save periodic snapshots to see how your assets and debts evolve.", "hint": "Start by creating your first net worth record." }
     },
+    "investments": {
+      "title": "Investments",
+      "subtitle": "Investment portfolio",
+      "kpis": { "totalInvested": "Total Invested", "currentValue": "Current Value", "totalReturn": "Total Return" },
+      "allocation": "Portfolio allocation",
+      "columns": { "name": "Name", "type": "Type", "price": "Market price", "value": "Current value", "invested": "Invested", "gain": "Gain", "return": "Return %", "source": "Source" },
+      "types": { "STOCK": "Stocks", "BOND": "Bonds", "CRYPTO": "Crypto", "ETF": "ETF", "REAL_ESTATE": "Real Estate", "OTHER": "Other" },
+      "sources": { "real": "Real price", "estimated": "Estimated", "na": "N/A" },
+      "card": { "currentValue": "Current value", "invested": "Invested", "gainLoss": "Gain / Loss", "returnLabel": "Return", "marketPrice": "Market price", "updated": "Updated" },
+      "units": "units",
+      "unitsShort": "units",
+      "noQuote": "No quote",
+      "empty": { "title": "Grow your net worth", "description": "Track stocks, bonds, crypto, ETFs and real estate in one place.", "hint": "Start by registering your first investment." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
