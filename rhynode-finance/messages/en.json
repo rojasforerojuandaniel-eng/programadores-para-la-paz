@@ -28,6 +28,14 @@
     "skipToContent": "Skip to main content",
     "sectionsAria": "Dashboard sections",
     "theme": "Theme",
+    "transactions": {
+      "title": "Transactions",
+      "subtitle": "Record of income, expenses and movements",
+      "allTitle": "All Transactions",
+      "income": "Income",
+      "expense": "Expenses",
+      "balance": "Balance"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
