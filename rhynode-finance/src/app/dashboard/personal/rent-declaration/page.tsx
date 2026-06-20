@@ -1,14 +1,30 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { computeRentDeclaration } from "@/lib/rent-declaration";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AlertCircle, FileText } from "lucide-react";
 
-function formatCop(n: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(n);
+function Row({
+  label,
+  value,
+  strong,
+  locale,
+}: {
+  label: string;
+  value: number;
+  strong?: boolean;
+  locale: Locale;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className={strong ? "font-semibold" : "text-muted-foreground"}>{label}</span>
+      <span className={`tabular-nums ${strong ? "font-semibold" : ""}`}>
+        {formatCurrency(value, "COP", locale)}
+      </span>
+    </div>
+  );
 }
 
 export default async function RentDeclarationPage({
@@ -16,9 +32,13 @@ export default async function RentDeclarationPage({
 }: {
   searchParams: Promise<{ year?: string; dependents?: string }>;
 }) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.rent" });
+
   const profile = await getUserProfile();
   if (!profile) {
-    return <p className="p-6 text-muted-foreground">Inicia sesión para ver tu declaración.</p>;
+    return <p className="p-6 text-muted-foreground">{t("signIn")}</p>;
   }
 
   const params = await searchParams;
@@ -38,10 +58,8 @@ export default async function RentDeclarationPage({
       <div className="flex items-center gap-3">
         <FileText className="size-6 text-primary" aria-hidden="true" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Declaración de Renta {year}</h1>
-          <p className="text-sm text-muted-foreground">
-            Estimación de planeación tributaria para personas naturales (tabla DT 2026).
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title", { year })}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -49,9 +67,7 @@ export default async function RentDeclarationPage({
         <CardContent className="flex items-start gap-3 py-4">
           <AlertCircle className="size-5 shrink-0 text-amber-500" aria-hidden="true" />
           <p className="text-sm text-amber-900 dark:text-amber-200">
-            Esta es una <strong>estimación de planeación</strong>, no un documento tributario oficial.
-            Los rubros deducibles se infieren por palabras clave en tus categorías. Confirma los
-            valores con tu contador antes de presentar.
+            {t.rich("disclaimer", { strong: (chunks) => <strong>{chunks}</strong> })}
           </p>
         </CardContent>
       </Card>
@@ -59,15 +75,15 @@ export default async function RentDeclarationPage({
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Ingreso bruto anual</CardDescription>
-            <CardTitle className="text-2xl">{formatCop(result.grossIncome)}</CardTitle>
+            <CardDescription>{t("kpis.grossIncome")}</CardDescription>
+            <CardTitle className="text-2xl">{formatCurrency(result.grossIncome, "COP", locale)}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Renta exenta (25%, tope)</CardDescription>
+            <CardDescription>{t("kpis.exempt")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-600 dark:text-emerald-400">
-              −{formatCop(result.exemptIncome)}
+              −{formatCurrency(result.exemptIncome, "COP", locale)}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -75,35 +91,35 @@ export default async function RentDeclarationPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Deducciones</CardTitle>
+          <CardTitle className="text-base">{t("deductions")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <Row label="Salud (16%, tope)" value={result.deductions.health} />
-          <Row label="Educación (tope)" value={result.deductions.education} />
-          <Row label="Intereses vivienda (tope)" value={result.deductions.housing} />
-          <Row label={`Dependientes (${dependents})`} value={result.deductions.dependents} />
+          <Row label={t("rows.health")} value={result.deductions.health} locale={locale} />
+          <Row label={t("rows.education")} value={result.deductions.education} locale={locale} />
+          <Row label={t("rows.housing")} value={result.deductions.housing} locale={locale} />
+          <Row label={t("rows.dependents", { count: dependents })} value={result.deductions.dependents} locale={locale} />
           <div className="border-t border-border pt-2">
-            <Row label="Total deducciones" value={result.deductions.total} strong />
-            <Row label="Base gravable" value={result.taxableBase} strong />
+            <Row label={t("rows.total")} value={result.deductions.total} strong locale={locale} />
+            <Row label={t("rows.taxable")} value={result.taxableBase} strong locale={locale} />
           </div>
         </CardContent>
       </Card>
 
       <Card className="border-primary/30">
         <CardHeader className="pb-2">
-          <CardDescription>Impuesto estimado a cargo</CardDescription>
-          <CardTitle className="text-3xl text-primary">{formatCop(result.tax)}</CardTitle>
+          <CardDescription>{t("tax")}</CardDescription>
+          <CardTitle className="text-3xl text-primary">{formatCurrency(result.tax, "COP", locale)}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground">
-            Tasa efectiva: {(result.effectiveRate * 100).toFixed(2)}% sobre el ingreso bruto.
+            {t("effectiveRate", { rate: (result.effectiveRate * 100).toFixed(2) })}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Notas</CardTitle>
+          <CardTitle className="text-base">{t("notes")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm text-muted-foreground">
           {result.notes.map((note, i) => (
@@ -111,15 +127,6 @@ export default async function RentDeclarationPage({
           ))}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function Row({ label, value, strong }: { label: string; value: number; strong?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className={strong ? "font-semibold" : "text-muted-foreground"}>{label}</span>
-      <span className={`tabular-nums ${strong ? "font-semibold" : ""}`}>{formatCop(value)}</span>
     </div>
   );
 }

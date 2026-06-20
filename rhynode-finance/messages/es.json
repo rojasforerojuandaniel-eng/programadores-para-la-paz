@@ -267,6 +267,18 @@
       "balancesDesc": "Positivo = le deben; negativo = debe.",
       "settlement": "Liquidación sugerida"
     },
+    "rent": {
+      "title": "Declaración de Renta {year}",
+      "subtitle": "Estimación de planeación tributaria para personas naturales (tabla DT 2026).",
+      "signIn": "Inicia sesión para ver tu declaración.",
+      "disclaimer": "Esta es una <strong>estimación de planeación</strong>, no un documento tributario oficial. Los rubros deducibles se infieren por palabras clave en tus categorías. Confirma los valores con tu contador antes de presentar.",
+      "kpis": { "grossIncome": "Ingreso bruto anual", "exempt": "Renta exenta (25%, tope)" },
+      "deductions": "Deducciones",
+      "rows": { "health": "Salud (16%, tope)", "education": "Educación (tope)", "housing": "Intereses vivienda (tope)", "dependents": "Dependientes ({count})", "total": "Total deducciones", "taxable": "Base gravable" },
+      "tax": "Impuesto estimado a cargo",
+      "effectiveRate": "Tasa efectiva: {rate}% sobre el ingreso bruto.",
+      "notes": "Notas"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

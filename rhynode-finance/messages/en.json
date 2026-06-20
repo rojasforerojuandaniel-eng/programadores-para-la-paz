@@ -267,6 +267,18 @@
       "balancesDesc": "Positive = owed to them; negative = owes.",
       "settlement": "Suggested settlement"
     },
+    "rent": {
+      "title": "Income Tax Declaration {year}",
+      "subtitle": "Tax planning estimate for individuals (DT 2026 table).",
+      "signIn": "Sign in to see your tax declaration.",
+      "disclaimer": "This is a <strong>planning estimate</strong>, not an official tax document. Deductible items are inferred by keywords in your categories. Confirm the values with your accountant before filing.",
+      "kpis": { "grossIncome": "Annual gross income", "exempt": "Exempt income (25%, cap)" },
+      "deductions": "Deductions",
+      "rows": { "health": "Health (16%, cap)", "education": "Education (cap)", "housing": "Housing interest (cap)", "dependents": "Dependents ({count})", "total": "Total deductions", "taxable": "Taxable base" },
+      "tax": "Estimated tax owed",
+      "effectiveRate": "Effective rate: {rate}% of gross income.",
+      "notes": "Notes"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
