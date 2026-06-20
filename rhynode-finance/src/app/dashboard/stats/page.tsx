@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate, formatNumber } from "@/lib/format";
 import {
   ArrowLeftRight,
   FileText,
@@ -29,7 +32,7 @@ import {
   format,
   eachWeekOfInterval,
 } from "date-fns";
-import { es } from "date-fns/locale";
+import { es as esFns, enUS } from "date-fns/locale";
 
 interface WeeklyXp {
   week: string;
@@ -37,16 +40,9 @@ interface WeeklyXp {
   xp: number;
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function getWeeklyXp(
-  activities: { xpEarned: number; createdAt: Date }[]
+  activities: { xpEarned: number; createdAt: Date }[],
+  locale: Locale,
 ): WeeklyXp[] {
   const now = new Date();
   const start = startOfWeek(subWeeks(now, 7), { weekStartsOn: 1 });
@@ -54,6 +50,7 @@ function getWeeklyXp(
     { start, end: startOfWeek(now, { weekStartsOn: 1 }) },
     { weekStartsOn: 1 }
   );
+  const fnsLocale = locale === "en" ? enUS : esFns;
 
   return weeks.map((weekStart) => {
     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -67,7 +64,7 @@ function getWeeklyXp(
 
     return {
       week: format(weekStart, "yyyy-MM-dd"),
-      label: format(weekStart, "d MMM", { locale: es }),
+      label: format(weekStart, "d MMM", { locale: fnsLocale }),
       xp,
     };
   });
@@ -78,6 +75,10 @@ export default async function StatsPage() {
   if (!profile) {
     redirect("/sign-in");
   }
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.stats" });
 
   const prisma = getPrisma();
 
@@ -148,31 +149,31 @@ export default async function StatsPage() {
     )
   ).size;
 
-  const weeklyXp = getWeeklyXp(recentActivities);
+  const weeklyXp = getWeeklyXp(recentActivities, locale);
 
   const kpis = [
     {
-      label: "Transacciones este mes",
+      label: t("kpis.txMonth"),
       value: transactionsThisMonth,
       icon: ArrowLeftRight,
     },
     {
-      label: "Facturas este mes",
+      label: t("kpis.invMonth"),
       value: invoicesCount,
       icon: FileText,
     },
     {
-      label: "Ahorro acumulado",
-      value: formatCurrency(savings),
+      label: t("kpis.savings"),
+      value: formatCurrency(savings, "COP", locale),
       icon: PiggyBank,
     },
     {
-      label: "XP ganado este mes",
+      label: t("kpis.xpMonth"),
       value: `${xpThisMonth} XP`,
       icon: Zap,
     },
     {
-      label: "Días activos (30 días)",
+      label: t("kpis.activeDays"),
       value: activeDays,
       icon: Calendar,
     },
@@ -182,34 +183,32 @@ export default async function StatsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="heading-section">Mis stats</h1>
-          <p className="body-default mt-1">
-            Tu resumen personal de uso y progreso
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <Button asChild variant="outline" className="w-full sm:w-auto">
           <Link href="/dashboard/leaderboard">
             <Medal className="mr-2 h-4 w-4" aria-hidden="true" />
-            Ver leaderboard
+            {t("leaderboard")}
           </Link>
         </Button>
       </div>
 
       <Card className="surface-elevated-2">
         <CardContent className="flex items-center gap-4 p-4 sm:p-5">
-          <ClientAvatar name={profile.name ?? "Usuario"} className="h-14 w-14 text-base" />
+          <ClientAvatar name={profile.name ?? t("user")} className="h-14 w-14 text-base" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold text-foreground">
-              {profile.name ?? "Usuario"}
+              {profile.name ?? t("user")}
             </p>
             <p className="text-sm text-muted-foreground">
-              {profile.title ?? "Sin título aún"}
+              {profile.title ?? t("noTitle")}
             </p>
           </div>
           <div className="hidden text-right sm:block">
             <LevelBadge level={profile.level} />
             <p className="mt-1 text-xs text-muted-foreground">
-              {profile.xp.toLocaleString("es-CO")} XP
+              {formatNumber(profile.xp, locale)} XP
             </p>
           </div>
         </CardContent>
@@ -230,7 +229,7 @@ export default async function StatsPage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Target className="h-4 w-4 text-primary" aria-hidden="true" />
-            XP por semana
+            {t("xpPerWeek")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -242,7 +241,7 @@ export default async function StatsPage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Trophy className="h-4 w-4 text-primary" aria-hidden="true" />
-            Logros recientes
+            {t("recentAchievements")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -250,19 +249,19 @@ export default async function StatsPage() {
             <EmptyStateCard
               variant="sm"
               icon={Trophy}
-              title="Aún no hay logros desbloqueados"
-              description="Completa acciones financieras para ganar reconocimientos."
+              title={t("empty.title")}
+              description={t("empty.description")}
               action={
                 <Button asChild variant="outline" size="sm">
                   <Link href="/dashboard/personal/achievements">
-                    Ver logros
+                    {t("viewAchievements")}
                     <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                   </Link>
                 </Button>
               }
             />
           ) : (
-            <ul role="list" aria-label="Logros recientes" className="space-y-3">
+            <ul role="list" aria-label={t("recentAchievements")} className="space-y-3">
               {recentAchievements.map((achievement) => (
                 <li key={achievement.id}>
                   <div className="flex items-start gap-3 rounded-xl border border-border bg-card/50 p-3 transition-colors hover:bg-card">
@@ -283,13 +282,7 @@ export default async function StatsPage() {
                         </span>
                         {achievement.unlockedAt && (
                           <span>
-                            {new Date(achievement.unlockedAt).toLocaleDateString(
-                              "es-CO",
-                              {
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}
+                            {fmtDate(achievement.unlockedAt, locale, { month: "short", day: "numeric" })}
                           </span>
                         )}
                       </div>

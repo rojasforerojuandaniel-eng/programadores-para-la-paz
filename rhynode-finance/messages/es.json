@@ -326,6 +326,18 @@
       "columns": { "project": "Proyecto", "status": "Estado", "budget": "Presupuesto", "spent": "Gastado", "progress": "Avance", "dates": "Fechas", "invoices": "Facturas", "actions": "Acciones" },
       "empty": { "title": "Organiza tu trabajo en proyectos", "description": "Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado.", "hint": "Empieza creando tu primer proyecto." }
     },
+    "stats": {
+      "title": "Mis stats",
+      "subtitle": "Tu resumen personal de uso y progreso",
+      "leaderboard": "Ver leaderboard",
+      "user": "Usuario",
+      "noTitle": "Sin título aún",
+      "xpPerWeek": "XP por semana",
+      "recentAchievements": "Logros recientes",
+      "viewAchievements": "Ver logros",
+      "empty": { "title": "Aún no hay logros desbloqueados", "description": "Completa acciones financieras para ganar reconocimientos." },
+      "kpis": { "txMonth": "Transacciones este mes", "invMonth": "Facturas este mes", "savings": "Ahorro acumulado", "xpMonth": "XP ganado este mes", "activeDays": "Días activos (30 días)" }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

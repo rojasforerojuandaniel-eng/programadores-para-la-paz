@@ -326,6 +326,18 @@
       "columns": { "project": "Project", "status": "Status", "budget": "Budget", "spent": "Spent", "progress": "Progress", "dates": "Dates", "invoices": "Invoices", "actions": "Actions" },
       "empty": { "title": "Organize your work into projects", "description": "Create projects with budget and dates. Link them to invoices to see in real time how much you've spent.", "hint": "Start by creating your first project." }
     },
+    "stats": {
+      "title": "My stats",
+      "subtitle": "Your personal usage and progress summary",
+      "leaderboard": "View leaderboard",
+      "user": "User",
+      "noTitle": "No title yet",
+      "xpPerWeek": "XP per week",
+      "recentAchievements": "Recent achievements",
+      "viewAchievements": "View achievements",
+      "empty": { "title": "No achievements unlocked yet", "description": "Complete financial actions to earn badges." },
+      "kpis": { "txMonth": "Transactions this month", "invMonth": "Invoices this month", "savings": "Total savings", "xpMonth": "XP earned this month", "activeDays": "Active days (30 days)" }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
