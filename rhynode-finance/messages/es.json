@@ -28,6 +28,13 @@
     "skipToContent": "Saltar al contenido principal",
     "sectionsAria": "Secciones del dashboard",
     "theme": "Tema",
+    "quickAdd": {
+      "label": "Registrar movimiento",
+      "spent": "Gasté",
+      "received": "Recibí",
+      "spentHint": "Registrar un gasto",
+      "receivedHint": "Registrar un ingreso"
+    },
     "transactions": {
       "title": "Transacciones",
       "subtitle": "Registro de ingresos, gastos y movimientos",

@@ -19,12 +19,14 @@ interface CreateTransactionSheetProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
   defaultOpen?: boolean;
+  defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
 }
 
 export function CreateTransactionSheet({
   onCreate,
   trigger,
   defaultOpen = false,
+  defaultType,
 }: CreateTransactionSheetProps) {
   const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
@@ -39,7 +41,7 @@ export function CreateTransactionSheet({
 
   // Desktop keeps the centered dialog; mobile gets the bottom sheet.
   if (!isMobile) {
-    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} defaultOpen={defaultOpen} />;
+    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} defaultOpen={defaultOpen} defaultType={defaultType} />;
   }
 
   return (
@@ -56,7 +58,7 @@ export function CreateTransactionSheet({
         <BottomSheetHeader>
           <BottomSheetTitle id="tx-sheet-title">Nueva Transacción</BottomSheetTitle>
         </BottomSheetHeader>
-        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} />
+        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} />
       </BottomSheetContent>
     </BottomSheet>
   );
