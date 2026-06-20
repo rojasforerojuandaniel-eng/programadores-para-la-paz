@@ -1,7 +1,9 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getLocale } from "@/lib/locale-server";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
@@ -63,18 +65,21 @@ function nextChargeDate(
   return addMonths(base, periods * months);
 }
 
-function DetectButton({ className }: { className?: string }) {
+function DetectButton({ label, className }: { label: string; className?: string }) {
   return (
     <form action="/api/personal/subscriptions/detect" method="POST">
       <Button type="submit" className={cn("gap-2", className)}>
         <RefreshCw className="h-4 w-4" />
-        Detectar
+        {label}
       </Button>
     </form>
   );
 }
 
 async function SubscriptionsContent({ filter }: { filter: string }) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.subscriptions" });
   const profile = await getUserProfile();
   if (!profile) return null;
 
@@ -112,19 +117,17 @@ async function SubscriptionsContent({ filter }: { filter: string }) {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="heading-section">Suscripciones</h1>
-            <p className="body-default mt-1">
-              Detecta y monitorea tus suscripciones automáticas
-            </p>
+            <h1 className="heading-section">{t("title")}</h1>
+            <p className="body-default mt-1">{t("subtitle")}</p>
           </div>
-          <DetectButton />
+          <DetectButton label={t("detect")} />
         </div>
         <EmptyStateCard
           icon={CreditCard}
-          title="Detecta suscripciones automáticamente"
-          description="Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar."
-          hint="Presiona detectar para descubrir tus suscripciones."
-          action={<DetectButton className="w-full" />}
+          title={t("empty.title")}
+          description={t("empty.description")}
+          hint={t("empty.hint")}
+          action={<DetectButton label={t("detect")} className="w-full" />}
         />
       </div>
     );
