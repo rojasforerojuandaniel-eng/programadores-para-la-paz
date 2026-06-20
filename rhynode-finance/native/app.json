@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Rhynode",
+    "slug": "rhynode",
+    "scheme": "rhynode",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "finance.rhynode.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Rhynode usa la cámara para escanear facturas y recibos.",
+        "NSFaceIDUsageDescription": "Rhynode usa Face ID para proteger el acceso a tus finanzas."
+      },
+      "associatedDomains": ["applinks:rhynode.finance"]
+    },
+    "android": {
+      "package": "finance.rhynode.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": { "scheme": "rhynode" },
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-notifications",
+      "expo-local-authentication",
+      [
+        "expo-camera",
+        { "cameraPermissionText": "Rhynode usa la cámara para escanear facturas y recibos." }
+      ]
+    ],
+    "extra": {
+      "appUrl": "https://rhynode-finance.vercel.app"
+    }
+  }
+}
