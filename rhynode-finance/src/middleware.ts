@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-const publicPatterns = [
+const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
@@ -28,9 +28,11 @@ const publicPatterns = [
   "/sitemap.xml",
   "/manifest.json",
   "/sw.js",
-];
+  // English landing is public.
+  "/en",
+]);
 
-const publicApiPatterns = [
+const isPublicApiRoute = createRouteMatcher([
   "/api/webhooks/(.*)",
   "/api/health",
   "/api/debug-dashboard",
@@ -38,36 +40,25 @@ const publicApiPatterns = [
   "/api/payment-links/public/(.*)",
   "/api/payment-links/([^/]+)/checkout/(.*)",
   "/api/payment-links/([^/]+)/pay",
-];
+]);
 
-// The default locale (es) has no URL prefix (localePrefix: "as-needed"). Add
-// prefixed variants for the non-default locales so /en/sign-in etc. are still
-// treated as public by the Clerk matchers.
-const nonDefaultLocales = routing.locales.filter((l) => l !== routing.defaultLocale);
-const withLocalePrefix = (patterns: string[]) => [
-  ...patterns,
-  ...nonDefaultLocales.flatMap((l) =>
-    patterns.map((p) => (p === "/" ? `/${l}` : `/${l}${p}`)),
-  ),
-];
-
-const isPublicRoute = createRouteMatcher(withLocalePrefix(publicPatterns));
-const isPublicApiRoute = createRouteMatcher(withLocalePrefix(publicApiPatterns));
-
-function localeFromPath(pathname: string): string {
-  for (const l of nonDefaultLocales) {
-    if (pathname === `/${l}` || pathname.startsWith(`/${l}/`)) return l;
-  }
-  return routing.defaultLocale;
+/**
+ * Stage 1 of i18n only localizes the landing page. next-intl's middleware runs
+ * exclusively for "/" and "/en" so every other route (including all protected
+ * dashboard routes) passes through the original Clerk auth logic unchanged —
+ * no auth behavior change outside the public landing.
+ */
+function isLocalizedLanding(pathname: string): boolean {
+  return pathname === "/" || pathname === "/en";
 }
 
 export default clerkMiddleware(async (auth, request) => {
   const pathname = request.nextUrl.pathname;
   const isApi = pathname.startsWith("/api");
 
-  // next-intl handles locale detection/cookie and /en rewrites for navigation
-  // requests only. Skip it for API routes so JSON auth responses stay untouched.
-  const intlResponse = isApi ? null : intlMiddleware(request);
+  // Only run next-intl for the localized landing; never for API.
+  const intlResponse =
+    !isApi && isLocalizedLanding(pathname) ? intlMiddleware(request) : null;
 
   const { userId, sessionId } = await auth();
 
@@ -82,9 +73,10 @@ export default clerkMiddleware(async (auth, request) => {
         headers: { "content-type": "application/json" },
       });
     }
-    const locale = localeFromPath(pathname);
-    const signInPath = locale === routing.defaultLocale ? "/sign-in" : `/${locale}/sign-in`;
-    return NextResponse.redirect(new URL(signInPath, request.url));
+    // Stage 1: protected routes are not yet localized → redirect to the
+    // existing /sign-in. (Locale-aware redirects come when the dashboard is
+    // localized in a later stage.)
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   const response = intlResponse ?? NextResponse.next();
