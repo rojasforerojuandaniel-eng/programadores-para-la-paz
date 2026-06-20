@@ -1,24 +1,23 @@
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { CalendarView } from "@/components/dashboard/calendar-view";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { CreateSubscriptionDialog } from "./create-subscription-dialog";
 import { addFrequency, daysUntil } from "../subscriptions/subscription-utils";
 import { CreditCard, Wallet, CalendarDays } from "lucide-react";
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
 export default async function CalendarPage() {
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.calendar" });
 
   const profile = await getUserProfile();
   const subscriptions = profile
@@ -46,14 +45,21 @@ export default async function CalendarPage() {
   const totalEstimated = upcoming.reduce((sum, s) => sum + s.amount, 0);
   const nextSubscription = upcoming[0];
 
+  const daysNextValue =
+    nextSubscription?.daysRemaining === undefined
+      ? "—"
+      : nextSubscription.daysRemaining <= 0
+        ? nextSubscription.daysRemaining === 0
+          ? t("days.today")
+          : t("days.overdue", { days: Math.abs(nextSubscription.daysRemaining) })
+        : t("days.left", { days: nextSubscription.daysRemaining });
+
   return (
     <div className="container mx-auto max-w-6xl px-4 py-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Calendario de Pagos</h1>
-          <p className="body-default mt-1">
-            Visualiza tus suscripciones y vencimientos
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateSubscriptionDialog />
       </div>
@@ -61,26 +67,18 @@ export default async function CalendarPage() {
       {subscriptions.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <KpiCard
-            label="Total estimado próximos pagos"
-            value={formatCurrency(totalEstimated, org.currency)}
+            label={t("kpis.total")}
+            value={formatCurrency(totalEstimated, org.currency, locale)}
             icon={Wallet}
           />
           <KpiCard
-            label="Próximos pagos"
+            label={t("kpis.upcoming")}
             value={upcoming.length}
             icon={CreditCard}
           />
           <KpiCard
-            label="Días para el próximo pago"
-            value={
-              nextSubscription?.daysRemaining === undefined
-                ? "—"
-                : nextSubscription.daysRemaining <= 0
-                  ? nextSubscription.daysRemaining === 0
-                    ? "Hoy"
-                    : `Vencido hace ${Math.abs(nextSubscription.daysRemaining)} días`
-                  : `${nextSubscription.daysRemaining} días`
-            }
+            label={t("kpis.daysNext")}
+            value={daysNextValue}
             icon={CalendarDays}
             valueClassName={
               nextSubscription && nextSubscription.daysRemaining <= 3

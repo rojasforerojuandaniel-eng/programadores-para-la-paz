@@ -239,6 +239,34 @@
         "hint": "Presiona detectar para descubrir tus suscripciones."
       }
     },
+    "calendar": {
+      "title": "Calendario de Pagos",
+      "subtitle": "Visualiza tus suscripciones y vencimientos",
+      "kpis": { "total": "Total estimado próximos pagos", "upcoming": "Próximos pagos", "daysNext": "Días para el próximo pago" },
+      "days": { "today": "Hoy", "overdue": "Vencido hace {days} días", "left": "{days} días" }
+    },
+    "split": {
+      "title": "Dividir Gastos",
+      "subtitle": "Cuentas compartidas para parejas, roommates o viajes. Se guarda en tu cuenta.",
+      "me": "Yo",
+      "people": "Personas",
+      "namePh": "Nombre",
+      "nameAria": "Nombre de la persona",
+      "add": "Agregar",
+      "removeAria": "Eliminar {name}",
+      "addExpense": "Agregar gasto",
+      "descPh": "Descripción",
+      "descAria": "Descripción del gasto",
+      "amountPh": "Monto",
+      "amountAria": "Monto",
+      "paidByAria": "Pagado por",
+      "paidByPrefix": "pagó {name}",
+      "removeExpenseAria": "Eliminar gasto",
+      "total": "Total:",
+      "balances": "Saldos",
+      "balancesDesc": "Positivo = le deben; negativo = debe.",
+      "settlement": "Liquidación sugerida"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

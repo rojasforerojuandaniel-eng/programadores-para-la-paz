@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Trash2, ArrowRight } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { getSplitGroup, saveSplitGroup } from "./actions";
 
 interface Member {
@@ -40,16 +43,11 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function formatCop(n: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
 export default function SplitPage() {
-  const [members, setMembers] = useState<Member[]>([{ id: uid(), name: "Yo" }]);
+  const t = useTranslations("dashboard.split");
+  const locale = useLocale() as Locale;
+  const fmt = (n: number) => formatCurrency(n, "COP", locale);
+  const [members, setMembers] = useState<Member[]>(() => [{ id: uid(), name: t("me") }]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [balances, setBalances] = useState<Balance[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
@@ -184,29 +182,27 @@ export default function SplitPage() {
       <div className="flex items-center gap-3">
         <Users className="size-6 text-primary" aria-hidden="true" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dividir Gastos</h1>
-          <p className="text-sm text-muted-foreground">
-            Cuentas compartidas para parejas, roommates o viajes. Se guarda en tu cuenta.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Personas</CardTitle>
+          <CardTitle className="text-base">{t("people")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
             <input
               className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Nombre"
+              placeholder={t("namePh")}
               value={memberName}
               onChange={(e) => setMemberName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addMember()}
-              aria-label="Nombre de la persona"
+              aria-label={t("nameAria")}
             />
             <Button onClick={addMember} size="sm">
-              <Plus className="size-4" /> Agregar
+              <Plus className="size-4" /> {t("add")}
             </Button>
           </div>
           <ul className="flex flex-wrap gap-2">
@@ -220,7 +216,7 @@ export default function SplitPage() {
                   <button
                     onClick={() => removeMember(m.id)}
                     className="text-muted-foreground hover:text-destructive"
-                    aria-label={`Eliminar ${m.name}`}
+                    aria-label={t("removeAria", { name: m.name })}
                   >
                     <Trash2 className="size-3" />
                   </button>
@@ -233,30 +229,30 @@ export default function SplitPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Agregar gasto</CardTitle>
+          <CardTitle className="text-base">{t("addExpense")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-[1fr_140px_1fr_auto]">
             <input
               className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-              placeholder="Descripción"
+              placeholder={t("descPh")}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              aria-label="Descripción del gasto"
+              aria-label={t("descAria")}
             />
             <input
               className="rounded-md border border-input bg-background px-3 py-2 text-sm tabular-nums"
-              placeholder="Monto"
+              placeholder={t("amountPh")}
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              aria-label="Monto"
+              aria-label={t("amountAria")}
             />
             <select
               className="rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={effectivePaidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              aria-label="Pagado por"
+              aria-label={t("paidByAria")}
             >
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -275,14 +271,14 @@ export default function SplitPage() {
                 <li key={e.id} className="flex items-center justify-between py-2 text-sm">
                   <span className="truncate">
                     {e.description}{" "}
-                    <span className="text-muted-foreground">· pagó {memberNameById[e.paidBy]}</span>
+                    <span className="text-muted-foreground">· {t("paidByPrefix", { name: memberNameById[e.paidBy] })}</span>
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="tabular-nums font-medium">{formatCop(e.amount)}</span>
+                    <span className="tabular-nums font-medium">{fmt(e.amount)}</span>
                     <button
                       onClick={() => setExpenses((prev) => prev.filter((x) => x.id !== e.id))}
                       className="text-muted-foreground hover:text-destructive"
-                      aria-label="Eliminar gasto"
+                      aria-label={t("removeExpenseAria")}
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -293,7 +289,7 @@ export default function SplitPage() {
           )}
           {expenses.length > 0 && (
             <p className="text-right text-sm text-muted-foreground">
-              Total: <span className="font-semibold text-foreground">{formatCop(totalSpent)}</span>
+              {t("total")} <span className="font-semibold text-foreground">{fmt(totalSpent)}</span>
             </p>
           )}
         </CardContent>
@@ -303,8 +299,8 @@ export default function SplitPage() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Saldos</CardTitle>
-              <CardDescription>Positivo = le deben; negativo = debe.</CardDescription>
+              <CardTitle className="text-base">{t("balances")}</CardTitle>
+              <CardDescription>{t("balancesDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {balances.map((b) => (
@@ -319,7 +315,7 @@ export default function SplitPage() {
                           : ""
                     }`}
                   >
-                    {formatCop(b.net)}
+                    {fmt(b.net)}
                   </span>
                 </div>
               ))}
@@ -329,7 +325,7 @@ export default function SplitPage() {
           {settlements.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Liquidación sugerida</CardTitle>
+                <CardTitle className="text-base">{t("settlement")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {settlements.map((s, i) => (
@@ -337,7 +333,7 @@ export default function SplitPage() {
                     <span className="font-medium">{memberNameById[s.from]}</span>
                     <ArrowRight className="size-4 text-muted-foreground" aria-hidden="true" />
                     <span className="font-medium">{memberNameById[s.to]}</span>
-                    <span className="ml-auto tabular-nums">{formatCop(s.amount)}</span>
+                    <span className="ml-auto tabular-nums">{fmt(s.amount)}</span>
                   </div>
                 ))}
               </CardContent>

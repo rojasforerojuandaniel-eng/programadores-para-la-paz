@@ -239,6 +239,34 @@
         "hint": "Press detect to discover your subscriptions."
       }
     },
+    "calendar": {
+      "title": "Payment Calendar",
+      "subtitle": "Visualize your subscriptions and due dates",
+      "kpis": { "total": "Estimated upcoming payments", "upcoming": "Upcoming payments", "daysNext": "Days to next payment" },
+      "days": { "today": "Today", "overdue": "Overdue {days} days ago", "left": "{days} days" }
+    },
+    "split": {
+      "title": "Split Expenses",
+      "subtitle": "Shared accounts for couples, roommates or trips. Saved to your account.",
+      "me": "Me",
+      "people": "People",
+      "namePh": "Name",
+      "nameAria": "Person name",
+      "add": "Add",
+      "removeAria": "Remove {name}",
+      "addExpense": "Add expense",
+      "descPh": "Description",
+      "descAria": "Expense description",
+      "amountPh": "Amount",
+      "amountAria": "Amount",
+      "paidByAria": "Paid by",
+      "paidByPrefix": "paid by {name}",
+      "removeExpenseAria": "Remove expense",
+      "total": "Total:",
+      "balances": "Balances",
+      "balancesDesc": "Positive = owed to them; negative = owes.",
+      "settlement": "Suggested settlement"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
