@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "features": "Funciones",
+    "pricing": "Precios",
+    "testimonials": "Testimonios",
+    "faq": "FAQ",
+    "signIn": "Iniciar sesión",
+    "signUp": "Empezar gratis",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú",
+    "menuTitle": "Menú de navegación",
+    "theme": "Tema"
+  },
+  "hero": {
+    "badge": "App financiera #1 para personas y pymes en Colombia",
+    "title": "Ahorra más, cobra rápido y haz crecer tu patrimonio",
+    "titleHighlight": " desde una sola app",
+    "subtitle": "Rhynode organiza tus finanzas personales y empresariales en Colombia. Presupuestos con IA, facturación electrónica DIAN, pagos con Wompi y reportes fiscales que realmente entiendes.",
+    "ctaPrimary": "Probar gratis 14 días",
+    "ctaSecondary": "Ver planes y precios",
+    "fineprint": "Sin tarjeta de crédito. Cancela cuando quieras. Configura tu cuenta en menos de 2 minutos.",
+    "trustHecho": "Hecho para Colombia",
+    "trustDian": "Preparado para facturación DIAN",
+    "trustEncryption": "Encriptación de datos",
+    "trustBanks": "Conecta tus bancos colombianos"
+  },
+  "trustBadges": {
+    "encryption": "Encriptación AES-256",
+    "dian": "Estructura DIAN lista",
+    "wompi": "Wompi y PSE integrados",
+    "pwa": "App PWA sin instalar",
+    "spanish": "Soporte en español",
+    "noData": "No vendemos tus datos"
+  },
+  "stats": {
+    "usersValue": "+10.000",
+    "usersLabel": "usuarios activos",
+    "managedValue": "$50MM+",
+    "managedLabel": "gestionados",
+    "ratingValue": "4.9/5",
+    "ratingLabel": "rating app",
+    "uptimeValue": "99.9%",
+    "uptimeLabel": "uptime"
+  },
+  "banks": {
+    "heading": "Conecta con tus bancos y pasarelas de Colombia",
+    "list": "Bancolombia, Davivienda, Nu, Nequi, PSE, Wompi"
+  },
+  "features": {
+    "sectionBadge": "Todo lo que necesitas",
+    "sectionTitle": "Finanzas personales y de negocio, juntas",
+    "sectionSubtitle": "Tanto si ahorras para tu próximo viaje como si facturas para clientes, Rhynode se adapta a ti.",
+    "personal": "Personal",
+    "business": "Negocio",
+    "items": {
+      "budgets": { "title": "Presupuestos inteligentes", "description": "Crea presupuestos por categoría y recibe alertas antes de pasarte." },
+      "goals": { "title": "Metas de ahorro con propósito", "description": "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo." },
+      "expenses": { "title": "Gastos categorizados con IA", "description": "Entiende exactamente a dónde va tu dinero sin clasificar manualmente." },
+      "invoicing": { "title": "Facturación electrónica DIAN", "description": "Emite facturas válidas, envíalas automáticamente y controla pagos." },
+      "receivables": { "title": "Cuentas por cobrar", "description": "Gestiona clientes y cobros. Reduce morosidad con recordatorios automáticos." },
+      "taxes": { "title": "Impuestos y reportes fiscales", "description": "Genera reportes pre-llenados y cumple con tus obligaciones ante la DIAN." }
+    }
+  },
+  "howItWorks": {
+    "title": "Empieza en minutos, no en días",
+    "steps": {
+      "01": { "title": "Crea tu cuenta", "description": "Regístrate gratis en menos de 2 minutos desde web o móvil." },
+      "02": { "title": "Conecta tu información", "description": "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado." },
+      "03": { "title": "Toma decisiones", "description": "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio." }
+    }
+  },
+  "testimonials": {
+    "title": "Lo que dicen nuestros usuarios",
+    "subtitle": "Más de 10.000 personas y pymes en Colombia confían en Rhynode.",
+    "items": {
+      "mfl": { "name": "María Fernanda López", "role": "Freelancer de diseño", "quote": "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar." },
+      "car": { "name": "Carlos Andrés Ramírez", "role": "Dueño de tienda online", "quote": "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta." },
+      "dt": { "name": "Daniela Torres", "role": "Contadora independiente", "quote": "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología." }
+    }
+  },
+  "pricing": {
+    "header": "Plan simple, cero sorpresas",
+    "subtitle": "Empieza gratis y escala cuando lo necesites. Sin contratos ni cargos ocultos.",
+    "mostPopular": "Más popular",
+    "redirecting": "Redirigiendo...",
+    "checkoutError": "Error al iniciar checkout",
+    "networkError": "Error de red. Intenta de nuevo.",
+    "comingSoon": "Próximamente",
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "Gratis",
+        "description": "Para quienes quieren controlar su dinero personal.",
+        "features": ["Presupuestos y metas de ahorro", "Seguimiento de gastos", "Hasta 2 cuentas bancarias", "Reportes mensuales", "App móvil PWA"],
+        "cta": "Empezar gratis"
+      },
+      "growth": {
+        "name": "Growth",
+        "price": "$19.900",
+        "period": "/mes",
+        "description": "Finanzas personales con IA y escenarios avanzados.",
+        "features": ["Todo lo del plan Starter", "Categorización con IA", "Metas avanzadas y simuladores", "Cuentas ilimitadas", "Alertas inteligentes"],
+        "cta": "Unirse a la lista"
+      },
+      "scale": {
+        "name": "Scale",
+        "price": "$79.900",
+        "period": "/mes",
+        "description": "Facturación DIAN, cobros y equipo para pymes.",
+        "features": ["Todo lo del plan Growth", "Facturación electrónica DIAN", "100 facturas/mes", "3 usuarios incluidos", "Clientes ilimitados", "Soporte prioritario"],
+        "cta": "Elegir Scale"
+      }
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "subtitle": "Respuestas claras sobre DIAN, seguridad, pagos y planes en Colombia.",
+    "items": {
+      "accountant": { "q": "¿Rhynode reemplaza a mi contador?", "a": "No. Rhynode automatiza tareas repetitivas y organiza tu información para que tú o tu contador trabajen más rápido y con menos errores." },
+      "dian": { "q": "¿La facturación es válida ante la DIAN?", "a": "Sí. Generamos facturas electrónicas con la estructura requerida por la DIAN y preparamos la integración con proveedores de facturación autorizados." },
+      "payments": { "q": "¿Puedo pagar con Wompi, PSE o tarjeta?", "a": "Sí. Los planes pagos se procesan con Wompi, lo que te permite pagar con PSE, tarjetas de crédito/débito y otros medios disponibles en Colombia." },
+      "personalOnly": { "q": "¿Puedo usarlo solo para finanzas personales?", "a": "Por supuesto. El plan Starter es gratis para siempre y puedes usarlo sin activar funciones de negocio." },
+      "security": { "q": "¿Mis datos financieros están seguros?", "a": "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información. Tú eres dueño de tus datos." },
+      "price": { "q": "¿Cuánto cuesta y hay contratos de permanencia?", "a": "El plan Starter es gratis. Growth y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras." },
+      "mobile": { "q": "¿Funciona en móvil?", "a": "Sí. Rhynode es una PWA, así que puedes usarla desde el navegador de tu celular, agregarla a tu pantalla de inicio y recibir notificaciones." },
+      "bank": { "q": "¿Cómo conecto mi banco?", "a": "Puedes registrar movimientos manualmente o conectar cuentas de Bancolombia, Davivienda, Nu, Nequi y otras entidades compatibles con PSE/Wompi." }
+    }
+  },
+  "cta": {
+    "title": "Listo para tomar el control de tus finanzas?",
+    "subtitle": "Únete a miles de personas y negocios en Colombia que usan Rhynode para crecer con confianza.",
+    "primary": "Crear cuenta gratis",
+    "secondary": "Iniciar sesión"
+  },
+  "footer": {
+    "tagline": "Finanzas personales e inteligencia contable para personas y pymes en Colombia.",
+    "doubts": "¿Dudas? Escríbenos a hola@rhynode.finance",
+    "copyright": "© {year} Rhynode. Hecho en Colombia.",
+    "categories": {
+      "product": "Producto",
+      "legal": "Legal",
+      "support": "Soporte",
+      "social": "Redes"
+    },
+    "links": {
+      "features": "Funciones",
+      "pricing": "Precios",
+      "testimonials": "Testimonios",
+      "faq": "FAQ",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "cookies": "Cookies",
+      "help": "Centro de ayuda",
+      "contact": "Contacto",
+      "status": "Status",
+      "twitter": "Twitter / X",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "srTwitter": "Twitter",
+    "srEmail": "Correo electrónico",
+    "srLinkedIn": "LinkedIn"
+  },
+  "stickyCta": "Empezar gratis"
+}

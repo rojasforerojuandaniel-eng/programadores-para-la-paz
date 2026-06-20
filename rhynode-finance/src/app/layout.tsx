@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { JsonLdScripts } from "@/components/seo/json-ld";
 import dynamic from "next/dynamic";
@@ -95,14 +97,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
@@ -118,7 +122,9 @@ export default function RootLayout({
         >
           Saltar al contenido principal
         </a>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
         <InstallPrompt />
         <ServiceWorkerRegister />
       </body>
