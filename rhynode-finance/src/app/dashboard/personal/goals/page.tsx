@@ -1,7 +1,10 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as formatDateLocale } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -11,29 +14,8 @@ import { ProgressRowsSkeleton } from "@/components/dashboard/page-skeleton";
 import { TableCell } from "@/components/ui/table";
 import { CreateGoalDialog } from "./create-dialog";
 import { AddSavingsDialog } from "./add-savings-dialog";
-import {
-  formatCurrency,
-  daysLeft,
-  progressPercentage,
-  suggestGoalBasedOnAverage,
-} from "@/lib/finance-math";
+import { daysLeft, progressPercentage, suggestGoalBasedOnAverage } from "@/lib/finance-math";
 import { Target, CheckCircle2, Wallet, Calendar, Sparkles } from "lucide-react";
-
-function formatDate(date: Date | string | null | undefined) {
-  if (!date) return null;
-  return new Date(date).toLocaleDateString("es-CO", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function deadlineLabel(days: number | null) {
-  if (days === null) return null;
-  if (days < 0) return `Vencida hace ${Math.abs(days)} días`;
-  if (days === 0) return "Vence hoy";
-  return `${days} días restantes`;
-}
 
 function deadlineBadgeVariant(days: number | null, isCompleted: boolean) {
   if (isCompleted) return "default";
@@ -43,24 +25,15 @@ function deadlineBadgeVariant(days: number | null, isCompleted: boolean) {
   return "outline";
 }
 
-function EmptyState({ defaultOpen }: { defaultOpen?: boolean }) {
-  return (
-    <EmptyStateCard
-      variant="lg"
-      icon={Target}
-      title="Alcanza tus metas de ahorro"
-      description="Define objetivos claros y haz seguimiento visual de tu progreso día a día."
-      hint="Empieza creando tu primera meta."
-      action={<CreateGoalDialog defaultOpen={defaultOpen} />}
-    />
-  );
-}
-
 interface GoalsPageProps {
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default async function GoalsPage({ searchParams }: GoalsPageProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.goals" });
+
   const profile = await getUserProfile();
   if (!profile) return null;
 
@@ -70,14 +43,8 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
     orderBy: { createdAt: "desc" },
   });
 
-  const totalTarget = goals.reduce(
-    (s, g) => s + decimalToNumber(g.targetAmount),
-    0
-  );
-  const totalCurrent = goals.reduce(
-    (s, g) => s + decimalToNumber(g.currentAmount),
-    0
-  );
+  const totalTarget = goals.reduce((s, g) => s + decimalToNumber(g.targetAmount), 0);
+  const totalCurrent = goals.reduce((s, g) => s + decimalToNumber(g.currentAmount), 0);
   const completed = goals.filter((g) => g.status === "COMPLETED").length;
 
   const suggestion = suggestGoalBasedOnAverage(
@@ -85,39 +52,49 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
       targetAmount: decimalToNumber(g.targetAmount),
       currentAmount: decimalToNumber(g.currentAmount),
       deadline: g.deadline,
-    }))
+    })),
   );
 
   const columns = [
-    { key: "name", header: "Nombre" },
-    { key: "target", header: "Meta" },
-    { key: "saved", header: "Ahorrado" },
-    { key: "progress", header: "Progreso" },
-    { key: "deadline", header: "Fecha objetivo" },
-    { key: "status", header: "Estado" },
-    { key: "actions", header: "Acciones" },
+    { key: "name", header: t("columns.name") },
+    { key: "target", header: t("columns.target") },
+    { key: "saved", header: t("columns.saved") },
+    { key: "progress", header: t("columns.progress") },
+    { key: "deadline", header: t("columns.deadline") },
+    { key: "status", header: t("columns.status") },
+    { key: "actions", header: t("columns.actions") },
   ];
+
+  const fmtDate = (date: Date | string | null | undefined) =>
+    date ? formatDateLocale(date, locale, { year: "numeric", month: "short", day: "numeric" }) : null;
+
+  const deadlineLabel = (days: number | null): string | null => {
+    if (days === null) return null;
+    if (days < 0) return t("deadline.overdue", { days: Math.abs(days) });
+    if (days === 0) return t("deadline.today");
+    return t("deadline.left", { days });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Metas</h1>
-          <p className="body-default mt-1">Administra tus metas de ahorro</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateGoalDialog defaultOpen={searchParams?.new === "1"} />
       </div>
 
       {goals.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <KpiCard label="Meta Total" value={formatCurrency(totalTarget, "COP")} icon={Target} />
+          <KpiCard label={t("total")} value={formatCurrency(totalTarget, "COP", locale)} icon={Target} />
           <KpiCard
-            label="Ahorrado"
-            value={formatCurrency(totalCurrent, "COP")}
+            label={t("saved")}
+            value={formatCurrency(totalCurrent, "COP", locale)}
             icon={Wallet}
             valueClassName="text-success"
           />
-          <KpiCard label="Completadas" value={completed} icon={CheckCircle2} />
+          <KpiCard label={t("completed")} value={completed} icon={CheckCircle2} />
         </div>
       )}
 
@@ -129,23 +106,18 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
                 <Sparkles className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
-                <p className="font-medium">Sugerencia de meta</p>
+                <p className="font-medium">{t("suggestion.title")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Tu ahorro promedio mensual es{" "}
-                  <span className="font-semibold text-foreground">
-                    {formatCurrency(suggestion.monthlyAverage, "COP")}
-                  </span>
-                  . Podrías alcanzar{" "}
-                  <span className="font-semibold text-foreground">
-                    {formatCurrency(suggestion.suggestedTarget, "COP")}
-                  </span>{" "}
-                  en 6 meses.
+                  {t("suggestion.body", {
+                    average: formatCurrency(suggestion.monthlyAverage, "COP", locale),
+                    target: formatCurrency(suggestion.suggestedTarget, "COP", locale),
+                  })}
                 </p>
               </div>
             </div>
             <CreateGoalDialog
               defaultValues={{
-                name: "Nueva meta sugerida",
+                name: t("suggestion.suggestedName"),
                 targetAmount: Math.round(suggestion.suggestedTarget),
                 currency: "COP",
                 deadline: suggestion.suggestedDeadline,
@@ -154,7 +126,7 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
               }}
               trigger={
                 <button type="button" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                  Crear meta sugerida
+                  {t("suggestion.cta")}
                 </button>
               }
             />
@@ -166,7 +138,16 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
         <ServerDataTable
           columns={columns}
           data={goals}
-          emptyState={<EmptyState defaultOpen={searchParams?.new === "1"} />}
+          emptyState={
+            <EmptyStateCard
+              variant="lg"
+              icon={Target}
+              title={t("empty.title")}
+              description={t("empty.description")}
+              hint={t("empty.hint")}
+              action={<CreateGoalDialog defaultOpen={searchParams?.new === "1"} />}
+            />
+          }
           renderRow={(goal) => {
             const targetAmount = decimalToNumber(goal.targetAmount);
             const currentAmount = decimalToNumber(goal.currentAmount);
@@ -177,12 +158,8 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
             return (
               <>
                 <TableCell className="py-3 font-medium">{goal.name}</TableCell>
-                <TableCell className="py-3">
-                  {formatCurrency(targetAmount, goal.currency)}
-                </TableCell>
-                <TableCell className="py-3 font-medium">
-                  {formatCurrency(currentAmount, goal.currency)}
-                </TableCell>
+                <TableCell className="py-3">{formatCurrency(targetAmount, goal.currency, locale)}</TableCell>
+                <TableCell className="py-3 font-medium">{formatCurrency(currentAmount, goal.currency, locale)}</TableCell>
                 <TableCell className="py-3">
                   <div className="flex items-center gap-3">
                     <CircularProgress
@@ -192,9 +169,7 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
                       colorClassName={isCompleted ? "text-success" : "text-primary"}
                       trackClassName="text-muted"
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {progress.toFixed(0)}%
-                    </span>
+                    <span className="text-sm text-muted-foreground">{progress.toFixed(0)}%</span>
                   </div>
                 </TableCell>
                 <TableCell className="py-3">
@@ -202,33 +177,26 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
                     <div className="flex flex-col gap-1">
                       <span className="flex items-center gap-1 text-sm">
                         <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        {formatDate(goal.deadline)}
+                        {fmtDate(goal.deadline)}
                       </span>
                       {goalDaysLeft !== null && (
-                        <Badge
-                          variant={deadlineBadgeVariant(goalDaysLeft, isCompleted)}
-                          className="w-fit text-xs"
-                        >
+                        <Badge variant={deadlineBadgeVariant(goalDaysLeft, isCompleted)} className="w-fit text-xs">
                           {deadlineLabel(goalDaysLeft)}
                         </Badge>
                       )}
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">Sin fecha</span>
+                    <span className="text-muted-foreground">{t("noDate")}</span>
                   )}
                 </TableCell>
                 <TableCell className="py-3">
                   <Badge variant={isCompleted ? "default" : "outline"}>
-                    {isCompleted ? "Completada" : "Activa"}
+                    {isCompleted ? t("statusCompleted") : t("statusActive")}
                   </Badge>
                 </TableCell>
                 <TableCell className="py-3">
                   {!isCompleted && (
-                    <AddSavingsDialog
-                      goalId={goal.id}
-                      goalName={goal.name}
-                      currency={goal.currency}
-                    />
+                    <AddSavingsDialog goalId={goal.id} goalName={goal.name} currency={goal.currency} />
                   )}
                 </TableCell>
               </>
@@ -250,12 +218,12 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
                     {goal.deadline && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {formatDate(goal.deadline)}
+                        {fmtDate(goal.deadline)}
                       </p>
                     )}
                   </div>
                   <Badge variant={isCompleted ? "default" : "outline"}>
-                    {isCompleted ? "Completada" : "Activa"}
+                    {isCompleted ? t("statusCompleted") : t("statusActive")}
                   </Badge>
                 </div>
 
@@ -266,46 +234,30 @@ export default async function GoalsPage({ searchParams }: GoalsPageProps) {
                     strokeWidth={10}
                     colorClassName={colorClass}
                     trackClassName="text-muted"
-                    label={
-                      <span className="text-lg font-bold">{progress.toFixed(0)}%</span>
-                    }
+                    label={<span className="text-lg font-bold">{progress.toFixed(0)}%</span>}
                   />
                 </div>
 
                 <div className="text-center">
-                  <div className="text-2xl font-bold tracking-tight">
-                    {formatCurrency(currentAmount, goal.currency)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    de {formatCurrency(targetAmount, goal.currency)}
-                  </div>
+                  <div className="text-2xl font-bold tracking-tight">{formatCurrency(currentAmount, goal.currency, locale)}</div>
+                  <div className="text-sm text-muted-foreground">{t("of", { amount: formatCurrency(targetAmount, goal.currency, locale) })}</div>
                 </div>
 
                 {goalDaysLeft !== null && (
-                  <Badge
-                    variant={deadlineBadgeVariant(goalDaysLeft, isCompleted)}
-                    className="w-fit self-center"
-                  >
+                  <Badge variant={deadlineBadgeVariant(goalDaysLeft, isCompleted)} className="w-fit self-center">
                     {deadlineLabel(goalDaysLeft)}
                   </Badge>
                 )}
 
                 {isCompleted && (
-                  <div
-                    className="rounded-lg bg-success/10 px-3 py-2 text-center text-sm text-success"
-                    role="status"
-                  >
-                    Meta alcanzada.
+                  <div className="rounded-lg bg-success/10 px-3 py-2 text-center text-sm text-success" role="status">
+                    {t("reached")}
                   </div>
                 )}
 
                 {!isCompleted && (
                   <div className="flex items-center justify-end pt-1">
-                    <AddSavingsDialog
-                      goalId={goal.id}
-                      goalName={goal.name}
-                      currency={goal.currency}
-                    />
+                    <AddSavingsDialog goalId={goal.id} goalName={goal.name} currency={goal.currency} />
                   </div>
                 )}
               </div>

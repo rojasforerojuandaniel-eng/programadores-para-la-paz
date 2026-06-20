@@ -88,6 +88,60 @@
         "hint": "Start by creating your first budget."
       }
     },
+    "goals": {
+      "title": "Goals",
+      "subtitle": "Manage your savings goals",
+      "total": "Total goal",
+      "saved": "Saved",
+      "completed": "Completed",
+      "of": "of {amount}",
+      "noDate": "No date",
+      "statusCompleted": "Completed",
+      "statusActive": "Active",
+      "reached": "Goal reached.",
+      "columns": {
+        "name": "Name",
+        "target": "Goal",
+        "saved": "Saved",
+        "progress": "Progress",
+        "deadline": "Target date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "deadline": {
+        "overdue": "Overdue {days} days ago",
+        "today": "Due today",
+        "left": "{days} days left"
+      },
+      "suggestion": {
+        "title": "Goal suggestion",
+        "body": "Your average monthly savings is {average}. You could reach {target} in 6 months.",
+        "cta": "Create suggested goal",
+        "suggestedName": "Suggested new goal"
+      },
+      "empty": {
+        "title": "Reach your savings goals",
+        "description": "Set clear objectives and track your progress visually day by day.",
+        "hint": "Start by creating your first goal."
+      }
+    },
+    "accounts": {
+      "title": "Bank Accounts",
+      "subtitle": "Manage your accounts and balances",
+      "allTitle": "All Accounts",
+      "total": "Total accounts",
+      "checking": "Checking",
+      "savings": "Savings",
+      "creditVirtual": "Credit / Virtual",
+      "types": { "CHECKING": "Checking", "SAVINGS": "Savings", "CREDIT": "Credit", "VIRTUAL": "Virtual" },
+      "status": { "negative": "Negative", "lowBalance": "Low balance" },
+      "table": { "account": "Account", "type": "Type", "currency": "Currency", "balance": "Balance", "actions": "Actions" },
+      "empty": {
+        "title": "Connect your bank accounts",
+        "description": "View balances and movements of checking, savings, credit and virtual accounts in one place.",
+        "hint": "Start by connecting your first bank account."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
