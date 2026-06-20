@@ -186,6 +186,49 @@
         "hint": "Empieza creando tu primera deuda."
       }
     },
+    "recurring": {
+      "title": "Recurrentes",
+      "subtitle": "Administra tus transacciones recurrentes",
+      "monthly": "Monto mensual",
+      "active": "Activas",
+      "next7": "Próximos 7 días",
+      "subscription": "Suscripción",
+      "no": "No",
+      "pause": "Pausar",
+      "activate": "Activar",
+      "list": { "name": "Nombre", "amount": "Monto", "frequency": "Frecuencia", "next": "Próximo vencimiento", "type": "Tipo", "subscription": "Suscripción", "status": "Estado", "actions": "Acciones" },
+      "toasts": { "activated": "Recurrente activado", "paused": "Recurrente pausado", "statusError": "No se pudo cambiar el estado", "networkError": "Error de red" },
+      "card": { "amount": "Monto", "next": "Próximo", "providerPrefix": "Proveedor: {name}" },
+      "frequencies": { "DAILY": "Diario", "WEEKLY": "Semanal", "BIWEEKLY": "Quincenal", "MONTHLY": "Mensual", "QUARTERLY": "Trimestral", "YEARLY": "Anual" },
+      "types": { "EXPENSE": "Gasto", "INCOME": "Ingreso", "TRANSFER": "Transferencia" },
+      "empty": {
+        "title": "Automatiza tus pagos recurrentes",
+        "description": "Registra alquiler, suscripciones y servicios para nunca perder un vencimiento y mantener el control de tu flujo de caja.",
+        "hint": "Crea tu primera transacción recurrente en segundos."
+      },
+      "dialog": {
+        "trigger": "Nuevo Recurrente",
+        "title": "Nueva Transacción Recurrente",
+        "name": "Nombre *",
+        "namePh": "Ej. Netflix, Alquiler",
+        "desc": "Descripción",
+        "descPh": "Descripción opcional",
+        "amount": "Monto *",
+        "type": "Tipo",
+        "frequency": "Frecuencia",
+        "next": "Próximo vencimiento *",
+        "start": "Fecha inicio",
+        "end": "Fecha fin",
+        "provider": "Proveedor",
+        "providerPh": "Ej. Netflix, Spotify",
+        "isSub": "Es suscripción",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "created": "Transacción recurrente creada",
+        "error": "Error al crear transacción recurrente"
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

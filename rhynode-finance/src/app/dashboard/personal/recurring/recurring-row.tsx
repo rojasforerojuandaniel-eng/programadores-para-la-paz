@@ -4,15 +4,11 @@ import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { CreditCard } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import type { RecurringItem } from "./recurring-utils";
-import {
-  formatCurrency,
-  formatDate,
-  frequencyLabel,
-  typeBadgeVariant,
-  typeLabel,
-} from "./recurring-utils";
+import { formatCurrency, formatDate, typeBadgeVariant } from "./recurring-utils";
 import { RecurringActions } from "./recurring-actions";
+import type { Locale } from "@/lib/locale";
 
 interface RecurringRowProps {
   item: RecurringItem;
@@ -28,6 +24,8 @@ export function RecurringRow({
   onDelete,
 }: RecurringRowProps) {
   const isActive = item.status === "ACTIVE";
+  const t = useTranslations("dashboard.recurring");
+  const locale = useLocale() as Locale;
 
   return (
     <>
@@ -40,37 +38,33 @@ export function RecurringRow({
         </div>
       </TableCell>
       <TableCell className="py-3 font-medium">
-        {formatCurrency(item.amount, item.accountCurrency || "COP")}
+        {formatCurrency(item.amount, item.accountCurrency || "COP", locale)}
       </TableCell>
       <TableCell className="py-3">
-        <Badge variant="outline">{frequencyLabel(item.frequency)}</Badge>
+        <Badge variant="outline">{t(`frequencies.${item.frequency}` as never)}</Badge>
       </TableCell>
-      <TableCell className="py-3">{formatDate(item.nextDueDate)}</TableCell>
+      <TableCell className="py-3">{formatDate(item.nextDueDate, locale)}</TableCell>
       <TableCell className="py-3">
-        <Badge variant={typeBadgeVariant(item.type)}>{typeLabel(item.type)}</Badge>
+        <Badge variant={typeBadgeVariant(item.type)}>{t(`types.${item.type}` as never)}</Badge>
       </TableCell>
       <TableCell className="py-3">
         {item.isSubscription ? (
           <Badge variant="default" className="gap-1">
-            <CreditCard className="h-3 w-3" /> Suscripción
+            <CreditCard className="h-3 w-3" /> {t("subscription")}
           </Badge>
         ) : (
-          <Badge variant="outline">No</Badge>
+          <Badge variant="outline">{t("no")}</Badge>
         )}
       </TableCell>
       <TableCell className="py-3">
         <Switch
           checked={isActive}
           onCheckedChange={(checked) => onToggle(item, checked)}
-          aria-label={isActive ? "Pausar" : "Activar"}
+          aria-label={isActive ? t("pause") : t("activate")}
         />
       </TableCell>
       <TableCell className="py-3 text-right">
-        <RecurringActions
-          item={item}
-          onUpdate={onUpdate}
-          onDelete={onDelete}
-        />
+        <RecurringActions item={item} onUpdate={onUpdate} onDelete={onDelete} />
       </TableCell>
     </>
   );

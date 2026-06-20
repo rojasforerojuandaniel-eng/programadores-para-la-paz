@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/locale";
+
 export interface RecurringItem {
   id: string;
   name: string;
@@ -12,16 +14,18 @@ export interface RecurringItem {
   accountCurrency: string | null;
 }
 
-export function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
+const intlLocale = (locale: Locale): string => (locale === "en" ? "en-US" : "es-CO");
+
+export function formatCurrency(amount: number, currency: string, locale: Locale = "es") {
+  return new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
   }).format(amount);
 }
 
-export function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString("es-CO", {
+export function formatDate(date: string | Date, locale: Locale = "es") {
+  return new Date(date).toLocaleDateString(intlLocale(locale), {
     day: "numeric",
     month: "short",
     year: "numeric",

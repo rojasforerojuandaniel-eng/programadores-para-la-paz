@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Table,
@@ -21,6 +22,7 @@ interface RecurringListProps {
 
 export function RecurringList({ items: initialItems, emptyState }: RecurringListProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.recurring");
   const [items, setItems] = useState(initialItems);
 
   async function handleToggle(item: RecurringItem, active: boolean) {
@@ -28,7 +30,7 @@ export function RecurringList({ items: initialItems, emptyState }: RecurringList
     const previousStatus = item.status;
 
     setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i))
+      prev.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i)),
     );
 
     try {
@@ -39,17 +41,17 @@ export function RecurringList({ items: initialItems, emptyState }: RecurringList
       });
 
       if (res.ok) {
-        toast.success(active ? "Recurrente activado" : "Recurrente pausado");
+        toast.success(active ? t("toasts.activated") : t("toasts.paused"));
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "No se pudo cambiar el estado");
+        throw new Error(data.error || t("toasts.statusError"));
       }
     } catch (error) {
       setItems((prev) =>
-        prev.map((i) => (i.id === item.id ? { ...i, status: previousStatus } : i))
+        prev.map((i) => (i.id === item.id ? { ...i, status: previousStatus } : i)),
       );
-      toast.error(error instanceof Error ? error.message : "Error de red");
+      toast.error(error instanceof Error ? error.message : t("toasts.networkError"));
     }
   }
 
@@ -71,14 +73,14 @@ export function RecurringList({ items: initialItems, emptyState }: RecurringList
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead scope="col">Nombre</TableHead>
-              <TableHead scope="col">Monto</TableHead>
-              <TableHead scope="col">Frecuencia</TableHead>
-              <TableHead scope="col">Próximo vencimiento</TableHead>
-              <TableHead scope="col">Tipo</TableHead>
-              <TableHead scope="col">Suscripción</TableHead>
-              <TableHead scope="col">Estado</TableHead>
-              <TableHead scope="col" className="text-right">Acciones</TableHead>
+              <TableHead scope="col">{t("list.name")}</TableHead>
+              <TableHead scope="col">{t("list.amount")}</TableHead>
+              <TableHead scope="col">{t("list.frequency")}</TableHead>
+              <TableHead scope="col">{t("list.next")}</TableHead>
+              <TableHead scope="col">{t("list.type")}</TableHead>
+              <TableHead scope="col">{t("list.subscription")}</TableHead>
+              <TableHead scope="col">{t("list.status")}</TableHead>
+              <TableHead scope="col" className="text-right">{t("list.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
