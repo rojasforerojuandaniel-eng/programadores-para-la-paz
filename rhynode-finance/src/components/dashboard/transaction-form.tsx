@@ -37,9 +37,15 @@ interface OcrResult {
 interface TransactionFormProps {
   onSuccess: () => void;
   onCancel?: () => void;
+  /** Pre-set the transaction type so "Gasté" → EXPENSE / "Recibí" → INCOME without an extra tap. */
+  defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
 }
 
-export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
+export function TransactionForm({
+  onSuccess,
+  onCancel,
+  defaultType = "INCOME",
+}: TransactionFormProps) {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
@@ -51,7 +57,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
   );
   const [rules, setRules] = useState<Rule[]>([]);
   const [form, setForm] = useState({
-    type: "INCOME" as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
+    type: defaultType as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
     category: "",
     description: "",
     amount: "",
@@ -62,7 +68,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
 
   const resetForm = useCallback(() => {
     setForm({
-      type: "INCOME",
+      type: defaultType,
       category: "",
       description: "",
       amount: "",
@@ -418,6 +424,7 @@ export function TransactionForm({ onSuccess, onCancel }: TransactionFormProps) {
             id="tx-amount"
             type="number"
             required
+            autoFocus
             min={0}
             value={form.amount}
             onChange={(event) =>

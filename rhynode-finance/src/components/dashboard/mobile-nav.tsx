@@ -26,6 +26,7 @@ import { Logo } from "@/components/logo";
 import { useScope } from "@/lib/scope-context";
 import { NavLinks } from "./nav-links";
 import { DashboardLocaleSwitcher } from "./locale-switcher";
+import { QuickAdd } from "./quick-add";
 import { UserSection } from "./user-section";
 
 const MORE_MENU_ID = "mobile-more-menu";
@@ -61,7 +62,10 @@ function MobileMoreSheet({ children }: { children: React.ReactNode }) {
               <X className="h-5 w-5" aria-hidden="true" />
             </Button>
           </div>
-          <div className="px-4 pb-2 pt-4">
+          <div className="px-4 pb-3 pt-4">
+            <QuickAdd />
+          </div>
+          <div className="px-4 pb-2">
             <ScopeToggle />
           </div>
           <div className="flex items-center justify-end px-4 pb-2">

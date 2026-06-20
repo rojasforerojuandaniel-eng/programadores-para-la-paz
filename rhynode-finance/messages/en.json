@@ -28,6 +28,13 @@
     "skipToContent": "Skip to main content",
     "sectionsAria": "Dashboard sections",
     "theme": "Theme",
+    "quickAdd": {
+      "label": "Add transaction",
+      "spent": "Spent",
+      "received": "Received",
+      "spentHint": "Log an expense",
+      "receivedHint": "Log income"
+    },
     "transactions": {
       "title": "Transactions",
       "subtitle": "Record of income, expenses and movements",

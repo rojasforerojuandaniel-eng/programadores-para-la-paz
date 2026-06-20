@@ -18,12 +18,14 @@ interface CreateTransactionDialogProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
   defaultOpen?: boolean;
+  defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
 }
 
 export function CreateTransactionDialog({
   onCreate,
   trigger,
   defaultOpen = false,
+  defaultType,
 }: CreateTransactionDialogProps) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -52,7 +54,7 @@ export function CreateTransactionDialog({
             Registra un ingreso, gasto, transferencia o ajuste.
           </DialogDescription>
         </DialogHeader>
-        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} />
+        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} />
       </DialogContent>
     </Dialog>
   );
