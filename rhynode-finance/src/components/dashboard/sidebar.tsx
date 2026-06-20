@@ -7,6 +7,7 @@ import { DashboardHeader } from "./header";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NavLinks } from "./nav-links";
+import { DashboardLocaleSwitcher } from "./locale-switcher";
 import { UserSection } from "./user-section";
 
 export function Sidebar() {
@@ -31,7 +32,10 @@ export function Sidebar() {
           <div className="mt-auto space-y-2 border-t border-border p-4">
             <div className="flex items-center justify-between px-2">
               <span className="text-xs text-muted-foreground">Tema</span>
-              <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <DashboardLocaleSwitcher />
+                <ThemeToggle />
+              </div>
             </div>
             <UserSection />
           </div>

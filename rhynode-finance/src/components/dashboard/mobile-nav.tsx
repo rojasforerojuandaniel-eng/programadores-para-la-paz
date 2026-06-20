@@ -25,6 +25,7 @@ import { ScopeToggle } from "./scope-toggle";
 import { Logo } from "@/components/logo";
 import { useScope } from "@/lib/scope-context";
 import { NavLinks } from "./nav-links";
+import { DashboardLocaleSwitcher } from "./locale-switcher";
 import { UserSection } from "./user-section";
 
 const MORE_MENU_ID = "mobile-more-menu";
@@ -62,6 +63,9 @@ function MobileMoreSheet({ children }: { children: React.ReactNode }) {
           </div>
           <div className="px-4 pb-2 pt-4">
             <ScopeToggle />
+          </div>
+          <div className="flex items-center justify-end px-4 pb-2">
+            <DashboardLocaleSwitcher />
           </div>
           <div className="flex-1 overflow-y-auto">
             <NavLinks onClick={() => setOpen(false)} />

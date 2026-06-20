@@ -1,4 +1,33 @@
 {
+  "dashboard": {
+    "nav": {
+      "home": "Home",
+      "netWorth": "Net worth",
+      "investments": "Investments",
+      "subscriptions": "Subscriptions",
+      "calendar": "Calendar",
+      "reminders": "Reminders",
+      "scenarios": "Scenarios",
+      "split": "Split expenses",
+      "rentDeclaration": "Tax return",
+      "achievements": "Achievements",
+      "transactions": "Transactions",
+      "rules": "Rules",
+      "accounts": "Bank accounts",
+      "invoices": "Invoices",
+      "clients": "Clients",
+      "tax": "Taxes",
+      "paymentLinks": "Payment links",
+      "advisor": "AI Advisor",
+      "indicators": "Indicators",
+      "integrations": "Integrations",
+      "leaderboard": "Leaderboard",
+      "stats": "My stats",
+      "settings": "Settings"
+    },
+    "skipToContent": "Skip to main content",
+    "sectionsAria": "Dashboard sections"
+  },
   "nav": {
     "features": "Features",
     "pricing": "Pricing",
