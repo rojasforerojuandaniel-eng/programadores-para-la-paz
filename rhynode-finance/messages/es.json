@@ -28,6 +28,14 @@
     "skipToContent": "Saltar al contenido principal",
     "sectionsAria": "Secciones del dashboard",
     "theme": "Tema",
+    "transactions": {
+      "title": "Transacciones",
+      "subtitle": "Registro de ingresos, gastos y movimientos",
+      "allTitle": "Todas las Transacciones",
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "balance": "Balance"
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

@@ -1,8 +1,11 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency as formatCurrencyLocale } from "@/lib/format";
 import type { UserScope } from "@/lib/scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,14 +69,6 @@ function scopeFilter(scope: UserScope) {
   if (scope === "PERSONAL") return { scope: "PERSONAL" };
   if (scope === "BUSINESS") return { scope: "BUSINESS" };
   return { scope: { in: ["PERSONAL", "BUSINESS"] } };
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function getParam(
@@ -232,22 +227,26 @@ export default async function TransactionsPage({
       })
     : [];
 
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.transactions" });
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <Suspense
         fallback={<div className="h-16 animate-pulse rounded-xl bg-muted" />}
       >
-        <HeaderSection defaultOpen={defaultOpen} bankAccounts={bankAccounts} />
+        <HeaderSection defaultOpen={defaultOpen} bankAccounts={bankAccounts} locale={locale} />
       </Suspense>
 
       <Suspense fallback={<KpiSkeleton count={3} columns={3} />}>
-        <KpiSection />
+        <KpiSection locale={locale} />
       </Suspense>
 
       <Card className="surface-elevated-2">
         <CardHeader>
           <CardTitle className="heading-card">
-            Todas las Transacciones
+            {t("allTitle")}
           </CardTitle>
         </CardHeader>
         <Suspense
@@ -267,19 +266,21 @@ export default async function TransactionsPage({
 async function HeaderSection({
   defaultOpen,
   bankAccounts,
+  locale,
 }: {
   defaultOpen?: boolean;
   bankAccounts: { id: string; name: string; bankName: string }[];
+  locale: Locale;
 }) {
   await requireAuth();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.transactions" });
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="heading-section">Transacciones</h1>
-        <p className="body-default mt-1">
-          Registro de ingresos, gastos y movimientos
-        </p>
+        <h1 className="heading-section">{t("title")}</h1>
+        <p className="body-default mt-1">{t("subtitle")}</p>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <ExportButtons />
@@ -290,9 +291,14 @@ async function HeaderSection({
   );
 }
 
-async function KpiSection() {
+async function KpiSection({
+  locale,
+}: {
+  locale: Locale;
+}) {
   const org = await requireAuth();
   if (!org) return null;
+  setRequestLocale(locale);
 
   const profile = await getUserProfile();
   const scope = (profile?.scope ?? "PERSONAL") as UserScope;
@@ -310,23 +316,25 @@ async function KpiSection() {
     .reduce((sum, t) => sum + decimalToNumber(t.amount), 0);
   const balance = income - expense;
 
+  const t = await getTranslations({ locale, namespace: "dashboard.transactions" });
+
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
       <KpiCard
-        label="Ingresos"
-        value={formatCurrency(income, org.currency)}
+        label={t("income")}
+        value={formatCurrencyLocale(income, org.currency, locale)}
         icon={TrendingUp}
         valueClassName="text-success"
       />
       <KpiCard
-        label="Gastos"
-        value={formatCurrency(expense, org.currency)}
+        label={t("expense")}
+        value={formatCurrencyLocale(expense, org.currency, locale)}
         icon={TrendingDown}
         valueClassName="text-danger"
       />
       <KpiCard
-        label="Balance"
-        value={formatCurrency(balance, org.currency)}
+        label={t("balance")}
+        value={formatCurrencyLocale(balance, org.currency, locale)}
         icon={Scale}
         valueClassName={balance >= 0 ? "text-success" : "text-danger"}
       />
