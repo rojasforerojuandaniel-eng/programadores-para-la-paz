@@ -18,16 +18,33 @@ interface CreateTransactionDialogProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
   defaultOpen?: boolean;
+  /** Controlled open state (used by the voice input to open after parsing). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
+  defaultAmount?: string;
+  defaultDescription?: string;
+  defaultCategory?: string;
 }
 
 export function CreateTransactionDialog({
   onCreate,
   trigger,
   defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
   defaultType,
+  defaultAmount,
+  defaultDescription,
+  defaultCategory,
 }: CreateTransactionDialogProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   function handleSuccess() {
     setOpen(false);
@@ -54,7 +71,7 @@ export function CreateTransactionDialog({
             Registra un ingreso, gasto, transferencia o ajuste.
           </DialogDescription>
         </DialogHeader>
-        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} />
+        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} defaultAmount={defaultAmount} defaultDescription={defaultDescription} defaultCategory={defaultCategory} />
       </DialogContent>
     </Dialog>
   );

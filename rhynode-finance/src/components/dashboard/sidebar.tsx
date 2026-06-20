@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { NavLinks } from "./nav-links";
 import { DashboardLocaleSwitcher } from "./locale-switcher";
 import { QuickAdd } from "./quick-add";
+import { VoiceAddButton } from "./voice-add-button";
 import { useTranslations } from "next-intl";
 import { UserSection } from "./user-section";
 
@@ -31,8 +32,11 @@ export function Sidebar() {
           <div className="px-6 pb-2">
             <ScopeToggle />
           </div>
-          <div className="px-6 pb-3">
+          <div className="px-6 pb-2">
             <QuickAdd />
+          </div>
+          <div className="px-6 pb-3">
+            <VoiceAddButton />
           </div>
           <NavLinks />
           <div className="mt-auto space-y-2 border-t border-border p-4">

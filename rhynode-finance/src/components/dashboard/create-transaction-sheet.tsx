@@ -19,18 +19,35 @@ interface CreateTransactionSheetProps {
   onCreate: () => void;
   trigger?: React.ReactNode;
   defaultOpen?: boolean;
+  /** Controlled open state (used by the voice input to open after parsing). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
+  defaultAmount?: string;
+  defaultDescription?: string;
+  defaultCategory?: string;
 }
 
 export function CreateTransactionSheet({
   onCreate,
   trigger,
   defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
   defaultType,
+  defaultAmount,
+  defaultDescription,
+  defaultCategory,
 }: CreateTransactionSheetProps) {
   const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   function handleSuccess() {
     setOpen(false);
@@ -41,7 +58,7 @@ export function CreateTransactionSheet({
 
   // Desktop keeps the centered dialog; mobile gets the bottom sheet.
   if (!isMobile) {
-    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} defaultOpen={defaultOpen} defaultType={defaultType} />;
+    return <CreateTransactionDialog onCreate={onCreate} trigger={trigger} defaultOpen={defaultOpen} open={controlledOpen} onOpenChange={onOpenChange} defaultType={defaultType} defaultAmount={defaultAmount} defaultDescription={defaultDescription} defaultCategory={defaultCategory} />;
   }
 
   return (
@@ -58,7 +75,7 @@ export function CreateTransactionSheet({
         <BottomSheetHeader>
           <BottomSheetTitle id="tx-sheet-title">Nueva Transacción</BottomSheetTitle>
         </BottomSheetHeader>
-        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} />
+        <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} defaultAmount={defaultAmount} defaultDescription={defaultDescription} defaultCategory={defaultCategory} />
       </BottomSheetContent>
     </BottomSheet>
   );

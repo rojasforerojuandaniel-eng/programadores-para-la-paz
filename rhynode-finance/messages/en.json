@@ -35,6 +35,13 @@
       "spentHint": "Log an expense",
       "receivedHint": "Log income"
     },
+    "voice": {
+      "label": "Dictate",
+      "listening": "Listening…",
+      "unsupported": "Your browser doesn't support voice. Use Chrome or Edge.",
+      "error": "Didn't catch that. Try again.",
+      "heard": "Heard"
+    },
     "transactions": {
       "title": "Transactions",
       "subtitle": "Record of income, expenses and movements",
