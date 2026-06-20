@@ -1,7 +1,8 @@
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
-import { LandingRedirect } from "@/components/auth/landing-redirect";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { LandingPageV2 } from "@/components/landing/landing-page";
 import { LocaleSync } from "@/components/landing/locale-switcher";
 import enMessages from "../../../messages/en.json";
@@ -20,12 +21,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function EnLandingPage() {
+export default async function EnLandingPage() {
+  const { userId } = await auth();
+  if (userId) redirect("/dashboard");
+
   setRequestLocale("en");
   return (
     <NextIntlClientProvider locale="en" messages={enMessages}>
       <LocaleSync locale="en" />
-      <LandingRedirect />
       <LandingPageV2 />
     </NextIntlClientProvider>
   );
