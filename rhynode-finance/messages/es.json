@@ -279,6 +279,16 @@
       "effectiveRate": "Tasa efectiva: {rate}% sobre el ingreso bruto.",
       "notes": "Notas"
     },
+    "netWorth": {
+      "title": "Patrimonio Neto",
+      "subtitle": "Seguimiento de tu patrimonio a lo largo del tiempo",
+      "kpis": { "netWorth": "Patrimonio Neto", "assets": "Activos Totales", "liabilities": "Deudas Totales", "ratio": "Ratio Deuda/Activo" },
+      "ratioStatus": { "healthy": "Saludable", "moderate": "Moderado", "highRisk": "Alto riesgo" },
+      "chart": { "evolution": "Evolución del patrimonio", "lastN": "Últimos {count} registros", "srCaption": "Gráfico de evolución del patrimonio mostrando activos, deudas y patrimonio neto de los últimos {count} registros.", "netWorth": "Patrimonio neto", "assets": "Activos" },
+      "columns": { "date": "Fecha", "assets": "Activos", "liabilities": "Deudas", "netWorth": "Patrimonio" },
+      "card": { "assets": "Activos", "liabilities": "Deudas", "ratioLabel": "Ratio {ratio} · {label}" },
+      "empty": { "title": "Tu patrimonio empieza aquí", "description": "Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas.", "hint": "Empieza creando tu primer registro de patrimonio." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

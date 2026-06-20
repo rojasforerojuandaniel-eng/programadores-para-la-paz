@@ -279,6 +279,16 @@
       "effectiveRate": "Effective rate: {rate}% of gross income.",
       "notes": "Notes"
     },
+    "netWorth": {
+      "title": "Net Worth",
+      "subtitle": "Track your net worth over time",
+      "kpis": { "netWorth": "Net Worth", "assets": "Total Assets", "liabilities": "Total Liabilities", "ratio": "Debt/Asset Ratio" },
+      "ratioStatus": { "healthy": "Healthy", "moderate": "Moderate", "highRisk": "High risk" },
+      "chart": { "evolution": "Net worth evolution", "lastN": "Last {count} records", "srCaption": "Net worth evolution chart showing assets, liabilities and net worth of the last {count} records.", "netWorth": "Net worth", "assets": "Assets" },
+      "columns": { "date": "Date", "assets": "Assets", "liabilities": "Liabilities", "netWorth": "Net worth" },
+      "card": { "assets": "Assets", "liabilities": "Liabilities", "ratioLabel": "Ratio {ratio} · {label}" },
+      "empty": { "title": "Your net worth starts here", "description": "Save periodic snapshots to see how your assets and debts evolve.", "hint": "Start by creating your first net worth record." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
