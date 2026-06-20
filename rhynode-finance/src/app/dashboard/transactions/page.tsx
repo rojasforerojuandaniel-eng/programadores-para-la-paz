@@ -16,7 +16,7 @@ import {
   type TransactionFiltersState,
   type TransactionFilterOptions,
 } from "@/components/dashboard/transactions-filters";
-import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
+import { COMMON_CATEGORIES } from "@/lib/transaction-categories";
 import { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
 import { KpiCard } from "@/components/dashboard/kpi-card";
