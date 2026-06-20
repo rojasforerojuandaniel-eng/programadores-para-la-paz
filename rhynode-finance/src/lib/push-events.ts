@@ -3,6 +3,12 @@ import { getPrisma } from "./prisma";
 import { sendPushNotification, type PushPayload } from "./notifications";
 import { decimalToNumber } from "./decimal";
 import { logger } from "./logger";
+import {
+  budgetAlertStatus,
+  daysOverdue,
+  goalAlertStatus,
+  subscriptionReminderDue,
+} from "./push-thresholds";
 import type { Budget, Goal, RecurringTransaction, Invoice } from "@/generated/prisma/client";
 
 type SendResult = { sent: number; errors: number; skipped: boolean };
@@ -83,11 +89,12 @@ export async function sendBudgetAlert(
 ): Promise<SendResult> {
   const amount = decimalToNumber(budget.amount);
   const spent = decimalToNumber(budget.spent);
-  if (amount <= 0 || spent / amount < 0.8) {
+  const status = budgetAlertStatus(amount, spent);
+  if (!status.met) {
     return { sent: 0, errors: 0, skipped: true };
   }
 
-  const percentage = Math.round((spent / amount) * 100);
+  const percentage = status.percentage;
   const actionUrl = `/dashboard/personal?budget=${budget.id}`;
 
   return notifyOnce(
@@ -112,11 +119,12 @@ export async function sendGoalProgressAlert(
 ): Promise<SendResult> {
   const target = decimalToNumber(goal.targetAmount);
   const current = decimalToNumber(goal.currentAmount);
-  if (target <= 0 || current / target < threshold) {
+  const status = goalAlertStatus(target, current, threshold);
+  if (!status.met) {
     return { sent: 0, errors: 0, skipped: true };
   }
 
-  const percentage = Math.round((current / target) * 100);
+  const percentage = status.percentage;
   const suffix = threshold === 1 ? "GOAL_100" : "GOAL_75";
   const label = threshold === 1 ? "completada" : `al ${Math.round(threshold * 100)}%`;
   const actionUrl = `/dashboard/personal?goal=${goal.id}`;
@@ -146,9 +154,8 @@ export async function sendSubscriptionReminder(
 
   const now = new Date();
   const nextDue = sub.nextDueDate;
-  const daysUntil = Math.ceil((startOfDay(nextDue).getTime() - startOfDay(now).getTime()) / (1000 * 60 * 60 * 24));
 
-  if (daysUntil < 0 || daysUntil > 7) {
+  if (!subscriptionReminderDue(nextDue, now)) {
     return { sent: 0, errors: 0, skipped: true };
   }
 
@@ -180,15 +187,13 @@ export async function sendInvoiceOverdueReminder(
 
   const now = new Date();
   const due = invoice.dueDate;
-  const daysOverdue = Math.floor(
-    (startOfDay(now).getTime() - startOfDay(due).getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const overdueDays = daysOverdue(due, now);
 
-  if (daysOverdue < 1) {
+  if (overdueDays < 1) {
     return { sent: 0, errors: 0, skipped: true };
   }
 
-  const reminder = daysOverdue >= 3 ? "3d" : "1d";
+  const reminder = overdueDays >= 3 ? "3d" : "1d";
   const suffix = reminder === "3d" ? "INVOICE_OVERDUE_3D" : "INVOICE_OVERDUE_1D";
   const body = reminder === "3d"
     ? `La factura ${invoice.number} lleva más de 3 días vencida. Revisa el cobro.`
