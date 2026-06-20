@@ -229,6 +229,16 @@
         "error": "Error al crear transacción recurrente"
       }
     },
+    "subscriptions": {
+      "title": "Suscripciones",
+      "subtitle": "Detecta y monitorea tus suscripciones automáticas",
+      "detect": "Detectar",
+      "empty": {
+        "title": "Detecta suscripciones automáticamente",
+        "description": "Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar.",
+        "hint": "Presiona detectar para descubrir tus suscripciones."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

@@ -229,6 +229,16 @@
         "error": "Failed to create recurring transaction"
       }
     },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Detect and monitor your automatic subscriptions",
+      "detect": "Detect",
+      "empty": {
+        "title": "Detect subscriptions automatically",
+        "description": "We analyze your transactions to find recurring payments and help you save.",
+        "hint": "Press detect to discover your subscriptions."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
