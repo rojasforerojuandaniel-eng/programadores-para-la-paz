@@ -1,6 +1,9 @@
 import { getPrisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency as fmtCur, formatDate as fmtDate, formatNumber as fmtNum } from "@/lib/format";
 import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
@@ -38,47 +41,40 @@ export const metadata = dashboardMetadata(
   "Registra y haz seguimiento de tus inversiones: acciones, bonos, cripto, ETFs y bienes raíces."
 );
 
-function formatCurrency(amount: number, currency: string) {
+const intlLocale = (locale: Locale): string => (locale === "en" ? "en-US" : "es-CO");
+
+function formatCurrency(amount: number, currency: string, locale: Locale) {
   const fractionDigits = currency.toUpperCase() === "COP" ? 0 : 2;
-  return new Intl.NumberFormat("es-CO", {
+  return new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",
     currency,
     maximumFractionDigits: fractionDigits,
   }).format(amount);
 }
 
-function formatPrice(amount: number, currency: string) {
+function formatPrice(amount: number, currency: string, locale: Locale) {
   const fractionDigits = currency.toUpperCase() === "COP" ? 0 : 4;
-  return new Intl.NumberFormat("es-CO", {
+  return new Intl.NumberFormat(intlLocale(locale), {
     style: "currency",
     currency,
     maximumFractionDigits: fractionDigits,
   }).format(amount);
 }
 
-function formatPercent(value: number) {
-  return new Intl.NumberFormat("es-CO", {
+function formatPercent(value: number, locale: Locale) {
+  return new Intl.NumberFormat(intlLocale(locale), {
     style: "percent",
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   }).format(value / 100);
 }
 
-function formatDateTime(date: Date) {
-  return new Intl.DateTimeFormat("es-CO", {
+function formatDateTime(date: Date, locale: Locale) {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     dateStyle: "short",
     timeStyle: "short",
   }).format(date);
 }
-
-const investmentTypeLabels: Record<string, string> = {
-  STOCK: "Acciones",
-  BOND: "Bonos",
-  CRYPTO: "Cripto",
-  ETF: "ETF",
-  REAL_ESTATE: "Bienes Raíces",
-  OTHER: "Otro",
-};
 
 const investmentTypeColors: Record<string, string> = {
   STOCK: "bg-info/15 text-info border-info/20",
@@ -105,21 +101,20 @@ function sourceBadge(source: ResolvedInvestment["marketPrice"]["source"]) {
   switch (source) {
     case "real":
       return {
-        label: "Precio real",
+        labelKey: "real" as const,
         className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20",
       };
     case "estimated":
       return {
-        label: "Estimado",
+        labelKey: "estimated" as const,
         className: "bg-amber-500/15 text-amber-600 border-amber-500/20",
       };
     default:
-      return { label: "N/A", className: "bg-muted text-muted-foreground border-border" };
+      return { labelKey: "na" as const, className: "bg-muted text-muted-foreground border-border" };
   }
 }
 
 function MiniSparkline({ positive }: { positive: boolean }) {
-  // Simple SVG mini chart: deterministic shape based on gain direction.
   const path = positive
     ? "M2 14 L6 10 L10 11 L14 6 L18 8 L22 2"
     : "M2 4 L6 6 L10 5 L14 10 L18 8 L22 14";
@@ -136,10 +131,7 @@ function MiniSparkline({ positive }: { positive: boolean }) {
     >
       <path
         d={path}
-        className={cn(
-          positive ? "text-success" : "text-danger",
-          "opacity-80"
-        )}
+        className={cn(positive ? "text-success" : "text-danger", "opacity-80")}
       />
     </svg>
   );
@@ -148,6 +140,10 @@ function MiniSparkline({ positive }: { positive: boolean }) {
 export default async function InvestmentsPage() {
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.investments" });
 
   const profile = await getUserProfile();
   const userId = profile?.id;
@@ -175,7 +171,7 @@ export default async function InvestmentsPage() {
   )
     .map(([type, amount]) => ({
       type,
-      label: investmentTypeLabels[type] || type,
+      label: t(`types.${type}` as never),
       value: totalCurrent > 0 ? (amount / totalCurrent) * 100 : 0,
       amount,
     }))
@@ -185,18 +181,18 @@ export default async function InvestmentsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Inversiones</h1>
-          <p className="body-default mt-1">Portafolio de inversiones</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateInvestmentDialog />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label="Total Invertido" value={formatCurrency(totalInvested, org.currency)} icon={Wallet} />
-        <KpiCard label="Valor Actual" value={formatCurrency(totalCurrent, org.currency)} icon={Briefcase} />
+        <KpiCard label={t("kpis.totalInvested")} value={formatCurrency(totalInvested, org.currency, locale)} icon={Wallet} />
+        <KpiCard label={t("kpis.currentValue")} value={formatCurrency(totalCurrent, org.currency, locale)} icon={Briefcase} />
         <KpiCard
-          label="Retorno Total"
-          value={formatPercent(totalReturn)}
+          label={t("kpis.totalReturn")}
+          value={formatPercent(totalReturn, locale)}
           icon={totalReturn >= 0 ? TrendingUp : TrendingDown}
           valueClassName={totalReturn >= 0 ? "text-success" : "text-danger"}
         />
@@ -206,7 +202,7 @@ export default async function InvestmentsPage() {
         <Card className="surface-elevated-2 rounded-xl border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Distribución del portafolio
+              {t("allocation")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -217,14 +213,14 @@ export default async function InvestmentsPage() {
 
       <ServerDataTable
         columns={[
-          { key: "name", header: "Nombre" },
-          { key: "type", header: "Tipo" },
-          { key: "price", header: "Precio mercado" },
-          { key: "value", header: "Valor actual" },
-          { key: "invested", header: "Invertido" },
-          { key: "gain", header: "Ganancia" },
-          { key: "return", header: "Retorno %" },
-          { key: "source", header: "Fuente" },
+          { key: "name", header: t("columns.name") },
+          { key: "type", header: t("columns.type") },
+          { key: "price", header: t("columns.price") },
+          { key: "value", header: t("columns.value") },
+          { key: "invested", header: t("columns.invested") },
+          { key: "gain", header: t("columns.gain") },
+          { key: "return", header: t("columns.return") },
+          { key: "source", header: t("columns.source") },
         ]}
         data={resolvedInvestments}
         renderRow={(item) => {
@@ -244,16 +240,16 @@ export default async function InvestmentsPage() {
                   variant="outline"
                   className={investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-600 border-slate-500/20"}
                 >
-                  {investmentTypeLabels[item.investmentType] || item.investmentType}
+                  {t(`types.${item.investmentType}` as never)}
                 </Badge>
               </TableCell>
               <TableCell className="py-3 text-sm">
                 {marketPrice.price !== null ? (
                   <div className="space-y-0.5">
-                    <div>{formatPrice(marketPrice.price, marketPrice.currency)}</div>
+                    <div>{formatPrice(marketPrice.price, marketPrice.currency, locale)}</div>
                     {item.estimatedQuantity !== null && (
                       <div className="text-xs text-muted-foreground">
-                        ~{item.estimatedQuantity.toLocaleString("es-CO")} unidades
+                        ~{fmtNum(item.estimatedQuantity, locale)} {t("units")}
                       </div>
                     )}
                   </div>
@@ -262,24 +258,20 @@ export default async function InvestmentsPage() {
                 )}
               </TableCell>
               <TableCell className="py-3 text-sm font-medium">
-                {formatCurrency(item.estimatedValue, item.currency)}
+                {formatCurrency(item.estimatedValue, item.currency, locale)}
               </TableCell>
               <TableCell className="py-3 text-sm text-muted-foreground">
-                {formatCurrency(item.investedAmount, item.currency)}
+                {formatCurrency(item.investedAmount, item.currency, locale)}
               </TableCell>
               <TableCell className={`py-3 text-sm font-medium ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
-                {formatCurrency(gainAmount, item.currency)}
+                {formatCurrency(gainAmount, item.currency, locale)}
               </TableCell>
               <TableCell className={`py-3 text-sm font-medium ${gainPercent >= 0 ? "text-success" : "text-danger"}`}>
-                {formatPercent(gainPercent)}
+                {formatPercent(gainPercent, locale)}
               </TableCell>
               <TableCell className="py-3">
-                <Badge
-                  variant="outline"
-                  className={source.className}
-                  title={marketPrice.note}
-                >
-                  {source.label}
+                <Badge variant="outline" className={source.className} title={marketPrice.note}>
+                  {t(`sources.${source.labelKey}` as never)}
                 </Badge>
               </TableCell>
             </>
@@ -306,52 +298,48 @@ export default async function InvestmentsPage() {
                         investmentTypeColors[item.investmentType] || "bg-slate-500/15 text-slate-600 border-slate-500/20"
                       )}
                     >
-                      {investmentTypeLabels[item.investmentType] || item.investmentType}
+                      {t(`types.${item.investmentType}` as never)}
                     </Badge>
                   </div>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={source.className}
-                  title={marketPrice.note}
-                >
-                  {source.label}
+                <Badge variant="outline" className={source.className} title={marketPrice.note}>
+                  {t(`sources.${source.labelKey}` as never)}
                 </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                <div className="text-muted-foreground">Valor actual</div>
+                <div className="text-muted-foreground">{t("card.currentValue")}</div>
                 <div className="text-right font-semibold">
-                  {formatCurrency(item.estimatedValue, item.currency)}
+                  {formatCurrency(item.estimatedValue, item.currency, locale)}
                 </div>
 
-                <div className="text-muted-foreground">Invertido</div>
-                <div className="text-right">{formatCurrency(item.investedAmount, item.currency)}</div>
+                <div className="text-muted-foreground">{t("card.invested")}</div>
+                <div className="text-right">{formatCurrency(item.investedAmount, item.currency, locale)}</div>
 
-                <div className="text-muted-foreground">Ganancia / Pérdida</div>
+                <div className="text-muted-foreground">{t("card.gainLoss")}</div>
                 <div className={`text-right font-semibold ${gainAmount >= 0 ? "text-success" : "text-danger"}`}>
-                  {formatCurrency(gainAmount, item.currency)}
+                  {formatCurrency(gainAmount, item.currency, locale)}
                 </div>
 
-                <div className="text-muted-foreground">Retorno</div>
+                <div className="text-muted-foreground">{t("card.returnLabel")}</div>
                 <div className={`text-right font-semibold ${positive ? "text-success" : "text-danger"}`}>
-                  {formatPercent(gainPercent)}
+                  {formatPercent(gainPercent, locale)}
                 </div>
 
-                <div className="text-muted-foreground">Precio mercado</div>
+                <div className="text-muted-foreground">{t("card.marketPrice")}</div>
                 <div className="text-right">
                   {marketPrice.price !== null ? (
-                    formatPrice(marketPrice.price, marketPrice.currency)
+                    formatPrice(marketPrice.price, marketPrice.currency, locale)
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
                 </div>
 
-                <div className="text-muted-foreground">Actualizado</div>
+                <div className="text-muted-foreground">{t("card.updated")}</div>
                 <div className="text-right text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatDateTime(marketPrice.updatedAt)}
+                    {formatDateTime(marketPrice.updatedAt, locale)}
                   </span>
                 </div>
               </div>
@@ -361,12 +349,12 @@ export default async function InvestmentsPage() {
                 <div className="text-right">
                   <p className={`text-sm font-semibold ${positive ? "text-success" : "text-danger"}`}>
                     {positive ? "+" : ""}
-                    {formatPercent(gainPercent)}
+                    {formatPercent(gainPercent, locale)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {item.estimatedQuantity !== null
-                      ? `~${item.estimatedQuantity.toLocaleString("es-CO")} unid.`
-                      : marketPrice.note || "Sin cotización"}
+                      ? `~${fmtNum(item.estimatedQuantity, locale)} ${t("unitsShort")}`
+                      : marketPrice.note || t("noQuote")}
                   </p>
                 </div>
               </div>
@@ -377,9 +365,9 @@ export default async function InvestmentsPage() {
           <EmptyStateCard
             variant="md"
             icon={TrendingUp}
-            title="Haz crecer tu patrimonio"
-            description="Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar."
-            hint="Empieza registrando tu primera inversión."
+            title={t("empty.title")}
+            description={t("empty.description")}
+            hint={t("empty.hint")}
             action={<CreateInvestmentDialog />}
           />
         }

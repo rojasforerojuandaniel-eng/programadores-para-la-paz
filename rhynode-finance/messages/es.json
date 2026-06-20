@@ -289,6 +289,20 @@
       "card": { "assets": "Activos", "liabilities": "Deudas", "ratioLabel": "Ratio {ratio} · {label}" },
       "empty": { "title": "Tu patrimonio empieza aquí", "description": "Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas.", "hint": "Empieza creando tu primer registro de patrimonio." }
     },
+    "investments": {
+      "title": "Inversiones",
+      "subtitle": "Portafolio de inversiones",
+      "kpis": { "totalInvested": "Total Invertido", "currentValue": "Valor Actual", "totalReturn": "Retorno Total" },
+      "allocation": "Distribución del portafolio",
+      "columns": { "name": "Nombre", "type": "Tipo", "price": "Precio mercado", "value": "Valor actual", "invested": "Invertido", "gain": "Ganancia", "return": "Retorno %", "source": "Fuente" },
+      "types": { "STOCK": "Acciones", "BOND": "Bonos", "CRYPTO": "Cripto", "ETF": "ETF", "REAL_ESTATE": "Bienes Raíces", "OTHER": "Otro" },
+      "sources": { "real": "Precio real", "estimated": "Estimado", "na": "N/A" },
+      "card": { "currentValue": "Valor actual", "invested": "Invertido", "gainLoss": "Ganancia / Pérdida", "returnLabel": "Retorno", "marketPrice": "Precio mercado", "updated": "Actualizado" },
+      "units": "unidades",
+      "unitsShort": "unid.",
+      "noQuote": "Sin cotización",
+      "empty": { "title": "Haz crecer tu patrimonio", "description": "Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar.", "hint": "Empieza registrando tu primera inversión." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",
