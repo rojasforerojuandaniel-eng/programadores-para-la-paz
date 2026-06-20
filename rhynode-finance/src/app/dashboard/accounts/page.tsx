@@ -1,8 +1,11 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuth } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateBankAccountButton } from "@/components/dashboard/create-bank-account-button";
@@ -21,13 +24,6 @@ import { Loader2, Landmark, Wallet, PiggyBank, CreditCard, Building2 } from "luc
 import { cn } from "@/lib/utils";
 import type { BankAccountRow } from "@/components/dashboard/bank-account-actions";
 
-const typeLabels: Record<string, string> = {
-  CHECKING: "Corriente",
-  SAVINGS: "Ahorros",
-  CREDIT: "Crédito",
-  VIRTUAL: "Virtual",
-};
-
 const typeIcons: Record<string, typeof Building2> = {
   CHECKING: Wallet,
   SAVINGS: PiggyBank,
@@ -42,19 +38,11 @@ const lowBalanceThresholds: Record<string, number> = {
   USD: 50,
 };
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function accountStatus(amount: number, currency: string) {
-  if (amount < 0) return { label: "Negativo", variant: "destructive" as const };
+  if (amount < 0) return { labelKey: "negative" as const, variant: "destructive" as const };
   const threshold = lowBalanceThresholds[currency] ?? 0;
   if (threshold > 0 && amount < threshold) {
-    return { label: "Saldo bajo", variant: "warning" as const };
+    return { labelKey: "lowBalance" as const, variant: "warning" as const };
   }
   return null;
 }
@@ -65,13 +53,17 @@ function bankInitials(name: string) {
   return firstLetters.join("").slice(0, 2) || "B";
 }
 
-export default function AccountsPage() {
+export default async function AccountsPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.accounts" });
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Cuentas Bancarias</h1>
-          <p className="body-default mt-1">Gestiona tus cuentas y saldos</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateBankAccountButton />
       </div>
@@ -85,12 +77,12 @@ export default function AccountsPage() {
           </div>
         }
       >
-        <KpiSection />
+        <KpiSection locale={locale} />
       </Suspense>
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Todas las Cuentas</CardTitle>
+          <CardTitle className="heading-card">{t("allTitle")}</CardTitle>
         </CardHeader>
         <Suspense
           fallback={
@@ -101,42 +93,42 @@ export default function AccountsPage() {
             </CardContent>
           }
         >
-          <AccountsContent />
+          <AccountsContent locale={locale} />
         </Suspense>
       </Card>
     </div>
   );
 }
 
-async function KpiSection() {
+async function KpiSection({ locale }: { locale: Locale }) {
   const org = await requireAuth();
   if (!org) return null;
+  setRequestLocale(locale);
 
   const prisma = getPrisma();
-  const accounts = await prisma.bankAccount.findMany({
-    where: { organizationId: org.id },
-  });
+  const accounts = await prisma.bankAccount.findMany({ where: { organizationId: org.id } });
 
   const total = accounts.length;
   const checking = accounts.filter((a) => a.type === "CHECKING").length;
   const savings = accounts.filter((a) => a.type === "SAVINGS").length;
-  const creditOrVirtual = accounts.filter((a) =>
-    ["CREDIT", "VIRTUAL"].includes(a.type)
-  ).length;
+  const creditOrVirtual = accounts.filter((a) => ["CREDIT", "VIRTUAL"].includes(a.type)).length;
+
+  const t = await getTranslations({ locale, namespace: "dashboard.accounts" });
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-      <KpiCard label="Total cuentas" value={total} icon={Landmark} />
-      <KpiCard label="Corrientes" value={checking} icon={Wallet} />
-      <KpiCard label="Ahorros" value={savings} icon={PiggyBank} />
-      <KpiCard label="Crédito / Virtual" value={creditOrVirtual} icon={CreditCard} />
+      <KpiCard label={t("total")} value={total} icon={Landmark} />
+      <KpiCard label={t("checking")} value={checking} icon={Wallet} />
+      <KpiCard label={t("savings")} value={savings} icon={PiggyBank} />
+      <KpiCard label={t("creditVirtual")} value={creditOrVirtual} icon={CreditCard} />
     </div>
   );
 }
 
-async function AccountsContent() {
+async function AccountsContent({ locale }: { locale: Locale }) {
   const org = await requireAuth();
   if (!org) return notFound();
+  setRequestLocale(locale);
 
   const prisma = getPrisma();
   const accounts = await prisma.bankAccount.findMany({
@@ -154,15 +146,17 @@ async function AccountsContent() {
     balance: decimalToNumber(account.balance),
   }));
 
+  const t = await getTranslations({ locale, namespace: "dashboard.accounts" });
+
   return (
     <CardContent>
       {rows.length === 0 ? (
         <EmptyStateCard
           variant="lg"
           icon={Landmark}
-          title="Conecta tus cuentas bancarias"
-          description="Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales en un solo lugar."
-          hint="Empieza conectando tu primera cuenta bancaria."
+          title={t("empty.title")}
+          description={t("empty.description")}
+          hint={t("empty.hint")}
           action={<CreateBankAccountButton />}
         />
       ) : (
@@ -171,12 +165,12 @@ async function AccountsContent() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead scope="col">Cuenta</TableHead>
-                  <TableHead scope="col">Tipo</TableHead>
-                  <TableHead scope="col">Moneda</TableHead>
-                  <TableHead scope="col" className="text-right">Saldo</TableHead>
+                  <TableHead scope="col">{t("table.account")}</TableHead>
+                  <TableHead scope="col">{t("table.type")}</TableHead>
+                  <TableHead scope="col">{t("table.currency")}</TableHead>
+                  <TableHead scope="col" className="text-right">{t("table.balance")}</TableHead>
                   <TableHead scope="col" className="w-16">
-                    <span className="sr-only">Acciones</span>
+                    <span className="sr-only">{t("table.actions")}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -185,10 +179,7 @@ async function AccountsContent() {
                   <TableRow key={acc.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
-                          aria-hidden="true"
-                        >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary" aria-hidden="true">
                           {bankInitials(acc.bankName)}
                         </div>
                         <div className="min-w-0">
@@ -198,11 +189,11 @@ async function AccountsContent() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{typeLabels[acc.type] || acc.type}</Badge>
+                      <Badge variant="outline">{t(`types.${acc.type}` as never) || acc.type}</Badge>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{acc.currency}</TableCell>
                     <TableCell className="text-right font-semibold tabular-nums">
-                      {formatCurrency(acc.balance, acc.currency)}
+                      {formatCurrency(acc.balance, acc.currency, locale)}
                     </TableCell>
                     <TableCell>
                       <BankAccountActions account={acc} />
@@ -218,37 +209,29 @@ async function AccountsContent() {
               const status = accountStatus(acc.balance, acc.currency);
               const Icon = typeIcons[acc.type] ?? Building2;
               return (
-                <li
-                  key={acc.id}
-                  className="surface-elevated-2 rounded-2xl p-4 sm:p-5"
-                >
+                <li key={acc.id} className="surface-elevated-2 rounded-2xl p-4 sm:p-5">
                   <div className="flex items-start gap-3">
-                    <div
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-                      aria-hidden="true"
-                    >
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary" aria-hidden="true">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold leading-snug text-foreground">
-                        {acc.name}
-                      </div>
+                      <div className="font-semibold leading-snug text-foreground">{acc.name}</div>
                       <div className="text-sm text-muted-foreground">{acc.bankName}</div>
                     </div>
                     <BankAccountActions account={acc} />
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">{typeLabels[acc.type] || acc.type}</Badge>
+                    <Badge variant="outline">{t(`types.${acc.type}` as never) || acc.type}</Badge>
                     {status && (
                       <Badge
                         variant={status.variant === "destructive" ? "destructive" : "secondary"}
                         className={cn(
                           status.variant === "warning" &&
-                            "border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10"
+                            "border-amber-500/20 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10",
                         )}
                       >
-                        {status.label}
+                        {t(`status.${status.labelKey}` as never)}
                       </Badge>
                     )}
                   </div>
@@ -256,10 +239,10 @@ async function AccountsContent() {
                   <div
                     className={cn(
                       "mt-3 text-2xl font-bold tracking-tight tabular-nums",
-                      acc.balance < 0 && "text-destructive"
+                      acc.balance < 0 && "text-destructive",
                     )}
                   >
-                    {formatCurrency(acc.balance, acc.currency)}
+                    {formatCurrency(acc.balance, acc.currency, locale)}
                   </div>
                 </li>
               );

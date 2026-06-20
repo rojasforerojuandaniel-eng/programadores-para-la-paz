@@ -88,6 +88,60 @@
         "hint": "Empieza creando tu primer presupuesto."
       }
     },
+    "goals": {
+      "title": "Metas",
+      "subtitle": "Administra tus metas de ahorro",
+      "total": "Meta Total",
+      "saved": "Ahorrado",
+      "completed": "Completadas",
+      "of": "de {amount}",
+      "noDate": "Sin fecha",
+      "statusCompleted": "Completada",
+      "statusActive": "Activa",
+      "reached": "Meta alcanzada.",
+      "columns": {
+        "name": "Nombre",
+        "target": "Meta",
+        "saved": "Ahorrado",
+        "progress": "Progreso",
+        "deadline": "Fecha objetivo",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "deadline": {
+        "overdue": "Vencida hace {days} días",
+        "today": "Vence hoy",
+        "left": "{days} días restantes"
+      },
+      "suggestion": {
+        "title": "Sugerencia de meta",
+        "body": "Tu ahorro promedio mensual es {average}. Podrías alcanzar {target} en 6 meses.",
+        "cta": "Crear meta sugerida",
+        "suggestedName": "Nueva meta sugerida"
+      },
+      "empty": {
+        "title": "Alcanza tus metas de ahorro",
+        "description": "Define objetivos claros y haz seguimiento visual de tu progreso día a día.",
+        "hint": "Empieza creando tu primera meta."
+      }
+    },
+    "accounts": {
+      "title": "Cuentas Bancarias",
+      "subtitle": "Gestiona tus cuentas y saldos",
+      "allTitle": "Todas las Cuentas",
+      "total": "Total cuentas",
+      "checking": "Corrientes",
+      "savings": "Ahorros",
+      "creditVirtual": "Crédito / Virtual",
+      "types": { "CHECKING": "Corriente", "SAVINGS": "Ahorros", "CREDIT": "Crédito", "VIRTUAL": "Virtual" },
+      "status": { "negative": "Negativo", "lowBalance": "Saldo bajo" },
+      "table": { "account": "Cuenta", "type": "Tipo", "currency": "Moneda", "balance": "Saldo", "actions": "Acciones" },
+      "empty": {
+        "title": "Conecta tus cuentas bancarias",
+        "description": "Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales en un solo lugar.",
+        "hint": "Empieza conectando tu primera cuenta bancaria."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",
