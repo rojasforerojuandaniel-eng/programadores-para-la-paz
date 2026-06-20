@@ -2,21 +2,23 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useScope } from "@/lib/scope-context";
 import { updateUserScope } from "@/app/dashboard/actions";
 import type { UserScope } from "@/lib/scope";
 
-const scopes: { value: UserScope; label: string }[] = [
-  { value: "PERSONAL", label: "Personal" },
-  { value: "BUSINESS", label: "Empresa" },
-  { value: "BOTH", label: "Ambas" },
+const scopes: { value: UserScope; labelKey: "personal" | "business" | "both"; titleKey: "titlePersonal" | "titleBusiness" | "titleBoth" }[] = [
+  { value: "PERSONAL", labelKey: "personal", titleKey: "titlePersonal" },
+  { value: "BUSINESS", labelKey: "business", titleKey: "titleBusiness" },
+  { value: "BOTH", labelKey: "both", titleKey: "titleBoth" },
 ];
 
 export function ScopeToggle() {
   const { scope, setScope, hasBusiness } = useScope();
   const router = useRouter();
   const [, startTransition] = useTransition();
+  const t = useTranslations("dashboard.scope");
 
   const handleChange = (newScope: UserScope) => {
     setScope(newScope);
@@ -30,7 +32,7 @@ export function ScopeToggle() {
     <div
       className="flex min-w-0 shrink items-center gap-0.5 rounded-lg border border-border bg-background p-0.5"
       role="group"
-      aria-label="Ámbito de visualización"
+      aria-label={t("aria")}
     >
       {scopes.map((s) => {
         const disabled = s.value === "BUSINESS" && !hasBusiness;
@@ -48,15 +50,9 @@ export function ScopeToggle() {
               disabled && "pointer-events-none opacity-40"
             )}
             aria-pressed={scope === s.value}
-            title={
-              s.value === "BUSINESS"
-                ? "Ver solo finanzas empresariales"
-                : s.value === "BOTH"
-                  ? "Ver finanzas personales y empresariales"
-                  : "Ver solo finanzas personales"
-            }
+            title={t(s.titleKey)}
           >
-            {s.label}
+            {t(s.labelKey)}
           </button>
         );
       })}
