@@ -1,4 +1,33 @@
 {
+  "dashboard": {
+    "nav": {
+      "home": "Inicio",
+      "netWorth": "Patrimonio",
+      "investments": "Inversiones",
+      "subscriptions": "Suscripciones",
+      "calendar": "Calendario",
+      "reminders": "Recordatorios",
+      "scenarios": "Escenarios",
+      "split": "Dividir Gastos",
+      "rentDeclaration": "Declaración Renta",
+      "achievements": "Logros",
+      "transactions": "Transacciones",
+      "rules": "Reglas",
+      "accounts": "Cuentas bancarias",
+      "invoices": "Facturas",
+      "clients": "Clientes",
+      "tax": "Impuestos",
+      "paymentLinks": "Cobros",
+      "advisor": "AI Advisor",
+      "indicators": "Indicadores",
+      "integrations": "Integraciones",
+      "leaderboard": "Leaderboard",
+      "stats": "Mis stats",
+      "settings": "Configuración"
+    },
+    "skipToContent": "Saltar al contenido principal",
+    "sectionsAria": "Secciones del dashboard"
+  },
   "nav": {
     "features": "Funciones",
     "pricing": "Precios",
