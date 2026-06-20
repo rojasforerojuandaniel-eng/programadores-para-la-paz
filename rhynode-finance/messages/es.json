@@ -35,6 +35,13 @@
       "spentHint": "Registrar un gasto",
       "receivedHint": "Registrar un ingreso"
     },
+    "voice": {
+      "label": "Dictar",
+      "listening": "Escuchando…",
+      "unsupported": "Tu navegador no soporta voz. Usa Chrome o Edge.",
+      "error": "No te escuché. Intenta de nuevo.",
+      "heard": "Te escuché"
+    },
     "transactions": {
       "title": "Transacciones",
       "subtitle": "Registro de ingresos, gastos y movimientos",

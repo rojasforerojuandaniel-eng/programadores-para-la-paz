@@ -39,12 +39,19 @@ interface TransactionFormProps {
   onCancel?: () => void;
   /** Pre-set the transaction type so "Gasté" → EXPENSE / "Recibí" → INCOME without an extra tap. */
   defaultType?: "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
+  /** Pre-fill from voice input (amount + description + suggested category). */
+  defaultAmount?: string;
+  defaultDescription?: string;
+  defaultCategory?: string;
 }
 
 export function TransactionForm({
   onSuccess,
   onCancel,
   defaultType = "INCOME",
+  defaultAmount = "",
+  defaultDescription = "",
+  defaultCategory = "",
 }: TransactionFormProps) {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -58,9 +65,9 @@ export function TransactionForm({
   const [rules, setRules] = useState<Rule[]>([]);
   const [form, setForm] = useState({
     type: defaultType as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
-    category: "",
-    description: "",
-    amount: "",
+    category: defaultCategory,
+    description: defaultDescription,
+    amount: defaultAmount,
     currency: "COP",
     reference: "",
     date: "",
@@ -69,9 +76,9 @@ export function TransactionForm({
   const resetForm = useCallback(() => {
     setForm({
       type: defaultType,
-      category: "",
-      description: "",
-      amount: "",
+      category: defaultCategory,
+      description: defaultDescription,
+      amount: defaultAmount,
       currency: "COP",
       reference: "",
       date: "",
