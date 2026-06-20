@@ -142,6 +142,50 @@
         "hint": "Empieza conectando tu primera cuenta bancaria."
       }
     },
+    "invoices": {
+      "title": "Facturas",
+      "subtitle": "Gestiona tus facturas electrónicas",
+      "allTitle": "Todas las Facturas",
+      "newInvoice": "Nueva Factura",
+      "noClient": "Sin cliente",
+      "noName": "Sin nombre",
+      "statuses": { "DRAFT": "Borrador", "SENT": "Enviada", "PAID": "Pagada", "OVERDUE": "Vencida", "CANCELLED": "Anulada", "PARTIAL": "Parcial" },
+      "filters": { "ALL": "Todos", "PENDING": "Pendientes", "OVERDUE": "Vencidas", "PAID": "Pagadas" },
+      "columns": { "number": "Número", "client": "Cliente", "status": "Estado", "total": "Total", "date": "Fecha", "actions": "Acciones" },
+      "kpis": { "pending": "Pendientes", "overdue": "Vencidas", "paid": "Pagadas", "outstanding": "Total por cobrar", "invoicesCount": "{count} facturas" },
+      "filters2": { "clientLabel": "Cliente", "allClients": "Todos los clientes", "all": "Todos", "from": "Desde", "to": "Hasta" },
+      "empty": {
+        "title": "No hay facturas aún",
+        "description": "Crea tu primera factura para empezar a facturar y dar seguimiento a pagos.",
+        "hint": "Todas tus facturas electrónicas aparecerán aquí."
+      }
+    },
+    "debts": {
+      "title": "Deudas",
+      "subtitle": "Administra tus deudas y préstamos",
+      "totalRemaining": "Restante Total",
+      "active": "Activas",
+      "overdue": "Vencidas",
+      "status": { "paid": "Pagada", "overdue": "Vencida", "active": "Activa" },
+      "type": { "owe": "Debo", "owed": "Me deben" },
+      "pay": "Pagar",
+      "recordPayment": "Registrar pago",
+      "paidAria": "Pagada",
+      "card": { "balance": "Saldo", "rate": "Tasa", "installment": "Cuota" },
+      "progressLabel": "{pct}% pagado · {paid} de {principal}",
+      "noDueDate": "Sin vencimiento",
+      "overdueSuffix": " · vencida",
+      "upcomingSuffix": " · próxima",
+      "payoffLabel": "Liquidación estimada:",
+      "days": "{days} días",
+      "settled": "Deuda saldada",
+      "columns": { "name": "Nombre", "counterparty": "Acreedor", "remaining": "Saldo", "rate": "Tasa", "payment": "Cuota mensual", "progress": "Progreso", "payoff": "Liquidación", "dueDate": "Vencimiento", "status": "Estado" },
+      "empty": {
+        "title": "Mantén tus deudas bajo control",
+        "description": "Registra préstamos y obligaciones para planificar su pago y reducir intereses.",
+        "hint": "Empieza creando tu primera deuda."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",
