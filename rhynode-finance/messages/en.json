@@ -142,6 +142,50 @@
         "hint": "Start by connecting your first bank account."
       }
     },
+    "invoices": {
+      "title": "Invoices",
+      "subtitle": "Manage your electronic invoices",
+      "allTitle": "All Invoices",
+      "newInvoice": "New Invoice",
+      "noClient": "No client",
+      "noName": "No name",
+      "statuses": { "DRAFT": "Draft", "SENT": "Sent", "PAID": "Paid", "OVERDUE": "Overdue", "CANCELLED": "Cancelled", "PARTIAL": "Partial" },
+      "filters": { "ALL": "All", "PENDING": "Pending", "OVERDUE": "Overdue", "PAID": "Paid" },
+      "columns": { "number": "Number", "client": "Client", "status": "Status", "total": "Total", "date": "Date", "actions": "Actions" },
+      "kpis": { "pending": "Pending", "overdue": "Overdue", "paid": "Paid", "outstanding": "Total outstanding", "invoicesCount": "{count} invoices" },
+      "filters2": { "clientLabel": "Client", "allClients": "All clients", "all": "All", "from": "From", "to": "To" },
+      "empty": {
+        "title": "No invoices yet",
+        "description": "Create your first invoice to start billing and tracking payments.",
+        "hint": "All your electronic invoices will appear here."
+      }
+    },
+    "debts": {
+      "title": "Debts",
+      "subtitle": "Manage your debts and loans",
+      "totalRemaining": "Total remaining",
+      "active": "Active",
+      "overdue": "Overdue",
+      "status": { "paid": "Paid", "overdue": "Overdue", "active": "Active" },
+      "type": { "owe": "I owe", "owed": "Owed to me" },
+      "pay": "Pay",
+      "recordPayment": "Record payment",
+      "paidAria": "Paid",
+      "card": { "balance": "Balance", "rate": "Rate", "installment": "Installment" },
+      "progressLabel": "{pct}% paid · {paid} of {principal}",
+      "noDueDate": "No due date",
+      "overdueSuffix": " · overdue",
+      "upcomingSuffix": " · upcoming",
+      "payoffLabel": "Estimated payoff:",
+      "days": "{days} days",
+      "settled": "Debt settled",
+      "columns": { "name": "Name", "counterparty": "Creditor", "remaining": "Balance", "rate": "Rate", "payment": "Monthly payment", "progress": "Progress", "payoff": "Payoff", "dueDate": "Due date", "status": "Status" },
+      "empty": {
+        "title": "Keep your debts under control",
+        "description": "Log loans and obligations to plan payments and reduce interest.",
+        "hint": "Start by creating your first debt."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",

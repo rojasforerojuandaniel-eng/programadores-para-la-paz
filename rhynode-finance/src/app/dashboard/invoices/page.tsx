@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,9 @@ import { usePlanLimit } from "@/hooks/use-plan-limit";
 import { useSearchParams } from "next/navigation";
 import { PlanLimitUpgradeCard } from "@/components/dashboard/plan-limit-upgrade-card";
 import { InvoiceActions } from "@/components/dashboard/invoice-actions";
+import { formatCurrency, formatDate } from "@/lib/format";
 import type { Invoice } from "@/components/dashboard/edit-invoice-dialog";
+import type { Locale } from "@/lib/locale";
 
 interface InvoiceItem {
   description: string;
@@ -55,27 +58,33 @@ const CreateInvoiceSheet = dynamic(
   {
     loading: () => (
       <Button className="gap-2" disabled>
-        <Plus className="h-4 w-4" />
-        Nueva Factura
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        <NewInvoiceLabel />
       </Button>
     ),
   },
 );
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Borrador", className: "bg-muted text-muted-foreground" },
-  SENT: { label: "Enviada", className: "bg-warning/10 text-warning" },
-  PAID: { label: "Pagada", className: "bg-success/10 text-success" },
-  OVERDUE: { label: "Vencida", className: "bg-danger/10 text-danger" },
-  CANCELLED: { label: "Anulada", className: "bg-muted text-muted-foreground" },
-  PARTIAL: { label: "Parcial", className: "bg-info/10 text-info" },
+function NewInvoiceLabel() {
+  const t = useTranslations("dashboard.invoices");
+  return <>{t("newInvoice")}</>;
+}
+
+const STATUS_KEYS = ["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED", "PARTIAL"] as const;
+const STATUS_CLASS: Record<string, string> = {
+  DRAFT: "bg-muted text-muted-foreground",
+  SENT: "bg-warning/10 text-warning",
+  PAID: "bg-success/10 text-success",
+  OVERDUE: "bg-danger/10 text-danger",
+  CANCELLED: "bg-muted text-muted-foreground",
+  PARTIAL: "bg-info/10 text-info",
 };
 
 const FILTER_OPTIONS = [
-  { key: "ALL", label: "Todos" },
-  { key: "PENDING", label: "Pendientes" },
-  { key: "OVERDUE", label: "Vencidas" },
-  { key: "PAID", label: "Pagadas" },
+  { key: "ALL", labelKey: "filters.ALL" },
+  { key: "PENDING", labelKey: "filters.PENDING" },
+  { key: "OVERDUE", labelKey: "filters.OVERDUE" },
+  { key: "PAID", labelKey: "filters.PAID" },
 ] as const;
 
 type FilterKey = (typeof FILTER_OPTIONS)[number]["key"];
@@ -97,23 +106,17 @@ function toNumber(value: unknown): number {
   return 0;
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function sumInvoices(invoices: InvoiceWithItems[]): number {
   return invoices.reduce((sum, inv) => sum + toNumber(inv.total), 0);
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const config = statusConfig[status] || statusConfig.DRAFT;
+  const t = useTranslations("dashboard.invoices.statuses");
+  const className = STATUS_CLASS[status] ?? STATUS_CLASS.DRAFT;
+  const key = (STATUS_KEYS as readonly string[]).includes(status) ? (status as (typeof STATUS_KEYS)[number]) : "DRAFT";
   return (
-    <Badge variant="outline" className={config.className}>
-      {config.label}
+    <Badge variant="outline" className={className}>
+      {t(key)}
     </Badge>
   );
 }
@@ -135,6 +138,8 @@ async function fetchInvoices(signal?: AbortSignal): Promise<InvoiceWithItems[]> 
 }
 
 export default function InvoicesPage() {
+  const t = useTranslations("dashboard.invoices");
+  const locale = useLocale() as Locale;
   const searchParams = useSearchParams();
   const defaultOpen = searchParams.get("new") === "1";
   const [invoices, setInvoices] = useState<InvoiceWithItems[]>([]);
@@ -171,22 +176,20 @@ export default function InvoicesPage() {
     for (const inv of invoices) {
       const id = inv.clientId || inv.client?.name || "";
       if (!id) continue;
-      const name = inv.client?.name || "Sin nombre";
+      const name = inv.client?.name || t("noName");
       if (!map.has(id)) {
         map.set(id, name);
       }
     }
     return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-  }, [invoices]);
+  }, [invoices, t]);
 
   const filteredInvoices = useMemo(() => {
     let result = invoices;
 
     switch (filter) {
       case "PENDING":
-        result = result.filter((inv) =>
-          ["SENT", "PARTIAL"].includes(inv.status),
-        );
+        result = result.filter((inv) => ["SENT", "PARTIAL"].includes(inv.status));
         break;
       case "OVERDUE":
         result = result.filter((inv) => inv.status === "OVERDUE");
@@ -216,9 +219,7 @@ export default function InvoicesPage() {
   }, [invoices, filter, clientFilter, dateFrom, dateTo]);
 
   const kpis = useMemo(() => {
-    const pending = invoices.filter((inv) =>
-      ["SENT", "PARTIAL"].includes(inv.status),
-    );
+    const pending = invoices.filter((inv) => ["SENT", "PARTIAL"].includes(inv.status));
     const overdue = invoices.filter((inv) => inv.status === "OVERDUE");
     const paid = invoices.filter((inv) => inv.status === "PAID");
     const outstanding = [...pending, ...overdue];
@@ -235,12 +236,12 @@ export default function InvoicesPage() {
   }, [invoices]);
 
   const columns = [
-    { key: "number", header: "Número" },
-    { key: "client", header: "Cliente" },
-    { key: "status", header: "Estado" },
-    { key: "total", header: "Total", className: "text-right" },
-    { key: "date", header: "Fecha" },
-    { key: "actions", header: "Acciones", className: "text-right" },
+    { key: "number", header: t("columns.number") },
+    { key: "client", header: t("columns.client") },
+    { key: "status", header: t("columns.status") },
+    { key: "total", header: t("columns.total"), className: "text-right" },
+    { key: "date", header: t("columns.date") },
+    { key: "actions", header: t("columns.actions"), className: "text-right" },
   ];
 
   function renderRow(inv: InvoiceWithItems) {
@@ -248,7 +249,7 @@ export default function InvoicesPage() {
       <>
         <TableCell className="font-mono text-sm">{inv.number}</TableCell>
         <TableCell>
-          <div className="font-medium">{inv.client?.name || "Sin cliente"}</div>
+          <div className="font-medium">{inv.client?.name || t("noClient")}</div>
           {inv.project?.name && (
             <div className="text-xs text-muted-foreground">{inv.project.name}</div>
           )}
@@ -257,12 +258,10 @@ export default function InvoicesPage() {
           <StatusBadge status={inv.status} />
         </TableCell>
         <TableCell className="text-right">
-          <div className="font-medium">
-            {formatCurrency(toNumber(inv.total), inv.currency)}
-          </div>
+          <div className="font-medium">{formatCurrency(toNumber(inv.total), inv.currency, locale)}</div>
         </TableCell>
         <TableCell className="text-sm text-muted-foreground">
-          {new Date(inv.issueDate).toLocaleDateString("es-CO")}
+          {formatDate(inv.issueDate, locale)}
         </TableCell>
         <TableCell className="text-right">
           <InvoiceActions invoice={inv} onRefresh={refreshInvoices} />
@@ -276,12 +275,8 @@ export default function InvoicesPage() {
       <div className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="font-mono text-sm text-muted-foreground">
-              {inv.number}
-            </div>
-            <div className="truncate font-medium">
-              {inv.client?.name || "Sin cliente"}
-            </div>
+            <div className="font-mono text-sm text-muted-foreground">{inv.number}</div>
+            <div className="truncate font-medium">{inv.client?.name || t("noClient")}</div>
           </div>
           <StatusBadge status={inv.status} />
         </div>
@@ -290,12 +285,8 @@ export default function InvoicesPage() {
         )}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(toNumber(inv.total), inv.currency)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {new Date(inv.issueDate).toLocaleDateString("es-CO")}
-            </div>
+            <div className="text-lg font-semibold">{formatCurrency(toNumber(inv.total), inv.currency, locale)}</div>
+            <div className="text-xs text-muted-foreground">{formatDate(inv.issueDate, locale)}</div>
           </div>
           <InvoiceActions invoice={inv} onRefresh={refreshInvoices} />
         </div>
@@ -309,10 +300,8 @@ export default function InvoicesPage() {
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Facturas</h1>
-          <p className="body-default mt-1">
-            Gestiona tus facturas electrónicas
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         {planLoading || canCreateInvoice ? (
           <CreateInvoiceSheet onCreate={refreshInvoices} defaultOpen={defaultOpen} />
@@ -328,26 +317,26 @@ export default function InvoicesPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <KpiCard
-          label="Pendientes"
-          value={formatCurrency(kpis.pendingAmount, "COP")}
+          label={t("kpis.pending")}
+          value={formatCurrency(kpis.pendingAmount, "COP", locale)}
           icon={Clock}
-          footer={`${kpis.pendingCount} facturas`}
+          footer={t("kpis.invoicesCount", { count: kpis.pendingCount })}
         />
         <KpiCard
-          label="Vencidas"
-          value={formatCurrency(kpis.overdueAmount, "COP")}
+          label={t("kpis.overdue")}
+          value={formatCurrency(kpis.overdueAmount, "COP", locale)}
           icon={AlertCircle}
-          footer={`${kpis.overdueCount} facturas`}
+          footer={t("kpis.invoicesCount", { count: kpis.overdueCount })}
         />
         <KpiCard
-          label="Pagadas"
-          value={formatCurrency(kpis.paidAmount, "COP")}
+          label={t("kpis.paid")}
+          value={formatCurrency(kpis.paidAmount, "COP", locale)}
           icon={CheckCircle2}
-          footer={`${kpis.paidCount} facturas`}
+          footer={t("kpis.invoicesCount", { count: kpis.paidCount })}
         />
         <KpiCard
-          label="Total por cobrar"
-          value={formatCurrency(kpis.outstandingAmount, "COP")}
+          label={t("kpis.outstanding")}
+          value={formatCurrency(kpis.outstandingAmount, "COP", locale)}
           icon={DollarSign}
         />
       </div>
@@ -355,7 +344,7 @@ export default function InvoicesPage() {
       <Card className="surface-elevated-2">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="heading-card">Todas las Facturas</CardTitle>
+            <CardTitle className="heading-card">{t("allTitle")}</CardTitle>
             <div className="flex flex-wrap gap-2">
               {FILTER_OPTIONS.map((option) => (
                 <Button
@@ -365,7 +354,7 @@ export default function InvoicesPage() {
                   onClick={() => setFilter(option.key)}
                   className="h-8"
                 >
-                  {option.label}
+                  {t(option.labelKey as never)}
                 </Button>
               ))}
             </div>
@@ -374,14 +363,14 @@ export default function InvoicesPage() {
           <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="client-filter" className="text-xs">
-                Cliente
+                {t("filters2.clientLabel")}
               </Label>
               <Select value={clientFilter} onValueChange={setClientFilter}>
                 <SelectTrigger id="client-filter" className="h-9">
-                  <SelectValue placeholder="Todos los clientes" />
+                  <SelectValue placeholder={t("filters2.allClients")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Todos</SelectItem>
+                  <SelectItem value="ALL">{t("filters2.all")}</SelectItem>
                   {clientOptions.map(([id, name]) => (
                     <SelectItem key={id} value={id}>
                       {name}
@@ -392,7 +381,7 @@ export default function InvoicesPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="date-from" className="text-xs">
-                Desde
+                {t("filters2.from")}
               </Label>
               <Input
                 id="date-from"
@@ -404,7 +393,7 @@ export default function InvoicesPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="date-to" className="text-xs">
-                Hasta
+                {t("filters2.to")}
               </Label>
               <Input
                 id="date-to"
@@ -427,12 +416,10 @@ export default function InvoicesPage() {
               <EmptyStateCard
                 variant="lg"
                 icon={FileText}
-                title="No hay facturas aún"
-                description="Crea tu primera factura para empezar a facturar y dar seguimiento a pagos."
-                hint="Todas tus facturas electrónicas aparecerán aquí."
-                action={
-                  <CreateInvoiceSheet onCreate={refreshInvoices} defaultOpen={defaultOpen} />
-                }
+                title={t("empty.title")}
+                description={t("empty.description")}
+                hint={t("empty.hint")}
+                action={<CreateInvoiceSheet onCreate={refreshInvoices} defaultOpen={defaultOpen} />}
               />
             }
           />
