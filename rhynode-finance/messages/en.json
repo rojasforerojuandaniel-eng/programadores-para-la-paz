@@ -318,6 +318,14 @@
       "unlockedEmpty": { "title": "No achievements unlocked", "description": "Complete financial actions to see your badges here.", "hint": "Every transaction, goal or budget brings you closer to a new achievement." },
       "allDone": { "title": "All achievements completed!", "description": "You've unlocked every available badge.", "hint": "Keep using Rhynode to maintain your streak and level up." }
     },
+    "projects": {
+      "title": "Projects",
+      "subtitle": "Manage your projects, budgets and associated invoices",
+      "allTitle": "All Projects",
+      "statuses": { "ACTIVE": "Active", "COMPLETED": "Completed", "ARCHIVED": "Archived" },
+      "columns": { "project": "Project", "status": "Status", "budget": "Budget", "spent": "Spent", "progress": "Progress", "dates": "Dates", "invoices": "Invoices", "actions": "Actions" },
+      "empty": { "title": "Organize your work into projects", "description": "Create projects with budget and dates. Link them to invoices to see in real time how much you've spent.", "hint": "Start by creating your first project." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",
