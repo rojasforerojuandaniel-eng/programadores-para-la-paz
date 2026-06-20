@@ -1,7 +1,10 @@
 import webpush from "web-push";
 import { getPrisma } from "./prisma";
 
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "";
+// The public key MUST match the one the browser subscribed with. The client
+// (src/lib/push.ts) subscribes using NEXT_PUBLIC_VAPID_PUBLIC_KEY, so the server
+// must use the same value — not a separate VAPID_PUBLIC_KEY that may be unset.
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "";
 
 if (vapidPublicKey && vapidPrivateKey) {

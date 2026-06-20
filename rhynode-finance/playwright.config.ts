@@ -28,7 +28,7 @@ export default defineConfig({
     },
     {
       name: "authenticated",
-      testMatch: /(onboarding|transactions|invoices|subscriptions)\.spec\.ts/,
+      testMatch: /(onboarding|transactions|invoices|subscriptions|recurring|checkout)\.spec\.ts/,
       dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],

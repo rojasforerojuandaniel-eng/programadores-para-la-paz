@@ -58,8 +58,13 @@ E2E_BUSINESS_NAME="Empresa E2E"
   the **Ambas** scope so both personal and business flows are available.
 - `landing.spec.ts`, `auth.spec.ts`, and `dashboard-redirect.spec.ts` run without
   authentication.
-- `onboarding.spec.ts`, `transactions.spec.ts`, `invoices.spec.ts`, and
-  `subscriptions.spec.ts` run with the saved storage state.
+- `onboarding.spec.ts`, `transactions.spec.ts`, `invoices.spec.ts`,
+  `subscriptions.spec.ts`, `recurring.spec.ts`, and `checkout.spec.ts` run with
+  the saved storage state.
+- `recurring.spec.ts` covers creating a monthly recurring transaction and
+  confirming it appears in the list.
+- `checkout.spec.ts` covers the public `/pay/[slug]` page: an active link
+  renders the pay button, and an unknown slug shows the not-found state.
 
 ## Running individual specs
 
