@@ -2,6 +2,9 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UpdateSnapshotButton } from "./update-button";
@@ -18,33 +21,19 @@ const NetWorthChart = dynamic(
   { loading: NetWorthChartSkeleton }
 );
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("es-CO", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-}
-
 function formatRatio(ratio: number) {
   return `${(ratio * 100).toFixed(1)}%`;
 }
 
-function ratioStatus(ratio: number) {
-  if (ratio < 0.3) return { label: "Saludable", tone: "emerald" as const };
-  if (ratio < 0.6) return { label: "Moderado", tone: "amber" as const };
-  return { label: "Alto riesgo", tone: "rose" as const };
+type RatioTone = "emerald" | "amber" | "rose";
+
+function ratioStatus(ratio: number): { labelKey: "healthy" | "moderate" | "highRisk"; tone: RatioTone } {
+  if (ratio < 0.3) return { labelKey: "healthy", tone: "emerald" };
+  if (ratio < 0.6) return { labelKey: "moderate", tone: "amber" };
+  return { labelKey: "highRisk", tone: "rose" };
 }
 
-const toneClasses = {
+const toneClasses: Record<RatioTone, string> = {
   emerald: "text-emerald-700 border-emerald-500/30 bg-emerald-500/10",
   amber: "text-amber-700 border-amber-500/30 bg-amber-500/10",
   rose: "text-rose-700 border-rose-500/30 bg-rose-500/10",
@@ -53,6 +42,10 @@ const toneClasses = {
 export default async function NetWorthPage() {
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.netWorth" });
 
   const profile = await getUserProfile();
   const userId = profile?.id;
@@ -87,7 +80,7 @@ export default async function NetWorthPage() {
   const chartSnapshots = [...snapshots].slice(0, 12).reverse();
   const chartData = chartSnapshots.map((s) => ({
     date: s.date.toISOString(),
-    label: new Date(s.date).toLocaleDateString("es-CO", { month: "short", day: "numeric" }),
+    label: fmtDate(s.date, locale, { month: "short", day: "numeric" }),
     netWorth: decimalToNumber(s.netWorth),
     assets: decimalToNumber(s.totalAssets),
     liabilities: decimalToNumber(s.totalLiabilities),
@@ -97,8 +90,8 @@ export default async function NetWorthPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Patrimonio Neto</h1>
-          <p className="body-default mt-1">Seguimiento de tu patrimonio a lo largo del tiempo</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <UpdateSnapshotButton
           totalAssets={totalAssets}
@@ -109,8 +102,8 @@ export default async function NetWorthPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          label="Patrimonio Neto"
-          value={latest ? formatCurrency(decimalToNumber(latest.netWorth), latest.currency) : "—"}
+          label={t("kpis.netWorth")}
+          value={latest ? formatCurrency(decimalToNumber(latest.netWorth), latest.currency, locale) : "—"}
           icon={netWorthTrend >= 0 ? TrendingUp : TrendingDown}
           valueClassName={
             latest && previous
@@ -126,30 +119,24 @@ export default async function NetWorthPage() {
                 className={`text-xs ${netWorthTrend >= 0 ? "text-emerald-700 border-emerald-500/30" : "text-rose-700 border-rose-500/30"}`}
               >
                 {netWorthTrend >= 0 ? "+" : ""}
-                {formatCurrency(netWorthTrend, latest.currency)}
+                {formatCurrency(netWorthTrend, latest.currency, locale)}
               </Badge>
             ) : undefined
           }
         />
         <KpiCard
-          label="Activos Totales"
-          value={
-            latest ? formatCurrency(decimalToNumber(latest.totalAssets), latest.currency) : "—"
-          }
+          label={t("kpis.assets")}
+          value={latest ? formatCurrency(decimalToNumber(latest.totalAssets), latest.currency, locale) : "—"}
           icon={Landmark}
         />
         <KpiCard
-          label="Deudas Totales"
-          value={
-            latest
-              ? formatCurrency(decimalToNumber(latest.totalLiabilities), latest.currency)
-              : "—"
-          }
+          label={t("kpis.liabilities")}
+          value={latest ? formatCurrency(decimalToNumber(latest.totalLiabilities), latest.currency, locale) : "—"}
           icon={Wallet}
           valueClassName="text-rose-600"
         />
         <KpiCard
-          label="Ratio Deuda/Activo"
+          label={t("kpis.ratio")}
           value={debtToAssetRatio !== null ? formatRatio(debtToAssetRatio) : "—"}
           icon={Scale}
           valueClassName={
@@ -164,7 +151,7 @@ export default async function NetWorthPage() {
           footer={
             ratioInfo ? (
               <Badge variant="outline" className={`text-xs ${toneClasses[ratioInfo.tone]}`}>
-                {ratioInfo.label}
+                {t(`ratioStatus.${ratioInfo.labelKey}` as never)}
               </Badge>
             ) : undefined
           }
@@ -176,10 +163,10 @@ export default async function NetWorthPage() {
           <CardHeader className="pb-2">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle id="net-worth-chart-title" className="text-sm font-medium text-muted-foreground">
-                Evolución del patrimonio
+                {t("chart.evolution")}
               </CardTitle>
               <span className="text-xs text-muted-foreground">
-                Últimos {chartData.length} registros
+                {t("chart.lastN", { count: chartData.length })}
               </span>
             </div>
           </CardHeader>
@@ -187,17 +174,17 @@ export default async function NetWorthPage() {
             <figure aria-labelledby="net-worth-chart-title">
               <NetWorthChart data={chartData} currency={latest?.currency ?? org.currency} />
               <figcaption className="sr-only">
-                Gráfico de evolución del patrimonio mostrando activos, deudas y patrimonio neto de los últimos {chartData.length} registros.
+                {t("chart.srCaption", { count: chartData.length })}
               </figcaption>
             </figure>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
-                <span>Patrimonio neto</span>
+                <span>{t("chart.netWorth")}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-chart-2" aria-hidden="true" />
-                <span>Activos</span>
+                <span>{t("chart.assets")}</span>
               </div>
             </div>
           </CardContent>
@@ -206,23 +193,23 @@ export default async function NetWorthPage() {
 
       <ServerDataTable
         columns={[
-          { key: "date", header: "Fecha" },
-          { key: "assets", header: "Activos" },
-          { key: "liabilities", header: "Deudas" },
-          { key: "netWorth", header: "Patrimonio" },
+          { key: "date", header: t("columns.date") },
+          { key: "assets", header: t("columns.assets") },
+          { key: "liabilities", header: t("columns.liabilities") },
+          { key: "netWorth", header: t("columns.netWorth") },
         ]}
         data={snapshots}
         renderRow={(item) => (
           <>
-            <TableCell className="py-3 text-sm whitespace-nowrap">{formatDate(item.date)}</TableCell>
+            <TableCell className="py-3 text-sm whitespace-nowrap">{fmtDate(item.date, locale)}</TableCell>
             <TableCell className="py-3 text-sm">
-              {formatCurrency(decimalToNumber(item.totalAssets), item.currency)}
+              {formatCurrency(decimalToNumber(item.totalAssets), item.currency, locale)}
             </TableCell>
             <TableCell className="py-3 text-sm">
-              {formatCurrency(decimalToNumber(item.totalLiabilities), item.currency)}
+              {formatCurrency(decimalToNumber(item.totalLiabilities), item.currency, locale)}
             </TableCell>
             <TableCell className="py-3 text-sm font-medium">
-              {formatCurrency(decimalToNumber(item.netWorth), item.currency)}
+              {formatCurrency(decimalToNumber(item.netWorth), item.currency, locale)}
             </TableCell>
           </>
         )}
@@ -236,24 +223,24 @@ export default async function NetWorthPage() {
           return (
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-muted-foreground">{formatDate(item.date)}</span>
+                <span className="text-sm text-muted-foreground">{fmtDate(item.date, locale)}</span>
                 <span className="text-base font-bold text-foreground">
-                  {formatCurrency(netWorth, item.currency)}
+                  {formatCurrency(netWorth, item.currency, locale)}
                 </span>
               </div>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                <dt className="text-muted-foreground">Activos</dt>
+                <dt className="text-muted-foreground">{t("card.assets")}</dt>
                 <dd className="text-right font-medium">
-                  {formatCurrency(assets, item.currency)}
+                  {formatCurrency(assets, item.currency, locale)}
                 </dd>
-                <dt className="text-muted-foreground">Deudas</dt>
+                <dt className="text-muted-foreground">{t("card.liabilities")}</dt>
                 <dd className="text-right font-medium text-rose-600">
-                  {formatCurrency(liabilities, item.currency)}
+                  {formatCurrency(liabilities, item.currency, locale)}
                 </dd>
               </dl>
               {itemStatus && (
                 <Badge variant="outline" className={`text-xs ${toneClasses[itemStatus.tone]}`}>
-                  Ratio {formatRatio(itemRatio!)} · {itemStatus.label}
+                  {t("card.ratioLabel", { ratio: formatRatio(itemRatio!), label: t(`ratioStatus.${itemStatus.labelKey}` as never) })}
                 </Badge>
               )}
             </div>
@@ -263,9 +250,9 @@ export default async function NetWorthPage() {
           <EmptyStateCard
             variant="lg"
             icon={Landmark}
-            title="Tu patrimonio empieza aquí"
-            description="Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas."
-            hint="Empieza creando tu primer registro de patrimonio."
+            title={t("empty.title")}
+            description={t("empty.description")}
+            hint={t("empty.hint")}
             action={
               <UpdateSnapshotButton
                 totalAssets={totalAssets}
