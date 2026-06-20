@@ -8,9 +8,11 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NavLinks } from "./nav-links";
 import { DashboardLocaleSwitcher } from "./locale-switcher";
+import { useTranslations } from "next-intl";
 import { UserSection } from "./user-section";
 
 export function Sidebar() {
+  const t = useTranslations("dashboard");
   return (
     <>
       <DashboardHeader />
@@ -31,7 +33,7 @@ export function Sidebar() {
           <NavLinks />
           <div className="mt-auto space-y-2 border-t border-border p-4">
             <div className="flex items-center justify-between px-2">
-              <span className="text-xs text-muted-foreground">Tema</span>
+              <span className="text-xs text-muted-foreground">{t("theme")}</span>
               <div className="flex items-center gap-2">
                 <DashboardLocaleSwitcher />
                 <ThemeToggle />

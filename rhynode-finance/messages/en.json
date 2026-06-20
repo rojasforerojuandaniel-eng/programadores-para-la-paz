@@ -26,7 +26,17 @@
       "settings": "Settings"
     },
     "skipToContent": "Skip to main content",
-    "sectionsAria": "Dashboard sections"
+    "sectionsAria": "Dashboard sections",
+    "theme": "Theme",
+    "scope": {
+      "personal": "Personal",
+      "business": "Business",
+      "both": "Both",
+      "aria": "View scope",
+      "titlePersonal": "View only personal finances",
+      "titleBusiness": "View only business finances",
+      "titleBoth": "View personal and business finances"
+    }
   },
   "nav": {
     "features": "Features",

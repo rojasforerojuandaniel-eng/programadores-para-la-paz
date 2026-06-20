@@ -26,7 +26,17 @@
       "settings": "Configuración"
     },
     "skipToContent": "Saltar al contenido principal",
-    "sectionsAria": "Secciones del dashboard"
+    "sectionsAria": "Secciones del dashboard",
+    "theme": "Tema",
+    "scope": {
+      "personal": "Personal",
+      "business": "Empresa",
+      "both": "Ambas",
+      "aria": "Ámbito de visualización",
+      "titlePersonal": "Ver solo finanzas personales",
+      "titleBusiness": "Ver solo finanzas empresariales",
+      "titleBoth": "Ver finanzas personales y empresariales"
+    }
   },
   "nav": {
     "features": "Funciones",
