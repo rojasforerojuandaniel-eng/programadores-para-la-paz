@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { LandingRedirect } from "@/components/auth/landing-redirect";
 import { LandingPageV2 } from "@/components/landing/landing-page";
+import { LocaleSync } from "@/components/landing/locale-switcher";
 import enMessages from "../../../messages/en.json";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function EnLandingPage() {
   setRequestLocale("en");
   return (
     <NextIntlClientProvider locale="en" messages={enMessages}>
+      <LocaleSync locale="en" />
       <LandingRedirect />
       <LandingPageV2 />
     </NextIntlClientProvider>
