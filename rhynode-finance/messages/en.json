@@ -50,6 +50,44 @@
       "expense": "Expenses",
       "balance": "Balance"
     },
+    "clients": {
+      "title": "Clients",
+      "subtitle": "Directory of clients and their tax details",
+      "allTitle": "All Clients",
+      "totalClients": "Total clients",
+      "active": "Active",
+      "totalInvoiced": "Total invoiced",
+      "empty": {
+        "title": "Manage your clients",
+        "description": "Add tax and contact details to invoice in an organized way.",
+        "hint": "Start by adding your first client."
+      }
+    },
+    "budgets": {
+      "title": "Budgets",
+      "subtitle": "Manage your personal budgets",
+      "budgeted": "Budgeted",
+      "spent": "Spent",
+      "exceeded": "Over budget",
+      "used": "used",
+      "columns": {
+        "name": "Name",
+        "category": "Category",
+        "amount": "Total",
+        "spent": "Spent",
+        "used": "% Used",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": { "exceeded": "Exceeded", "warning": "Warning", "ok": "OK" },
+      "exceededMsg": "You exceeded the budget by {amount}.",
+      "remainingMsg": "You have {amount} left before reaching the limit.",
+      "empty": {
+        "title": "Control your spending with budgets",
+        "description": "Set limits per category and get alerts before you go over.",
+        "hint": "Start by creating your first budget."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",

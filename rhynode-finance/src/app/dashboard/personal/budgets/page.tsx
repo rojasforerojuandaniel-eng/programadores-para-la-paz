@@ -1,7 +1,10 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
@@ -18,14 +21,6 @@ export const metadata = dashboardMetadata(
   "Crea presupuestos mensuales por categoría, compártelos y recibe alertas cuando te acerques al límite."
 );
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
 function getBudgetStatus(progress: number) {
   if (progress >= 100) return "EXCEEDED" as const;
   if (progress >= 80) return "WARNING" as const;
@@ -36,21 +31,21 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
   switch (status) {
     case "EXCEEDED":
       return {
-        label: "Excedido",
+        labelKey: "status.exceeded" as const,
         colorClass: "bg-danger",
         textClass: "text-danger",
         badge: "destructive" as const,
       };
     case "WARNING":
       return {
-        label: "Alerta",
+        labelKey: "status.warning" as const,
         colorClass: "bg-warning",
         textClass: "text-warning",
         badge: "secondary" as const,
       };
     default:
       return {
-        label: "OK",
+        labelKey: "status.ok" as const,
         colorClass: "bg-success",
         textClass: "text-success",
         badge: "outline" as const,
@@ -58,20 +53,11 @@ function statusMeta(status: ReturnType<typeof getBudgetStatus>) {
   }
 }
 
-function EmptyState() {
-  return (
-    <EmptyStateCard
-      variant="lg"
-      icon={PiggyBank}
-      title="Controla tus gastos con presupuestos"
-      description="Establece límites por categoría y recibe alertas antes de excederte."
-      hint="Empieza creando tu primer presupuesto."
-      action={<CreateBudgetDialog />}
-    />
-  );
-}
-
 export default async function BudgetsPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.budgets" });
+
   const profile = await getUserProfile();
   if (!profile) return null;
 
@@ -90,36 +76,36 @@ export default async function BudgetsPage() {
   }).length;
 
   const columns = [
-    { key: "name", header: "Nombre" },
-    { key: "category", header: "Categoría" },
-    { key: "amount", header: "Total" },
-    { key: "spent", header: "Gastado" },
-    { key: "used", header: "% Usado" },
-    { key: "status", header: "Estado" },
-    { key: "actions", header: "Acciones" },
+    { key: "name", header: t("columns.name") },
+    { key: "category", header: t("columns.category") },
+    { key: "amount", header: t("columns.amount") },
+    { key: "spent", header: t("columns.spent") },
+    { key: "used", header: t("columns.used") },
+    { key: "status", header: t("columns.status") },
+    { key: "actions", header: t("columns.actions") },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Presupuestos</h1>
-          <p className="body-default mt-1">Administra tus presupuestos personales</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateBudgetDialog />
       </div>
 
       {budgets.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <KpiCard label="Presupuestado" value={formatCurrency(totalBudgeted, "COP")} icon={PiggyBank} />
+          <KpiCard label={t("budgeted")} value={formatCurrency(totalBudgeted, "COP", locale)} icon={PiggyBank} />
           <KpiCard
-            label="Gastado"
-            value={formatCurrency(totalSpent, "COP")}
+            label={t("spent")}
+            value={formatCurrency(totalSpent, "COP", locale)}
             icon={Receipt}
             valueClassName={totalSpent > totalBudgeted ? "text-danger" : "text-foreground"}
           />
           <KpiCard
-            label="Excedidos"
+            label={t("exceeded")}
             value={exceededCount}
             icon={AlertTriangle}
             valueClassName={exceededCount > 0 ? "text-warning" : "text-foreground"}
@@ -131,13 +117,23 @@ export default async function BudgetsPage() {
         <ServerDataTable
           columns={columns}
           data={budgets}
-          emptyState={<EmptyState />}
+          emptyState={
+            <EmptyStateCard
+              variant="lg"
+              icon={PiggyBank}
+              title={t("empty.title")}
+              description={t("empty.description")}
+              hint={t("empty.hint")}
+              action={<CreateBudgetDialog />}
+            />
+          }
           renderRow={(budget) => {
             const amount = decimalToNumber(budget.amount);
             const spent = decimalToNumber(budget.spent);
             const progress = amount > 0 ? (spent / amount) * 100 : 0;
             const status = getBudgetStatus(progress);
             const meta = statusMeta(status);
+            const statusLabel = t(meta.labelKey);
 
             return (
               <>
@@ -152,13 +148,13 @@ export default async function BudgetsPage() {
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="py-3">{formatCurrency(amount, "COP")}</TableCell>
-                <TableCell className="py-3 font-medium">{formatCurrency(spent, "COP")}</TableCell>
+                <TableCell className="py-3">{formatCurrency(amount, "COP", locale)}</TableCell>
+                <TableCell className="py-3 font-medium">{formatCurrency(spent, "COP", locale)}</TableCell>
                 <TableCell className="py-3">
                   <div className="w-full max-w-[180px] space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">{progress.toFixed(0)}%</span>
-                      <span className={meta.textClass}>{meta.label}</span>
+                      <span className={meta.textClass}>{statusLabel}</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
@@ -169,7 +165,7 @@ export default async function BudgetsPage() {
                   </div>
                 </TableCell>
                 <TableCell className="py-3">
-                  <Badge variant={meta.badge}>{meta.label}</Badge>
+                  <Badge variant={meta.badge}>{statusLabel}</Badge>
                 </TableCell>
                 <TableCell className="py-3">
                   <ShareBudgetDialog budgetId={budget.id} budgetName={budget.name} />
@@ -184,6 +180,7 @@ export default async function BudgetsPage() {
             const status = getBudgetStatus(progress);
             const meta = statusMeta(status);
             const remaining = amount - spent;
+            const statusLabel = t(meta.labelKey);
 
             return (
               <div className="space-y-4">
@@ -197,12 +194,12 @@ export default async function BudgetsPage() {
                       </p>
                     )}
                   </div>
-                  <Badge variant={meta.badge}>{meta.label}</Badge>
+                  <Badge variant={meta.badge}>{statusLabel}</Badge>
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold tracking-tight">{formatCurrency(spent, "COP")}</span>
-                  <span className="text-sm text-muted-foreground">/ {formatCurrency(amount, "COP")}</span>
+                  <span className="text-2xl font-bold tracking-tight">{formatCurrency(spent, "COP", locale)}</span>
+                  <span className="text-sm text-muted-foreground">/ {formatCurrency(amount, "COP", locale)}</span>
                 </div>
 
                 <ProgressBar
@@ -211,7 +208,7 @@ export default async function BudgetsPage() {
                   colorClassName={meta.colorClass}
                   label={
                     <span className={meta.textClass}>
-                      {progress.toFixed(0)}% usado · {meta.label}
+                      {progress.toFixed(0)}% {t("used")} · {statusLabel}
                     </span>
                   }
                 />
@@ -226,8 +223,8 @@ export default async function BudgetsPage() {
                     role="status"
                   >
                     {status === "EXCEEDED"
-                      ? `Has excedido el presupuesto en ${formatCurrency(Math.abs(remaining), "COP")}.`
-                      : `Te quedan ${formatCurrency(remaining, "COP")} antes de alcanzar el límite.`}
+                      ? t("exceededMsg", { amount: formatCurrency(Math.abs(remaining), "COP", locale) })
+                      : t("remainingMsg", { amount: formatCurrency(remaining, "COP", locale) })}
                   </div>
                 )}
 

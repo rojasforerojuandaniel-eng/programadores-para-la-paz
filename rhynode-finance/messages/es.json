@@ -50,6 +50,44 @@
       "expense": "Gastos",
       "balance": "Balance"
     },
+    "clients": {
+      "title": "Clientes",
+      "subtitle": "Directorio de clientes y sus datos fiscales",
+      "allTitle": "Todos los Clientes",
+      "totalClients": "Total clientes",
+      "active": "Activos",
+      "totalInvoiced": "Total facturado",
+      "empty": {
+        "title": "Gestiona tus clientes",
+        "description": "Agrega datos fiscales y de contacto para facturar de forma organizada.",
+        "hint": "Empieza agregando tu primer cliente."
+      }
+    },
+    "budgets": {
+      "title": "Presupuestos",
+      "subtitle": "Administra tus presupuestos personales",
+      "budgeted": "Presupuestado",
+      "spent": "Gastado",
+      "exceeded": "Excedidos",
+      "used": "usado",
+      "columns": {
+        "name": "Nombre",
+        "category": "Categoría",
+        "amount": "Total",
+        "spent": "Gastado",
+        "used": "% Usado",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": { "exceeded": "Excedido", "warning": "Alerta", "ok": "OK" },
+      "exceededMsg": "Has excedido el presupuesto en {amount}.",
+      "remainingMsg": "Te quedan {amount} antes de alcanzar el límite.",
+      "empty": {
+        "title": "Controla tus gastos con presupuestos",
+        "description": "Establece límites por categoría y recibe alertas antes de excederte.",
+        "hint": "Empieza creando tu primer presupuesto."
+      }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

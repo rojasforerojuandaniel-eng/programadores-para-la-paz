@@ -1,8 +1,11 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAuth } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { dashboardMetadata } from "@/lib/dashboard-metadata";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateClientButton } from "@/components/dashboard/create-client-button";
@@ -25,22 +28,22 @@ const countryLabels: Record<string, string> = {
   PE: "Perú",
 };
 
-function formatCOP(amount: number | null | undefined) {
+function formatCOP(amount: number | null | undefined, locale: Locale) {
   if (amount == null) return "—";
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCurrency(amount, "COP", locale, { maximumFractionDigits: 0 });
 }
 
-export default function ClientsPage() {
+export default async function ClientsPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.clients" });
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Clientes</h1>
-          <p className="body-default mt-1">Directorio de clientes y sus datos fiscales</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateClientButton />
       </div>
@@ -54,12 +57,12 @@ export default function ClientsPage() {
           </div>
         }
       >
-        <KpiSection />
+        <KpiSection locale={locale} />
       </Suspense>
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Todos los Clientes</CardTitle>
+          <CardTitle className="heading-card">{t("allTitle")}</CardTitle>
         </CardHeader>
         <Suspense
           fallback={
@@ -70,16 +73,17 @@ export default function ClientsPage() {
             </CardContent>
           }
         >
-          <ClientsContent />
+          <ClientsContent locale={locale} />
         </Suspense>
       </Card>
     </div>
   );
 }
 
-async function KpiSection() {
+async function KpiSection({ locale }: { locale: Locale }) {
   const org = await requireAuth();
   if (!org) return null;
+  setRequestLocale(locale);
 
   const prisma = getPrisma();
   const clients = await prisma.client.findMany({
@@ -92,25 +96,28 @@ async function KpiSection() {
   const totalInvoiced = clients.reduce(
     (sum, c) =>
       sum + c.invoices.reduce((s, inv) => s + decimalToNumber(inv.total), 0),
-    0
+    0,
   );
+
+  const t = await getTranslations({ locale, namespace: "dashboard.clients" });
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-      <KpiCard label="Total clientes" value={totalClients} icon={Users} />
-      <KpiCard label="Activos" value={activeClients} icon={UserCheck} />
+      <KpiCard label={t("totalClients")} value={totalClients} icon={Users} />
+      <KpiCard label={t("active")} value={activeClients} icon={UserCheck} />
       <KpiCard
-        label="Total facturado"
-        value={formatCOP(totalInvoiced)}
+        label={t("totalInvoiced")}
+        value={formatCOP(totalInvoiced, locale)}
         icon={DollarSign}
       />
     </div>
   );
 }
 
-async function ClientsContent() {
+async function ClientsContent({ locale }: { locale: Locale }) {
   const org = await requireAuth();
   if (!org) return notFound();
+  setRequestLocale(locale);
 
   const prisma = getPrisma();
   const clients = await prisma.client.findMany({
@@ -131,9 +138,11 @@ async function ClientsContent() {
     invoiceCount: client.invoices.length,
     invoiceTotal: client.invoices.reduce(
       (sum, invoice) => sum + decimalToNumber(invoice.total),
-      0
+      0,
     ),
   }));
+
+  const t = await getTranslations({ locale, namespace: "dashboard.clients" });
 
   return (
     <CardContent>
@@ -141,16 +150,16 @@ async function ClientsContent() {
         <EmptyStateCard
           variant="lg"
           icon={Users}
-          title="Gestiona tus clientes"
-          description="Agrega datos fiscales y de contacto para facturar de forma organizada."
-          hint="Empieza agregando tu primer cliente."
+          title={t("empty.title")}
+          description={t("empty.description")}
+          hint={t("empty.hint")}
           action={<CreateClientButton />}
         />
       ) : (
         <ClientList
           rows={rows}
           countryLabels={countryLabels}
-          formatCOP={formatCOP}
+          formatCOP={(amount) => formatCOP(amount, locale)}
         />
       )}
     </CardContent>
