@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ interface Plan {
 }
 
 export function PricingCards({ plans }: { plans: Plan[] }) {
+  const t = useTranslations("pricing");
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleCheckout(planKey: string) {
@@ -36,10 +38,10 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
       if (data.url) {
         window.location.assign(data.url);
       } else {
-        toast.error(data.error || "Error al iniciar checkout");
+        toast.error(data.error || t("checkoutError"));
       }
     } catch {
-      toast.error("Error de red. Intenta de nuevo.");
+      toast.error(t("networkError"));
     } finally {
       setLoading(null);
     }
@@ -49,9 +51,9 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
     <section id="pricing" className="bg-muted/30 px-4 py-16 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">Plan simple, cero sorpresas</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">{t("header")}</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Empieza gratis y escala cuando lo necesites. Sin contratos ni cargos ocultos.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -67,7 +69,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
                 </Badge>
               )}
               {!plan.badge && plan.featured && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Más popular</Badge>
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">{t("mostPopular")}</Badge>
               )}
               <CardContent className="flex flex-1 flex-col p-6">
                 <h3 className="text-lg font-semibold text-card-foreground">
@@ -75,7 +77,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
                   {plan.badge ? (
                     <span className="sr-only"> — {plan.badge}</span>
                   ) : plan.featured ? (
-                    <span className="sr-only"> — Más popular</span>
+                    <span className="sr-only"> — {t("mostPopular")}</span>
                   ) : null}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
@@ -98,7 +100,7 @@ export function PricingCards({ plans }: { plans: Plan[] }) {
                     disabled={!!loading}
                     onClick={() => plan.checkoutPlan && handleCheckout(plan.checkoutPlan)}
                   >
-                    {loading === plan.checkoutPlan ? "Redirigiendo..." : plan.cta}
+                    {loading === plan.checkoutPlan ? t("redirecting") : plan.cta}
                   </Button>
                 ) : (
                   <Button className="w-full" variant={plan.featured ? "default" : "outline"} asChild>

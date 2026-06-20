@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "faq": "FAQ",
+    "signIn": "Sign in",
+    "signUp": "Get started",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Navigation menu",
+    "theme": "Theme"
+  },
+  "hero": {
+    "badge": "#1 finance app for individuals and SMBs in Colombia",
+    "title": "Save more, get paid faster and grow your net worth",
+    "titleHighlight": " from a single app",
+    "subtitle": "Rhynode organizes your personal and business finances in Colombia. AI budgets, DIAN electronic invoicing, Wompi payments and tax reports you can actually understand.",
+    "ctaPrimary": "Try free for 14 days",
+    "ctaSecondary": "See plans and pricing",
+    "fineprint": "No credit card required. Cancel anytime. Set up your account in less than 2 minutes.",
+    "trustHecho": "Built for Colombia",
+    "trustDian": "Ready for DIAN invoicing",
+    "trustEncryption": "Data encryption",
+    "trustBanks": "Connect your Colombian banks"
+  },
+  "trustBadges": {
+    "encryption": "AES-256 encryption",
+    "dian": "DIAN-ready structure",
+    "wompi": "Wompi & PSE integrated",
+    "pwa": "PWA app, no install",
+    "spanish": "Spanish-language support",
+    "noData": "We never sell your data"
+  },
+  "stats": {
+    "usersValue": "+10,000",
+    "usersLabel": "active users",
+    "managedValue": "$50MM+",
+    "managedLabel": "managed",
+    "ratingValue": "4.9/5",
+    "ratingLabel": "app rating",
+    "uptimeValue": "99.9%",
+    "uptimeLabel": "uptime"
+  },
+  "banks": {
+    "heading": "Connect with your Colombian banks and payment gateways",
+    "list": "Bancolombia, Davivienda, Nu, Nequi, PSE, Wompi"
+  },
+  "features": {
+    "sectionBadge": "Everything you need",
+    "sectionTitle": "Personal and business finance, together",
+    "sectionSubtitle": "Whether you're saving for your next trip or invoicing clients, Rhynode adapts to you.",
+    "personal": "Personal",
+    "business": "Business",
+    "items": {
+      "budgets": { "title": "Smart budgets", "description": "Create budgets by category and get alerts before you overspend." },
+      "goals": { "title": "Savings goals with purpose", "description": "Visualize your progress and automate recurring savings effortlessly." },
+      "expenses": { "title": "AI-categorized expenses", "description": "Know exactly where your money goes without manual sorting." },
+      "invoicing": { "title": "DIAN electronic invoicing", "description": "Issue valid invoices, send them automatically and track payments." },
+      "receivables": { "title": "Accounts receivable", "description": "Manage clients and collections. Reduce late payments with automatic reminders." },
+      "taxes": { "title": "Taxes and fiscal reports", "description": "Generate pre-filled reports and meet your DIAN obligations." }
+    }
+  },
+  "howItWorks": {
+    "title": "Start in minutes, not days",
+    "steps": {
+      "01": { "title": "Create your account", "description": "Sign up for free in under 2 minutes from web or mobile." },
+      "02": { "title": "Connect your data", "description": "Add accounts, cards and tax details. Everything encrypted." },
+      "03": { "title": "Make decisions", "description": "Use alerts, reports and AI to save more and grow your business." }
+    }
+  },
+  "testimonials": {
+    "title": "What our users say",
+    "subtitle": "Over 10,000 people and SMBs in Colombia trust Rhynode.",
+    "items": {
+      "mfl": { "name": "María Fernanda López", "role": "Freelance designer", "quote": "I used to have no idea where my money went. Now my expenses are categorized and my taxes organized in one place." },
+      "car": { "name": "Carlos Andrés Ramírez", "role": "Online store owner", "quote": "Electronic invoicing saves me hours every month. My clients get invoices automatically and DIAN is happy." },
+      "dt": { "name": "Daniela Torres", "role": "Independent accountant", "quote": "I recommend Rhynode to my clients because it unites accounting and personal finance without them needing to be tech experts." }
+    }
+  },
+  "pricing": {
+    "header": "Simple pricing, no surprises",
+    "subtitle": "Start free and scale when you need to. No contracts, no hidden fees.",
+    "mostPopular": "Most popular",
+    "redirecting": "Redirecting...",
+    "checkoutError": "Failed to start checkout",
+    "networkError": "Network error. Try again.",
+    "comingSoon": "Coming soon",
+    "plans": {
+      "starter": {
+        "name": "Starter",
+        "price": "Free",
+        "description": "For those who want to control their personal money.",
+        "features": ["Budgets and savings goals", "Expense tracking", "Up to 2 bank accounts", "Monthly reports", "PWA mobile app"],
+        "cta": "Get started free"
+      },
+      "growth": {
+        "name": "Growth",
+        "price": "$19,900",
+        "period": "/mo",
+        "description": "Personal finance with AI and advanced scenarios.",
+        "features": ["Everything in Starter", "AI categorization", "Advanced goals and simulators", "Unlimited accounts", "Smart alerts"],
+        "cta": "Join the waitlist"
+      },
+      "scale": {
+        "name": "Scale",
+        "price": "$79,900",
+        "period": "/mo",
+        "description": "DIAN invoicing, collections and team for SMBs.",
+        "features": ["Everything in Growth", "DIAN electronic invoicing", "100 invoices/month", "3 users included", "Unlimited clients", "Priority support"],
+        "cta": "Choose Scale"
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Clear answers about DIAN, security, payments and plans in Colombia.",
+    "items": {
+      "accountant": { "q": "Does Rhynode replace my accountant?", "a": "No. Rhynode automates repetitive tasks and organizes your information so you or your accountant work faster and with fewer errors." },
+      "dian": { "q": "Is the invoicing valid with DIAN?", "a": "Yes. We generate electronic invoices with the structure DIAN requires and prepare the integration with authorized invoicing providers." },
+      "payments": { "q": "Can I pay with Wompi, PSE or card?", "a": "Yes. Paid plans are processed with Wompi, letting you pay with PSE, credit/debit cards and other methods available in Colombia." },
+      "personalOnly": { "q": "Can I use it only for personal finance?", "a": "Of course. The Starter plan is free forever and you can use it without activating business features." },
+      "security": { "q": "Are my financial data safe?", "a": "We use encryption in transit and at rest, secure authentication and never sell your information. You own your data." },
+      "price": { "q": "How much does it cost and are there lock-in contracts?", "a": "The Starter plan is free. Growth and Scale are monthly with no lock-in contracts or hidden fees. Cancel anytime." },
+      "mobile": { "q": "Does it work on mobile?", "a": "Yes. Rhynode is a PWA, so you can use it from your phone browser, add it to your home screen and receive notifications." },
+      "bank": { "q": "How do I connect my bank?", "a": "You can log transactions manually or connect accounts from Bancolombia, Davivienda, Nu, Nequi and other PSE/Wompi-compatible institutions." }
+    }
+  },
+  "cta": {
+    "title": "Ready to take control of your finances?",
+    "subtitle": "Join thousands of people and businesses in Colombia using Rhynode to grow with confidence.",
+    "primary": "Create a free account",
+    "secondary": "Sign in"
+  },
+  "footer": {
+    "tagline": "Personal finance and accounting intelligence for individuals and SMBs in Colombia.",
+    "doubts": "Questions? Email us at hola@rhynode.finance",
+    "copyright": "© {year} Rhynode. Made in Colombia.",
+    "categories": {
+      "product": "Product",
+      "legal": "Legal",
+      "support": "Support",
+      "social": "Social"
+    },
+    "links": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "testimonials": "Testimonials",
+      "faq": "FAQ",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "cookies": "Cookies",
+      "help": "Help center",
+      "contact": "Contact",
+      "status": "Status",
+      "twitter": "Twitter / X",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "srTwitter": "Twitter",
+    "srEmail": "Email",
+    "srLinkedIn": "LinkedIn"
+  },
+  "stickyCta": "Get started"
+}

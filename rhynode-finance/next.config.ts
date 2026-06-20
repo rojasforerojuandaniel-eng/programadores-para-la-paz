@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const csp = [
   "default-src 'self'",
@@ -43,7 +46,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   // Activates client/server instrumentation. Source map upload only runs when
   // SENTRY_AUTH_TOKEN is set; otherwise it's a no-op (build stays clean).
   org: process.env.SENTRY_ORG,

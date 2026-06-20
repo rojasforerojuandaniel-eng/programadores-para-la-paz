@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,15 +43,57 @@ import {
   Building2,
 } from "lucide-react";
 
-const navLinks = [
-  { href: "#features", label: "Funciones" },
-  { href: "#pricing", label: "Precios" },
-  { href: "#testimonials", label: "Testimonios" },
-  { href: "#faq", label: "FAQ" },
+const NAV_LINKS = [
+  { href: "#features", key: "features" },
+  { href: "#pricing", key: "pricing" },
+  { href: "#testimonials", key: "testimonials" },
+  { href: "#faq", key: "faq" },
+] as const;
+
+const FEATURE_KEYS = [
+  { key: "budgets", icon: Wallet, audience: "personal" },
+  { key: "goals", icon: PiggyBank, audience: "personal" },
+  { key: "expenses", icon: Receipt, audience: "personal" },
+  { key: "invoicing", icon: FileText, audience: "business" },
+  { key: "receivables", icon: Briefcase, audience: "business" },
+  { key: "taxes", icon: Calculator, audience: "business" },
+] as const;
+
+const STEP_KEYS = ["01", "02", "03"] as const;
+
+const TESTIMONIAL_KEYS = [
+  { key: "mfl", initials: "MFL", rating: 5 },
+  { key: "car", initials: "CAR", rating: 5 },
+  { key: "dt", initials: "DT", rating: 5 },
+] as const;
+
+const PLAN_KEYS: ReadonlyArray<{
+  key: "starter" | "growth" | "scale";
+  href: string;
+  featured: boolean;
+  checkoutPlan: string | null;
+  badgeKey?: "comingSoon";
+}> = [
+  { key: "starter", href: "/sign-up", featured: false, checkoutPlan: null },
+  { key: "growth", href: "/sign-up?plan=growth", featured: true, checkoutPlan: null, badgeKey: "comingSoon" },
+  { key: "scale", href: "/sign-up?plan=scale", featured: false, checkoutPlan: "SCALE" },
 ];
 
+const FAQ_KEYS = [
+  "accountant",
+  "dian",
+  "payments",
+  "personalOnly",
+  "security",
+  "price",
+  "mobile",
+  "bank",
+] as const;
+
 function Navbar() {
+  const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
+  const links = NAV_LINKS.map((l) => ({ href: l.href, label: t(l.key) }));
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
@@ -58,7 +101,7 @@ function Navbar() {
         <Logo href="/" />
 
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -72,10 +115,10 @@ function Navbar() {
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/sign-in">Iniciar sesión</Link>
+            <Link href="/sign-in">{t("signIn")}</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/sign-up">Empezar gratis</Link>
+            <Link href="/sign-up">{t("signUp")}</Link>
           </Button>
         </div>
 
@@ -85,7 +128,7 @@ function Navbar() {
               variant="ghost"
               size="icon"
               className="md:hidden"
-              aria-label="Abrir menú de navegación"
+              aria-label={t("openMenu")}
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </Button>
@@ -94,18 +137,18 @@ function Navbar() {
             side="top"
             className="w-full border-b border-border/50 bg-background/95 backdrop-blur-md"
           >
-            <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+            <SheetTitle className="sr-only">{t("menuTitle")}</SheetTitle>
             <div className="flex flex-col gap-6 py-6">
               <div className="flex items-center justify-between">
                 <Logo href="/" />
                 <SheetClose asChild>
-                  <Button variant="ghost" size="icon" aria-label="Cerrar menú">
+                  <Button variant="ghost" size="icon" aria-label={t("closeMenu")}>
                     <X className="h-5 w-5" aria-hidden="true" />
                   </Button>
                 </SheetClose>
               </div>
               <nav className="flex flex-col gap-4 text-base font-medium">
-                {navLinks.map((link) => (
+                {links.map((link) => (
                   <SheetClose key={link.href} asChild>
                     <a
                       href={link.href}
@@ -119,14 +162,14 @@ function Navbar() {
               </nav>
               <div className="flex flex-col gap-3 pt-4">
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <span className="text-sm text-muted-foreground">Tema</span>
+                  <span className="text-sm text-muted-foreground">{t("theme")}</span>
                   <ThemeToggle />
                 </div>
                 <Button variant="outline" asChild>
-                  <Link href="/sign-in">Iniciar sesión</Link>
+                  <Link href="/sign-in">{t("signIn")}</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/sign-up">Empezar gratis</Link>
+                  <Link href="/sign-up">{t("signUp")}</Link>
                 </Button>
               </div>
             </div>
@@ -138,11 +181,12 @@ function Navbar() {
 }
 
 function Hero() {
+  const t = useTranslations("hero");
   const trustItems = [
-    { icon: ShieldCheck, label: "Hecho para Colombia" },
-    { icon: FileCheck, label: "Preparado para facturación DIAN" },
-    { icon: Lock, label: "Encriptación de datos" },
-    { icon: Landmark, label: "Conecta tus bancos colombianos" },
+    { icon: ShieldCheck, label: t("trustHecho") },
+    { icon: FileCheck, label: t("trustDian") },
+    { icon: Lock, label: t("trustEncryption") },
+    { icon: Landmark, label: t("trustBanks") },
   ];
 
   return (
@@ -153,18 +197,16 @@ function Hero() {
           className="mb-4 px-3 py-1 text-xs font-medium md:mb-6"
         >
           <ShieldCheck className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          App financiera #1 para personas y pymes en Colombia
+          {t("badge")}
         </Badge>
 
         <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-          Ahorra más, cobra rápido y haz crecer tu patrimonio
-          <span className="text-primary"> desde una sola app</span>
+          {t("title")}
+          <span className="text-primary">{t("titleHighlight")}</span>
         </h1>
 
         <p className="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg md:mt-6">
-          Rhynode organiza tus finanzas personales y empresariales en Colombia.
-          Presupuestos con IA, facturación electrónica DIAN, pagos con Wompi y
-          reportes fiscales que realmente entiendes.
+          {t("subtitle")}
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:mt-8">
@@ -190,7 +232,7 @@ function Hero() {
           >
             <Link href="/sign-up">
               <Zap className="h-4 w-4" aria-hidden="true" />
-              Probar gratis 14 días
+              {t("ctaPrimary")}
               <ArrowRight
                 className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
                 aria-hidden="true"
@@ -203,27 +245,25 @@ function Hero() {
             className="h-12 w-full text-base sm:w-auto"
             asChild
           >
-            <Link href="#pricing">Ver planes y precios</Link>
+            <Link href="#pricing">{t("ctaSecondary")}</Link>
           </Button>
         </div>
 
-        <p className="mt-4 text-xs text-muted-foreground">
-          Sin tarjeta de crédito. Cancela cuando quieras. Configura tu cuenta en
-          menos de 2 minutos.
-        </p>
+        <p className="mt-4 text-xs text-muted-foreground">{t("fineprint")}</p>
       </div>
     </section>
   );
 }
 
 function TrustBadges() {
+  const t = useTranslations("trustBadges");
   const items = [
-    { icon: Lock, label: "Encriptación AES-256" },
-    { icon: FileCheck, label: "Estructura DIAN lista" },
-    { icon: BadgeCheck, label: "Wompi y PSE integrados" },
-    { icon: Smartphone, label: "App PWA sin instalar" },
-    { icon: Users, label: "Soporte en español" },
-    { icon: ShieldCheck, label: "No vendemos tus datos" },
+    { icon: Lock, label: t("encryption") },
+    { icon: FileCheck, label: t("dian") },
+    { icon: BadgeCheck, label: t("wompi") },
+    { icon: Smartphone, label: t("pwa") },
+    { icon: Users, label: t("spanish") },
+    { icon: ShieldCheck, label: t("noData") },
   ];
 
   return (
@@ -244,11 +284,12 @@ function TrustBadges() {
 }
 
 function StatsSection() {
+  const t = useTranslations("stats");
   const stats = [
-    { value: "+10.000", label: "usuarios activos" },
-    { value: "$50MM+", label: "gestionados" },
-    { value: "4.9/5", label: "rating app" },
-    { value: "99.9%", label: "uptime" },
+    { value: t("usersValue"), label: t("usersLabel") },
+    { value: t("managedValue"), label: t("managedLabel") },
+    { value: t("ratingValue"), label: t("ratingLabel") },
+    { value: t("uptimeValue"), label: t("uptimeLabel") },
   ];
 
   return (
@@ -268,13 +309,14 @@ function StatsSection() {
 }
 
 function BanksStrip() {
-  const banks = ["Bancolombia", "Davivienda", "Nu", "Nequi", "PSE", "Wompi"];
+  const t = useTranslations("banks");
+  const banks = t("list").split(", ");
 
   return (
     <section className="border-y border-border/50 bg-muted/30 px-4 py-8">
       <div className="mx-auto max-w-6xl">
         <p className="mb-5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Conecta con tus bancos y pasarelas de Colombia
+          {t("heading")}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {banks.map((bank) => (
@@ -303,73 +345,32 @@ function Avatar({ initials }: { initials: string }) {
 }
 
 function FeaturesGrid() {
-  const features = [
-    {
-      icon: Wallet,
-      title: "Presupuestos inteligentes",
-      description:
-        "Crea presupuestos por categoría y recibe alertas antes de pasarte.",
-      audience: "Personal",
-    },
-    {
-      icon: PiggyBank,
-      title: "Metas de ahorro con propósito",
-      description:
-        "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo.",
-      audience: "Personal",
-    },
-    {
-      icon: Receipt,
-      title: "Gastos categorizados con IA",
-      description:
-        "Entiende exactamente a dónde va tu dinero sin clasificar manualmente.",
-      audience: "Personal",
-    },
-    {
-      icon: FileText,
-      title: "Facturación electrónica DIAN",
-      description:
-        "Emite facturas válidas, envíalas automáticamente y controla pagos.",
-      audience: "Negocio",
-    },
-    {
-      icon: Briefcase,
-      title: "Cuentas por cobrar",
-      description:
-        "Gestiona clientes y cobros. Reduce morosidad con recordatorios automáticos.",
-      audience: "Negocio",
-    },
-    {
-      icon: Calculator,
-      title: "Impuestos y reportes fiscales",
-      description:
-        "Genera reportes pre-llenados y cumple con tus obligaciones ante la DIAN.",
-      audience: "Negocio",
-    },
-  ];
+  const t = useTranslations("features");
 
   return (
     <section id="features" className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
           <Badge variant="secondary" className="mb-3">
-            Todo lo que necesitas
+            {t("sectionBadge")}
           </Badge>
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Finanzas personales y de negocio, juntas
+            {t("sectionTitle")}
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Tanto si ahorras para tu próximo viaje como si facturas para
-            clientes, Rhynode se adapta a ti.
+            {t("sectionSubtitle")}
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => {
+          {FEATURE_KEYS.map((f) => {
             const Icon = f.icon;
+            const title = t(`items.${f.key}.title`);
+            const description = t(`items.${f.key}.description`);
+            const audience = t(f.audience);
             return (
               <Card
-                key={f.title}
+                key={f.key}
                 className="border-border/50 bg-card transition hover:border-primary/30 dark:border-border"
               >
                 <CardContent className="p-5">
@@ -378,14 +379,14 @@ function FeaturesGrid() {
                       <Icon className="h-5 w-5" aria-hidden="true" />
                     </div>
                     <Badge
-                      variant={f.audience === "Negocio" ? "outline" : "secondary"}
+                      variant={f.audience === "business" ? "outline" : "secondary"}
                       className="text-xs"
                     >
-                      {f.audience}
+                      {audience}
                     </Badge>
                   </div>
-                  <h3 className="mb-1 font-semibold text-card-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">{f.description}</p>
+                  <h3 className="mb-1 font-semibold text-card-foreground">{title}</h3>
+                  <p className="text-sm text-muted-foreground">{description}</p>
                 </CardContent>
               </Card>
             );
@@ -397,46 +398,29 @@ function FeaturesGrid() {
 }
 
 function HowItWorks() {
-  const steps = [
-    {
-      number: "01",
-      title: "Crea tu cuenta",
-      description:
-        "Regístrate gratis en menos de 2 minutos desde web o móvil.",
-    },
-    {
-      number: "02",
-      title: "Conecta tu información",
-      description:
-        "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado.",
-    },
-    {
-      number: "03",
-      title: "Toma decisiones",
-      description:
-        "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio.",
-    },
-  ];
+  const t = useTranslations("howItWorks");
 
   return (
     <section className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight text-foreground md:mb-14 md:text-4xl">
-          Empieza en minutos, no en días
+          {t("title")}
         </h2>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {steps.map((step) => (
+          {STEP_KEYS.map((step) => (
             <div
-              key={step.number}
+              key={step}
               className="relative rounded-2xl border border-border/50 bg-card p-6 dark:border-border"
             >
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
-                {step.number}
+                {step}
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-card-foreground">{step.title}</h3>
+              <h3 className="mt-4 text-lg font-semibold text-card-foreground">
+                {t(`steps.${step}.title`)}
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {step.description}
+                {t(`steps.${step}.description`)}
               </p>
             </div>
           ))}
@@ -447,72 +431,54 @@ function HowItWorks() {
 }
 
 function TestimonialsSection() {
-  const testimonials = [
-    {
-      name: "María Fernanda López",
-      role: "Freelancer de diseño",
-      quote:
-        "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar.",
-      rating: 5,
-      initials: "MFL",
-    },
-    {
-      name: "Carlos Andrés Ramírez",
-      role: "Dueño de tienda online",
-      quote:
-        "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta.",
-      rating: 5,
-      initials: "CAR",
-    },
-    {
-      name: "Daniela Torres",
-      role: "Contadora independiente",
-      quote:
-        "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología.",
-      rating: 5,
-      initials: "DT",
-    },
-  ];
+  const t = useTranslations("testimonials");
 
   return (
     <section id="testimonials" className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 text-center md:mb-14">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Lo que dicen nuestros usuarios
+            {t("title")}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Más de 10.000 personas y pymes en Colombia confían en Rhynode.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <Card key={t.name} className="border-border/50 bg-card dark:border-border">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-1 text-warning">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-current"
-                      aria-hidden="true"
-                    />
-                  ))}
-                  <span className="sr-only">{t.rating} de 5 estrellas</span>
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-card-foreground">
-                  “{t.quote}”
-                </p>
-                <div className="mt-5 flex items-center gap-3">
-                  <Avatar initials={t.initials} />
-                  <div>
-                    <p className="font-semibold text-card-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+          {TESTIMONIAL_KEYS.map((item) => {
+            const name = t(`items.${item.key}.name`);
+            const role = t(`items.${item.key}.role`);
+            const quote = t(`items.${item.key}.quote`);
+            return (
+              <Card key={item.key} className="border-border/50 bg-card dark:border-border">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-1 text-warning">
+                    {Array.from({ length: item.rating }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 fill-current"
+                        aria-hidden="true"
+                      />
+                    ))}
+                    <span className="sr-only">
+                      {item.rating} / 5
+                    </span>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <p className="mt-4 text-sm leading-relaxed text-card-foreground">
+                    “{quote}”
+                  </p>
+                  <div className="mt-5 flex items-center gap-3">
+                    <Avatar initials={item.initials} />
+                    <div>
+                      <p className="font-semibold text-card-foreground">{name}</p>
+                      <p className="text-xs text-muted-foreground">{role}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -520,136 +486,63 @@ function TestimonialsSection() {
 }
 
 function Pricing() {
-  const plans = [
-    {
-      name: "Starter",
-      price: "Gratis",
-      description: "Para quienes quieren controlar su dinero personal.",
-      features: [
-        "Presupuestos y metas de ahorro",
-        "Seguimiento de gastos",
-        "Hasta 2 cuentas bancarias",
-        "Reportes mensuales",
-        "App móvil PWA",
-      ],
-      cta: "Empezar gratis",
-      href: "/sign-up",
-      featured: false,
-    },
-    {
-      name: "Growth",
-      price: "$19.900",
-      period: "/mes",
-      description: "Finanzas personales con IA y escenarios avanzados.",
-      features: [
-        "Todo lo del plan Starter",
-        "Categorización con IA",
-        "Metas avanzadas y simuladores",
-        "Cuentas ilimitadas",
-        "Alertas inteligentes",
-      ],
-      cta: "Unirse a la lista",
-      href: "/sign-up?plan=growth",
-      featured: true,
-      badge: "Próximamente",
-    },
-    {
-      name: "Scale",
-      price: "$79.900",
-      period: "/mes",
-      description: "Facturación DIAN, cobros y equipo para pymes.",
-      features: [
-        "Todo lo del plan Growth",
-        "Facturación electrónica DIAN",
-        "100 facturas/mes",
-        "3 usuarios incluidos",
-        "Clientes ilimitados",
-        "Soporte prioritario",
-      ],
-      cta: "Elegir Scale",
-      href: "/sign-up?plan=scale",
-      featured: false,
-      checkoutPlan: "SCALE" as const,
-    },
-  ];
+  const t = useTranslations("pricing");
+  const plans = PLAN_KEYS.map((p) => {
+    const badge = p.badgeKey ? t(p.badgeKey) : undefined;
+    return {
+      name: t(`plans.${p.key}.name`),
+      price: t(`plans.${p.key}.price`),
+      period: p.key === "starter" ? undefined : t(`plans.${p.key}.period`),
+      description: t(`plans.${p.key}.description`),
+      features: t.raw(`plans.${p.key}.features`) as string[],
+      cta: t(`plans.${p.key}.cta`),
+      href: p.href,
+      featured: p.featured,
+      checkoutPlan: p.checkoutPlan ?? undefined,
+      badge,
+    };
+  });
 
   return <PricingCards plans={plans} />;
 }
 
 function Faq() {
-  const items = [
-    {
-      question: "¿Rhynode reemplaza a mi contador?",
-      answer:
-        "No. Rhynode automatiza tareas repetitivas y organiza tu información para que tú o tu contador trabajen más rápido y con menos errores.",
-    },
-    {
-      question: "¿La facturación es válida ante la DIAN?",
-      answer:
-        "Sí. Generamos facturas electrónicas con la estructura requerida por la DIAN y preparamos la integración con proveedores de facturación autorizados.",
-    },
-    {
-      question: "¿Puedo pagar con Wompi, PSE o tarjeta?",
-      answer:
-        "Sí. Los planes pagos se procesan con Wompi, lo que te permite pagar con PSE, tarjetas de crédito/débito y otros medios disponibles en Colombia.",
-    },
-    {
-      question: "¿Puedo usarlo solo para finanzas personales?",
-      answer:
-        "Por supuesto. El plan Starter es gratis para siempre y puedes usarlo sin activar funciones de negocio.",
-    },
-    {
-      question: "¿Mis datos financieros están seguros?",
-      answer:
-        "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información. Tú eres dueño de tus datos.",
-    },
-    {
-      question: "¿Cuánto cuesta y hay contratos de permanencia?",
-      answer:
-        "El plan Starter es gratis. Growth y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras.",
-    },
-    {
-      question: "¿Funciona en móvil?",
-      answer:
-        "Sí. Rhynode es una PWA, así que puedes usarla desde el navegador de tu celular, agregarla a tu pantalla de inicio y recibir notificaciones.",
-    },
-    {
-      question: "¿Cómo conecto mi banco?",
-      answer:
-        "Puedes registrar movimientos manualmente o conectar cuentas de Bancolombia, Davivienda, Nu, Nequi y otras entidades compatibles con PSE/Wompi.",
-    },
-  ];
+  const t = useTranslations("faq");
 
   return (
     <section id="faq" className="bg-muted/30 px-4 py-14 md:py-24">
       <div className="mx-auto max-w-3xl">
         <div className="mb-10 text-center md:mb-14">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Preguntas frecuentes
+            {t("title")}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Respuestas claras sobre DIAN, seguridad, pagos y planes en Colombia.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="space-y-3">
-          {items.map((item) => (
-            <details
-              key={item.question}
-              className="group rounded-xl border border-border/50 bg-card dark:border-border"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-semibold text-card-foreground transition-colors hover:bg-muted focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
-                {item.question}
-                <ChevronDown
-                  className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-                  aria-hidden="true"
-                />
-              </summary>
-              <div className="px-5 pb-5">
-                <p className="text-sm text-muted-foreground">{item.answer}</p>
-              </div>
-            </details>
-          ))}
+          {FAQ_KEYS.map((key) => {
+            const question = t(`items.${key}.q`);
+            const answer = t(`items.${key}.a`);
+            return (
+              <details
+                key={key}
+                className="group rounded-xl border border-border/50 bg-card dark:border-border"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-semibold text-card-foreground transition-colors hover:bg-muted focus-visible:rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+                  {question}
+                  <ChevronDown
+                    className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
+                </summary>
+                <div className="px-5 pb-5">
+                  <p className="text-sm text-muted-foreground">{answer}</p>
+                </div>
+              </details>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -657,21 +550,22 @@ function Faq() {
 }
 
 function Cta() {
+  const t = useTranslations("cta");
+
   return (
     <section className="px-4 py-14 md:py-24">
       <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-primary/20 to-accent/30 p-8 text-center md:p-12 dark:from-primary/40 dark:to-accent/50">
         <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-          Listo para tomar el control de tus finanzas?
+          {t("title")}
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Únete a miles de personas y negocios en Colombia que usan Rhynode
-          para crecer con confianza.
+          {t("subtitle")}
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button size="lg" className="h-12 w-full gap-2 text-base sm:w-auto" asChild>
             <Link href="/sign-up">
               <Smartphone className="h-4 w-4" aria-hidden="true" />
-              Crear cuenta gratis
+              {t("primary")}
             </Link>
           </Button>
           <Button
@@ -680,7 +574,7 @@ function Cta() {
             className="h-12 w-full text-base sm:w-auto"
             asChild
           >
-            <Link href="/sign-in">Iniciar sesión</Link>
+            <Link href="/sign-in">{t("secondary")}</Link>
           </Button>
         </div>
       </div>
@@ -689,29 +583,42 @@ function Cta() {
 }
 
 function Footer() {
-  const footerLinks = {
-    Producto: [
-      { label: "Funciones", href: "#features" },
-      { label: "Precios", href: "#pricing" },
-      { label: "Testimonios", href: "#testimonials" },
-      { label: "FAQ", href: "#faq" },
-    ],
-    Legal: [
-      { label: "Privacidad", href: "/privacy" },
-      { label: "Términos", href: "/terms" },
-      { label: "Cookies", href: "/cookies" },
-    ],
-    Soporte: [
-      { label: "Centro de ayuda", href: "/support" },
-      { label: "Contacto", href: "/support" },
-      { label: "Status", href: "https://status.rhynode.finance", external: true },
-    ],
-    Redes: [
-      { label: "Twitter / X", href: "https://twitter.com/rhynode", external: true },
-      { label: "LinkedIn", href: "https://linkedin.com/company/rhynode", external: true },
-      { label: "Instagram", href: "https://instagram.com/rhynode", external: true },
-    ],
-  };
+  const t = useTranslations("footer");
+  const footerLinks = [
+    {
+      categoryKey: "product" as const,
+      links: [
+        { labelKey: "features", href: "#features" },
+        { labelKey: "pricing", href: "#pricing" },
+        { labelKey: "testimonials", href: "#testimonials" },
+        { labelKey: "faq", href: "#faq" },
+      ],
+    },
+    {
+      categoryKey: "legal" as const,
+      links: [
+        { labelKey: "privacy", href: "/privacy" },
+        { labelKey: "terms", href: "/terms" },
+        { labelKey: "cookies", href: "/cookies" },
+      ],
+    },
+    {
+      categoryKey: "support" as const,
+      links: [
+        { labelKey: "help", href: "/support" },
+        { labelKey: "contact", href: "/support" },
+        { labelKey: "status", href: "https://status.rhynode.finance", external: true },
+      ],
+    },
+    {
+      categoryKey: "social" as const,
+      links: [
+        { labelKey: "twitter", href: "https://twitter.com/rhynode", external: true },
+        { labelKey: "linkedin", href: "https://linkedin.com/company/rhynode", external: true },
+        { labelKey: "instagram", href: "https://instagram.com/rhynode", external: true },
+      ],
+    },
+  ];
 
   return (
     <footer className="border-t border-border/50 bg-background px-4 py-12">
@@ -724,24 +631,21 @@ function Footer() {
               </div>
               <span className="text-lg font-bold text-foreground">Rhynode</span>
             </div>
-            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              Finanzas personales e inteligencia contable para personas y pymes
-              en Colombia.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t("tagline")}</p>
             <div className="mt-4 flex items-center gap-4">
               <a
                 href="https://twitter.com/rhynode"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-                aria-label="Twitter"
+                aria-label={t("srTwitter")}
               >
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
               <a
                 href="mailto:hola@rhynode.finance"
                 className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-                aria-label="Correo electrónico"
+                aria-label={t("srEmail")}
               >
                 <Mail className="h-4 w-4" aria-hidden="true" />
               </a>
@@ -750,19 +654,21 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-                aria-label="LinkedIn"
+                aria-label={t("srLinkedIn")}
               >
                 <Building2 className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
           </div>
 
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h3 className="mb-3 text-sm font-semibold text-foreground">{category}</h3>
+          {footerLinks.map((group) => (
+            <div key={group.categoryKey}>
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
+                {t(`categories.${group.categoryKey}`)}
+              </h3>
               <ul className="space-y-2">
-                {links.map((link) => (
-                  <li key={link.label}>
+                {group.links.map((link) => (
+                  <li key={link.labelKey}>
                     {"external" in link && link.external ? (
                       <a
                         href={link.href}
@@ -770,7 +676,7 @@ function Footer() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                       >
-                        {link.label}
+                        {t(`links.${link.labelKey}`)}
                         <ExternalLink className="h-3 w-3" aria-hidden="true" />
                       </a>
                     ) : (
@@ -778,7 +684,7 @@ function Footer() {
                         href={link.href}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                       >
-                        {link.label}
+                        {t(`links.${link.labelKey}`)}
                       </Link>
                     )}
                   </li>
@@ -790,11 +696,11 @@ function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-6 md:flex-row">
           <p className="text-center text-sm text-muted-foreground md:text-left">
-            © {new Date().getFullYear()} Rhynode. Hecho en Colombia.
+            {t("copyright", { year: new Date().getFullYear() })}
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <HelpCircle className="h-4 w-4" aria-hidden="true" />
-            <span>¿Dudas? Escríbenos a hola@rhynode.finance</span>
+            <span>{t("doubts")}</span>
           </div>
         </div>
       </div>
@@ -803,10 +709,11 @@ function Footer() {
 }
 
 function StickyMobileCta() {
+  const t = useTranslations();
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 p-4 backdrop-blur-md md:hidden">
       <Button size="lg" className="h-12 w-full text-base" asChild>
-        <Link href="/sign-up">Empezar gratis</Link>
+        <Link href="/sign-up">{t("stickyCta")}</Link>
       </Button>
     </div>
   );
