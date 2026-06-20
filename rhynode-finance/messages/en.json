@@ -303,6 +303,21 @@
       "noQuote": "No quote",
       "empty": { "title": "Grow your net worth", "description": "Track stocks, bonds, crypto, ETFs and real estate in one place.", "hint": "Start by registering your first investment." }
     },
+    "achievements": {
+      "title": "Achievements",
+      "subtitle": "Unlock achievements, earn XP and level up",
+      "categories": { "starter": "First steps", "consistency": "Consistency", "advanced": "Advanced" },
+      "status": { "completed": "Completed", "pending": "Pending" },
+      "loading": "Loading achievements...",
+      "errors": { "loadError": "Failed to load achievements", "unknown": "Unknown error" },
+      "errorState": { "title": "Couldn't load achievements", "hint": "Check your connection and try again." },
+      "empty": { "title": "No achievements yet", "description": "Complete financial actions to unlock your first badge.", "hint": "Start by logging a transaction or creating a budget." },
+      "kpis": { "unlocked": "Unlocked", "xp": "XP Earned", "pending": "Pending" },
+      "progress": { "label": "Overall progress", "summary": "{unlocked} of {total} achievements · {pct}%" },
+      "tabs": { "all": "All", "unlocked": "Unlocked", "pending": "Pending" },
+      "unlockedEmpty": { "title": "No achievements unlocked", "description": "Complete financial actions to see your badges here.", "hint": "Every transaction, goal or budget brings you closer to a new achievement." },
+      "allDone": { "title": "All achievements completed!", "description": "You've unlocked every available badge.", "hint": "Keep using Rhynode to maintain your streak and level up." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Business",

@@ -303,6 +303,21 @@
       "noQuote": "Sin cotización",
       "empty": { "title": "Haz crecer tu patrimonio", "description": "Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar.", "hint": "Empieza registrando tu primera inversión." }
     },
+    "achievements": {
+      "title": "Logros",
+      "subtitle": "Desbloquea logros, gana XP y sube de nivel",
+      "categories": { "starter": "Primeros pasos", "consistency": "Consistencia", "advanced": "Avanzado" },
+      "status": { "completed": "Completado", "pending": "Pendiente" },
+      "loading": "Cargando logros...",
+      "errors": { "loadError": "Error al cargar logros", "unknown": "Error desconocido" },
+      "errorState": { "title": "No se pudieron cargar los logros", "hint": "Revisa tu conexión e intenta de nuevo." },
+      "empty": { "title": "Aún no hay logros", "description": "Completa acciones financieras para desbloquear tu primer reconocimiento.", "hint": "Empieza registrando una transacción o creando un presupuesto." },
+      "kpis": { "unlocked": "Desbloqueados", "xp": "XP Ganada", "pending": "Pendientes" },
+      "progress": { "label": "Progreso general", "summary": "{unlocked} de {total} logros · {pct}%" },
+      "tabs": { "all": "Todos", "unlocked": "Desbloqueados", "pending": "Pendientes" },
+      "unlockedEmpty": { "title": "Ningún logro desbloqueado", "description": "Completa acciones financieras para ver tus reconocimientos aquí.", "hint": "Cada transacción, meta o presupuesto te acerca a un nuevo logro." },
+      "allDone": { "title": "¡Todos los logros completados!", "description": "Has desbloqueado cada reconocimiento disponible.", "hint": "Sigue usando Rhynode para mantener tu racha y subir de nivel." }
+    },
     "scope": {
       "personal": "Personal",
       "business": "Empresa",

@@ -32,6 +32,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { useTranslations, useLocale } from "next-intl";
+import { formatDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 interface UnlockedAchievement {
@@ -89,9 +92,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; "aria-hi
 };
 
 const categoryConfig = {
-  starter: { label: "Primeros pasos", color: "bg-sky-500/10 text-sky-700 border-sky-500/20" },
-  consistency: { label: "Consistencia", color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" },
-  advanced: { label: "Avanzado", color: "bg-violet-500/10 text-violet-700 border-violet-500/20" },
+  starter: { labelKey: "categories.starter" as const, color: "bg-sky-500/10 text-sky-700 border-sky-500/20" },
+  consistency: { labelKey: "categories.consistency" as const, color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" },
+  advanced: { labelKey: "categories.advanced" as const, color: "bg-violet-500/10 text-violet-700 border-violet-500/20" },
 };
 
 function getIcon(name: string, iconKey?: string | null) {
@@ -207,6 +210,8 @@ function AchievementCard({
 }) {
   const category = "category" in achievement ? achievement.category : undefined;
   const categoryStyle = category ? categoryConfig[category] : null;
+  const t = useTranslations("dashboard.achievements");
+  const locale = useLocale() as Locale;
 
   return (
     <Card
@@ -238,7 +243,7 @@ function AchievementCard({
           </div>
           <div className="flex min-w-0 flex-col items-end gap-2">
             <Badge variant={unlocked ? "default" : "secondary"}>
-              {unlocked ? "Completado" : "Pendiente"}
+              {unlocked ? t("status.completed") : t("status.pending")}
             </Badge>
             <CircularProgress
               percentage={unlocked ? 100 : 0}
@@ -252,7 +257,7 @@ function AchievementCard({
               variant="outline"
               className={cn("mb-2 text-xs", categoryStyle.color)}
             >
-              {categoryStyle.label}
+              {t(categoryStyle.labelKey)}
             </Badge>
           )}
           <p
@@ -277,11 +282,7 @@ function AchievementCard({
           </span>
           {unlocked && "unlockedAt" in achievement && achievement.unlockedAt && (
             <span className="text-muted-foreground">
-              {new Date(achievement.unlockedAt).toLocaleDateString("es-CO", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {formatDate(achievement.unlockedAt, locale, { month: "short", day: "numeric", year: "numeric" })}
             </span>
           )}
         </div>
@@ -312,6 +313,7 @@ function AchievementGrid({
 }
 
 export default function AchievementsPage() {
+  const t = useTranslations("dashboard.achievements");
   const [data, setData] = React.useState<AchievementsResponse | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -320,17 +322,17 @@ export default function AchievementsPage() {
     async function fetchAchievements() {
       try {
         const res = await fetch("/api/personal/achievements");
-        if (!res.ok) throw new Error("Error al cargar logros");
+        if (!res.ok) throw new Error(t("errors.loadError"));
         const json = (await res.json()) as AchievementsResponse;
         setData(json);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t("errors.unknown"));
       } finally {
         setLoading(false);
       }
     }
     fetchAchievements();
-  }, []);
+  }, [t]);
 
   const { unlocked, pending, all } = React.useMemo(() => {
     const unlockedList = data?.unlocked ?? [];
@@ -348,7 +350,7 @@ export default function AchievementsPage() {
 
   const skeleton = (
     <div role="status" aria-live="polite" aria-busy="true" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <span className="sr-only">Cargando logros...</span>
+      <span className="sr-only">{t("loading")}</span>
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="h-48 animate-pulse rounded-xl bg-muted" />
       ))}
@@ -359,9 +361,9 @@ export default function AchievementsPage() {
     <EmptyStateCard
       variant="lg"
       icon={Trophy}
-      title="No se pudieron cargar los logros"
+      title={t("errorState.title")}
       description={error ?? ""}
-      hint="Revisa tu conexión e intenta de nuevo."
+      hint={t("errorState.hint")}
     />
   );
 
@@ -369,37 +371,37 @@ export default function AchievementsPage() {
     <EmptyStateCard
       variant="lg"
       icon={Trophy}
-      title="Aún no hay logros"
-      description="Completa acciones financieras para desbloquear tu primer reconocimiento."
-      hint="Empieza registrando una transacción o creando un presupuesto."
+      title={t("empty.title")}
+      description={t("empty.description")}
+      hint={t("empty.hint")}
     />
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="heading-section">Logros</h1>
-        <p className="body-default mt-1">Desbloquea logros, gana XP y sube de nivel</p>
+        <h1 className="heading-section">{t("title")}</h1>
+        <p className="body-default mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard
-          label="Desbloqueados"
+          label={t("kpis.unlocked")}
           value={`${unlocked.length} / ${totalPossible}`}
           icon={Trophy}
         />
-        <KpiCard label="XP Ganada" value={`${totalXp} XP`} icon={Zap} />
-        <KpiCard label="Pendientes" value={pending.length} icon={Target} />
+        <KpiCard label={t("kpis.xp")} value={`${totalXp} XP`} icon={Zap} />
+        <KpiCard label={t("kpis.pending")} value={pending.length} icon={Target} />
       </div>
 
       <Card className="surface-elevated-2 rounded-xl border-border">
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div id="achievements-progress-label" className="text-sm font-medium text-foreground">
-              Progreso general
+              {t("progress.label")}
             </div>
             <div id="achievements-progress-percent" className="text-xs font-medium text-muted-foreground">
-              {unlocked.length} de {totalPossible} logros · {progressPercentage}%
+              {t("progress.summary", { unlocked: unlocked.length, total: totalPossible, pct: progressPercentage })}
             </div>
           </div>
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -419,13 +421,13 @@ export default function AchievementsPage() {
       <Tabs defaultValue="all">
         <TabsList className="w-full min-h-11 sm:w-auto">
           <TabsTrigger value="all" className="flex-1 sm:flex-initial">
-            Todos
+            {t("tabs.all")}
           </TabsTrigger>
           <TabsTrigger value="unlocked" className="flex-1 sm:flex-initial">
-            Desbloqueados
+            {t("tabs.unlocked")}
           </TabsTrigger>
           <TabsTrigger value="pending" className="flex-1 sm:flex-initial">
-            Pendientes
+            {t("tabs.pending")}
           </TabsTrigger>
         </TabsList>
 
@@ -447,9 +449,9 @@ export default function AchievementsPage() {
             <EmptyStateCard
               variant="lg"
               icon={Trophy}
-              title="Ningún logro desbloqueado"
-              description="Completa acciones financieras para ver tus reconocimientos aquí."
-              hint="Cada transacción, meta o presupuesto te acerca a un nuevo logro."
+              title={t("unlockedEmpty.title")}
+              description={t("unlockedEmpty.description")}
+              hint={t("unlockedEmpty.hint")}
             />
           )}
         </TabsContent>
@@ -468,9 +470,9 @@ export default function AchievementsPage() {
             <EmptyStateCard
               variant="lg"
               icon={Award}
-              title="¡Todos los logros completados!"
-              description="Has desbloqueado cada reconocimiento disponible."
-              hint="Sigue usando Rhynode para mantener tu racha y subir de nivel."
+              title={t("allDone.title")}
+              description={t("allDone.description")}
+              hint={t("allDone.hint")}
             />
           )}
         </TabsContent>
