@@ -17,31 +17,9 @@ import { toast } from "sonner";
 import { type Suggestion, type Rule, applyRules } from "@/lib/rules-engine";
 import { trackEvent } from "@/lib/analytics";
 import { executeMutation } from "@/lib/offline-queue";
+import { COMMON_CATEGORIES } from "@/lib/transaction-categories";
 
-export const COMMON_CATEGORIES = [
-  "Ventas",
-  "Nómina",
-  "Servicios",
-  "Materiales",
-  "Marketing",
-  "Transporte / Delivery",
-  "Entretenimiento",
-  "Café",
-  "Mercado",
-  "Restaurante",
-  "Transporte",
-  "Telecomunicaciones",
-  "Servicios públicos",
-  "Seguros",
-  "Salud",
-  "Educación",
-  "Transferencia/Finanzas",
-  "Ropa",
-  "Viajes",
-  "Mascotas",
-  "Compras",
-  "Otros",
-];
+export { COMMON_CATEGORIES };
 
 interface OcrItem {
   description: string;
