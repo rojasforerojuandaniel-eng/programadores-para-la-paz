@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Card,
   CardContent,
@@ -37,6 +38,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   RefreshCw,
   ChevronLeft,
@@ -70,35 +73,34 @@ interface Pagination {
 const PAGE_SIZE = 20;
 
 const providerOptions = [
-  { value: "all", label: "Todos" },
-  { value: "stripe", label: "Stripe" },
-  { value: "wompi", label: "Wompi" },
+  { value: "all", labelKey: "webhookLogs.providers.all" },
+  { value: "stripe", labelKey: "webhookLogs.providers.stripe" },
+  { value: "wompi", labelKey: "webhookLogs.providers.wompi" },
 ];
 
 const statusOptions = [
-  { value: "all", label: "Todos" },
-  { value: "success", label: "Exitoso" },
-  { value: "failed", label: "Fallido" },
-  { value: "pending", label: "Pendiente" },
+  { value: "all", labelKey: "webhookLogs.statusFilters.all" },
+  { value: "success", labelKey: "webhookLogs.statusFilters.success" },
+  { value: "failed", labelKey: "webhookLogs.statusFilters.failed" },
+  { value: "pending", labelKey: "webhookLogs.statusFilters.pending" },
 ];
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-CO", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
+const dateFmtOpts: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+};
 
 function StatusBadge({ status }: { status: string }) {
+  const t = useTranslations("dashboard.settings");
   if (status === "PROCESSED") {
     return (
       <Badge variant="default" className="gap-1">
         <CheckCircle2 className="h-3 w-3" />
-        Exitoso
+        {t("webhookLogs.status.PROCESSED" as never)}
       </Badge>
     );
   }
@@ -106,19 +108,21 @@ function StatusBadge({ status }: { status: string }) {
     return (
       <Badge variant="destructive" className="gap-1">
         <AlertCircle className="h-3 w-3" />
-        Fallido
+        {t("webhookLogs.status.FAILED" as never)}
       </Badge>
     );
   }
   return (
     <Badge variant="secondary" className="gap-1">
       <Clock className="h-3 w-3" />
-      Pendiente
+      {t("webhookLogs.status.PENDING" as never)}
     </Badge>
   );
 }
 
 export default function WebhookLogsClient() {
+  const t = useTranslations("dashboard.settings");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -168,7 +172,7 @@ export default function WebhookLogsClient() {
 
       try {
         const res = await fetch(`/api/webhook-logs?${params.toString()}`);
-        if (!res.ok) throw new Error("Error al cargar logs");
+        if (!res.ok) throw new Error(t("webhookLogs.toasts.loadError"));
         const json = await res.json();
         if (!cancelled) {
           setLogs(json.data || []);
@@ -176,7 +180,7 @@ export default function WebhookLogsClient() {
         }
       } catch {
         if (!cancelled) {
-          toast.error("Error al cargar logs de webhooks");
+          toast.error(t("webhookLogs.toasts.loadErrorToast"));
           setLogs([]);
         }
       } finally {
@@ -187,7 +191,8 @@ export default function WebhookLogsClient() {
     return () => {
       cancelled = true;
     };
-  }, [provider, status, from, to, offset]);
+     
+  }, [provider, status, from, to, offset, t]);
 
   function updateFilter(key: string, value: string | number | undefined) {
     const query = buildQueryString({ [key]: value, offset: 0 });
@@ -201,22 +206,22 @@ export default function WebhookLogsClient() {
 
   async function handleRetry(log: WebhookLog) {
     setRetryingId(log.id);
-    setLiveRegion(`Reintentando webhook ${log.eventType}...`);
+    setLiveRegion(t("webhookLogs.liveRegion.retry", { event: log.eventType }));
     try {
       const res = await fetch(`/api/webhook-logs/${log.id}/retry`, { method: "POST" });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error || "Error al reintentar");
+        throw new Error(json.error || t("webhookLogs.toasts.retryError"));
       }
-      toast.success("Webhook reintentado exitosamente");
-      setLiveRegion("Reintento exitoso. Actualizando lista.");
+      toast.success(t("webhookLogs.toasts.retrySuccess"));
+      setLiveRegion(t("webhookLogs.liveRegion.retrySuccess"));
       const params = new URLSearchParams(searchParams.toString());
       router.refresh();
       router.replace(`/dashboard/settings/webhook-logs?${params.toString()}`, { scroll: false });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error al reintentar";
+      const message = err instanceof Error ? err.message : t("webhookLogs.toasts.retryError");
       toast.error(message);
-      setLiveRegion(`Error al reintentar: ${message}`);
+      setLiveRegion(t("webhookLogs.liveRegion.retryError", { message }));
     } finally {
       setRetryingId(null);
     }
@@ -227,27 +232,27 @@ export default function WebhookLogsClient() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-2">
-        <h1 className="heading-section">Logs de Webhooks</h1>
-        <p className="body-default">Observabilidad de eventos entrantes de Stripe y Wompi</p>
+        <h1 className="heading-section">{t("webhookLogs.title")}</h1>
+        <p className="body-default">{t("webhookLogs.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="heading-card">Filtros</CardTitle>
-          <CardDescription>Refina los eventos por proveedor, estado o rango de fechas</CardDescription>
+          <CardTitle className="heading-card">{t("webhookLogs.filtersTitle")}</CardTitle>
+          <CardDescription>{t("webhookLogs.filtersDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
-              <Label htmlFor="provider-filter">Proveedor</Label>
+              <Label htmlFor="provider-filter">{t("webhookLogs.providerLabel")}</Label>
               <Select value={provider} onValueChange={(v) => updateFilter("provider", v)}>
-                <SelectTrigger id="provider-filter" aria-label="Filtrar por proveedor">
+                <SelectTrigger id="provider-filter" aria-label={t("webhookLogs.providerAria")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {providerOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.labelKey as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -255,15 +260,15 @@ export default function WebhookLogsClient() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status-filter">Estado</Label>
+              <Label htmlFor="status-filter">{t("webhookLogs.statusLabel")}</Label>
               <Select value={status} onValueChange={(v) => updateFilter("status", v)}>
-                <SelectTrigger id="status-filter" aria-label="Filtrar por estado">
+                <SelectTrigger id="status-filter" aria-label={t("webhookLogs.statusAria")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.labelKey as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -271,24 +276,24 @@ export default function WebhookLogsClient() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="from-filter">Desde</Label>
+              <Label htmlFor="from-filter">{t("webhookLogs.fromLabel")}</Label>
               <Input
                 id="from-filter"
                 type="datetime-local"
                 value={from}
                 onChange={(e) => updateFilter("from", e.target.value)}
-                aria-label="Fecha inicial"
+                aria-label={t("webhookLogs.fromAria")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="to-filter">Hasta</Label>
+              <Label htmlFor="to-filter">{t("webhookLogs.toLabel")}</Label>
               <Input
                 id="to-filter"
                 type="datetime-local"
                 value={to}
                 onChange={(e) => updateFilter("to", e.target.value)}
-                aria-label="Fecha final"
+                aria-label={t("webhookLogs.toAria")}
               />
             </div>
           </div>
@@ -302,7 +307,7 @@ export default function WebhookLogsClient() {
                 router.replace("/dashboard/settings/webhook-logs", { scroll: false });
               }}
             >
-              Limpiar filtros
+              {t("webhookLogs.clearFilters")}
             </Button>
           )}
         </CardContent>
@@ -316,9 +321,12 @@ export default function WebhookLogsClient() {
         <CardHeader>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="heading-card">Eventos</CardTitle>
+              <CardTitle className="heading-card">{t("webhookLogs.eventsTitle")}</CardTitle>
               <CardDescription>
-                Mostrando {logs.length} de {pagination.total} eventos
+                {t("webhookLogs.eventsCount", {
+                  shown: logs.length,
+                  total: pagination.total,
+                })}
               </CardDescription>
             </div>
           </div>
@@ -327,16 +335,16 @@ export default function WebhookLogsClient() {
           {loading ? (
             <div className="flex h-40 items-center justify-center" role="status" aria-live="polite">
               <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
-              <span className="sr-only ml-2">Cargando logs...</span>
+              <span className="sr-only ml-2">{t("webhookLogs.loading")}</span>
             </div>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Webhook className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
               </div>
-              <h3 className="mt-4 text-base font-medium">No hay eventos registrados</h3>
+              <h3 className="mt-4 text-base font-medium">{t("webhookLogs.empty.title")}</h3>
               <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-                Ajusta los filtros o vuelve más tarde cuando lleguen nuevos webhooks.
+                {t("webhookLogs.empty.description")}
               </p>
               {hasFilters && (
                 <Button
@@ -345,7 +353,7 @@ export default function WebhookLogsClient() {
                   className="mt-4"
                   onClick={() => router.replace("/dashboard/settings/webhook-logs", { scroll: false })}
                 >
-                  Limpiar filtros
+                  {t("webhookLogs.clearFilters")}
                 </Button>
               )}
             </div>
@@ -354,14 +362,14 @@ export default function WebhookLogsClient() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead scope="col">Timestamp</TableHead>
-                    <TableHead scope="col">Proveedor</TableHead>
-                    <TableHead scope="col">Evento</TableHead>
-                    <TableHead scope="col">Estado</TableHead>
-                    <TableHead scope="col">Payload preview</TableHead>
-                    <TableHead scope="col">Error</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.timestamp")}</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.provider")}</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.event")}</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.status")}</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.payload")}</TableHead>
+                    <TableHead scope="col">{t("webhookLogs.cols.error")}</TableHead>
                     <TableHead scope="col" className="text-right">
-                      Acciones
+                      {t("webhookLogs.cols.actions")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -369,7 +377,7 @@ export default function WebhookLogsClient() {
                   {logs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell title={new Date(log.createdAt).toISOString()}>
-                        {formatDate(log.createdAt)}
+                        {fmtDate(log.createdAt, locale, dateFmtOpts)}
                       </TableCell>
                       <TableCell className="font-medium">{log.provider}</TableCell>
                       <TableCell className="font-mono text-xs">{log.eventType}</TableCell>
@@ -389,16 +397,16 @@ export default function WebhookLogsClient() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                aria-label={`Ver payload de ${log.eventType}`}
+                                aria-label={t("webhookLogs.viewPayloadAria", { event: log.eventType })}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl">
                               <DialogHeader>
-                                <DialogTitle>Payload completo</DialogTitle>
+                                <DialogTitle>{t("webhookLogs.payloadTitle")}</DialogTitle>
                                 <DialogDescription>
-                                  {log.provider} — {log.eventType} — {formatDate(log.createdAt)}
+                                  {log.provider} — {log.eventType} — {fmtDate(log.createdAt, locale, dateFmtOpts)}
                                 </DialogDescription>
                               </DialogHeader>
                               <pre className="max-h-[60vh] overflow-auto rounded-md bg-muted p-4 font-mono text-xs">
@@ -411,7 +419,10 @@ export default function WebhookLogsClient() {
                             <Button
                               variant="outline"
                               size="sm"
-                              aria-label={`Reintentar ${log.eventType} de ${log.provider}`}
+                              aria-label={t("webhookLogs.retryAria", {
+                                event: log.eventType,
+                                provider: log.provider,
+                              })}
                               disabled={retryingId === log.id}
                               onClick={() => handleRetry(log)}
                             >
@@ -420,7 +431,7 @@ export default function WebhookLogsClient() {
                               ) : (
                                 <RefreshCw className="h-4 w-4" />
                               )}
-                              <span className="sr-only sm:not-sr-only sm:ml-1">Reintentar</span>
+                              <span className="sr-only sm:not-sr-only sm:ml-1">{t("webhookLogs.retry")}</span>
                             </Button>
                           )}
                         </div>
@@ -439,23 +450,25 @@ export default function WebhookLogsClient() {
                 size="sm"
                 onClick={() => goToPage(Math.max(0, offset - PAGE_SIZE))}
                 disabled={offset === 0}
-                aria-label="Página anterior"
+                aria-label={t("webhookLogs.prevPageAria")}
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="ml-1">Anterior</span>
+                <span className="ml-1">{t("webhookLogs.prevPage")}</span>
               </Button>
               <span className="text-sm text-muted-foreground" aria-live="polite">
-                Página {Math.floor(offset / PAGE_SIZE) + 1} de{" "}
-                {Math.max(1, Math.ceil(pagination.total / PAGE_SIZE))}
+                {t("webhookLogs.pageOf", {
+                  current: Math.floor(offset / PAGE_SIZE) + 1,
+                  total: Math.max(1, Math.ceil(pagination.total / PAGE_SIZE)),
+                })}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => goToPage(offset + PAGE_SIZE)}
                 disabled={!pagination.hasMore}
-                aria-label="Página siguiente"
+                aria-label={t("webhookLogs.nextPageAria")}
               >
-                <span className="mr-1">Siguiente</span>
+                <span className="mr-1">{t("webhookLogs.nextPage")}</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

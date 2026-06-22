@@ -1211,6 +1211,251 @@
           "America/Santiago": "Santiago",
           "America/Lima": "Lima"
         }
+      },
+      "billing": {
+        "planUsageTitle": "Plan & Usage",
+        "unlimitedUsage": "Unlimited usage",
+        "usagePercent": "{percent}% used",
+        "unlimitedInvoicesNote": "Plan with unlimited invoices",
+        "usageLimitNote": "{percent}% of your invoice limit used",
+        "nearLimitTitle": "You're near your limit",
+        "nearLimitDesc": "Upgrade your plan to keep invoicing without interruptions.",
+        "plansCompareTitle": "Plan comparison",
+        "cancelConfirm": "Are you sure you want to cancel your subscription?",
+        "paymentsHistoryTitle": "Payment History",
+        "noPaymentsTitle": "No payments recorded",
+        "noPaymentsDesc": "Your invoice and subscription payments will appear here.",
+        "subscriptionTitle": "Billing & Subscription",
+        "subscriptionDesc": "Manage your subscription, payment methods, and billing history from Stripe's secure portal.",
+        "billingPortalAria": "Open Stripe billing portal",
+        "billingPortalButton": "Billing Portal",
+        "cancelAria": "Cancel current subscription",
+        "cancelButton": "Cancel Subscription",
+        "paymentMethodsTitle": "Payment Methods (Charges)",
+        "paymentMethodsDesc": "Connect local payment providers to charge your customers.",
+        "providersAria": "Available payment providers",
+        "kpis": {
+          "plan": "Plan",
+          "invoices": "Invoices",
+          "users": "Users",
+          "usage": "Usage"
+        },
+        "plans": {
+          "current": "Current",
+          "currentButton": "Current plan",
+          "manageChange": "Manage change",
+          "manageChangeAria": "Manage plan change",
+          "processing": "Processing...",
+          "processingAria": "Processing plan selection",
+          "chooseAria": "Choose {plan} plan",
+          "choose": "Choose {plan}",
+          "starter": {
+            "price": "$0",
+            "period": "/mo",
+            "description": "Perfect for starting to organize your finances.",
+            "features": {
+              "f1": "10 invoices/mo",
+              "f2": "1 user",
+              "f3": "Unlimited clients",
+              "f4": "Email support",
+              "f5": "PWA mobile app"
+            },
+            "unavailable": {
+              "u1": "Advanced DIAN invoicing",
+              "u2": "API access",
+              "u3": "Priority support"
+            }
+          },
+          "growth": {
+            "price": "$29,900",
+            "period": "/mo",
+            "description": "For freelancers and SMEs that invoice regularly.",
+            "features": {
+              "f1": "100 invoices/mo",
+              "f2": "3 users",
+              "f3": "Unlimited clients",
+              "f4": "DIAN/SAT compliance",
+              "f5": "Advanced reports",
+              "f6": "Priority support"
+            },
+            "unavailable": {
+              "u1": "API access",
+              "u2": "Dedicated onboarding"
+            }
+          },
+          "scale": {
+            "price": "$79,900",
+            "period": "/mo",
+            "description": "Full power for growing teams.",
+            "features": {
+              "f1": "Unlimited invoices",
+              "f2": "Unlimited users",
+              "f3": "Unlimited clients",
+              "f4": "API access",
+              "f5": "Priority support",
+              "f6": "Dedicated onboarding",
+              "f7": "Account manager"
+            }
+          }
+        },
+        "statuses": {
+          "PAID": "Successful",
+          "PENDING": "Pending",
+          "FAILED": "Failed",
+          "REFUNDED": "Refunded"
+        },
+        "paymentCols": {
+          "date": "Date",
+          "method": "Method",
+          "status": "Status",
+          "amount": "Amount"
+        },
+        "providers": {
+          "comingSoon": "Coming soon",
+          "wompi": {
+            "desc": "Colombia — Cards, PSE, Bancolombia"
+          },
+          "payu": {
+            "desc": "Multi-country — Cards, cash"
+          },
+          "pse": {
+            "desc": "Colombia — Bank transfer"
+          }
+        },
+        "toasts": {
+          "portalError": "Error opening portal",
+          "cancelSuccess": "Subscription cancelled",
+          "cancelError": "Error cancelling"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "budgets": {
+          "title": "Budgets",
+          "desc": "Get alerts when you spend over 80% of a budget"
+        },
+        "subscriptions": {
+          "title": "Subscriptions",
+          "desc": "Reminders before your subscriptions expire"
+        },
+        "weekly": {
+          "title": "Weekly Summary",
+          "desc": "Get a summary of your finances every week"
+        },
+        "push": {
+          "title": "Push Notifications",
+          "enabled": "Enabled on this device",
+          "disabled": "Disabled",
+          "enabledAria": "Push notifications enabled",
+          "activateAria": "Activate push notifications",
+          "activated": "Enabled",
+          "activate": "Activate"
+        }
+      },
+      "members": {
+        "title": "Team members",
+        "usersCount": "Users: {used} / {limit}",
+        "emailLabel": "Email",
+        "emailPlaceholder": "teammate@company.com",
+        "roleLabel": "Role",
+        "inviting": "Inviting...",
+        "invite": "Invite",
+        "planLimitReached": "You've reached your plan's user limit. Upgrade to invite more members.",
+        "noMembers": "No members invited yet.",
+        "memberFallback": "Member",
+        "you": "You",
+        "removeConfirm": "Are you sure you want to remove this member?",
+        "resendInvitation": "Resend invitation",
+        "removeMember": "Remove member",
+        "roles": {
+          "ADMIN": "Administrator",
+          "MANAGER": "Manager",
+          "VIEWER": "Viewer"
+        },
+        "status": {
+          "ACTIVE": "Active",
+          "PENDING": "Pending"
+        },
+        "toasts": {
+          "loadError": "Error loading members",
+          "inviteError": "Error sending invite",
+          "inviteSent": "Invitation sent",
+          "networkError": "Network error",
+          "refreshError": "Error refreshing members",
+          "roleChangeError": "Error changing role",
+          "roleUpdated": "Role updated",
+          "resendError": "Error resending invite",
+          "resent": "Invitation resent",
+          "removeError": "Error removing member",
+          "removed": "Member removed"
+        }
+      },
+      "webhookLogs": {
+        "title": "Webhook Logs",
+        "subtitle": "Observability of incoming Stripe and Wompi events",
+        "filtersTitle": "Filters",
+        "filtersDesc": "Refine events by provider, status, or date range",
+        "providerLabel": "Provider",
+        "providerAria": "Filter by provider",
+        "statusLabel": "Status",
+        "statusAria": "Filter by status",
+        "fromLabel": "From",
+        "fromAria": "Start date",
+        "toLabel": "To",
+        "toAria": "End date",
+        "clearFilters": "Clear filters",
+        "eventsTitle": "Events",
+        "eventsCount": "Showing {shown} of {total} events",
+        "loading": "Loading logs...",
+        "payloadTitle": "Full payload",
+        "retry": "Retry",
+        "prevPage": "Previous",
+        "prevPageAria": "Previous page",
+        "nextPage": "Next",
+        "nextPageAria": "Next page",
+        "pageOf": "Page {current} of {total}",
+        "viewPayloadAria": "View payload for {event}",
+        "retryAria": "Retry {event} from {provider}",
+        "empty": {
+          "title": "No events recorded",
+          "description": "Adjust the filters or check back later when new webhooks arrive."
+        },
+        "providers": {
+          "all": "All",
+          "stripe": "Stripe",
+          "wompi": "Wompi"
+        },
+        "statusFilters": {
+          "all": "All",
+          "success": "Successful",
+          "failed": "Failed",
+          "pending": "Pending"
+        },
+        "status": {
+          "PROCESSED": "Successful",
+          "FAILED": "Failed",
+          "PENDING": "Pending"
+        },
+        "cols": {
+          "timestamp": "Timestamp",
+          "provider": "Provider",
+          "event": "Event",
+          "status": "Status",
+          "payload": "Payload preview",
+          "error": "Error",
+          "actions": "Actions"
+        },
+        "toasts": {
+          "loadError": "Error loading logs",
+          "loadErrorToast": "Error loading webhook logs",
+          "retryError": "Error retrying",
+          "retrySuccess": "Webhook retried successfully"
+        },
+        "liveRegion": {
+          "retry": "Retrying webhook {event}...",
+          "retrySuccess": "Retry successful. Refreshing list.",
+          "retryError": "Error retrying: {message}"
+        }
       }
     }
   },
