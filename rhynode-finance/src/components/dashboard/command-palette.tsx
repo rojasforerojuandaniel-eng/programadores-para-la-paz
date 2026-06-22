@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   LayoutDashboard,
@@ -234,6 +235,8 @@ function buildGroups(
 
 export function CommandPalette() {
   const router = useRouter();
+  const t = useTranslations("dashboard.commandPalette");
+  const tNav = useTranslations("dashboard.nav");
   const [isOpen, setIsOpen] = React.useState(false);
   const [query, setQueryState] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -250,6 +253,77 @@ export function CommandPalette() {
   const flatItems = React.useMemo(
     () => groups.flatMap((group) => group.items),
     [groups]
+  );
+
+  const headingLabel = React.useCallback(
+    (heading: string): string => {
+      switch (heading) {
+        case "Reciente":
+          return t("sections.recent");
+        case "Ir a":
+          return t("sections.goTo");
+        case "Acciones":
+          return t("sections.actions");
+        case "Ayuda":
+          return t("sections.help");
+        default:
+          return heading;
+      }
+    },
+    [t]
+  );
+
+  const resolveLabel = React.useCallback(
+    (item: CommandItem): string => {
+      switch (item.id) {
+        case "nav-dashboard":
+          return tNav("home" as never);
+        case "nav-transactions":
+          return tNav("transactions" as never);
+        case "nav-invoices":
+          return tNav("invoices" as never);
+        case "nav-goals":
+          return t("navLabel.goals");
+        case "nav-reminders":
+          return tNav("reminders" as never);
+        case "nav-accounts":
+          return tNav("accounts" as never);
+        case "nav-settings":
+          return tNav("settings" as never);
+        case "action-new-transaction":
+          return t("actions.newTransaction");
+        case "action-new-invoice":
+          return t("actions.newInvoice");
+        case "action-new-goal":
+          return t("actions.newGoal");
+        case "action-new-reminder":
+          return t("actions.newReminder");
+        case "help-support":
+          return t("help.helpCenter");
+        default:
+          return item.label;
+      }
+    },
+    [t, tNav]
+  );
+
+  const resolveShortcut = React.useCallback(
+    (item: CommandItem): string | undefined => {
+      if (!item.shortcut) return undefined;
+      switch (item.id) {
+        case "action-new-transaction":
+          return t("actions.newTransactionShortcut");
+        case "action-new-invoice":
+          return t("actions.newInvoiceShortcut");
+        case "action-new-goal":
+          return t("actions.newGoalShortcut");
+        case "action-new-reminder":
+          return t("actions.newReminderShortcut");
+        default:
+          return item.shortcut;
+      }
+    },
+    [t]
   );
 
   const setQuery = React.useCallback(
@@ -336,7 +410,7 @@ export function CommandPalette() {
         size="icon"
         className="h-10 w-10 shrink-0"
         onClick={() => setIsOpen(true)}
-        aria-label="Abrir paleta de comandos (⌘K)"
+        aria-label={t("openPalette")}
       >
         <Search className="h-5 w-5" aria-hidden="true" />
       </Button>
@@ -353,9 +427,9 @@ export function CommandPalette() {
           showCloseButton={false}
           aria-modal="true"
         >
-          <DialogTitle className="sr-only">Paleta de comandos</DialogTitle>
+          <DialogTitle className="sr-only">{t("title")}</DialogTitle>
           <DialogDescription className="sr-only">
-            Paleta de comandos para navegar rápidamente a secciones y ejecutar acciones.
+            {t("description")}
           </DialogDescription>
           <div className="flex items-center gap-3 border-b px-4 py-3">
             <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
@@ -363,9 +437,9 @@ export function CommandPalette() {
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar comando o ir a..."
+              placeholder={t("searchPlaceholder")}
               className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-              aria-label="Buscar comando"
+              aria-label={t("searchAriaLabel")}
               autoComplete="off"
             />
             <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
@@ -376,22 +450,22 @@ export function CommandPalette() {
           <div
             className="min-h-[12rem] overflow-y-auto p-2"
             role="listbox"
-            aria-label="Comandos"
+            aria-label={t("listAriaLabel")}
           >
             {flatItems.length === 0 && (
               <div className="flex h-32 flex-col items-center justify-center gap-1 px-6 text-center text-muted-foreground" role="status" aria-live="polite">
                 <Search className="h-6 w-6 opacity-40" aria-hidden="true" />
-                <p className="text-sm">No se encontraron comandos</p>
-                <p className="text-xs">Prueba con otro término</p>
+                <p className="text-sm">{t("noResults")}</p>
+                <p className="text-xs">{t("tryAgain")}</p>
               </div>
             )}
 
             {groups.map((group) => (
               <div key={group.heading} className="mt-2 first:mt-0">
                 <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {group.heading}
+                  {headingLabel(group.heading)}
                 </h3>
-                <ul className="space-y-0.5" role="group" aria-label={group.heading}>
+                <ul className="space-y-0.5" role="group" aria-label={headingLabel(group.heading)}>
                   {group.items.map((item) => {
                     const globalIndex = flatItems.indexOf(item);
                     const isSelected = globalIndex === selectedIndex;
@@ -421,7 +495,7 @@ export function CommandPalette() {
                             aria-hidden="true"
                           />
                           <span className="min-w-0 flex-1 truncate text-left">
-                            {item.label}
+                            {resolveLabel(item)}
                           </span>
                           {item.shortcut && (
                             <span
@@ -432,7 +506,7 @@ export function CommandPalette() {
                                   : "text-muted-foreground"
                               )}
                             >
-                              {item.shortcut}
+                              {resolveShortcut(item)}
                             </span>
                           )}
                           {isSelected && (
@@ -452,12 +526,12 @@ export function CommandPalette() {
 
           <div className="flex items-center justify-between border-t px-4 py-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="hidden sm:inline">{flatItems.length} comandos</span>
+              <span className="hidden sm:inline">{t("commandsCount", { count: flatItems.length })}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden sm:inline">↑↓ navegar</span>
-              <span className="hidden sm:inline">Enter ejecutar</span>
-              <span className="hidden sm:inline">Esc cerrar</span>
+              <span className="hidden sm:inline">{t("navHint")}</span>
+              <span className="hidden sm:inline">{t("executeHint")}</span>
+              <span className="hidden sm:inline">{t("closeHint")}</span>
             </div>
           </div>
         </DialogContent>

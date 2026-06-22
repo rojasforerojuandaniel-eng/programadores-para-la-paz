@@ -948,6 +948,72 @@
           "QUARTERLY": "Quarterly",
           "DAILY": "Daily"
         }
+      },
+      "view": {
+        "title": "Due Dates Calendar",
+        "subtitle": "Visualize and manage your financial obligations",
+        "kpis": {
+          "events": "Events",
+          "upcoming": "Upcoming",
+          "overdue": "Overdue",
+          "paid": "Paid"
+        },
+        "tabs": {
+          "month": "Month",
+          "week": "Week",
+          "list": "List"
+        },
+        "types": {
+          "debt": "Debt",
+          "recurring": "Recurring",
+          "subscription": "Subscription",
+          "goal": "Goal",
+          "invoice": "Invoice",
+          "tax": "Tax"
+        },
+        "status": {
+          "paid": "Paid",
+          "overdue": "Overdue",
+          "upcoming": "Upcoming"
+        },
+        "actions": {
+          "viewDetails": "View details",
+          "pay": "Pay",
+          "file": "File",
+          "markPaidAria": "Mark {title} as paid",
+          "markedResolved": "{title} marked as resolved"
+        },
+        "aria": {
+          "calendarView": "Calendar view",
+          "monthView": "Month view",
+          "weekView": "Week view",
+          "listView": "List view",
+          "prev": "Previous",
+          "next": "Next",
+          "dayCell": "{date}, {count} due dates"
+        },
+        "count": {
+          "dueDates": "{count, plural, one {# due date} other {# due dates}}"
+        },
+        "empty": {
+          "title": "No due dates",
+          "description": "Select another day with activity.",
+          "mobileDescription": "Tap a colored day to see its details.",
+          "periodTitle": "No due dates in this period",
+          "periodDescription": "Debts, recurring payments, subscriptions, goals, invoices and taxes with a due date will appear here.",
+          "periodHint": "Navigate to another period or create your first records."
+        },
+        "legend": {
+          "types": "Types:",
+          "statuses": "Statuses:"
+        },
+        "errors": {
+          "loadEvents": "Error loading events",
+          "loadToast": "Could not load due dates",
+          "markPaid": "Error marking as paid",
+          "markPaidToast": "Could not mark as paid"
+        },
+        "noDueDates": "No due dates"
       }
     },
     "split": {
@@ -2487,6 +2553,69 @@
           "recurring": "Recurring",
           "goal": "Goal"
         }
+      }
+    },
+    "commandPalette": {
+      "openPalette": "Open command palette (⌘K)",
+      "title": "Command palette",
+      "description": "Command palette to quickly navigate to sections and execute actions.",
+      "searchPlaceholder": "Search command or go to...",
+      "searchAriaLabel": "Search command",
+      "listAriaLabel": "Commands",
+      "noResults": "No commands found",
+      "tryAgain": "Try another term",
+      "commandsCount": "{count} commands",
+      "navHint": "↑↓ navigate",
+      "executeHint": "Enter to run",
+      "closeHint": "Esc to close",
+      "sections": {
+        "recent": "Recent",
+        "goTo": "Go to",
+        "actions": "Actions",
+        "help": "Help"
+      },
+      "actions": {
+        "newTransaction": "Create transaction",
+        "newInvoice": "Create invoice",
+        "newGoal": "Add goal",
+        "newReminder": "New reminder",
+        "newTransactionShortcut": "New transaction",
+        "newInvoiceShortcut": "New invoice",
+        "newGoalShortcut": "New goal",
+        "newReminderShortcut": "New reminder"
+      },
+      "help": {
+        "helpCenter": "Help center"
+      },
+      "navLabel": {
+        "goals": "Goals"
+      }
+    },
+    "search": {
+      "openGlobalCompact": "Open global search (⌘⇧K)",
+      "openGlobal": "Open global search",
+      "searchPlaceholder": "Search...",
+      "title": "Global search",
+      "description": "Search transactions, invoices, clients, projects, and accounts.",
+      "inputPlaceholder": "Search transactions, invoices, clients...",
+      "inputAriaLabel": "Search term",
+      "resultsAriaLabel": "Search results",
+      "searching": "Searching...",
+      "typeToSearch": "Type to search",
+      "typeToSearchHint": "Transactions, invoices, clients, projects, and accounts",
+      "noResults": "No results found",
+      "noResultsHint": "Try another term for transactions, invoices, clients, projects, or accounts.",
+      "errorHint": "Try again in a moment.",
+      "searchError": "Search error",
+      "maxResults": "Max. 15 results",
+      "navHint": "↑↓ navigate",
+      "selectHint": "Enter to select",
+      "types": {
+        "transaction": "Transactions",
+        "invoice": "Invoices",
+        "client": "Clients",
+        "project": "Projects",
+        "account": "Accounts"
       }
     }
   },
