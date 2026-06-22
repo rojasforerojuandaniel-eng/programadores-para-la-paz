@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo-metadata";
+import { getLocale } from "@/lib/locale-server";
 import { SignInForm } from "@/components/auth/sign-in-form";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Iniciar sesión",
-  description:
-    "Accede de forma segura a tu cuenta de Rhynode. Gestiona tus finanzas personales y empresariales desde Colombia.",
-  path: "/sign-in",
-  keywords: ["iniciar sesión", "login", "autenticación segura", "finanzas Colombia"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "auth.signIn" });
+
+  return buildMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/sign-in",
+    keywords: [t("kw1"), t("kw2"), t("kw3"), t("kw4")],
+  });
+}
 
 export default function SignInPage() {
   return (

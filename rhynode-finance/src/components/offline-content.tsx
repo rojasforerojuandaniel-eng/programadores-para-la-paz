@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { CheckCircle2, LayoutDashboard, RefreshCw, WifiOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 
-const OFFLINE_FEATURES = [
-  "Ver tu dashboard y balances cacheados",
-  "Consultar transacciones guardadas",
-  "Revisar facturas previamente cargadas",
-  "Navegar entre cuentas sincronizadas",
-];
+const OFFLINE_FEATURE_KEYS = [
+  "feature1",
+  "feature2",
+  "feature3",
+  "feature4",
+] as const;
 
 export function OfflineContent() {
+  const t = useTranslations("offline");
   const [isRetrying, setIsRetrying] = useState(false);
 
   const handleReload = useCallback(() => {
@@ -37,21 +39,21 @@ export function OfflineContent() {
           </div>
 
           <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">
-            Estás offline
+            {t("heading")}
           </h1>
           <p className="mb-6 max-w-xs text-muted-foreground">
-            Parece que perdiste la conexión a internet. No te preocupes: los datos que ya cargaste en Rhynode siguen disponibles.
+            {t("body")}
           </p>
 
           <div className="mb-8 w-full rounded-xl bg-muted p-4 text-left">
             <p className="mb-3 text-sm font-medium text-foreground">
-              Lo que aún puedes hacer:
+              {t("stillCanTitle")}
             </p>
             <ul className="space-y-2">
-              {OFFLINE_FEATURES.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+              {OFFLINE_FEATURE_KEYS.map((key) => (
+                <li key={key} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
-                  <span>{feature}</span>
+                  <span>{t(key)}</span>
                 </li>
               ))}
             </ul>
@@ -67,13 +69,13 @@ export function OfflineContent() {
               className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} aria-hidden="true" />
-              {isRetrying ? "Reintentando..." : "Reintentar conexión"}
+              {isRetrying ? t("retrying") : t("retry")}
             </Button>
             </div>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link href="/dashboard">
                 <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-                Ir al dashboard
+                {t("goDashboard")}
               </Link>
             </Button>
           </div>

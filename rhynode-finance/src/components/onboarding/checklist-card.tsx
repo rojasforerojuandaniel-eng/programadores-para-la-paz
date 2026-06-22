@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -25,43 +26,28 @@ import {
 const CHECKLIST_ITEMS = [
   {
     id: "complete-profile",
-    label: "Completa tu perfil",
-    description: "Añade tu nombre y configura tu país y moneda.",
     icon: User,
     href: "/dashboard/settings",
-    action: "Configurar",
   },
   {
     id: "connect-bank",
-    label: "Conecta una cuenta bancaria",
-    description: "Empieza a sincronizar tus movimientos (próximamente).",
     icon: Landmark,
     href: "/dashboard/accounts",
-    action: "Conectar",
   },
   {
     id: "create-goal",
-    label: "Crea tu primera meta",
-    description: "Define un objetivo de ahorro o pago.",
     icon: Target,
     href: "/dashboard/personal/goals",
-    action: "Crear meta",
   },
   {
     id: "add-transaction",
-    label: "Añade tu primera transacción",
-    description: "Registra un ingreso o gasto para ver tu panorama.",
     icon: ArrowLeftRight,
     href: "/dashboard/transactions",
-    action: "Añadir",
   },
   {
     id: "explore-dashboard",
-    label: "Explora el dashboard",
-    description: "Conoce tu panorama financiero.",
     icon: LayoutDashboard,
     href: "/dashboard",
-    action: "Explorar",
   },
 ] as const;
 
@@ -80,6 +66,7 @@ export interface ChecklistCardProps {
 }
 
 export function ChecklistCard({ initialItems }: ChecklistCardProps) {
+  const t = useTranslations("onboarding.checklist");
   const [items, setItems] = useState<Record<string, boolean>>({
     ...defaultItems(),
     ...initialItems,
@@ -127,10 +114,10 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(data.error || "No se pudo guardar el progreso.");
+        toast.error(data.error || t("saveError"));
       }
     } catch {
-      toast.error("Error de red. No se pudo guardar el progreso.");
+      toast.error(t("networkError"));
     } finally {
       setPending(false);
     }
@@ -139,19 +126,19 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
   return (
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Activa tu Rhynode</CardTitle>
+        <CardTitle className="text-lg">{t("title")}</CardTitle>
         <CardDescription>
-          Completa estos pasos para sacarle el máximo provecho.
+          {t("subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-foreground">
-              {percentage}% completado
+              {t("progress", { percentage })}
             </span>
             <span className="text-muted-foreground">
-              {done} de {total}
+              {t("doneOfTotal", { done, total })}
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -163,10 +150,11 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
           </div>
         </div>
 
-        <ul className="space-y-2" role="list" aria-label="Pasos de activación">
+        <ul className="space-y-2" role="list" aria-label={t("stepsAriaLabel")}>
           {CHECKLIST_ITEMS.map((item) => {
             const completed = items[item.id] ?? false;
             const Icon = item.icon;
+            const label = t(`items.${item.id}.label`);
             return (
               <li key={item.id}>
                 <div
@@ -183,7 +171,7 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
                     disabled={pending}
                     role="checkbox"
                     aria-checked={completed}
-                    aria-label={`${completed ? "Desmarcar" : "Marcar"} ${item.label}`}
+                    aria-label={`${completed ? t("unmark") : t("mark")} ${label}`}
                     className={cn(
                       "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                       completed
@@ -203,10 +191,10 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
                       )}
                     >
                       <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-                      {item.label}
+                      {label}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {item.description}
+                      {t(`items.${item.id}.description`)}
                     </p>
                   </div>
                   <Button
@@ -216,7 +204,7 @@ export function ChecklistCard({ initialItems }: ChecklistCardProps) {
                     className="h-8 gap-1 px-2 text-xs"
                   >
                     <Link href={item.href}>
-                      {item.action}
+                      {t(`items.${item.id}.action`)}
                       <ChevronRight
                         className="h-3.5 w-3.5"
                         aria-hidden="true"

@@ -3661,6 +3661,44 @@
         "America/Santiago": "Santiago",
         "America/Lima": "Lima"
       }
+    },
+    "checklist": {
+      "title": "Activa tu Rhynode",
+      "subtitle": "Completa estos pasos para sacarle el máximo provecho.",
+      "progress": "{percentage}% completado",
+      "doneOfTotal": "{done} de {total}",
+      "stepsAriaLabel": "Pasos de activación",
+      "mark": "Marcar",
+      "unmark": "Desmarcar",
+      "saveError": "No se pudo guardar el progreso.",
+      "networkError": "Error de red. No se pudo guardar el progreso.",
+      "items": {
+        "complete-profile": {
+          "label": "Completa tu perfil",
+          "description": "Añade tu nombre y configura tu país y moneda.",
+          "action": "Configurar"
+        },
+        "connect-bank": {
+          "label": "Conecta una cuenta bancaria",
+          "description": "Empieza a sincronizar tus movimientos (próximamente).",
+          "action": "Conectar"
+        },
+        "create-goal": {
+          "label": "Crea tu primera meta",
+          "description": "Define un objetivo de ahorro o pago.",
+          "action": "Crear meta"
+        },
+        "add-transaction": {
+          "label": "Añade tu primera transacción",
+          "description": "Registra un ingreso o gasto para ver tu panorama.",
+          "action": "Añadir"
+        },
+        "explore-dashboard": {
+          "label": "Explora el dashboard",
+          "description": "Conoce tu panorama financiero.",
+          "action": "Explorar"
+        }
+      }
     }
   },
   "pay": {
@@ -3707,6 +3745,14 @@
     "canceled": {
       "title": "Pago cancelado",
       "message": "No se realizó ningún cargo. Puedes intentar de nuevo cuando quieras."
+    },
+    "meta": {
+      "title": "Pago seguro",
+      "description": "Realiza tu pago de forma segura con Rhynode. Aceptamos tarjeta vía Stripe y Wompi para Colombia.",
+      "kw1": "pago seguro",
+      "kw2": "Wompi",
+      "kw3": "Stripe",
+      "kw4": "pasarela de pagos Colombia"
     }
   },
   "auth": {
@@ -3717,6 +3763,14 @@
       "kw2": "crear cuenta",
       "kw3": "fintech Colombia",
       "kw4": "finanzas gratis"
+    },
+    "signIn": {
+      "title": "Iniciar sesión",
+      "description": "Accede de forma segura a tu cuenta de Rhynode. Gestiona tus finanzas personales y empresariales desde Colombia.",
+      "kw1": "iniciar sesión",
+      "kw2": "login",
+      "kw3": "autenticación segura",
+      "kw4": "finanzas Colombia"
     }
   },
   "charts": {
@@ -3750,5 +3804,32 @@
         "liabilities": "Pasivos"
       }
     }
+  },
+  "error": {
+    "title": "Algo salió mal",
+    "description": "Ocurrió un error inesperado. Intenta de nuevo o vuelve más tarde.",
+    "rootDescription": "Ocurrió un error inesperado en la aplicación. Intenta de nuevo o vuelve más tarde.",
+    "retry": "Intentar de nuevo",
+    "retryAriaLabel": "Intentar cargar la página de nuevo",
+    "devDetails": "Detalles técnicos (solo desarrollo)"
+  },
+  "offline": {
+    "metaTitle": "Sin conexión",
+    "metaDescription": "Parece que no tienes acceso a internet. Algunas funciones de Rhynode siguen disponibles offline.",
+    "heading": "Estás offline",
+    "body": "Parece que perdiste la conexión a internet. No te preocupes: los datos que ya cargaste en Rhynode siguen disponibles.",
+    "stillCanTitle": "Lo que aún puedes hacer:",
+    "feature1": "Ver tu dashboard y balances cacheados",
+    "feature2": "Consultar transacciones guardadas",
+    "feature3": "Revisar facturas previamente cargadas",
+    "feature4": "Navegar entre cuentas sincronizadas",
+    "retrying": "Reintentando...",
+    "retry": "Reintentar conexión",
+    "goDashboard": "Ir al dashboard"
+  },
+  "theme": {
+    "toggle": "Cambiar tema",
+    "toLight": "Cambiar a modo claro",
+    "toDark": "Cambiar a modo oscuro"
   }
 }
