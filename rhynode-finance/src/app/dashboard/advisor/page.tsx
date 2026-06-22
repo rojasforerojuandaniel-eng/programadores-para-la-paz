@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Brain, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -42,11 +43,13 @@ function generateId() {
 const WARMUP_DURATION = 400;
 
 export default function AdvisorPage() {
+  const t = useTranslations("dashboard.advisor");
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: generateId(),
       role: "assistant",
-      content: "Hola, soy tu asesor financiero. ¿En qué puedo ayudarte hoy?",
+      content: t("greeting"),
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -180,8 +183,7 @@ export default function AdvisorPage() {
         {
           id: generateId(),
           role: "assistant",
-          content:
-            "Lo siento, ocurrió un error al procesar tu mensaje. Inténtalo de nuevo.",
+          content: t("error"),
         },
       ]);
     } finally {
@@ -196,7 +198,7 @@ export default function AdvisorPage() {
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <Link href="/dashboard">
-          <Button variant="ghost" size="icon" aria-label="Volver al dashboard">
+          <Button variant="ghost" size="icon" aria-label={t("back")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -204,8 +206,8 @@ export default function AdvisorPage() {
           <Brain className="h-4 w-4 text-primary" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold">Rhynode AI Advisor</h1>
-          <p className="text-xs text-muted-foreground">Asesor financiero inteligente</p>
+          <h1 className="text-sm font-semibold">{t("title")}</h1>
+          <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -215,7 +217,7 @@ export default function AdvisorPage() {
         className="flex-1 space-y-4 overflow-y-auto p-4"
         role="log"
         aria-live="polite"
-        aria-label="Mensajes del chat"
+        aria-label={t("chatAria")}
       >
         {isWarmup ? (
           <>

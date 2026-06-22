@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Medal,
   Crown,
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { LevelBadge } from "@/components/dashboard/level-badge";
 import { ClientAvatar } from "@/components/dashboard/client-avatar";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
@@ -51,10 +54,16 @@ interface LeaderboardResponse {
   stats: LeaderboardStats;
 }
 
-const periodLabels: Record<Period, string> = {
-  week: "Semanal",
-  month: "Mensual",
-  all: "Histórico",
+const periodKeys: Record<Period, string> = {
+  week: "periods.week",
+  month: "periods.month",
+  all: "periods.all",
+};
+
+const ordinalKeys: Record<1 | 2 | 3, string> = {
+  1: "ordinals.1",
+  2: "ordinals.2",
+  3: "ordinals.3",
 };
 
 function RankBadge({ rank }: { rank: number }) {
@@ -92,6 +101,8 @@ function PodiumPlace({
   entry: LeaderboardEntry;
   place: 1 | 2 | 3;
 }) {
+  const t = useTranslations("dashboard.leaderboard");
+  const locale = useLocale() as Locale;
   const heights = { 1: "h-44", 2: "h-36", 3: "h-32" };
   const gradients = {
     1: "from-yellow-400 via-amber-300 to-yellow-500",
@@ -99,7 +110,6 @@ function PodiumPlace({
     3: "from-amber-600 via-amber-500 to-amber-700",
   };
   const delays = { 1: "0ms", 2: "150ms", 3: "300ms" };
-  const labels = { 1: "1.º", 2: "2.º", 3: "3.º" };
 
   return (
     <div
@@ -116,7 +126,7 @@ function PodiumPlace({
         <div className="absolute inset-0 animate-shimmer rounded-t-2xl opacity-30" />
         <div className="relative z-10">
           <p className="text-2xl font-black text-white drop-shadow-sm">
-            {labels[place]}
+            {t(ordinalKeys[place] as never)}
           </p>
           <ClientAvatar
             name={entry.name}
@@ -126,12 +136,15 @@ function PodiumPlace({
             {entry.name}
           </p>
           <p className="text-xs text-white/90">
-            Nivel {entry.level} · {entry.xp.toLocaleString("es-CO")} XP
+            {t("levelXp", {
+              level: entry.level,
+              xp: formatNumber(entry.xp, locale),
+            })}
           </p>
           {entry.streakDays > 0 && (
             <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white">
               <Flame className="h-3 w-3" aria-hidden="true" />
-              {entry.streakDays} días
+              {t("streakDays", { count: entry.streakDays })}
             </div>
           )}
         </div>
@@ -159,24 +172,26 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
 }
 
 function EngagementStats({ stats }: { stats: LeaderboardStats }) {
+  const t = useTranslations("dashboard.leaderboard");
+  const locale = useLocale() as Locale;
   const items = [
     {
-      label: "Transacciones",
-      value: stats.transactionsCount.toLocaleString("es-CO"),
+      label: t("stats.transactions"),
+      value: formatNumber(stats.transactionsCount, locale),
       icon: Activity,
       color: "text-sky-500",
       bg: "bg-sky-500/10",
     },
     {
-      label: "Usuarios activos",
-      value: stats.activeUsers.toLocaleString("es-CO"),
+      label: t("stats.activeUsers"),
+      value: formatNumber(stats.activeUsers, locale),
       icon: Users,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
-      label: "Racha promedio",
-      value: `${stats.avgStreak} días`,
+      label: t("stats.avgStreak"),
+      value: t("streakDays", { count: stats.avgStreak }),
       icon: Flame,
       color: "text-amber-500",
       bg: "bg-amber-500/10",
@@ -224,6 +239,8 @@ function LeaderboardTable({
   loading: boolean;
   error: string | null;
 }) {
+  const t = useTranslations("dashboard.leaderboard");
+  const locale = useLocale() as Locale;
   const isInTable = myRank
     ? entries.some((e) => e.id === myRank.id)
     : false;
@@ -241,19 +258,19 @@ function LeaderboardTable({
           <EmptyStateCard
             variant="md"
             icon={Medal}
-            title={error ? "No se pudo cargar el leaderboard" : "Sé el primero en ganar XP"}
-            description={error || "Completa acciones en Rhynode para sumar puntos y aparecer en el ranking."}
+            title={error ? t("empty.errorTitle") : t("empty.firstTitle")}
+            description={error || t("empty.description")}
           />
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead scope="col" className="w-16 text-center">Rank</TableHead>
-                  <TableHead scope="col">Jugador</TableHead>
-                  <TableHead scope="col" className="text-right">Nivel</TableHead>
-                  <TableHead scope="col" className="text-right">XP</TableHead>
-                  <TableHead scope="col" className="text-right">Racha</TableHead>
+                  <TableHead scope="col" className="w-16 text-center">{t("rank")}</TableHead>
+                  <TableHead scope="col">{t("player")}</TableHead>
+                  <TableHead scope="col" className="text-right">{t("level")}</TableHead>
+                  <TableHead scope="col" className="text-right">{t("xp")}</TableHead>
+                  <TableHead scope="col" className="text-right">{t("streak")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -287,7 +304,7 @@ function LeaderboardTable({
                         <LevelBadge level={entry.level} />
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        {entry.xp.toLocaleString("es-CO")}
+                        {formatNumber(entry.xp, locale)}
                       </TableCell>
                       <TableCell className="text-right">
                         {entry.streakDays > 0 ? (
@@ -329,8 +346,10 @@ function LeaderboardTable({
                 <div className="text-right">
                   <LevelBadge level={myRank.level} />
                   <p className="text-xs text-muted-foreground">
-                    {myRank.xp.toLocaleString("es-CO")} XP · {myRank.streakDays}{" "}
-                    días racha
+                    {t("myRankSummary", {
+                      xp: formatNumber(myRank.xp, locale),
+                      count: myRank.streakDays,
+                    })}
                   </p>
                 </div>
               </div>
@@ -343,6 +362,8 @@ function LeaderboardTable({
 }
 
 export default function LeaderboardPage() {
+  const t = useTranslations("dashboard.leaderboard");
+  const locale = useLocale() as Locale;
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -354,17 +375,17 @@ export default function LeaderboardPage() {
       setError(null);
       try {
         const res = await fetch(`/api/personal/leaderboard?period=${period}`);
-        if (!res.ok) throw new Error("Error al cargar leaderboard");
+        if (!res.ok) throw new Error(t("errors.load"));
         const json = (await res.json()) as LeaderboardResponse;
         setData(json);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t("errors.unknown"));
       } finally {
         setLoading(false);
       }
     }
     fetchLeaderboard();
-  }, [period]);
+  }, [period, t]);
 
   const top20 = data?.entries.slice(0, 20) ?? [];
   const myRank = data?.myRank;
@@ -373,8 +394,8 @@ export default function LeaderboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="heading-section">Leaderboard</h1>
-          <p className="body-default mt-1">Los usuarios con más XP</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <Tabs
           value={period}
@@ -384,7 +405,7 @@ export default function LeaderboardPage() {
           <TabsList className="grid w-full grid-cols-3 sm:w-auto">
             {( ["week", "month", "all"] as Period[]).map((p) => (
               <TabsTrigger key={p} value={p} className="text-xs sm:text-sm">
-                {periodLabels[p]}
+                {t(periodKeys[p] as never)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -408,19 +429,18 @@ export default function LeaderboardPage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />
-            Tu progreso personal
+            {t("personalProgress.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="body-default text-sm">
-            Revisa tus estadísticas detalladas y compara tu avance semana a
-            semana.
+            {t("personalProgress.description")}
           </p>
           <Link
             href="/dashboard/stats"
             className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Ver mis stats
+            {t("personalProgress.viewStats")}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </CardContent>
