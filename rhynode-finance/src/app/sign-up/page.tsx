@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo-metadata";
+import { getLocale } from "@/lib/locale-server";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Crear cuenta gratis",
-  description:
-    "Regístrate gratis en Rhynode. Controla tu dinero, ahorra con inteligencia y gestiona tu negocio en Colombia. Soporte Wompi y facturación DIAN.",
-  path: "/sign-up",
-  keywords: ["registro", "crear cuenta", "fintech Colombia", "finanzas gratis"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "auth.signUp" });
+
+  return buildMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/sign-up",
+    keywords: [t("kw1"), t("kw2"), t("kw3"), t("kw4")],
+  });
+}
 
 export default function SignUpPage() {
   return (

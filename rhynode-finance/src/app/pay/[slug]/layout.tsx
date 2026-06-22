@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo-metadata";
+import { getLocale } from "@/lib/locale-server";
+import esMessages from "../../../../messages/es.json";
+import enMessages from "../../../../messages/en.json";
 
 export async function generateMetadata({
   params,
@@ -18,10 +23,18 @@ export async function generateMetadata({
   });
 }
 
-export default function PayLayout({
+export default async function PayLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const messages = locale === "en" ? enMessages : esMessages;
+
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {children}
+    </NextIntlClientProvider>
+  );
 }

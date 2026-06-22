@@ -3332,5 +3332,179 @@
     "srEmail": "Correo electrónico",
     "srLinkedIn": "LinkedIn"
   },
-  "stickyCta": "Empezar gratis"
+  "stickyCta": "Empezar gratis",
+  "onboarding": {
+    "flow": {
+      "stepLabels": {
+        "data": "Tus datos",
+        "goals": "Objetivos",
+        "done": "Completado"
+      },
+      "aria": {
+        "progress": "Progreso del onboarding",
+        "modeGroup": "Modo de uso"
+      },
+      "step1": {
+        "title": "Configura tu perfil",
+        "subtitle": "Elige cómo usarás Rhynode y completa tus datos."
+      },
+      "step2": {
+        "title": "Define tu primer objetivo",
+        "subtitle": "Opcional: crea una meta de ahorro para empezar con foco.",
+        "firstGoal": "Primera meta",
+        "nameLabel": "Nombre de la meta",
+        "nameOptional": "(opcional)",
+        "namePlaceholder": "Ej. Vacaciones, fondo de emergencia...",
+        "amountLabel": "Monto objetivo",
+        "amountOptional": "(opcional)",
+        "amountPlaceholder": "Ej. 1000000"
+      },
+      "step3": {
+        "title": "Todo listo",
+        "subtitle": "Revisa tu configuración y entra a tu dashboard.",
+        "selectedMode": "Modo seleccionado",
+        "personalName": "Nombre personal",
+        "business": "Empresa",
+        "taxIdPrefix": "NIT / RFC / CNPJ",
+        "initialGoal": "Meta inicial"
+      },
+      "modes": {
+        "PERSONAL": {
+          "label": "Personal",
+          "description": "Tus finanzas, presupuestos y metas de ahorro."
+        },
+        "BUSINESS": {
+          "label": "Empresa",
+          "description": "Facturación, impuestos y control de tu negocio."
+        },
+        "BOTH": {
+          "label": "Ambas",
+          "description": "Finanzas personales y empresariales en un solo lugar."
+        }
+      },
+      "personalData": {
+        "title": "Datos personales",
+        "nameLabel": "Tu nombre",
+        "namePlaceholder": "Ej. Juan Pérez"
+      },
+      "businessData": {
+        "title": "Datos de la empresa",
+        "nameLabel": "Nombre de la empresa",
+        "namePlaceholder": "Ej. Mi Empresa SAS",
+        "taxIdLabel": "NIT / RFC / CNPJ",
+        "taxIdOptional": "(opcional)",
+        "taxIdPlaceholder": "Ej. 900.123.456-7"
+      },
+      "location": {
+        "title": "Ubicación y moneda",
+        "countryLabel": "País",
+        "countryPlaceholder": "Selecciona un país",
+        "currencyLabel": "Moneda",
+        "currencyPlaceholder": "Moneda",
+        "timezoneLabel": "Zona horaria",
+        "timezonePlaceholder": "Zona"
+      },
+      "actions": {
+        "continue": "Continuar",
+        "back": "Atrás",
+        "saving": "Guardando...",
+        "goDashboard": "Ir al Dashboard"
+      },
+      "footer": {
+        "accept": "Al continuar aceptas los",
+        "terms": "Términos de servicio",
+        "and": "y",
+        "privacy": "Política de privacidad"
+      },
+      "success": {
+        "redirecting": "¡Listo! Redirigiendo a tu dashboard..."
+      },
+      "errors": {
+        "requiredMode": "Selecciona un modo para continuar.",
+        "requiredCountry": "Selecciona un país.",
+        "requiredCurrency": "Selecciona una moneda.",
+        "requiredTimezone": "Selecciona una zona horaria.",
+        "requiredName": "Tu nombre es obligatorio.",
+        "requiredBusinessName": "El nombre de la empresa es obligatorio.",
+        "requiredGoalName": "El nombre de la meta es obligatorio.",
+        "goalAmountMin": "El monto objetivo debe ser mayor a 0.",
+        "reviewData": "Revisa los datos antes de continuar.",
+        "sessionExpired": "Sesión expirada. Inicia sesión de nuevo.",
+        "saveProfile": "Error al guardar tu perfil.",
+        "network": "Error de red. Verifica tu conexión."
+      },
+      "countries": {
+        "CO": "Colombia",
+        "MX": "México",
+        "BR": "Brasil",
+        "AR": "Argentina",
+        "CL": "Chile",
+        "PE": "Perú"
+      },
+      "timezones": {
+        "America/Bogota": "Bogotá",
+        "America/Mexico_City": "Ciudad de México",
+        "America/Sao_Paulo": "São Paulo",
+        "America/Argentina/Buenos_Aires": "Buenos Aires",
+        "America/Santiago": "Santiago",
+        "America/Lima": "Lima"
+      }
+    }
+  },
+  "pay": {
+    "loading": "Cargando link de pago",
+    "back": "Volver al inicio",
+    "retry": "Intentar de nuevo",
+    "amount": "Total a pagar",
+    "paymentsCount": "{current} / {max} pagos",
+    "securePayment": "Pago seguro encriptado",
+    "emailReceipt": "Comprobante por email",
+    "securePaymentsFor": "Pagos seguros para {org}",
+    "stripeRedirecting": "Redirigiendo a Stripe...",
+    "stripePay": "Pagar con tarjeta {amount}",
+    "wompiRedirecting": "Redirigiendo a Wompi...",
+    "wompiPay": "Pagar con Wompi (Colombia)",
+    "termsAccept": "Al pagar, aceptas los términos y condiciones de {org}.",
+    "error": {
+      "load": "Error al cargar",
+      "network": "Error de red",
+      "stripeStart": "Error al iniciar pago con Stripe",
+      "wompiStart": "Error al iniciar pago con Wompi"
+    },
+    "notFound": {
+      "title": "Link no encontrado",
+      "message": "Este link de cobro no existe o está inactivo. Verifica la URL o solicita uno nuevo."
+    },
+    "expired": {
+      "title": "Link expirado",
+      "message": "Este link de cobro ya no está disponible porque su fecha límite ha pasado."
+    },
+    "limit": {
+      "title": "Límite alcanzado",
+      "message": "Este link de cobro ha alcanzado el número máximo de pagos permitidos."
+    },
+    "errorState": {
+      "title": "No pudimos cargar el link"
+    },
+    "success": {
+      "title": "¡Pago exitoso!",
+      "messageWithOrg": "Tu pago a {org} por {amount} ha sido procesado.",
+      "message": "Tu pago ha sido procesado correctamente.",
+      "receiptNote": "Recibirás un comprobante por email en los próximos minutos."
+    },
+    "canceled": {
+      "title": "Pago cancelado",
+      "message": "No se realizó ningún cargo. Puedes intentar de nuevo cuando quieras."
+    }
+  },
+  "auth": {
+    "signUp": {
+      "title": "Crear cuenta gratis",
+      "description": "Regístrate gratis en Rhynode. Controla tu dinero, ahorra con inteligencia y gestiona tu negocio en Colombia. Soporte Wompi y facturación DIAN.",
+      "kw1": "registro",
+      "kw2": "crear cuenta",
+      "kw3": "fintech Colombia",
+      "kw4": "finanzas gratis"
+    }
+  }
 }

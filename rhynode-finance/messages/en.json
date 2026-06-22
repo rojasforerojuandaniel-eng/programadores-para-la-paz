@@ -3332,5 +3332,179 @@
     "srEmail": "Email",
     "srLinkedIn": "LinkedIn"
   },
-  "stickyCta": "Get started"
+  "stickyCta": "Get started",
+  "onboarding": {
+    "flow": {
+      "stepLabels": {
+        "data": "Your details",
+        "goals": "Goals",
+        "done": "Done"
+      },
+      "aria": {
+        "progress": "Onboarding progress",
+        "modeGroup": "Mode of use"
+      },
+      "step1": {
+        "title": "Set up your profile",
+        "subtitle": "Choose how you'll use Rhynode and complete your details."
+      },
+      "step2": {
+        "title": "Set your first goal",
+        "subtitle": "Optional: create a savings goal to start with focus.",
+        "firstGoal": "First goal",
+        "nameLabel": "Goal name",
+        "nameOptional": "(optional)",
+        "namePlaceholder": "E.g. Vacation, emergency fund...",
+        "amountLabel": "Target amount",
+        "amountOptional": "(optional)",
+        "amountPlaceholder": "E.g. 1000000"
+      },
+      "step3": {
+        "title": "All set",
+        "subtitle": "Review your settings and enter your dashboard.",
+        "selectedMode": "Selected mode",
+        "personalName": "Personal name",
+        "business": "Business",
+        "taxIdPrefix": "NIT / RFC / CNPJ",
+        "initialGoal": "Initial goal"
+      },
+      "modes": {
+        "PERSONAL": {
+          "label": "Personal",
+          "description": "Your finances, budgets, and savings goals."
+        },
+        "BUSINESS": {
+          "label": "Business",
+          "description": "Invoicing, taxes, and control of your business."
+        },
+        "BOTH": {
+          "label": "Both",
+          "description": "Personal and business finances in one place."
+        }
+      },
+      "personalData": {
+        "title": "Personal details",
+        "nameLabel": "Your name",
+        "namePlaceholder": "E.g. Jane Doe"
+      },
+      "businessData": {
+        "title": "Business details",
+        "nameLabel": "Business name",
+        "namePlaceholder": "E.g. Acme Inc.",
+        "taxIdLabel": "NIT / RFC / CNPJ",
+        "taxIdOptional": "(optional)",
+        "taxIdPlaceholder": "E.g. 900.123.456-7"
+      },
+      "location": {
+        "title": "Location and currency",
+        "countryLabel": "Country",
+        "countryPlaceholder": "Select a country",
+        "currencyLabel": "Currency",
+        "currencyPlaceholder": "Currency",
+        "timezoneLabel": "Timezone",
+        "timezonePlaceholder": "Zone"
+      },
+      "actions": {
+        "continue": "Continue",
+        "back": "Back",
+        "saving": "Saving...",
+        "goDashboard": "Go to Dashboard"
+      },
+      "footer": {
+        "accept": "By continuing you accept the",
+        "terms": "Terms of service",
+        "and": "and",
+        "privacy": "Privacy policy"
+      },
+      "success": {
+        "redirecting": "All set! Redirecting to your dashboard..."
+      },
+      "errors": {
+        "requiredMode": "Select a mode to continue.",
+        "requiredCountry": "Select a country.",
+        "requiredCurrency": "Select a currency.",
+        "requiredTimezone": "Select a timezone.",
+        "requiredName": "Your name is required.",
+        "requiredBusinessName": "The business name is required.",
+        "requiredGoalName": "The goal name is required.",
+        "goalAmountMin": "The target amount must be greater than 0.",
+        "reviewData": "Please review the data before continuing.",
+        "sessionExpired": "Session expired. Please sign in again.",
+        "saveProfile": "Error saving your profile.",
+        "network": "Network error. Check your connection."
+      },
+      "countries": {
+        "CO": "Colombia",
+        "MX": "Mexico",
+        "BR": "Brazil",
+        "AR": "Argentina",
+        "CL": "Chile",
+        "PE": "Peru"
+      },
+      "timezones": {
+        "America/Bogota": "Bogotá",
+        "America/Mexico_City": "Mexico City",
+        "America/Sao_Paulo": "São Paulo",
+        "America/Argentina/Buenos_Aires": "Buenos Aires",
+        "America/Santiago": "Santiago",
+        "America/Lima": "Lima"
+      }
+    }
+  },
+  "pay": {
+    "loading": "Loading payment link",
+    "back": "Back to home",
+    "retry": "Try again",
+    "amount": "Total to pay",
+    "paymentsCount": "{current} / {max} payments",
+    "securePayment": "Secure encrypted payment",
+    "emailReceipt": "Email receipt",
+    "securePaymentsFor": "Secure payments for {org}",
+    "stripeRedirecting": "Redirecting to Stripe...",
+    "stripePay": "Pay with card {amount}",
+    "wompiRedirecting": "Redirecting to Wompi...",
+    "wompiPay": "Pay with Wompi (Colombia)",
+    "termsAccept": "By paying, you accept the terms and conditions of {org}.",
+    "error": {
+      "load": "Error loading",
+      "network": "Network error",
+      "stripeStart": "Error starting Stripe payment",
+      "wompiStart": "Error starting Wompi payment"
+    },
+    "notFound": {
+      "title": "Link not found",
+      "message": "This payment link does not exist or is inactive. Check the URL or request a new one."
+    },
+    "expired": {
+      "title": "Link expired",
+      "message": "This payment link is no longer available because its deadline has passed."
+    },
+    "limit": {
+      "title": "Limit reached",
+      "message": "This payment link has reached the maximum number of allowed payments."
+    },
+    "errorState": {
+      "title": "We couldn't load the link"
+    },
+    "success": {
+      "title": "Payment successful!",
+      "messageWithOrg": "Your payment to {org} for {amount} has been processed.",
+      "message": "Your payment has been processed correctly.",
+      "receiptNote": "You'll receive an email receipt in the next few minutes."
+    },
+    "canceled": {
+      "title": "Payment canceled",
+      "message": "No charge was made. You can try again whenever you want."
+    }
+  },
+  "auth": {
+    "signUp": {
+      "title": "Create your free account",
+      "description": "Sign up free on Rhynode. Take control of your money, save smartly, and manage your business in Colombia. Wompi support and DIAN invoicing.",
+      "kw1": "sign up",
+      "kw2": "create account",
+      "kw3": "Colombia fintech",
+      "kw4": "free finance app"
+    }
+  }
 }
