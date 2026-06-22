@@ -17,20 +17,33 @@ import enMessages from "../../../messages/en.json";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Dashboard",
-  description:
-    "Gestiona tus finanzas personales y empresariales en Colombia: transacciones, presupuestos, facturas electrónicas, impuestos DIAN, inversiones y asesoría con IA.",
-  path: "/dashboard",
-  keywords: [
-    "dashboard financiero",
-    "finanzas personales",
-    "finanzas empresariales",
-    "gestión financiera Colombia",
-    "contabilidad DIAN",
-    "Wompi",
-  ],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.meta.layout" });
+  return buildMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/dashboard",
+    keywords:
+      locale === "en"
+        ? [
+            "finance dashboard",
+            "personal finance",
+            "business finance",
+            "Colombia finance management",
+            "DIAN accounting",
+            "Wompi",
+          ]
+        : [
+            "dashboard financiero",
+            "finanzas personales",
+            "finanzas empresariales",
+            "gestión financiera Colombia",
+            "contabilidad DIAN",
+            "Wompi",
+          ],
+  });
+}
 
 export default async function DashboardLayout({
   children,
