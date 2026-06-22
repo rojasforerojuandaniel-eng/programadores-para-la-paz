@@ -5,7 +5,8 @@ import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { getLocale, type Locale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -16,10 +17,11 @@ import { TableCell } from "@/components/ui/table";
 import { CreateBudgetDialog, ShareBudgetDialog } from "./create-dialog";
 import { PiggyBank, Receipt, AlertTriangle, Tag } from "lucide-react";
 
-export const metadata = dashboardMetadata(
-  "Presupuestos",
-  "Crea presupuestos mensuales por categoría, compártelos y recibe alertas cuando te acerques al límite."
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.budgets" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 function getBudgetStatus(progress: number) {
   if (progress >= 100) return "EXCEEDED" as const;

@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLocale, type Locale } from "@/lib/locale-server";
 import { formatCurrency as fmtCur, formatDate as fmtDate, formatNumber as fmtNum } from "@/lib/format";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -36,10 +37,11 @@ const InvestmentAllocationChart = dynamic(
   { loading: InvestmentAllocationChartSkeleton }
 );
 
-export const metadata = dashboardMetadata(
-  "Inversiones",
-  "Registra y haz seguimiento de tus inversiones: acciones, bonos, cripto, ETFs y bienes raíces."
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.investments" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 const intlLocale = (locale: Locale): string => (locale === "en" ? "en-US" : "es-CO");
 

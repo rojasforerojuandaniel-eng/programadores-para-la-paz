@@ -2,7 +2,8 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Suspense } from "react";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -14,10 +15,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLocale, type Locale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
 
-export const metadata = dashboardMetadata(
-  "Cuentas",
-  "Administra tus cuentas bancarias, efectivo, tarjetas e inversiones personales en Rhynode."
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.personalAccounts" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 function EmptyState({ t }: { t: (key: string) => string }) {
   return (

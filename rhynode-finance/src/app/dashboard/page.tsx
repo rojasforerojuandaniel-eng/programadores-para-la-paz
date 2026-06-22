@@ -9,7 +9,8 @@ import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { SeedDemoButton } from "@/components/dashboard/seed-demo-button";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import type { TransactionWhereInput } from "@/generated/prisma/models/Transaction";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,10 +56,11 @@ const AntExpenses = dynamic(
   { loading: () => <WidgetLoading /> },
 );
 
-export const metadata = dashboardMetadata(
-  "Resumen",
-  "Visualiza tu salud financiera, KPIs, gastos hormiga, anomalías y progreso de gamificación en Rhynode.",
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 async function ScopeBadge({ scope, locale }: { scope: UserScope; locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "dashboard.home" });

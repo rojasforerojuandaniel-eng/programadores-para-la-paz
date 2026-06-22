@@ -1,1 +1,1 @@
-export { dashboardMetadata } from "./seo-metadata";
+export { dashboardMetadata, dashboardMetadataLocale } from "./seo-metadata";
