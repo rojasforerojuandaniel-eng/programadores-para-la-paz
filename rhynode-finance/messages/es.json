@@ -2790,6 +2790,44 @@
           "hint": "Empieza creando tu primera transacción.",
           "action": "Crear primera transacción"
         }
+      },
+      "business": {
+        "kpis": {
+          "pendingInvoices": "Facturas Pendientes",
+          "monthRevenue": "Ingresos del Mes",
+          "activeClients": "Clientes Activos",
+          "paymentLinks": "Links de Pago Creados"
+        },
+        "quickActions": {
+          "title": "Acciones Rápidas",
+          "createInvoice": "Crear factura",
+          "createPaymentLink": "Crear link de pago",
+          "addClient": "Agregar cliente",
+          "viewReports": "Ver reportes"
+        },
+        "recentInvoices": {
+          "title": "Facturas Recientes",
+          "viewAll": "Ver todas",
+          "defaultClient": "Cliente",
+          "empty": {
+            "title": "Sin facturas",
+            "description": "Crea tu primera factura para empezar a cobrar.",
+            "action": "Crear primera factura"
+          },
+          "statuses": {
+            "DRAFT": "Borrador",
+            "SENT": "Enviada",
+            "PAID": "Pagada",
+            "OVERDUE": "Vencida",
+            "CANCELLED": "Anulada",
+            "PARTIAL": "Parcial"
+          }
+        },
+        "revenue": {
+          "title": "Ingresos Mensuales",
+          "summary": "Ingresos mensuales últimos {months} meses. Total {total}.",
+          "totalLabel": "Total últimos {months} meses: {total}"
+        }
       }
     },
     "commandPalette": {

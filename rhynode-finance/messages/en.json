@@ -2790,6 +2790,44 @@
           "hint": "Start by creating your first transaction.",
           "action": "Create first transaction"
         }
+      },
+      "business": {
+        "kpis": {
+          "pendingInvoices": "Pending Invoices",
+          "monthRevenue": "Month Revenue",
+          "activeClients": "Active Clients",
+          "paymentLinks": "Payment Links Created"
+        },
+        "quickActions": {
+          "title": "Quick Actions",
+          "createInvoice": "Create invoice",
+          "createPaymentLink": "Create payment link",
+          "addClient": "Add client",
+          "viewReports": "View reports"
+        },
+        "recentInvoices": {
+          "title": "Recent Invoices",
+          "viewAll": "View all",
+          "defaultClient": "Client",
+          "empty": {
+            "title": "No invoices",
+            "description": "Create your first invoice to start billing.",
+            "action": "Create first invoice"
+          },
+          "statuses": {
+            "DRAFT": "Draft",
+            "SENT": "Sent",
+            "PAID": "Paid",
+            "OVERDUE": "Overdue",
+            "CANCELLED": "Cancelled",
+            "PARTIAL": "Partial"
+          }
+        },
+        "revenue": {
+          "title": "Monthly Revenue",
+          "summary": "Monthly revenue last {months} months. Total {total}.",
+          "totalLabel": "Total last {months} months: {total}"
+        }
       }
     },
     "commandPalette": {

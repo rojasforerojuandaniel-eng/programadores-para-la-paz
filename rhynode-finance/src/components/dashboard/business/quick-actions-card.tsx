@@ -8,6 +8,8 @@ import {
   Users,
   BarChart3,
 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
 
 interface QuickActionsCardProps {
   className?: string;
@@ -15,34 +17,38 @@ interface QuickActionsCardProps {
 
 const actions = [
   {
-    label: "Crear factura",
+    labelKey: "business.quickActions.createInvoice",
     href: "/dashboard/invoices",
     icon: FileText,
   },
   {
-    label: "Crear link de pago",
+    labelKey: "business.quickActions.createPaymentLink",
     href: "/dashboard/payment-links",
     icon: Link2,
   },
   {
-    label: "Agregar cliente",
+    labelKey: "business.quickActions.addClient",
     href: "/dashboard/clients",
     icon: Users,
   },
   {
-    label: "Ver reportes",
+    labelKey: "business.quickActions.viewReports",
     href: "/dashboard/stats",
     icon: BarChart3,
   },
 ];
 
-export function QuickActionsCard({ className }: QuickActionsCardProps) {
+export async function QuickActionsCard({ className }: QuickActionsCardProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
+
   return (
     <Card className={cn("surface-elevated-2", className)}>
       <CardHeader>
         <CardTitle className="heading-card flex items-center gap-2">
           <BarChart3 className="h-4 w-4" aria-hidden="true" />
-          Acciones Rápidas
+          {t("business.quickActions.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -56,7 +62,7 @@ export function QuickActionsCard({ className }: QuickActionsCardProps) {
             >
               <Link href={action.href}>
                 <action.icon className="h-4 w-4" aria-hidden="true" />
-                {action.label}
+                {t(action.labelKey as never)}
               </Link>
             </Button>
           ))}
