@@ -2,6 +2,7 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { getLocale } from "@/lib/locale-server";
 
 interface Anomaly {
   category: string;
@@ -34,6 +35,8 @@ export const GET = withRateLimit(
       });
     }
 
+    const locale = await getLocale();
+    const isEn = locale === "en";
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -69,7 +72,7 @@ export const GET = withRateLimit(
     const sumByCategory = (txs: typeof transactions) => {
       const map = new Map<string, number>();
       for (const t of txs) {
-        const cat = t.category ?? "Sin categoría";
+        const cat = t.category ?? (isEn ? "Uncategorized" : "Sin categoría");
         map.set(cat, (map.get(cat) ?? 0) + decimalToNumber(t.amount));
       }
       return map;

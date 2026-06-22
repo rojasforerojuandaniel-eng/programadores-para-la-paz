@@ -3532,6 +3532,10 @@
   },
   "stickyCta": "Empezar gratis",
   "onboarding": {
+    "meta": {
+      "title": "Configura tu cuenta",
+      "description": "Completa tu perfil en Rhynode y empieza a gestionar tus finanzas personales o empresariales en minutos. Configurado para Colombia."
+    },
     "flow": {
       "stepLabels": {
         "data": "Tus datos",
@@ -3541,6 +3545,16 @@
       "aria": {
         "progress": "Progreso del onboarding",
         "modeGroup": "Modo de uso"
+      },
+      "modeStep": {
+        "title": "¿Para qué usarás Rhynode?"
+      },
+      "form": {
+        "title": "Configura tu empresa",
+        "subtitle": "Completa estos datos para empezar a facturar en menos de 2 minutos.",
+        "basicTitle": "Datos básicos",
+        "successToast": "¡Empresa configurada! Redirigiendo al dashboard...",
+        "saveError": "Error al guardar. Intenta de nuevo."
       },
       "step1": {
         "title": "Configura tu perfil",

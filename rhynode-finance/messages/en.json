@@ -3532,6 +3532,10 @@
   },
   "stickyCta": "Get started",
   "onboarding": {
+    "meta": {
+      "title": "Set up your account",
+      "description": "Complete your Rhynode profile and start managing your personal or business finances in minutes. Built for Colombia."
+    },
     "flow": {
       "stepLabels": {
         "data": "Your details",
@@ -3541,6 +3545,16 @@
       "aria": {
         "progress": "Onboarding progress",
         "modeGroup": "Mode of use"
+      },
+      "modeStep": {
+        "title": "What will you use Rhynode for?"
+      },
+      "form": {
+        "title": "Set up your business",
+        "subtitle": "Fill in these details to start invoicing in under 2 minutes.",
+        "basicTitle": "Basic details",
+        "successToast": "Business configured! Redirecting to dashboard...",
+        "saveError": "Error saving. Try again."
       },
       "step1": {
         "title": "Set up your profile",

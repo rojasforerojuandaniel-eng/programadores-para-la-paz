@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +17,20 @@ import {
 import { Building2, Globe, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+const COUNTRY_CODES = ["CO", "MX", "BR", "AR", "CL", "PE"] as const;
+const CURRENCIES = ["COP", "MXN", "BRL", "ARS", "CLP", "PEN", "USD"] as const;
+const TIMEZONES = [
+  "America/Bogota",
+  "America/Mexico_City",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "America/Santiago",
+  "America/Lima",
+] as const;
+
 export default function OnboardingForm() {
   const router = useRouter();
+  const t = useTranslations("onboarding.flow");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -30,7 +43,7 @@ export default function OnboardingForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error("El nombre de la empresa es obligatorio.");
+      toast.error(t("errors.requiredBusinessName"));
       return;
     }
 
@@ -43,17 +56,17 @@ export default function OnboardingForm() {
       });
 
       if (res.ok) {
-        toast.success("¡Empresa configurada! Redirigiendo al dashboard...");
+        toast.success(t("form.successToast"));
         router.push("/dashboard");
       } else if (res.status === 401) {
-        toast.error("Sesión expirada. Inicia sesión de nuevo.");
+        toast.error(t("errors.sessionExpired"));
         router.push("/sign-in");
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Error al guardar. Intenta de nuevo.");
+        toast.error(data.error || t("form.saveError"));
       }
     } catch {
-      toast.error("Error de red. Verifica tu conexión.");
+      toast.error(t("errors.network"));
     } finally {
       setLoading(false);
     }
@@ -69,10 +82,8 @@ export default function OnboardingForm() {
             </div>
             <span className="text-lg font-semibold tracking-tight text-foreground">Rhynode</span>
           </div>
-          <h1 className="heading-section mt-4">Configura tu empresa</h1>
-          <p className="body-default mt-1 text-muted-foreground">
-            Completa estos datos para empezar a facturar en menos de 2 minutos.
-          </p>
+          <h1 className="heading-section mt-4">{t("form.title")}</h1>
+          <p className="body-default mt-1 text-muted-foreground">{t("form.subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -80,27 +91,27 @@ export default function OnboardingForm() {
             <CardHeader>
               <CardTitle className="heading-card flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
-                Datos básicos
+                {t("form.basicTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="org-name">Nombre de la empresa *</Label>
+                <Label htmlFor="org-name">{t("businessData.nameLabel")} *</Label>
                 <Input
                   id="org-name"
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Ej. Mi Empresa SAS"
+                  placeholder={t("businessData.namePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="org-taxId">NIT / RFC / CNPJ</Label>
+                <Label htmlFor="org-taxId">{t("businessData.taxIdLabel")}</Label>
                 <Input
                   id="org-taxId"
                   value={form.taxId}
                   onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                  placeholder="900.123.456-7"
+                  placeholder={t("businessData.taxIdPlaceholder")}
                 />
               </div>
             </CardContent>
@@ -110,13 +121,13 @@ export default function OnboardingForm() {
             <CardHeader>
               <CardTitle className="heading-card flex items-center gap-2">
                 <Globe className="h-5 w-5 text-primary" />
-                Ubicación y moneda
+                {t("location.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="org-country">País</Label>
+                  <Label htmlFor="org-country">{t("location.countryLabel")}</Label>
                   <Select
                     value={form.country}
                     onValueChange={(v) => setForm({ ...form, country: v })}
@@ -125,17 +136,16 @@ export default function OnboardingForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CO">Colombia</SelectItem>
-                      <SelectItem value="MX">México</SelectItem>
-                      <SelectItem value="BR">Brasil</SelectItem>
-                      <SelectItem value="AR">Argentina</SelectItem>
-                      <SelectItem value="CL">Chile</SelectItem>
-                      <SelectItem value="PE">Perú</SelectItem>
+                      {COUNTRY_CODES.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {t(`countries.${code}` as never)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="org-currency">Moneda</Label>
+                  <Label htmlFor="org-currency">{t("location.currencyLabel")}</Label>
                   <Select
                     value={form.currency}
                     onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -144,18 +154,16 @@ export default function OnboardingForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="COP">COP</SelectItem>
-                      <SelectItem value="MXN">MXN</SelectItem>
-                      <SelectItem value="BRL">BRL</SelectItem>
-                      <SelectItem value="ARS">ARS</SelectItem>
-                      <SelectItem value="CLP">CLP</SelectItem>
-                      <SelectItem value="PEN">PEN</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
+                      {CURRENCIES.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {code}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="org-timezone">Zona horaria</Label>
+                  <Label htmlFor="org-timezone">{t("location.timezoneLabel")}</Label>
                   <Select
                     value={form.timezone}
                     onValueChange={(v) => setForm({ ...form, timezone: v })}
@@ -164,12 +172,11 @@ export default function OnboardingForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="America/Bogota">Bogotá</SelectItem>
-                      <SelectItem value="America/Mexico_City">CDMX</SelectItem>
-                      <SelectItem value="America/Sao_Paulo">São Paulo</SelectItem>
-                      <SelectItem value="America/Argentina/Buenos_Aires">Buenos Aires</SelectItem>
-                      <SelectItem value="America/Santiago">Santiago</SelectItem>
-                      <SelectItem value="America/Lima">Lima</SelectItem>
+                      {TIMEZONES.map((zone) => (
+                        <SelectItem key={zone} value={zone}>
+                          {t(`timezones.${zone}` as never)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -181,11 +188,11 @@ export default function OnboardingForm() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Guardando...
+                {t("actions.saving")}
               </>
             ) : (
               <>
-                Ir al Dashboard
+                {t("actions.goDashboard")}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
