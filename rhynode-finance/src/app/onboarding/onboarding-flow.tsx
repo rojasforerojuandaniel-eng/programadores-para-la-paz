@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,16 +33,21 @@ import { cn } from "@/lib/utils";
 import type { UserScope } from "@/lib/scope";
 import { canAccessPersonal } from "@/lib/scope";
 import { trackEvent } from "@/lib/analytics";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { z } from "zod";
 
-const COUNTRY_OPTIONS = [
-  { value: "CO", label: "Colombia" },
-  { value: "MX", label: "México" },
-  { value: "BR", label: "Brasil" },
-  { value: "AR", label: "Argentina" },
-  { value: "CL", label: "Chile" },
-  { value: "PE", label: "Perú" },
+type TranslationFn = ReturnType<typeof useTranslations>;
+
+const COUNTRY_VALUES = [
+  "CO",
+  "MX",
+  "BR",
+  "AR",
+  "CL",
+  "PE",
 ] as const;
+type CountryValue = (typeof COUNTRY_VALUES)[number];
 
 const CURRENCY_OPTIONS = [
   { value: "COP", label: "COP" },
@@ -53,14 +59,43 @@ const CURRENCY_OPTIONS = [
   { value: "USD", label: "USD" },
 ] as const;
 
-const TIMEZONE_OPTIONS = [
-  { value: "America/Bogota", label: "Bogotá" },
-  { value: "America/Mexico_City", label: "Ciudad de México" },
-  { value: "America/Sao_Paulo", label: "São Paulo" },
-  { value: "America/Argentina/Buenos_Aires", label: "Buenos Aires" },
-  { value: "America/Santiago", label: "Santiago" },
-  { value: "America/Lima", label: "Lima" },
+const TIMEZONE_VALUES = [
+  "America/Bogota",
+  "America/Mexico_City",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "America/Santiago",
+  "America/Lima",
 ] as const;
+type TimezoneValue = (typeof TIMEZONE_VALUES)[number];
+
+const COUNTRY_LABEL_KEYS: Record<CountryValue, string> = {
+  CO: "countries.CO",
+  MX: "countries.MX",
+  BR: "countries.BR",
+  AR: "countries.AR",
+  CL: "countries.CL",
+  PE: "countries.PE",
+};
+
+const TIMEZONE_LABEL_KEYS: Record<TimezoneValue, string> = {
+  "America/Bogota": "timezones.America/Bogota",
+  "America/Mexico_City": "timezones.America/Mexico_City",
+  "America/Sao_Paulo": "timezones.America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires": "timezones.America/Argentina/Buenos_Aires",
+  "America/Santiago": "timezones.America/Santiago",
+  "America/Lima": "timezones.America/Lima",
+};
+
+function countryLabel(value: string, t: TranslationFn): string {
+  const key = COUNTRY_LABEL_KEYS[value as CountryValue];
+  return key ? t(key) : value;
+}
+
+function timezoneLabel(value: string, t: TranslationFn): string {
+  const key = TIMEZONE_LABEL_KEYS[value as TimezoneValue];
+  return key ? t(key) : value;
+}
 
 const LOCALE_MAP: Record<
   string,
@@ -79,31 +114,43 @@ const LOCALE_MAP: Record<
   US: { country: "US", currency: "USD", timezone: "America/New_York" },
 };
 
-const MODES: {
-  id: UserScope;
+type ModeId = UserScope;
+
+const MODE_IDS: ModeId[] = ["PERSONAL", "BUSINESS", "BOTH"];
+
+const MODE_ICONS: Record<ModeId, typeof User> = {
+  PERSONAL: User,
+  BUSINESS: Building2,
+  BOTH: Briefcase,
+};
+
+const MODE_LABEL_KEYS: Record<ModeId, string> = {
+  PERSONAL: "modes.PERSONAL.label",
+  BUSINESS: "modes.BUSINESS.label",
+  BOTH: "modes.BOTH.label",
+};
+
+const MODE_DESC_KEYS: Record<ModeId, string> = {
+  PERSONAL: "modes.PERSONAL.description",
+  BUSINESS: "modes.BUSINESS.description",
+  BOTH: "modes.BOTH.description",
+};
+
+interface ModeOption {
+  id: ModeId;
   label: string;
   description: string;
   icon: typeof User;
-}[] = [
-  {
-    id: "PERSONAL",
-    label: "Personal",
-    description: "Tus finanzas, presupuestos y metas de ahorro.",
-    icon: User,
-  },
-  {
-    id: "BUSINESS",
-    label: "Empresa",
-    description: "Facturación, impuestos y control de tu negocio.",
-    icon: Building2,
-  },
-  {
-    id: "BOTH",
-    label: "Ambas",
-    description: "Finanzas personales y empresariales en un solo lugar.",
-    icon: Briefcase,
-  },
-];
+}
+
+function buildModes(t: TranslationFn): ModeOption[] {
+  return MODE_IDS.map((id) => ({
+    id,
+    label: t(MODE_LABEL_KEYS[id]),
+    description: t(MODE_DESC_KEYS[id]),
+    icon: MODE_ICONS[id],
+  }));
+}
 
 function detectLocale() {
   const lang =
@@ -112,58 +159,60 @@ function detectLocale() {
   return LOCALE_MAP[region] || LOCALE_MAP.CO;
 }
 
-const initialLocale = detectLocale();
+function buildStep1Schema(t: TranslationFn) {
+  return z
+    .object({
+      mode: z.enum(["PERSONAL", "BUSINESS", "BOTH"], {
+        message: t("errors.requiredMode"),
+      }),
+      personalName: z.string(),
+      businessName: z.string(),
+      taxId: z.string(),
+      country: z.enum(["CO", "MX", "BR", "AR", "CL", "PE"], {
+        message: t("errors.requiredCountry"),
+      }),
+      currency: z.enum(["COP", "MXN", "BRL", "ARS", "CLP", "PEN", "USD"], {
+        message: t("errors.requiredCurrency"),
+      }),
+      timezone: z.string().min(1, t("errors.requiredTimezone")),
+    })
+    .superRefine((data, ctx) => {
+      if (data.mode === "PERSONAL" || data.mode === "BOTH") {
+        if (!data.personalName.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.too_small,
+            type: "string",
+            origin: "string",
+            minimum: 1,
+            inclusive: true,
+            message: t("errors.requiredName"),
+            path: ["personalName"],
+          });
+        }
+      }
+      if (data.mode === "BUSINESS" || data.mode === "BOTH") {
+        if (!data.businessName.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.too_small,
+            type: "string",
+            origin: "string",
+            minimum: 1,
+            inclusive: true,
+            message: t("errors.requiredBusinessName"),
+            path: ["businessName"],
+          });
+        }
+      }
+    });
+}
 
-const step1Schema = z
-  .object({
-    mode: z.enum(["PERSONAL", "BUSINESS", "BOTH"], {
-      message: "Selecciona un modo para continuar.",
-    }),
-    personalName: z.string(),
-    businessName: z.string(),
-    taxId: z.string(),
-    country: z.enum(["CO", "MX", "BR", "AR", "CL", "PE"], {
-      message: "Selecciona un país.",
-    }),
-    currency: z.enum(["COP", "MXN", "BRL", "ARS", "CLP", "PEN", "USD"], {
-      message: "Selecciona una moneda.",
-    }),
-    timezone: z.string().min(1, "Selecciona una zona horaria."),
-  })
-  .superRefine((data, ctx) => {
-    if (data.mode === "PERSONAL" || data.mode === "BOTH") {
-      if (!data.personalName.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.too_small,
-          type: "string",
-          origin: "string",
-          minimum: 1,
-          inclusive: true,
-          message: "Tu nombre es obligatorio.",
-          path: ["personalName"],
-        });
-      }
-    }
-    if (data.mode === "BUSINESS" || data.mode === "BOTH") {
-      if (!data.businessName.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.too_small,
-          type: "string",
-          origin: "string",
-          minimum: 1,
-          inclusive: true,
-          message: "El nombre de la empresa es obligatorio.",
-          path: ["businessName"],
-        });
-      }
-    }
+function buildGoalSchema(t: TranslationFn) {
+  return z.object({
+    name: z.string().min(1, t("errors.requiredGoalName")),
+    targetAmount: z.number().min(1, t("errors.goalAmountMin")),
+    currency: z.string().min(1, t("errors.requiredCurrency")),
   });
-
-const goalSchema = z.object({
-  name: z.string().min(1, "El nombre de la meta es obligatorio."),
-  targetAmount: z.number().min(1, "El monto objetivo debe ser mayor a 0."),
-  currency: z.string().min(1, "Selecciona una moneda."),
-});
+}
 
 function fieldError(
   errors: Record<string, string[] | undefined>,
@@ -194,20 +243,27 @@ function StepPanel({ children }: { children: React.ReactNode }) {
   );
 }
 
+const STEP_LABEL_KEYS = ["stepLabels.data", "stepLabels.goals", "stepLabels.done"] as const;
+
 export default function OnboardingFlow() {
   const router = useRouter();
+  const t = useTranslations("onboarding.flow");
+  const locale = useLocale() as Locale;
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [mode, setMode] = useState<UserScope | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[] | undefined>>({});
 
-  const [form, setForm] = useState({
-    personalName: "",
-    businessName: "",
-    taxId: "",
-    country: initialLocale.country,
-    currency: initialLocale.currency,
-    timezone: initialLocale.timezone,
+  const [form, setForm] = useState(() => {
+    const detected = detectLocale();
+    return {
+      personalName: "",
+      businessName: "",
+      taxId: "",
+      country: detected.country,
+      currency: detected.currency,
+      timezone: detected.timezone,
+    };
   });
 
   const [goal, setGoal] = useState<{
@@ -217,6 +273,10 @@ export default function OnboardingFlow() {
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const modeGroupRef = useRef<HTMLDivElement>(null);
+
+  const modes = buildModes(t);
+  const step1Schema = buildStep1Schema(t);
+  const goalSchema = buildGoalSchema(t);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -247,24 +307,24 @@ export default function OnboardingFlow() {
   }
 
   function handleModeKeyDown(e: React.KeyboardEvent) {
-    const currentIndex = MODES.findIndex((m) => m.id === mode);
+    const currentIndex = modes.findIndex((m) => m.id === mode);
     let nextIndex = currentIndex;
     if (e.key === "ArrowDown" || e.key === "ArrowRight") {
       e.preventDefault();
-      nextIndex = currentIndex < MODES.length - 1 ? currentIndex + 1 : 0;
+      nextIndex = currentIndex < modes.length - 1 ? currentIndex + 1 : 0;
     } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
       e.preventDefault();
-      nextIndex = currentIndex > 0 ? currentIndex - 1 : MODES.length - 1;
+      nextIndex = currentIndex > 0 ? currentIndex - 1 : modes.length - 1;
     } else if (e.key === "Home") {
       e.preventDefault();
       nextIndex = 0;
     } else if (e.key === "End") {
       e.preventDefault();
-      nextIndex = MODES.length - 1;
+      nextIndex = modes.length - 1;
     } else {
       return;
     }
-    const targetMode = MODES[nextIndex];
+    const targetMode = modes[nextIndex];
     if (targetMode && targetMode.id !== mode) {
       handleSelectMode(targetMode.id);
     }
@@ -335,12 +395,12 @@ export default function OnboardingFlow() {
     const step1Errors = validateStep1();
     const step2Errors = validateStep2();
     if (step1Errors || step2Errors) {
-      toast.error("Revisa los datos antes de continuar.");
+      toast.error(t("errors.reviewData"));
       return;
     }
 
     if (!mode) {
-      toast.error("Selecciona un modo para continuar.");
+      toast.error(t("errors.requiredMode"));
       return;
     }
 
@@ -365,14 +425,14 @@ export default function OnboardingFlow() {
 
       if (!orgRes.ok) {
         if (orgRes.status === 401) {
-          toast.error("Sesión expirada. Inicia sesión de nuevo.");
+          toast.error(t("errors.sessionExpired"));
           router.push("/sign-in");
           return;
         }
         const data = (await orgRes.json().catch(() => ({}))) as {
           error?: string;
         };
-        toast.error(data.error || "Error al guardar tu perfil.");
+        toast.error(data.error || t("errors.saveProfile"));
         return;
       }
 
@@ -420,16 +480,16 @@ export default function OnboardingFlow() {
         goalCreated,
       });
 
-      toast.success("¡Listo! Redirigiendo a tu dashboard...");
+      toast.success(t("success.redirecting"));
       router.push("/dashboard/personal");
     } catch {
-      toast.error("Error de red. Verifica tu conexión.");
+      toast.error(t("errors.network"));
     } finally {
       setLoading(false);
     }
   }
 
-  const stepLabels = ["Tus datos", "Objetivos", "Completado"];
+  const stepLabels = STEP_LABEL_KEYS.map((key) => t(key));
   const totalSteps = 3;
 
   return (
@@ -447,7 +507,7 @@ export default function OnboardingFlow() {
             </div>
 
             <nav
-              aria-label="Progreso del onboarding"
+              aria-label={t("aria.progress")}
               className="mx-auto mt-4 flex max-w-xs items-center"
             >
               <ol className="flex w-full items-center justify-between">
@@ -515,10 +575,10 @@ export default function OnboardingFlow() {
                     tabIndex={-1}
                     className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
                   >
-                    Configura tu perfil
+                    {t("step1.title")}
                   </h1>
                   <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-                    Elige cómo usarás Rhynode y completa tus datos.
+                    {t("step1.subtitle")}
                   </p>
                 </div>
 
@@ -528,7 +588,7 @@ export default function OnboardingFlow() {
                   tabIndex={-1}
                   role="radiogroup"
                   aria-required="true"
-                  aria-label="Modo de uso"
+                  aria-label={t("aria.modeGroup")}
                   aria-invalid={errors.mode ? true : undefined}
                   aria-describedby={
                     errors.mode ? "mode-error" : undefined
@@ -536,7 +596,7 @@ export default function OnboardingFlow() {
                   className="space-y-3"
                   onKeyDown={handleModeKeyDown}
                 >
-                  {MODES.map((m, idx) => {
+                  {modes.map((m, idx) => {
                     const Icon = m.icon;
                     const selected = mode === m.id;
                     return (
@@ -610,11 +670,11 @@ export default function OnboardingFlow() {
                           className="h-4 w-4 text-primary"
                           aria-hidden="true"
                         />
-                        Datos personales
+                        {t("personalData.title")}
                       </h2>
                       <div className="space-y-2">
                         <Label htmlFor="personal-name">
-                          Tu nombre{" "}
+                          {t("personalData.nameLabel")}{" "}
                           <span className="text-destructive" aria-hidden="true">
                             *
                           </span>
@@ -628,7 +688,7 @@ export default function OnboardingFlow() {
                               personalName: e.target.value,
                             }))
                           }
-                          placeholder="Ej. Juan Pérez"
+                          placeholder={t("personalData.namePlaceholder")}
                           aria-required="true"
                           aria-invalid={errors.personalName ? true : undefined}
                           aria-describedby={
@@ -658,11 +718,11 @@ export default function OnboardingFlow() {
                           className="h-4 w-4 text-primary"
                           aria-hidden="true"
                         />
-                        Datos de la empresa
+                        {t("businessData.title")}
                       </h2>
                       <div className="space-y-2">
                         <Label htmlFor="business-name">
-                          Nombre de la empresa{" "}
+                          {t("businessData.nameLabel")}{" "}
                           <span className="text-destructive" aria-hidden="true">
                             *
                           </span>
@@ -676,7 +736,7 @@ export default function OnboardingFlow() {
                               businessName: e.target.value,
                             }))
                           }
-                          placeholder="Ej. Mi Empresa SAS"
+                          placeholder={t("businessData.namePlaceholder")}
                           aria-required="true"
                           aria-invalid={errors.businessName ? true : undefined}
                           aria-describedby={
@@ -698,8 +758,10 @@ export default function OnboardingFlow() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="tax-id">
-                          NIT / RFC / CNPJ{" "}
-                          <span className="text-muted-foreground">(opcional)</span>
+                          {t("businessData.taxIdLabel")}{" "}
+                          <span className="text-muted-foreground">
+                            {t("businessData.taxIdOptional")}
+                          </span>
                         </Label>
                         <Input
                           id="tax-id"
@@ -710,7 +772,7 @@ export default function OnboardingFlow() {
                               taxId: e.target.value,
                             }))
                           }
-                          placeholder="Ej. 900.123.456-7"
+                          placeholder={t("businessData.taxIdPlaceholder")}
                           className="h-12"
                         />
                       </div>
@@ -725,11 +787,11 @@ export default function OnboardingFlow() {
                         className="h-4 w-4 text-primary"
                         aria-hidden="true"
                       />
-                      Ubicación y moneda
+                      {t("location.title")}
                     </h2>
                     <div className="space-y-2">
                       <Label htmlFor="country">
-                        País{" "}
+                        {t("location.countryLabel")}{" "}
                         <span className="text-destructive" aria-hidden="true">*</span>
                       </Label>
                       <Select
@@ -745,12 +807,12 @@ export default function OnboardingFlow() {
                           }
                           className="h-12"
                         >
-                          <SelectValue placeholder="Selecciona un país" />
+                          <SelectValue placeholder={t("location.countryPlaceholder")} />
                         </SelectTrigger>
                         <SelectContent>
-                          {COUNTRY_OPTIONS.map((c) => (
-                            <SelectItem key={c.value} value={c.value}>
-                              {c.label}
+                          {COUNTRY_VALUES.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {countryLabel(c, t)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -768,7 +830,7 @@ export default function OnboardingFlow() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="currency">
-                          Moneda{" "}
+                          {t("location.currencyLabel")}{" "}
                           <span className="text-destructive" aria-hidden="true">*</span>
                         </Label>
                         <Select
@@ -786,7 +848,7 @@ export default function OnboardingFlow() {
                             }
                             className="h-12"
                           >
-                            <SelectValue placeholder="Moneda" />
+                            <SelectValue placeholder={t("location.currencyPlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
                             {CURRENCY_OPTIONS.map((c) => (
@@ -808,7 +870,7 @@ export default function OnboardingFlow() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="timezone">
-                          Zona horaria{" "}
+                          {t("location.timezoneLabel")}{" "}
                           <span className="text-destructive" aria-hidden="true">*</span>
                         </Label>
                         <Select
@@ -826,12 +888,12 @@ export default function OnboardingFlow() {
                             }
                             className="h-12"
                           >
-                            <SelectValue placeholder="Zona" />
+                            <SelectValue placeholder={t("location.timezonePlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {TIMEZONE_OPTIONS.map((t) => (
-                              <SelectItem key={t.value} value={t.value}>
-                                {t.label}
+                            {TIMEZONE_VALUES.map((tz) => (
+                              <SelectItem key={tz} value={tz}>
+                                {timezoneLabel(tz, t)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -857,7 +919,7 @@ export default function OnboardingFlow() {
                   onClick={handleContinueToStep2}
                   className="h-12 w-full gap-2 text-base"
                 >
-                  Continuar
+                  {t("actions.continue")}
                   <ArrowRight className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </section>
@@ -874,11 +936,11 @@ export default function OnboardingFlow() {
                     tabIndex={-1}
                     className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
                   >
-                    Define tu primer objetivo
+                    {t("step2.title")}
                   </h1>
                   <p className="mt-2 text-sm text-muted-foreground sm:text-base"
->
-                    Opcional: crea una meta de ahorro para empezar con foco.
+                  >
+                    {t("step2.subtitle")}
                   </p>
                 </div>
 
@@ -890,14 +952,14 @@ export default function OnboardingFlow() {
                         aria-hidden="true"
                       />
                       <h2 className="text-sm font-semibold text-foreground">
-                        Primera meta
+                        {t("step2.firstGoal")}
                       </h2>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="goal-name">
-                        Nombre de la meta{" "}
+                        {t("step2.nameLabel")}{" "}
                         <span className="text-muted-foreground">
-                          (opcional)
+                          {t("step2.nameOptional")}
                         </span>
                       </Label>
                       <Input
@@ -910,7 +972,7 @@ export default function OnboardingFlow() {
                               : { name: e.target.value, targetAmount: "" },
                           )
                         }
-                        placeholder="Ej. Vacaciones, fondo de emergencia..."
+                        placeholder={t("step2.namePlaceholder")}
                         aria-invalid={errors.goalName ? true : undefined}
                         aria-describedby={
                           errors.goalName ? "goal-name-error" : undefined
@@ -929,9 +991,9 @@ export default function OnboardingFlow() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="goal-amount">
-                        Monto objetivo{" "}
+                        {t("step2.amountLabel")}{" "}
                         <span className="text-muted-foreground">
-                          (opcional)
+                          {t("step2.amountOptional")}
                         </span>
                       </Label>
                       <div className="flex items-center gap-2">
@@ -947,7 +1009,7 @@ export default function OnboardingFlow() {
                                 : { name: "", targetAmount: e.target.value },
                             )
                           }
-                          placeholder="Ej. 1000000"
+                          placeholder={t("step2.amountPlaceholder")}
                           aria-invalid={errors.goalAmount ? true : undefined}
                           aria-describedby={
                             errors.goalAmount
@@ -983,7 +1045,7 @@ export default function OnboardingFlow() {
                     className="h-12 w-full gap-2 text-base sm:w-auto"
                   >
                     <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-                    Atrás
+                    {t("actions.back")}
                   </Button>
                   <Button
                     type="button"
@@ -992,7 +1054,7 @@ export default function OnboardingFlow() {
                     onClick={handleContinueToStep3}
                     className="h-12 w-full gap-2 text-base"
                   >
-                    Continuar
+                    {t("actions.continue")}
                     <ArrowRight className="h-5 w-5" aria-hidden="true" />
                   </Button>
                 </div>
@@ -1010,10 +1072,10 @@ export default function OnboardingFlow() {
                     tabIndex={-1}
                     className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
                   >
-                    Todo listo
+                    {t("step3.title")}
                   </h1>
                   <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-                    Revisa tu configuración y entra a tu dashboard.
+                    {t("step3.subtitle")}
                   </p>
                 </div>
 
@@ -1031,10 +1093,10 @@ export default function OnboardingFlow() {
                       </div>
                       <div>
                         <p className="text-xs font-medium text-muted-foreground">
-                          Modo seleccionado
+                          {t("step3.selectedMode")}
                         </p>
                         <h2 className="text-lg font-semibold text-foreground">
-                          {MODES.find((m) => m.id === mode)?.label}
+                          {modes.find((m) => m.id === mode)?.label}
                         </h2>
                       </div>
                     </div>
@@ -1048,7 +1110,7 @@ export default function OnboardingFlow() {
                           />
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Nombre personal
+                              {t("step3.personalName")}
                             </p>
                             <p className="font-medium text-foreground">
                               {form.personalName}
@@ -1065,14 +1127,14 @@ export default function OnboardingFlow() {
                           />
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Empresa
+                              {t("step3.business")}
                             </p>
                             <p className="font-medium text-foreground">
                               {form.businessName}
                             </p>
                             {form.taxId && (
                               <p className="mt-0.5 text-xs text-muted-foreground">
-                                NIT / RFC / CNPJ: {form.taxId}
+                                {t("step3.taxIdPrefix")}: {form.taxId}
                               </p>
                             )}
                           </div>
@@ -1088,10 +1150,11 @@ export default function OnboardingFlow() {
                             aria-hidden="true"
                           />
                           <div>
-                            <p className="text-xs text-muted-foreground">País</p>
+                            <p className="text-xs text-muted-foreground">
+                              {t("location.countryLabel")}
+                            </p>
                             <p className="font-medium text-foreground">
-                              {COUNTRY_OPTIONS.find((c) => c.value === form.country)
-                                ?.label ?? form.country}
+                              {countryLabel(form.country, t)}
                             </p>
                           </div>
                         </div>
@@ -1102,7 +1165,7 @@ export default function OnboardingFlow() {
                           />
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Moneda
+                              {t("location.currencyLabel")}
                             </p>
                             <p className="font-medium text-foreground">
                               {form.currency}
@@ -1116,11 +1179,10 @@ export default function OnboardingFlow() {
                           />
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Zona horaria
+                              {t("location.timezoneLabel")}
                             </p>
                             <p className="font-medium text-foreground">
-                              {TIMEZONE_OPTIONS.find((t) => t.value === form.timezone)
-                                ?.label ?? form.timezone}
+                              {timezoneLabel(form.timezone, t)}
                             </p>
                           </div>
                         </div>
@@ -1134,15 +1196,16 @@ export default function OnboardingFlow() {
                           />
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Meta inicial
+                              {t("step3.initialGoal")}
                             </p>
                             <p className="font-medium text-foreground">
                               {goal.name} ·{" "}
-                              {new Intl.NumberFormat("es-CO", {
-                                style: "currency",
-                                currency: form.currency,
-                                maximumFractionDigits: 0,
-                              }).format(Number(goal.targetAmount) || 0)}
+                              {formatCurrency(
+                                Number(goal.targetAmount) || 0,
+                                form.currency,
+                                locale,
+                                { maximumFractionDigits: 0 },
+                              )}
                             </p>
                           </div>
                         </div>
@@ -1161,7 +1224,7 @@ export default function OnboardingFlow() {
                     className="h-12 w-full gap-2 text-base sm:w-auto"
                   >
                     <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-                    Atrás
+                    {t("actions.back")}
                   </Button>
                   <Button
                     type="button"
@@ -1176,11 +1239,11 @@ export default function OnboardingFlow() {
                           className="h-5 w-5 animate-spin"
                           aria-hidden="true"
                         />
-                        Guardando...
+                        {t("actions.saving")}
                       </>
                     ) : (
                       <>
-                        Ir al Dashboard
+                        {t("actions.goDashboard")}
                         <ArrowRight className="h-5 w-5" aria-hidden="true" />
                       </>
                     )}
@@ -1194,13 +1257,13 @@ export default function OnboardingFlow() {
 
       <footer className="mx-auto mt-8 w-full max-w-md">
         <p className="text-center text-xs text-muted-foreground">
-          Al continuar aceptas los{" "}
+          {t("footer.accept")}{" "}
           <Link href="/terms" className="underline hover:text-foreground">
-            Términos de servicio
+            {t("footer.terms")}
           </Link>{" "}
-          y{" "}
+          {t("footer.and")}{" "}
           <Link href="/privacy" className="underline hover:text-foreground">
-            Política de privacidad
+            {t("footer.privacy")}
           </Link>
           .
         </p>

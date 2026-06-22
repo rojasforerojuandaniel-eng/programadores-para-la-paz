@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/locale";
 import {
   CreditCard,
   ShieldCheck,
@@ -18,6 +21,11 @@ import {
   RefreshCw,
   Info,
 } from "lucide-react";
+
+function usePayLocale(): Locale {
+  const raw = useLocale();
+  return isLocale(raw) ? raw : DEFAULT_LOCALE;
+}
 
 interface PaymentLinkData {
   id: string;
@@ -54,12 +62,12 @@ class PaymentLinkError extends Error {
   }
 }
 
-function formatAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+function formatAmount(
+  amount: number,
+  currency: string,
+  locale: Locale
+): string {
+  return formatCurrency(amount, currency, locale);
 }
 
 function resolveErrorStatus(
@@ -165,12 +173,13 @@ function StatusCard({
 }
 
 function LoadingState() {
+  const t = useTranslations("pay");
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe"
       role="status"
       aria-live="polite"
-      aria-label="Cargando link de pago"
+      aria-label={t("loading")}
     >
       <FadeIn>
         <Loader2
@@ -183,17 +192,18 @@ function LoadingState() {
 }
 
 function NotFoundState() {
+  const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="danger"
-        title="Link no encontrado"
-        message="Este link de cobro no existe o está inactivo. Verifica la URL o solicita uno nuevo."
+        title={t("notFound.title")}
+        message={t("notFound.message")}
       >
         <Button asChild variant="outline" className="w-full gap-2">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Volver al inicio
+            {t("back")}
           </Link>
         </Button>
       </StatusCard>
@@ -202,17 +212,18 @@ function NotFoundState() {
 }
 
 function ExpiredState() {
+  const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="warning"
-        title="Link expirado"
-        message="Este link de cobro ya no está disponible porque su fecha límite ha pasado."
+        title={t("expired.title")}
+        message={t("expired.message")}
       >
         <Button asChild variant="outline" className="w-full gap-2">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Volver al inicio
+            {t("back")}
           </Link>
         </Button>
       </StatusCard>
@@ -221,17 +232,18 @@ function ExpiredState() {
 }
 
 function LimitReachedState() {
+  const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="warning"
-        title="Límite alcanzado"
-        message="Este link de cobro ha alcanzado el número máximo de pagos permitidos."
+        title={t("limit.title")}
+        message={t("limit.message")}
       >
         <Button asChild variant="outline" className="w-full gap-2">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Volver al inicio
+            {t("back")}
           </Link>
         </Button>
       </StatusCard>
@@ -240,11 +252,12 @@ function LimitReachedState() {
 }
 
 function ErrorState({ message }: { message: string }) {
+  const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="danger"
-        title="No pudimos cargar el link"
+        title={t("errorState.title")}
         message={message}
       >
         <Button
@@ -253,7 +266,7 @@ function ErrorState({ message }: { message: string }) {
           className="w-full gap-2"
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Intentar de nuevo
+          {t("retry")}
         </Button>
       </StatusCard>
     </div>
@@ -261,27 +274,29 @@ function ErrorState({ message }: { message: string }) {
 }
 
 function SuccessState({ link }: { link: PaymentLinkData | null }) {
+  const t = useTranslations("pay");
+  const locale = usePayLocale();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="success"
-        title="¡Pago exitoso!"
+        title={t("success.title")}
         message={
           link
-            ? `Tu pago a ${link.organizationName} por ${formatAmount(
-                link.amount,
-                link.currency
-              )} ha sido procesado.`
-            : "Tu pago ha sido procesado correctamente."
+            ? t("success.messageWithOrg", {
+                org: link.organizationName,
+                amount: formatAmount(link.amount, link.currency, locale),
+              })
+            : t("success.message")
         }
       >
         <p className="text-sm text-muted-foreground">
-          Recibirás un comprobante por email en los próximos minutos.
+          {t("success.receiptNote")}
         </p>
         <Button asChild variant="outline" className="w-full gap-2">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Volver al inicio
+            {t("back")}
           </Link>
         </Button>
       </StatusCard>
@@ -290,12 +305,13 @@ function SuccessState({ link }: { link: PaymentLinkData | null }) {
 }
 
 function CanceledState() {
+  const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
       <StatusCard
         tone="info"
-        title="Pago cancelado"
-        message="No se realizó ningún cargo. Puedes intentar de nuevo cuando quieras."
+        title={t("canceled.title")}
+        message={t("canceled.message")}
       >
         <Button
           onClick={() => window.location.reload()}
@@ -303,7 +319,7 @@ function CanceledState() {
           className="w-full gap-2"
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Intentar de nuevo
+          {t("retry")}
         </Button>
       </StatusCard>
     </div>
@@ -323,6 +339,8 @@ function PaymentForm({
   onStripe: () => void;
   onWompi: () => void;
 }) {
+  const t = useTranslations("pay");
+  const locale = usePayLocale();
   const disabled = payingStripe || payingWompi;
 
   return (
@@ -334,7 +352,7 @@ function PaymentForm({
             <Badge variant="secondary">Finance</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Pagos seguros para {link.organizationName}
+            {t("securePaymentsFor", { org: link.organizationName })}
           </p>
         </div>
 
@@ -349,15 +367,20 @@ function PaymentForm({
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center">
-              <div className="text-sm text-muted-foreground">Total a pagar</div>
+              <div className="text-sm text-muted-foreground">
+                {t("amount")}
+              </div>
               <div className="mt-1 text-4xl font-bold text-foreground">
-                {formatAmount(link.amount, link.currency)}
+                {formatAmount(link.amount, link.currency, locale)}
               </div>
               <div className="mt-2 flex items-center justify-center gap-2">
                 <Badge variant="outline">{link.currency}</Badge>
                 {link.maxPayments && (
                   <Badge variant="outline">
-                    {link.currentPayments} / {link.maxPayments} pagos
+                    {t("paymentsCount", {
+                      current: link.currentPayments,
+                      max: link.maxPayments,
+                    })}
                   </Badge>
                 )}
               </div>
@@ -371,7 +394,7 @@ function PaymentForm({
                     aria-hidden="true"
                   />
                 </div>
-                Pago seguro encriptado
+                {t("securePayment")}
               </div>
               <div className="flex items-center gap-3 text-sm text-foreground">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-info/15">
@@ -380,7 +403,7 @@ function PaymentForm({
                     aria-hidden="true"
                   />
                 </div>
-                Comprobante por email
+                {t("emailReceipt")}
               </div>
             </div>
 
@@ -401,11 +424,10 @@ function PaymentForm({
                   <CreditCard className="h-4 w-4" aria-hidden="true" />
                 )}
                 {payingStripe
-                  ? "Redirigiendo a Stripe..."
-                  : `Pagar con tarjeta ${formatAmount(
-                      link.amount,
-                      link.currency
-                    )}`}
+                  ? t("stripeRedirecting")
+                  : t("stripePay", {
+                      amount: formatAmount(link.amount, link.currency, locale),
+                    })}
               </Button>
 
               <Button
@@ -424,15 +446,12 @@ function PaymentForm({
                 ) : (
                   <CreditCard className="h-4 w-4" aria-hidden="true" />
                 )}
-                {payingWompi
-                  ? "Redirigiendo a Wompi..."
-                  : "Pagar con Wompi (Colombia)"}
+                {payingWompi ? t("wompiRedirecting") : t("wompiPay")}
               </Button>
             </div>
 
             <p className="text-center text-sm leading-relaxed text-muted-foreground">
-              Al pagar, aceptas los términos y condiciones de{" "}
-              {link.organizationName}.
+              {t("termsAccept", { org: link.organizationName })}
             </p>
           </CardContent>
         </Card>
@@ -442,6 +461,7 @@ function PaymentForm({
 }
 
 export default function PayPage() {
+  const t = useTranslations("pay");
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = params.slug as string;
@@ -467,7 +487,7 @@ export default function PayPage() {
         if (!r.ok) {
           throw new PaymentLinkError(
             resolveErrorStatus(r.status, data.error),
-            data.error || "Error al cargar"
+            data.error || t("error.load")
           );
         }
         setLink(data);
@@ -479,10 +499,10 @@ export default function PayPage() {
           setStatusMessage(err.message);
         } else {
           setStatus("error");
-          setStatusMessage("Error de red");
+          setStatusMessage(t("error.network"));
         }
       });
-  }, [slug]);
+  }, [slug, t]);
 
   async function handleStripePayment() {
     if (!link) return;
@@ -497,11 +517,11 @@ export default function PayPage() {
         window.location.href = data.url;
       } else {
         setStatus("error");
-        setStatusMessage("Error al iniciar pago con Stripe");
+        setStatusMessage(t("error.stripeStart"));
       }
     } catch {
       setStatus("error");
-      setStatusMessage("Error de red");
+      setStatusMessage(t("error.network"));
     } finally {
       setPayingStripe(false);
     }
@@ -523,11 +543,11 @@ export default function PayPage() {
         setStatusMessage(data.error);
       } else {
         setStatus("error");
-        setStatusMessage("Error al iniciar pago con Wompi");
+        setStatusMessage(t("error.wompiStart"));
       }
     } catch {
       setStatus("error");
-      setStatusMessage("Error de red");
+      setStatusMessage(t("error.network"));
     } finally {
       setPayingWompi(false);
     }
@@ -558,11 +578,11 @@ export default function PayPage() {
   }
 
   if (status === "error") {
-    return <ErrorState message={statusMessage || "Error al cargar"} />;
+    return <ErrorState message={statusMessage || t("error.load")} />;
   }
 
   if (!link) {
-    return <ErrorState message="Error al cargar" />;
+    return <ErrorState message={t("error.load")} />;
   }
 
   return (
