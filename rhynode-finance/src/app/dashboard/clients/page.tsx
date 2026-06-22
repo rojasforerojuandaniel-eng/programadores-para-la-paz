@@ -6,7 +6,8 @@ import { requireAuth } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { getLocale, type Locale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateClientButton } from "@/components/dashboard/create-client-button";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -14,10 +15,11 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { ClientList, type ClientRow } from "@/components/dashboard/client-list";
 import { Loader2, Users, UserCheck, DollarSign } from "lucide-react";
 
-export const metadata = dashboardMetadata(
-  "Clientes",
-  "Gestiona tus clientes, su historial de facturas y datos fiscales para facturación DIAN."
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.clients" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 const COUNTRY_CODES = ["CO", "MX", "BR", "AR", "CL", "PE"] as const;
 

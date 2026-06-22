@@ -1,7 +1,8 @@
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
 import { requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { dashboardMetadata } from "@/lib/dashboard-metadata";
+import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
+import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendBadge } from "./trend-badge";
@@ -12,10 +13,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLocale, type Locale } from "@/lib/locale-server";
 import { formatDate as fmtDate } from "@/lib/format";
 
-export const metadata = dashboardMetadata(
-  "Indicadores Económicos",
-  "Tasas de referencia de Colombia: TRM, inflación, tasa de intervención, UVR e IBR."
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.economicIndicators" });
+  return dashboardMetadataLocale(locale, t("title"), t("subtitle"));
+}
 
 function formatLastUpdated(value: string, locale: Locale): string {
   const date = new Date(value);

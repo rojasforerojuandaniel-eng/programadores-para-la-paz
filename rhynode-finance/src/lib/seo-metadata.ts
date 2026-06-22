@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Locale } from "@/lib/locale";
 
 export const BASE_URL = "https://rhynode.finance" as const;
 export const DEFAULT_SITE_NAME = "Rhynode" as const;
@@ -94,5 +95,44 @@ export function dashboardMetadata(
       "finanzas empresariales",
       "gestión financiera Colombia",
     ],
+  });
+}
+
+/**
+ * Locale-aware variant of dashboardMetadata for pages that need the browser
+ * tab title / description to follow the user's locale (cookie-based, no
+ * middleware routing). Pass the already-translated title/description (from
+ * getTranslations) — the helper only localizes the default fallback copy and
+ * the SEO keywords. Dashboard pages are auth-gated, so this is mostly for the
+ * visible tab title.
+ */
+export function dashboardMetadataLocale(
+  locale: Locale,
+  title: string,
+  description?: string,
+  path?: string,
+): Metadata {
+  const isEn = locale === "en";
+  return buildMetadata({
+    title,
+    description:
+      description ??
+      (isEn
+        ? `${title} on Rhynode. Manage your personal and business finances with AI for Colombia.`
+        : `${title} en Rhynode. Gestiona tus finanzas personales y empresariales con IA para Colombia.`),
+    path: path ? `/dashboard${path}` : "/dashboard",
+    keywords: isEn
+      ? [
+          "finance dashboard",
+          "personal finance",
+          "business finance",
+          "Colombia finance management",
+        ]
+      : [
+          "dashboard financiero",
+          "finanzas personales",
+          "finanzas empresariales",
+          "gestión financiera Colombia",
+        ],
   });
 }
