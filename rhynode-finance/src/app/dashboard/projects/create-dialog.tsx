@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +23,11 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { executeMutation } from "@/lib/offline-queue";
+import type { Locale } from "@/lib/locale";
 
 export function CreateProjectDialog() {
+  const t = useTranslations("dashboard.projects");
+  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -69,7 +73,7 @@ export function CreateProjectDialog() {
             window.location.reload();
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear proyecto");
+            toast.error(err.message || t("createDialog.errorCreate"));
           },
         },
       );
@@ -86,38 +90,38 @@ export function CreateProjectDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nuevo Proyecto
+          {t("createDialog.newProject")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nuevo Proyecto</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="project-name">Nombre *</Label>
+            <Label htmlFor="project-name">{t("createDialog.name")} *</Label>
             <Input
               id="project-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Rediseño de marca"
+              placeholder={t("createDialog.namePlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project-description">Descripción</Label>
+            <Label htmlFor="project-description">{t("createDialog.description")}</Label>
             <Input
               id="project-description"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Breve descripción del proyecto"
+              placeholder={t("createDialog.descriptionPlaceholder")}
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-status">Estado</Label>
+              <Label htmlFor="project-status">{t("createDialog.status")}</Label>
               <Select
                 value={form.status}
                 onValueChange={(v) =>
@@ -128,14 +132,14 @@ export function CreateProjectDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ACTIVE">Activo</SelectItem>
-                  <SelectItem value="COMPLETED">Completado</SelectItem>
-                  <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                  <SelectItem value="ACTIVE">{t("statuses.ACTIVE" as never)}</SelectItem>
+                  <SelectItem value="COMPLETED">{t("statuses.COMPLETED" as never)}</SelectItem>
+                  <SelectItem value="ARCHIVED">{t("statuses.ARCHIVED" as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-color">Color</Label>
+              <Label htmlFor="project-color">{t("createDialog.color")}</Label>
               <div className="flex items-center gap-2">
                 <input
                   id="project-color"
@@ -151,7 +155,7 @@ export function CreateProjectDialog() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-start">Fecha de inicio</Label>
+              <Label htmlFor="project-start">{t("createDialog.startDate")}</Label>
               <Input
                 id="project-start"
                 type="date"
@@ -160,7 +164,7 @@ export function CreateProjectDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-end">Fecha de fin</Label>
+              <Label htmlFor="project-end">{t("createDialog.endDate")}</Label>
               <Input
                 id="project-end"
                 type="date"
@@ -171,7 +175,7 @@ export function CreateProjectDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project-budget">Presupuesto (COP)</Label>
+            <Label htmlFor="project-budget">{t("createDialog.budget")}</Label>
             <Input
               id="project-budget"
               type="number"
@@ -184,10 +188,10 @@ export function CreateProjectDialog() {
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("createDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar Proyecto"}
+              {loading ? t("createDialog.saving") : t("createDialog.save")}
             </Button>
           </div>
         </form>

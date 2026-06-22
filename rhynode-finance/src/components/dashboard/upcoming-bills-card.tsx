@@ -2,21 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUpcomingBills, formatDueLabel, type BillKind } from "@/lib/upcoming-bills";
 import { CreditCard, Receipt, FileText, Landmark, CalendarClock, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 
-const KIND_META: Record<BillKind, { label: string; Icon: typeof CreditCard }> = {
-  debt: { label: "Deuda", Icon: Landmark },
-  subscription: { label: "Suscripción", Icon: CreditCard },
-  invoice: { label: "Factura", Icon: Receipt },
-  tax: { label: "Impuesto", Icon: FileText },
+const KIND_META: Record<BillKind, { labelKey: string; Icon: typeof CreditCard }> = {
+  debt: { labelKey: "upcomingEvents.types.debt", Icon: Landmark },
+  subscription: { labelKey: "upcomingBills.types.subscription", Icon: CreditCard },
+  invoice: { labelKey: "upcomingEvents.types.invoice", Icon: Receipt },
+  tax: { labelKey: "upcomingEvents.types.tax", Icon: FileText },
 };
-
-function formatCop(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 export async function UpcomingBillsCard({
   userId,
@@ -25,7 +20,11 @@ export async function UpcomingBillsCard({
   userId: string;
   orgId: string | null;
 }) {
-  const bills = await getUpcomingBills(userId, orgId, 60);
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
+
+  const bills = await getUpcomingBills(userId, orgId, 60, { t, locale });
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const overdueCount = bills.filter((bill) => bill.overdue).length;
 
@@ -34,16 +33,18 @@ export async function UpcomingBillsCard({
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <CalendarClock className="size-4 text-primary" aria-hidden="true" />
-          Próximos Pagos
+          {t("upcomingBills.title")}
         </CardTitle>
         <span className="text-xs text-muted-foreground">
-          {bills.length > 0 ? `${bills.length} en 60 días` : "Sin pendientes"}
+          {bills.length > 0
+            ? t("upcomingBills.countIn60", { count: bills.length })
+            : t("upcomingBills.noPending")}
         </span>
       </CardHeader>
       <CardContent className="space-y-1">
         {bills.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            No tienes pagos próximos en los próximos 60 días. 🎉
+            {t("upcomingBills.empty")}
           </p>
         ) : (
           <>
@@ -51,10 +52,14 @@ export async function UpcomingBillsCard({
               <div className="mb-2 flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
                 <span>
-                  {overdueCount} vencido{overdueCount > 1 ? "s" : ""} — {formatCop(
-                    bills.filter((b) => b.overdue).reduce((s, b) => s + b.amount, 0),
-                    "COP"
-                  )}
+                  {t("upcomingBills.overdue", {
+                    count: overdueCount,
+                    amount: formatCurrency(
+                      bills.filter((b) => b.overdue).reduce((s, b) => s + b.amount, 0),
+                      "COP",
+                      locale
+                    ),
+                  })}
                 </span>
               </div>
             )}
@@ -73,21 +78,21 @@ export async function UpcomingBillsCard({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">{bill.title}</p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {meta.label}
+                            {t(meta.labelKey as never)}
                             {bill.subtitle ? ` · ${bill.subtitle}` : ""}
                           </p>
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-col items-end">
                         <span className="text-sm font-semibold tabular-nums">
-                          {formatCop(bill.amount, bill.currency)}
+                          {formatCurrency(bill.amount, bill.currency, locale)}
                         </span>
                         <span
                           className={`text-xs tabular-nums ${
                             bill.overdue ? "text-destructive font-medium" : "text-muted-foreground"
                           }`}
                         >
-                          {formatDueLabel(bill.daysUntilDue)}
+                          {formatDueLabel(bill.daysUntilDue, { t, locale })}
                         </span>
                       </div>
                     </Link>
@@ -97,7 +102,10 @@ export async function UpcomingBillsCard({
             </ul>
             {bills.length > 6 && (
               <p className="pt-2 text-center text-xs text-muted-foreground">
-                +{bills.length - 6} más · Total {formatCop(total, "COP")}
+                {t("upcomingBills.more", {
+                  count: bills.length - 6,
+                  total: formatCurrency(total, "COP", locale),
+                })}
               </p>
             )}
           </>

@@ -1246,6 +1246,37 @@
         "title": "Organize your work into projects",
         "description": "Create projects with budget and dates. Link them to invoices to see in real time how much you've spent.",
         "hint": "Start by creating your first project."
+      },
+      "createDialog": {
+        "newProject": "New Project",
+        "title": "New Project",
+        "name": "Name",
+        "namePlaceholder": "E.g. Brand redesign",
+        "description": "Description",
+        "descriptionPlaceholder": "Brief project description",
+        "status": "Status",
+        "color": "Color",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "budget": "Budget (COP)",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save Project",
+        "errorCreate": "Error creating project"
+      },
+      "card": {
+        "invoices": "{count} invoices"
+      },
+      "actions": {
+        "comingSoon": "Coming soon",
+        "editAction": "Edit {name}",
+        "archiveAction": "Archive {name}",
+        "deleteAction": "Delete {name}",
+        "actionsFor": "Actions for {name}",
+        "title": "Project actions",
+        "edit": "Edit",
+        "archive": "Archive",
+        "delete": "Delete"
       }
     },
     "stats": {
@@ -2551,7 +2582,57 @@
           "reminder": "Reminder",
           "debt": "Debt",
           "recurring": "Recurring",
-          "goal": "Goal"
+          "goal": "Goal",
+          "invoice": "Invoice",
+          "tax": "Tax"
+        },
+        "status": {
+          "paid": "Paid",
+          "overdue": "Overdue",
+          "upcoming": "Upcoming"
+        },
+        "relative": {
+          "today": "Today",
+          "tomorrow": "Tomorrow",
+          "inDays": "In {days} days"
+        },
+        "desc": {
+          "debtWith": "Debt with {counterparty}",
+          "debtDue": "Debt due date",
+          "recurringIncome": "Recurring income",
+          "recurringPayment": "Recurring payment",
+          "goalProgress": "Goal: {current} of {target}",
+          "invoiceNumber": "Invoice {number}",
+          "client": "Client: {name}",
+          "taxPeriod": "Period {period} {year}"
+        },
+        "cardTitle": "Upcoming due dates",
+        "emptyDueTitle": "No upcoming due dates",
+        "emptyDueDescription": "Here you'll see debts, invoices, goals, taxes, and recurring payments due in the coming days.",
+        "emptyDueHint": "Create a debt, goal, or invoice to get started.",
+        "listAriaLabel": "Upcoming due dates",
+        "eventAria": "{title}, {type}, due {date}, {status}"
+      },
+      "upcomingBills": {
+        "title": "Upcoming Bills",
+        "countIn60": "{count} in 60 days",
+        "noPending": "None pending",
+        "empty": "You have no upcoming bills in the next 60 days. 🎉",
+        "overdue": "{count, plural, one {{count} overdue} other {{count} overdue}} — {amount}",
+        "more": "+{count} more · Total {total}",
+        "types": {
+          "subscription": "Subscription"
+        },
+        "debtWith": "with {counterparty}",
+        "invoiceTitle": "Invoice {number}",
+        "statusOverdue": "Overdue",
+        "statusToCollect": "To collect",
+        "taxLabel": "Tax",
+        "due": {
+          "overdue": "Overdue {days}d ago",
+          "today": "Due today",
+          "tomorrow": "Due tomorrow",
+          "inDays": "In {count} days"
         }
       }
     },
@@ -2617,6 +2698,37 @@
         "project": "Projects",
         "account": "Accounts"
       }
+    },
+    "notifications": {
+      "empty": {
+        "title": "You have no notifications",
+        "description": "We'll let you know when there's something new.",
+        "action": "Got it"
+      },
+      "error": {
+        "title": "Couldn't load notifications",
+        "description": "Try again in a moment.",
+        "retry": "Retry"
+      },
+      "trigger": {
+        "label": "Notifications",
+        "labelWithUnread": "Notifications, {count} unread"
+      },
+      "panel": {
+        "title": "Notifications",
+        "description": "Recent notifications list.",
+        "allRead": "You have no unread notifications",
+        "unreadCount": "{count} unread"
+      },
+      "actions": {
+        "markAllAria": "Mark all notifications as read",
+        "markAll": "All",
+        "markOneAria": "Mark as read: {title}",
+        "deleteAria": "Delete notification: {title}"
+      },
+      "loading": "Loading notifications",
+      "preferences": "Notification preferences",
+      "centerAria": "Notification center"
     }
   },
   "nav": {

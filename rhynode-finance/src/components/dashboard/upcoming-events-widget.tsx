@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { cn } from "@/lib/utils";
 import { startOfDay, addDays, format, differenceInDays } from "date-fns";
-import { es } from "date-fns/locale/es";
+import { es, enUS } from "date-fns/locale";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import {
   CreditCard,
   Repeat,
@@ -43,47 +46,39 @@ interface UpcomingEventsWidgetProps {
 
 const typeConfig: Record<
   CalendarEventType,
-  { label: string; icon: React.ElementType; color: string; href: string }
+  { labelKey: string; icon: React.ElementType; color: string; href: string }
 > = {
   debt: {
-    label: "Deuda",
+    labelKey: "upcomingEvents.types.debt",
     icon: CreditCard,
     color: "bg-rose-500/15 text-rose-500 border-rose-500/20",
     href: "/dashboard/personal/debts",
   },
   recurring: {
-    label: "Recurrente",
+    labelKey: "upcomingEvents.types.recurring",
     icon: Repeat,
     color: "bg-blue-500/15 text-blue-500 border-blue-500/20",
     href: "/dashboard/personal/recurring",
   },
   goal: {
-    label: "Meta",
+    labelKey: "upcomingEvents.types.goal",
     icon: Target,
     color: "bg-emerald-500/15 text-emerald-500 border-emerald-500/20",
     href: "/dashboard/personal/goals",
   },
   invoice: {
-    label: "Factura",
+    labelKey: "upcomingEvents.types.invoice",
     icon: FileText,
     color: "bg-violet-500/15 text-violet-500 border-violet-500/20",
     href: "/dashboard/invoices",
   },
   tax: {
-    label: "Impuesto",
+    labelKey: "upcomingEvents.types.tax",
     icon: Scale,
     color: "bg-amber-500/15 text-amber-500 border-amber-500/20",
     href: "/dashboard/tax",
   },
 };
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 function getDisplayStatus(event: CalendarEvent): EventStatus {
   const isPaid =
@@ -99,34 +94,38 @@ function getStatusConfig(status: EventStatus) {
   switch (status) {
     case "paid":
       return {
-        label: "Pagado",
+        labelKey: "upcomingEvents.status.paid",
         className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
         icon: CheckCircle2,
       };
     case "overdue":
       return {
-        label: "Vencido",
+        labelKey: "upcomingEvents.status.overdue",
         className: "bg-rose-500/10 text-rose-600 border-rose-500/20",
         icon: AlertTriangle,
       };
     default:
       return {
-        label: "Próximo",
+        labelKey: "upcomingEvents.status.upcoming",
         className: "bg-slate-500/10 text-slate-600 border-slate-500/20",
         icon: Clock,
       };
   }
 }
 
-function formatRelativeDate(date: Date) {
+function formatRelativeDate(
+  date: Date,
+  locale: Locale,
+  t: (key: string, values?: Record<string, string | number>) => string
+) {
   const today = startOfDay(new Date());
   const days = differenceInDays(startOfDay(date), today);
 
-  if (days === 0) return "Hoy";
-  if (days === 1) return "Mañana";
-  if (days > 1 && days <= 7) return `En ${days} días`;
+  if (days === 0) return t("upcomingEvents.relative.today");
+  if (days === 1) return t("upcomingEvents.relative.tomorrow");
+  if (days > 1 && days <= 7) return t("upcomingEvents.relative.inDays", { days });
 
-  return format(date, "d MMM", { locale: es });
+  return format(date, "d MMM", { locale: locale === "en" ? enUS : es });
 }
 
 const MAX_EVENTS = 7;
@@ -138,6 +137,10 @@ export async function UpcomingEventsWidget({
   currency,
 }: UpcomingEventsWidgetProps) {
   if (!userId) return null;
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
 
   const prisma = getPrisma();
   const now = new Date();
@@ -237,8 +240,8 @@ export async function UpcomingEventsWidget({
         amount: decimalToNumber(d.remainingAmount),
         currency: d.currency,
         description: d.counterparty
-          ? `Deuda con ${d.counterparty}`
-          : "Vencimiento de deuda",
+          ? t("upcomingEvents.desc.debtWith", { counterparty: d.counterparty })
+          : t("upcomingEvents.desc.debtDue"),
       };
     }),
     ...recurring.map((r) => ({
@@ -250,7 +253,9 @@ export async function UpcomingEventsWidget({
       status: r.status,
       amount: decimalToNumber(r.amount),
       currency,
-      description: r.type === "INCOME" ? "Ingreso recurrente" : "Pago recurrente",
+      description: r.type === "INCOME"
+        ? t("upcomingEvents.desc.recurringIncome")
+        : t("upcomingEvents.desc.recurringPayment"),
     })),
     ...goals.flatMap((g) => {
       if (!g.deadline) return [];
@@ -263,10 +268,10 @@ export async function UpcomingEventsWidget({
         status: g.status,
         amount: decimalToNumber(g.targetAmount),
         currency: g.currency,
-        description: `Meta: ${formatCurrency(
-          decimalToNumber(g.currentAmount),
-          g.currency
-        )} de ${formatCurrency(decimalToNumber(g.targetAmount), g.currency)}`,
+        description: t("upcomingEvents.desc.goalProgress", {
+          current: formatCurrency(decimalToNumber(g.currentAmount), g.currency, locale),
+          target: formatCurrency(decimalToNumber(g.targetAmount), g.currency, locale),
+        }),
       };
     }),
     ...invoices.flatMap((inv) => {
@@ -275,26 +280,26 @@ export async function UpcomingEventsWidget({
         id: `invoice-${inv.id}`,
         referenceId: inv.id,
         type: "invoice" as const,
-        title: `Factura ${inv.number}`,
+        title: t("upcomingEvents.desc.invoiceNumber", { number: inv.number }),
         date: inv.dueDate,
         status: inv.status,
         amount: decimalToNumber(inv.total),
         currency: inv.currency,
-        description: `Cliente: ${inv.client?.name ?? "—"}`,
+        description: t("upcomingEvents.desc.client", { name: inv.client?.name ?? "—" }),
       };
     }),
-    ...taxReports.flatMap((t) => {
-      if (!t.dueDate) return [];
+    ...taxReports.flatMap((tr) => {
+      if (!tr.dueDate) return [];
       return {
-        id: `tax-${t.id}`,
-        referenceId: t.id,
+        id: `tax-${tr.id}`,
+        referenceId: tr.id,
         type: "tax" as const,
-        title: `${t.authority} ${t.type}`,
-        date: t.dueDate,
-        status: t.status,
-        amount: decimalToNumber(t.amount),
+        title: `${tr.authority} ${tr.type}`,
+        date: tr.dueDate,
+        status: tr.status,
+        amount: decimalToNumber(tr.amount),
         currency,
-        description: `Periodo ${t.period} ${t.year}`,
+        description: t("upcomingEvents.desc.taxPeriod", { period: tr.period, year: tr.year }),
       };
     }),
   ];
@@ -308,7 +313,7 @@ export async function UpcomingEventsWidget({
       <CardHeader>
         <CardTitle className="heading-card flex items-center gap-2">
           <Calendar className="h-4 w-4" />
-          Vencimientos próximos
+          {t("upcomingEvents.cardTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -317,12 +322,12 @@ export async function UpcomingEventsWidget({
             variant="sm"
             className="border-0 bg-transparent shadow-none"
             icon={Calendar}
-            title="Sin vencimientos próximos"
-            description="Aquí verás deudas, facturas, metas, impuestos y pagos recurrentes que vencen en los próximos días."
-            hint="Crea una deuda, meta o factura para empezar."
+            title={t("upcomingEvents.emptyDueTitle")}
+            description={t("upcomingEvents.emptyDueDescription")}
+            hint={t("upcomingEvents.emptyDueHint")}
           />
         ) : (
-          <ul className="space-y-3" role="list" aria-label="Próximos vencimientos">
+          <ul className="space-y-3" role="list" aria-label={t("upcomingEvents.listAriaLabel")}>
             {upcoming.map((event) => {
               const cfg = typeConfig[event.type];
               const Icon = cfg.icon;
@@ -335,9 +340,12 @@ export async function UpcomingEventsWidget({
                   <Link
                     href={cfg.href}
                     className="group flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label={`${event.title}, ${cfg.label}, vence ${formatRelativeDate(
-                      event.date
-                    )}, ${statusCfg.label}`}
+                    aria-label={t("upcomingEvents.eventAria", {
+                      title: event.title,
+                      type: t(cfg.labelKey as never),
+                      date: formatRelativeDate(event.date, locale, t),
+                      status: t(statusCfg.labelKey as never),
+                    })}
                   >
                     <div
                       className={cn(
@@ -353,11 +361,11 @@ export async function UpcomingEventsWidget({
                       <div className="mt-1 flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className={statusCfg.className}>
                           <StatusIcon className="h-3 w-3" />
-                          <span>{statusCfg.label}</span>
+                          <span>{t(statusCfg.labelKey as never)}</span>
                         </Badge>
                         <Badge variant="outline" className={cn("gap-1", cfg.color)}>
                           <Icon className="h-3 w-3" />
-                          <span>{cfg.label}</span>
+                          <span>{t(cfg.labelKey as never)}</span>
                         </Badge>
                       </div>
                       <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -366,10 +374,10 @@ export async function UpcomingEventsWidget({
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-semibold">
-                        {formatCurrency(event.amount, event.currency)}
+                        {formatCurrency(event.amount, event.currency, locale)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatRelativeDate(event.date)}
+                        {formatRelativeDate(event.date, locale, t)}
                       </p>
                     </div>
                   </Link>
