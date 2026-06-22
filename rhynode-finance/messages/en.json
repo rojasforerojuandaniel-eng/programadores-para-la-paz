@@ -1282,6 +1282,68 @@
         "tooltipValue": "XP earned",
         "tooltipLabel": "Week: {label}",
         "barName": "XP earned"
+      },
+      "achievements": {
+        "FIRST_TRANSACTION": {
+          "name": "First Step",
+          "description": "Create your first transaction"
+        },
+        "FIRST_BUDGET": {
+          "name": "Planner",
+          "description": "Create your first budget"
+        },
+        "FIRST_GOAL": {
+          "name": "Dreamer",
+          "description": "Create your first savings goal"
+        },
+        "FIRST_INVOICE": {
+          "name": "Invoicer",
+          "description": "Create your first invoice"
+        },
+        "FIRST_RECEIPT": {
+          "name": "Organized",
+          "description": "Upload your first receipt"
+        },
+        "STREAK_7": {
+          "name": "Perfect Week",
+          "description": "7 consecutive days"
+        },
+        "STREAK_30": {
+          "name": "Unbroken Month",
+          "description": "30 consecutive days"
+        },
+        "BUDGET_MASTER": {
+          "name": "Within Budget",
+          "description": "3 months without exceeding budget"
+        },
+        "GOAL_COMPLETED": {
+          "name": "Goal Achiever",
+          "description": "Complete your first goal"
+        },
+        "SAVINGS_1M": {
+          "name": "Millionaire",
+          "description": "Save 1 million COP"
+        },
+        "TRANSACTIONS_100": {
+          "name": "Veteran",
+          "description": "100 transactions logged"
+        },
+        "INVOICES_50": {
+          "name": "Entrepreneur",
+          "description": "50 invoices issued"
+        },
+        "NET_WORTH_POSITIVE": {
+          "name": "In the Black",
+          "description": "Positive net worth"
+        },
+        "NO_DEBT": {
+          "name": "Debt Free",
+          "description": "Pay off all debts"
+        },
+        "LEVEL_50": {
+          "name": "Master",
+          "description": "Reach level 50"
+        }
       }
     },
     "projects": {
@@ -1406,7 +1468,8 @@
         "iva": "VAT",
         "reteFuente": "Withholding",
         "ica": "ICA",
-        "icaFooter": "Per municipal rate (e.g. Bogotá 9.66‰)"
+        "icaFooter": "Per municipal rate (e.g. Bogotá 9.66‰)",
+        "icaValue": "Variable"
       },
       "exampleColumns": {
         "type": "Type",
@@ -1601,6 +1664,15 @@
         "toast": {
           "createError": "Error creating tax report",
           "networkError": "Network error"
+        }
+      },
+      "examples": {
+        "notes": {
+          "ivaGeneral": "Taxed goods and services",
+          "reteFuenteGeneral": "General services",
+          "reteFuenteHigh": "High-value services",
+          "icaBogota": "Bogotá (9.66/1000)",
+          "icaMedellin": "Medellín (13.8/1000)"
         }
       }
     },

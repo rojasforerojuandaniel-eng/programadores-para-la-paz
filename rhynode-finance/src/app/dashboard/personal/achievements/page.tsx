@@ -266,9 +266,11 @@ function AchievementCard({
               !unlocked && "text-muted-foreground"
             )}
           >
-            {achievement.name}
+            {t(`achievements.${achievement.type}.name` as never)}
           </p>
-          <p className="text-sm text-muted-foreground">{achievement.description}</p>
+          <p className="text-sm text-muted-foreground">
+            {t(`achievements.${achievement.type}.description` as never)}
+          </p>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span
