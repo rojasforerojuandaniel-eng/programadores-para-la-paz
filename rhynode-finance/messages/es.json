@@ -181,6 +181,64 @@
         "title": "Gestiona tus clientes",
         "description": "Agrega datos fiscales y de contacto para facturar de forma organizada.",
         "hint": "Empieza agregando tu primer cliente."
+      },
+      "status": {
+        "ACTIVE": "Activo",
+        "INACTIVE": "Inactivo",
+        "ARCHIVED": "Archivado"
+      },
+      "list": {
+        "noEmail": "Sin email",
+        "nit": "NIT",
+        "phone": "Teléfono",
+        "city": "Ciudad",
+        "invoices": "{count} facturas ·",
+        "actionsFor": "Acciones de {name}",
+        "actions": "Acciones",
+        "call": "Llamar",
+        "sendEmail": "Enviar email",
+        "editClient": "Editar cliente",
+        "deleteConfirm": "¿Eliminar este cliente permanentemente?",
+        "deleteTitle": "Eliminar cliente",
+        "ariaLabel": "Lista de clientes",
+        "headers": {
+          "name": "Nombre",
+          "nit": "NIT / RFC / CNPJ",
+          "email": "Email",
+          "phone": "Teléfono",
+          "city": "Ciudad",
+          "status": "Estado",
+          "invoices": "Facturas",
+          "totalInvoiced": "Total facturado",
+          "actions": "Acciones"
+        }
+      },
+      "form": {
+        "name": "Nombre *",
+        "namePlaceholder": "Ej. Comercializadora del Norte SAS",
+        "email": "Email",
+        "emailPlaceholder": "contacto@empresa.com",
+        "taxId": "NIT / RFC / CNPJ",
+        "taxIdPlaceholder": "900.123.456-7",
+        "phone": "Teléfono",
+        "phonePlaceholder": "+57 301 234 5678",
+        "city": "Ciudad",
+        "cityPlaceholder": "Bogotá",
+        "country": "País",
+        "status": "Estado",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar"
+      },
+      "editDialog": {
+        "title": "Editar Cliente",
+        "updateError": "Error al actualizar cliente",
+        "networkError": "Error de red"
+      },
+      "createDialog": {
+        "title": "Nuevo Cliente",
+        "button": "Nuevo Cliente",
+        "createError": "Error al crear cliente"
       }
     },
     "budgets": {
@@ -656,6 +714,20 @@
         "saving": "Guardando...",
         "created": "Transacción recurrente creada",
         "error": "Error al crear transacción recurrente"
+      },
+      "editDialog": {
+        "title": "Editar recurrente",
+        "updated": "Transacción recurrente actualizada",
+        "updateError": "No se pudo actualizar"
+      },
+      "actions": {
+        "openActions": "Abrir acciones",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando...",
+        "confirmDelete": "¿Eliminar esta transacción recurrente?",
+        "deleted": "Transacción eliminada",
+        "deleteError": "No se pudo eliminar"
       }
     },
     "subscriptions": {
@@ -767,6 +839,33 @@
         "today": "Hoy",
         "overdue": "Vencido hace {days} días",
         "left": "{days} días"
+      },
+      "subscription": {
+        "trigger": "Nueva suscripción",
+        "title": "Añadir suscripción",
+        "name": "Nombre *",
+        "namePh": "Ej. Netflix, Gimnasio",
+        "amount": "Monto *",
+        "frequency": "Frecuencia *",
+        "next": "Próxima fecha de pago *",
+        "category": "Categoría",
+        "categoryPh": "Ej. Entretenimiento",
+        "provider": "Proveedor",
+        "providerPh": "Ej. Netflix, Spotify",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "created": "Suscripción creada",
+        "error": "Error al crear suscripción",
+        "networkError": "Error de red",
+        "frequencies": {
+          "MONTHLY": "Mensual",
+          "WEEKLY": "Semanal",
+          "YEARLY": "Anual",
+          "BIWEEKLY": "Quincenal",
+          "QUARTERLY": "Trimestral",
+          "DAILY": "Diario"
+        }
       }
     },
     "split": {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -23,18 +24,19 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const FREQUENCIES = [
-  { value: "MONTHLY", label: "Mensual" },
-  { value: "WEEKLY", label: "Semanal" },
-  { value: "YEARLY", label: "Anual" },
-  { value: "BIWEEKLY", label: "Quincenal" },
-  { value: "QUARTERLY", label: "Trimestral" },
-  { value: "DAILY", label: "Diario" },
-];
+  "MONTHLY",
+  "WEEKLY",
+  "YEARLY",
+  "BIWEEKLY",
+  "QUARTERLY",
+  "DAILY",
+] as const;
 
 export function CreateSubscriptionDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("dashboard.calendar");
   const [form, setForm] = useState({
     name: "",
     amount: "",
@@ -78,12 +80,12 @@ export function CreateSubscriptionDialog() {
           provider: "",
         });
         router.refresh();
-        toast.success("Suscripción creada");
+        toast.success(t("subscription.created"));
       } else {
-        toast.error("Error al crear suscripción");
+        toast.error(t("subscription.error"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("subscription.networkError"));
     } finally {
       setLoading(false);
     }
@@ -94,27 +96,27 @@ export function CreateSubscriptionDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nueva suscripción
+          {t("subscription.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Añadir suscripción</DialogTitle>
+          <DialogTitle className="heading-card">{t("subscription.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="sub-name">Nombre *</Label>
+            <Label htmlFor="sub-name">{t("subscription.name")}</Label>
             <Input
               id="sub-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Netflix, Gimnasio"
+              placeholder={t("subscription.namePh")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="sub-amount">Monto *</Label>
+              <Label htmlFor="sub-amount">{t("subscription.amount")}</Label>
               <Input
                 id="sub-amount"
                 type="number"
@@ -127,7 +129,7 @@ export function CreateSubscriptionDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cal-sub-frequency">Frecuencia *</Label>
+              <Label htmlFor="cal-sub-frequency">{t("subscription.frequency")}</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
@@ -137,8 +139,8 @@ export function CreateSubscriptionDialog() {
                 </SelectTrigger>
                 <SelectContent>
                   {FREQUENCIES.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
+                    <SelectItem key={f} value={f}>
+                      {t(`subscription.frequencies.${f}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -147,7 +149,7 @@ export function CreateSubscriptionDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="sub-next">Próxima fecha de pago *</Label>
+              <Label htmlFor="sub-next">{t("subscription.next")}</Label>
               <Input
                 id="sub-next"
                 type="date"
@@ -157,30 +159,30 @@ export function CreateSubscriptionDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sub-category">Categoría</Label>
+              <Label htmlFor="sub-category">{t("subscription.category")}</Label>
               <Input
                 id="sub-category"
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                placeholder="Ej. Entretenimiento"
+                placeholder={t("subscription.categoryPh")}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-provider">Proveedor</Label>
+            <Label htmlFor="sub-provider">{t("subscription.provider")}</Label>
             <Input
               id="sub-provider"
               value={form.provider}
               onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              placeholder="Ej. Netflix, Spotify"
+              placeholder={t("subscription.providerPh")}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
-              Cancelar
+              {t("subscription.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("subscription.saving") : t("subscription.save")}
             </Button>
           </div>
         </form>
