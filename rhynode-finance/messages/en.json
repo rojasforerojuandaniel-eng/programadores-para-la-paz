@@ -31,7 +31,8 @@
         "navAriaLabel": "Mobile main navigation",
         "more": "More",
         "personal": "Personal"
-      }
+      },
+      "signOut": "Sign out"
     },
     "skipToContent": "Skip to main content",
     "sectionsAria": "Dashboard sections",

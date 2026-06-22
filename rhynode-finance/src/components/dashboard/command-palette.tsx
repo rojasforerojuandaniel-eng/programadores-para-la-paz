@@ -30,11 +30,11 @@ import { Input } from "@/components/ui/input";
 
 type CommandItem = {
   id: string;
-  label: string;
+  labelKey: string;
   href?: string;
   icon: React.ElementType;
-  shortcut?: string;
-  section: string;
+  shortcutKey?: string;
+  sectionKey: string;
 };
 
 const MAX_RECENTS = 5;
@@ -43,105 +43,105 @@ const RECENTS_KEY = "rhynode-cmd-recent";
 const NAV_COMMANDS: CommandItem[] = [
   {
     id: "nav-dashboard",
-    label: "Dashboard",
+    labelKey: "home",
     href: "/dashboard",
     icon: LayoutDashboard,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-transactions",
-    label: "Transacciones",
+    labelKey: "transactions",
     href: "/dashboard/transactions",
     icon: ArrowLeftRight,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-invoices",
-    label: "Facturas",
+    labelKey: "invoices",
     href: "/dashboard/invoices",
     icon: FileText,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-goals",
-    label: "Metas",
+    labelKey: "goals",
     href: "/dashboard/personal/goals",
     icon: Target,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-reminders",
-    label: "Recordatorios",
+    labelKey: "reminders",
     href: "/dashboard/personal/reminders",
     icon: Bell,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-accounts",
-    label: "Cuentas bancarias",
+    labelKey: "accounts",
     href: "/dashboard/accounts",
     icon: Landmark,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
   {
     id: "nav-settings",
-    label: "Configuración",
+    labelKey: "settings",
     href: "/dashboard/settings",
     icon: Settings,
-    section: "Ir a",
+    sectionKey: "goTo",
   },
 ];
 
 const ACTION_COMMANDS: CommandItem[] = [
   {
     id: "action-new-transaction",
-    label: "Crear transacción",
+    labelKey: "newTransaction",
     href: "/dashboard/transactions?new=1",
     icon: Plus,
-    shortcut: "Nueva transacción",
-    section: "Acciones",
+    shortcutKey: "newTransactionShortcut",
+    sectionKey: "actions",
   },
   {
     id: "action-new-invoice",
-    label: "Crear factura",
+    labelKey: "newInvoice",
     href: "/dashboard/invoices?new=1",
     icon: Plus,
-    shortcut: "Nueva factura",
-    section: "Acciones",
+    shortcutKey: "newInvoiceShortcut",
+    sectionKey: "actions",
   },
   {
     id: "action-new-goal",
-    label: "Añadir meta",
+    labelKey: "newGoal",
     href: "/dashboard/personal/goals?new=1",
     icon: Plus,
-    shortcut: "Nueva meta",
-    section: "Acciones",
+    shortcutKey: "newGoalShortcut",
+    sectionKey: "actions",
   },
   {
     id: "action-new-reminder",
-    label: "Nuevo recordatorio",
+    labelKey: "newReminder",
     href: "/dashboard/personal/reminders?new=1",
     icon: Plus,
-    shortcut: "Nuevo recordatorio",
-    section: "Acciones",
+    shortcutKey: "newReminderShortcut",
+    sectionKey: "actions",
   },
 ];
 
 const HELP_COMMANDS: CommandItem[] = [
   {
     id: "help-support",
-    label: "Centro de ayuda",
+    labelKey: "helpCenter",
     href: "/dashboard/settings",
     icon: CircleHelp,
-    section: "Ayuda",
+    sectionKey: "help",
   },
 ];
 
 type StoredRecent = {
   id: string;
-  label: string;
+  labelKey: string;
   href?: string;
-  section: string;
+  sectionKey: string;
 };
 
 function readRecents(): StoredRecent[] {
@@ -149,7 +149,7 @@ function readRecents(): StoredRecent[] {
   try {
     const raw = window.localStorage.getItem(RECENTS_KEY);
     const parsed: StoredRecent[] = raw
-      ? (JSON.parse(raw) as StoredRecent[]).filter((item) => item.id && item.label)
+      ? (JSON.parse(raw) as StoredRecent[]).filter((item) => item.id && item.labelKey)
       : [];
     const stable =
       JSON.stringify(parsed) === JSON.stringify(recentsCache)
@@ -183,7 +183,7 @@ function subscribeToRecents(callback: () => void) {
 function recordRecent(recents: StoredRecent[], command: CommandItem) {
   const withoutCurrent = recents.filter((item) => item.id !== command.id);
   const next = [
-    { id: command.id, label: command.label, href: command.href, section: "Reciente" },
+    { id: command.id, labelKey: command.labelKey, href: command.href, sectionKey: "recent" },
     ...withoutCurrent,
   ].slice(0, MAX_RECENTS);
   saveRecents(next);
@@ -191,43 +191,57 @@ function recordRecent(recents: StoredRecent[], command: CommandItem) {
 
 function buildGroups(
   query: string,
-  recents: StoredRecent[]
-): { heading: string; items: CommandItem[] }[] {
+  recents: StoredRecent[],
+  resolveLabel: (item: { id: string; labelKey: string }) => string,
+  resolveSection: (key: string) => string,
+): { headingKey: string; items: CommandItem[] }[] {
   const q = query.trim().toLowerCase();
 
-  const matches = (item: CommandItem) =>
+  const matches = (
+    item: { id: string; labelKey: string; href?: string },
+    resolvedLabel: string,
+    resolvedSection: string,
+  ) =>
     !q ||
-    item.label.toLowerCase().includes(q) ||
-    item.section.toLowerCase().includes(q) ||
+    resolvedLabel.toLowerCase().includes(q) ||
+    resolvedSection.toLowerCase().includes(q) ||
     (item.href?.toLowerCase().includes(q) ?? false);
 
   const recentItems: CommandItem[] = recents
     .filter((item) => {
       if (!q) return true;
-      return (
-        item.label.toLowerCase().includes(q) ||
-        item.section.toLowerCase().includes(q) ||
-        (item.href?.toLowerCase().includes(q) ?? false)
-      );
+      return matches(item, resolveLabel(item), resolveSection(item.sectionKey));
     })
-    .map((item) => ({ ...item, icon: Clock }));
+    .map((item) => ({
+      id: item.id,
+      labelKey: item.labelKey,
+      href: item.href,
+      icon: Clock,
+      sectionKey: "recent",
+    }));
 
-  const navItems = NAV_COMMANDS.filter(matches);
-  const actionItems = ACTION_COMMANDS.filter(matches);
-  const helpItems = HELP_COMMANDS.filter(matches);
+  const navItems = NAV_COMMANDS.filter((item) =>
+    matches(item, resolveLabel(item), resolveSection(item.sectionKey)),
+  );
+  const actionItems = ACTION_COMMANDS.filter((item) =>
+    matches(item, resolveLabel(item), resolveSection(item.sectionKey)),
+  );
+  const helpItems = HELP_COMMANDS.filter((item) =>
+    matches(item, resolveLabel(item), resolveSection(item.sectionKey)),
+  );
 
-  const groups: { heading: string; items: CommandItem[] }[] = [];
+  const groups: { headingKey: string; items: CommandItem[] }[] = [];
   if (recentItems.length > 0) {
-    groups.push({ heading: "Reciente", items: recentItems });
+    groups.push({ headingKey: "recent", items: recentItems });
   }
   if (navItems.length > 0) {
-    groups.push({ heading: "Ir a", items: navItems });
+    groups.push({ headingKey: "goTo", items: navItems });
   }
   if (actionItems.length > 0) {
-    groups.push({ heading: "Acciones", items: actionItems });
+    groups.push({ headingKey: "actions", items: actionItems });
   }
   if (helpItems.length > 0) {
-    groups.push({ heading: "Ayuda", items: helpItems });
+    groups.push({ headingKey: "help", items: helpItems });
   }
 
   return groups;
@@ -245,36 +259,8 @@ export function CommandPalette() {
 
   const recents = React.useSyncExternalStore(subscribeToRecents, readRecents, readRecents);
 
-  const groups = React.useMemo(
-    () => buildGroups(query, recents),
-    [query, recents]
-  );
-
-  const flatItems = React.useMemo(
-    () => groups.flatMap((group) => group.items),
-    [groups]
-  );
-
-  const headingLabel = React.useCallback(
-    (heading: string): string => {
-      switch (heading) {
-        case "Reciente":
-          return t("sections.recent");
-        case "Ir a":
-          return t("sections.goTo");
-        case "Acciones":
-          return t("sections.actions");
-        case "Ayuda":
-          return t("sections.help");
-        default:
-          return heading;
-      }
-    },
-    [t]
-  );
-
   const resolveLabel = React.useCallback(
-    (item: CommandItem): string => {
+    (item: { id: string; labelKey: string }): string => {
       switch (item.id) {
         case "nav-dashboard":
           return tNav("home" as never);
@@ -301,27 +287,31 @@ export function CommandPalette() {
         case "help-support":
           return t("help.helpCenter");
         default:
-          return item.label;
+          return item.labelKey;
       }
     },
     [t, tNav]
   );
 
+  const resolveSection = React.useCallback(
+    (key: string): string => t(`sections.${key}` as never),
+    [t]
+  );
+
+  const groups = React.useMemo(
+    () => buildGroups(query, recents, resolveLabel, resolveSection),
+    [query, recents, resolveLabel, resolveSection]
+  );
+
+  const flatItems = React.useMemo(
+    () => groups.flatMap((group) => group.items),
+    [groups]
+  );
+
   const resolveShortcut = React.useCallback(
     (item: CommandItem): string | undefined => {
-      if (!item.shortcut) return undefined;
-      switch (item.id) {
-        case "action-new-transaction":
-          return t("actions.newTransactionShortcut");
-        case "action-new-invoice":
-          return t("actions.newInvoiceShortcut");
-        case "action-new-goal":
-          return t("actions.newGoalShortcut");
-        case "action-new-reminder":
-          return t("actions.newReminderShortcut");
-        default:
-          return item.shortcut;
-      }
+      if (!item.shortcutKey) return undefined;
+      return t(`actions.${item.shortcutKey}` as never);
     },
     [t]
   );
@@ -340,7 +330,7 @@ export function CommandPalette() {
       setQuery("");
       trackEvent("command_palette_select", {
         commandId: item.id,
-        section: item.section,
+        section: item.sectionKey,
         hasHref: Boolean(item.href),
       });
 
@@ -461,17 +451,17 @@ export function CommandPalette() {
             )}
 
             {groups.map((group) => (
-              <div key={group.heading} className="mt-2 first:mt-0">
+              <div key={group.headingKey} className="mt-2 first:mt-0">
                 <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {headingLabel(group.heading)}
+                  {resolveSection(group.headingKey)}
                 </h3>
-                <ul className="space-y-0.5" role="group" aria-label={headingLabel(group.heading)}>
+                <ul className="space-y-0.5" role="group" aria-label={resolveSection(group.headingKey)}>
                   {group.items.map((item) => {
                     const globalIndex = flatItems.indexOf(item);
                     const isSelected = globalIndex === selectedIndex;
                     const Icon = item.icon;
                     return (
-                      <li key={`${group.heading}-${item.id}`} role="none">
+                      <li key={`${group.headingKey}-${item.id}`} role="none">
                         <button
                           type="button"
                           onClick={() => execute(item)}
@@ -497,7 +487,7 @@ export function CommandPalette() {
                           <span className="min-w-0 flex-1 truncate text-left">
                             {resolveLabel(item)}
                           </span>
-                          {item.shortcut && (
+                          {item.shortcutKey && (
                             <span
                               className={cn(
                                 "hidden text-xs sm:inline",

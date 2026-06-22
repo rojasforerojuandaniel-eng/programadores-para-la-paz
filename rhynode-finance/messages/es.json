@@ -31,7 +31,8 @@
         "navAriaLabel": "Navegación principal móvil",
         "more": "Más",
         "personal": "Personal"
-      }
+      },
+      "signOut": "Cerrar sesión"
     },
     "skipToContent": "Saltar al contenido principal",
     "sectionsAria": "Secciones del dashboard",

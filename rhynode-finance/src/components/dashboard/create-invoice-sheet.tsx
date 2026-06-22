@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-media-query";
@@ -38,6 +39,7 @@ export function CreateInvoiceSheet({
 }: CreateInvoiceSheetProps) {
   const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
+  const t = useTranslations("dashboard.invoices");
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
@@ -72,7 +74,7 @@ export function CreateInvoiceSheet({
         <BottomSheetTrigger asChild>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Nueva Factura
+            {t("newInvoice")}
           </Button>
         </BottomSheetTrigger>
       )}
@@ -81,7 +83,7 @@ export function CreateInvoiceSheet({
         aria-labelledby="inv-sheet-title"
       >
         <BottomSheetHeader>
-          <BottomSheetTitle id="inv-sheet-title">Nueva Factura</BottomSheetTitle>
+          <BottomSheetTitle id="inv-sheet-title">{t("newInvoice")}</BottomSheetTitle>
         </BottomSheetHeader>
         <InvoiceForm
           onSuccess={handleSuccess}

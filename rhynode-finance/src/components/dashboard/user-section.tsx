@@ -1,6 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 export function UserSection({ mobile = false }: { mobile?: boolean }) {
   const { user } = useUser();
   const { signOut } = useClerk();
+  const t = useTranslations("dashboard.nav");
 
   if (!user) return null;
 
@@ -40,7 +42,7 @@ export function UserSection({ mobile = false }: { mobile?: boolean }) {
         onClick={() => signOut({ redirectUrl: "/" })}
       >
         <LogOut className="h-4 w-4" aria-hidden="true" />
-        Cerrar sesión
+        {t("signOut" as never)}
       </Button>
     </div>
   );
