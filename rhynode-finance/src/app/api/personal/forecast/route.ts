@@ -15,6 +15,7 @@ import {
   type HistoricalMonth,
   type RecurringTransactionInput,
 } from "@/lib/cashflow-forecast";
+import { getLocale } from "@/lib/locale-server";
 import { z } from "zod";
 import { withRateLimit } from "@/lib/with-rate-limit";
 
@@ -160,6 +161,7 @@ export const GET = withRateLimit(async function GET(request: Request) {
       recurring: recurringInputs,
       monthsToProject: params.months,
       referenceDate: now,
+      locale: await getLocale(),
       colombianEvents: {
         includeAguinaldo: params.includeAguinaldo,
         includePrima: params.includePrima,

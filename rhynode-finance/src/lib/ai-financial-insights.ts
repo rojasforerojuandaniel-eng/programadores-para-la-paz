@@ -4,6 +4,8 @@ import {
   FinancialInsightsSchema,
   type FinancialInsights,
 } from "@/lib/ai-financial-insights-schema";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface MonthRange {
   start: Date;
@@ -15,6 +17,7 @@ interface ComputeInputs {
   orgId: string;
   currency: string;
   scope?: "PERSONAL" | "BUSINESS" | string;
+  locale?: Locale;
 }
 
 const SAVINGS_RATE_HEALTHY = 0.2;
@@ -32,14 +35,6 @@ function getMonthRange(now: Date, offsetMonths = 0): MonthRange {
   const start = new Date(Date.UTC(year, month, 1, 0, 0, 0));
   const end = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
   return { start, end };
-}
-
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function sumByCategory(
@@ -101,28 +96,43 @@ function buildRecommendations(
   topCategory: { name: string; amount: number } | null,
   budgets: { name: string; amount: number; spent: number }[],
   goals: { name: string; targetAmount: number; currentAmount: number }[],
-  currency: string
+  currency: string,
+  locale: Locale
 ): string[] {
+  const en = locale === "en";
   const recommendations: string[] = [];
 
   if (income <= 0) {
     recommendations.push(
-      "No registras ingresos este mes. Carga tu nómina o ingresos para un análisis real."
+      en
+        ? "You have no income recorded this month. Add your salary or revenue for a real analysis."
+        : "No registras ingresos este mes. Carga tu nómina o ingresos para un análisis real."
     );
   } else if (expense > income) {
     recommendations.push(
-      `Tus gastos (${formatCurrency(expense, currency)}) superan tus ingresos (${formatCurrency(
-        income,
-        currency
-      )}). Revisa gastos discrecionales.`
+      en
+        ? `Your expenses (${formatCurrency(expense, currency, locale)}) exceed your income (${formatCurrency(
+            income,
+            currency,
+            locale
+          )}). Review discretionary spending.`
+        : `Tus gastos (${formatCurrency(expense, currency, locale)}) superan tus ingresos (${formatCurrency(
+            income,
+            currency,
+            locale
+          )}). Revisa gastos discrecionales.`
     );
   } else if (savingsRate >= SAVINGS_RATE_HEALTHY * 100) {
     recommendations.push(
-      `Excelente: estás ahorrando el ${savingsRate.toFixed(0)}% de tus ingresos. Considera acelerar una meta.`
+      en
+        ? `Excellent: you're saving ${savingsRate.toFixed(0)}% of your income. Consider accelerating a goal.`
+        : `Excelente: estás ahorrando el ${savingsRate.toFixed(0)}% de tus ingresos. Considera acelerar una meta.`
     );
   } else if (savingsRate < SAVINGS_RATE_ALERT * 100) {
     recommendations.push(
-      `Tu tasa de ahorro es del ${savingsRate.toFixed(0)}%. El ideal mínimo es 20%; revisa gastos hormiga.`
+      en
+        ? `Your savings rate is ${savingsRate.toFixed(0)}%. The minimum ideal is 20%; review small frequent expenses.`
+        : `Tu tasa de ahorro es del ${savingsRate.toFixed(0)}%. El ideal mínimo es 20%; revisa gastos hormiga.`
     );
   }
 
@@ -131,10 +141,16 @@ function buildRecommendations(
     const pct = (budget.spent / budget.amount) * 100;
     if (pct > 100) {
       recommendations.push(
-        `Presupuesto "${budget.name}" excedido (${pct.toFixed(0)}%). Congela gastos en esa categoría.`
+        en
+          ? `Budget "${budget.name}" exceeded (${pct.toFixed(0)}%). Freeze spending in that category.`
+          : `Presupuesto "${budget.name}" excedido (${pct.toFixed(0)}%). Congela gastos en esa categoría.`
       );
     } else if (pct >= BUDGET_NEAR_LIMIT_THRESHOLD * 100) {
-      recommendations.push(`Estás cerca del límite en "${budget.name}" (${pct.toFixed(0)}%).`);
+      recommendations.push(
+        en
+          ? `You're near the limit on "${budget.name}" (${pct.toFixed(0)}%).`
+          : `Estás cerca del límite en "${budget.name}" (${pct.toFixed(0)}%).`
+      );
     }
   }
 
@@ -142,7 +158,9 @@ function buildRecommendations(
     const pct = (topCategory.amount / income) * 100;
     if (pct >= TOP_CATEGORY_INCOME_SHARE_ALERT * 100) {
       recommendations.push(
-        `"${topCategory.name}" representa el ${pct.toFixed(0)}% de tus ingresos; evalúa si es necesario.`
+        en
+          ? `"${topCategory.name}" accounts for ${pct.toFixed(0)}% of your income; evaluate whether it's necessary.`
+          : `"${topCategory.name}" representa el ${pct.toFixed(0)}% de tus ingresos; evalúa si es necesario.`
       );
     }
   }
@@ -157,13 +175,17 @@ function buildRecommendations(
 
   if (nearGoal) {
     recommendations.push(
-      `Meta "${nearGoal.name}" está al ${nearGoal.pct.toFixed(0)}%; aprovecha para completarla.`
+      en
+        ? `Goal "${nearGoal.name}" is at ${nearGoal.pct.toFixed(0)}%; push to complete it.`
+        : `Meta "${nearGoal.name}" está al ${nearGoal.pct.toFixed(0)}%; aprovecha para completarla.`
     );
   }
 
   if (recommendations.length === 0) {
     recommendations.push(
-      "Sigue registrando transacciones para mantener el control financiero."
+      en
+        ? "Keep logging transactions to stay in control of your finances."
+        : "Sigue registrando transacciones para mantener el control financiero."
     );
   }
 
@@ -175,6 +197,7 @@ export async function computeFinancialInsights({
   orgId,
   currency,
   scope = "PERSONAL",
+  locale = "es",
 }: ComputeInputs): Promise<FinancialInsights> {
   const prisma = getPrisma();
   const now = new Date();
@@ -255,7 +278,8 @@ export async function computeFinancialInsights({
     topCategory,
     mappedBudgets,
     mappedGoals,
-    currency
+    currency,
+    locale
   );
 
   return FinancialInsightsSchema.parse({

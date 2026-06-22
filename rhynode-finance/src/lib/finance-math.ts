@@ -1,11 +1,3 @@
-export function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
 export function daysLeft(deadline: Date | string | null | undefined): number | null {
   if (!deadline) return null;
   const diff = new Date(deadline).getTime() - Date.now();

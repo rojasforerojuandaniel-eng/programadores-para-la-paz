@@ -1,5 +1,7 @@
 import { getPrisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 export type NudgeType = "warning" | "tip" | "positive";
 
@@ -33,14 +35,6 @@ function getMonthRange(now = new Date()) {
     start: new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1, 0, 0, 0)),
     end: new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)),
   };
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function calculateMean(values: number[]): number {
@@ -206,8 +200,10 @@ async function fetchBaseData(userId: string) {
 function detectAnomalousSpending(
   monthTransactions: MonthTransaction[],
   historicalTransactions: { category: string | null; amount: number; date: Date }[],
-  currency: string
+  currency: string,
+  locale: Locale
 ): Nudge | null {
+  const en = locale === "en";
   const expenses = monthTransactions.filter((t) => t.type === "EXPENSE");
   if (expenses.length === 0) return null;
 
@@ -215,7 +211,7 @@ function detectAnomalousSpending(
   const categoryAmounts = new Map<string, number[]>();
 
   for (const t of historicalTransactions) {
-    const cat = t.category ?? "Sin categoría";
+    const cat = t.category ?? (en ? "Uncategorized" : "Sin categoría");
     const list = categoryAmounts.get(cat) ?? [];
     list.push(t.amount);
     categoryAmounts.set(cat, list);
@@ -231,7 +227,7 @@ function detectAnomalousSpending(
 
   const outliers = expenses
     .filter((t) => {
-      const cat = t.category ?? "Sin categoría";
+      const cat = t.category ?? (en ? "Uncategorized" : "Sin categoría");
       const stats = statsByCategory.get(cat);
       if (!stats) return false;
       if (stats.stdDev === 0) return false;
@@ -244,17 +240,22 @@ function detectAnomalousSpending(
 
   const top = outliers[0];
   const total = outliers.reduce((sum, o) => sum + o.amount, 0);
+  const topCat = top.category ?? (en ? "Uncategorized" : "Sin categoría");
 
   return {
     id: `anomalous-spending-${top.id}`,
     type: "warning",
     icon: "alert-triangle",
-    title: `Gasto anómalo en ${top.category ?? "Sin categoría"}`,
+    title: en ? `Anomalous spending in ${topCat}` : `Gasto anómalo en ${topCat}`,
     description:
       outliers.length === 1
-        ? `${top.description} por ${formatCurrency(total, currency)} supera el doble de la desviación típica de esta categoría.`
-        : `${outliers.length} transacciones por ${formatCurrency(total, currency)} se salen del patrón habitual de ${top.category ?? "Sin categoría"}.`,
-    actionLabel: "Revisar",
+        ? en
+          ? `${top.description} for ${formatCurrency(total, currency, locale)} exceeds twice the standard deviation of this category.`
+          : `${top.description} por ${formatCurrency(total, currency, locale)} supera el doble de la desviación típica de esta categoría.`
+        : en
+          ? `${outliers.length} transactions for ${formatCurrency(total, currency, locale)} fall outside the usual pattern for ${topCat}.`
+          : `${outliers.length} transacciones por ${formatCurrency(total, currency, locale)} se salen del patrón habitual de ${topCat}.`,
+    actionLabel: en ? "Review" : "Revisar",
     actionHref: "/dashboard/transactions",
     priority: 90,
   };
@@ -263,9 +264,11 @@ function detectAnomalousSpending(
 function detectAntExpenses(
   monthTransactions: MonthTransaction[],
   income: number,
-  currency: string
+  currency: string,
+  locale: Locale
 ): Nudge | null {
   if (income <= 0) return null;
+  const en = locale === "en";
 
   const expenses = monthTransactions.filter((t) => t.type === "EXPENSE" && t.amount > 0);
   const threshold = Math.min(20000, income * 0.02);
@@ -274,7 +277,7 @@ function detectAntExpenses(
 
   for (const t of expenses) {
     if (t.amount >= threshold) continue;
-    const key = normalizeText(t.description || t.category || "Otro");
+    const key = normalizeText(t.description || t.category || (en ? "Other" : "Otro"));
     if (!key) continue;
     const existing = groups.get(key) ?? { total: 0, count: 0, example: t.description || key };
     existing.total += t.amount;
@@ -299,12 +302,19 @@ function detectAntExpenses(
     id: `ant-expenses-${top.key}`,
     type: "warning",
     icon: "bug",
-    title: "Gastos hormiga acumulados",
-    description: `Pequeños gastos frecuentes (ej. ${top.example}) suman ${formatCurrency(
-      totalAnt,
-      currency
-    )}, el ${(percentOfIncome * 100).toFixed(1)}% de tus ingresos este mes.`,
-    actionLabel: "Detalles",
+    title: en ? "Accumulated small expenses" : "Gastos hormiga acumulados",
+    description: en
+      ? `Frequent small purchases (e.g. ${top.example}) add up to ${formatCurrency(
+          totalAnt,
+          currency,
+          locale
+        )}, ${(percentOfIncome * 100).toFixed(1)}% of your income this month.`
+      : `Pequeños gastos frecuentes (ej. ${top.example}) suman ${formatCurrency(
+          totalAnt,
+          currency,
+          locale
+        )}, el ${(percentOfIncome * 100).toFixed(1)}% de tus ingresos este mes.`,
+    actionLabel: en ? "Details" : "Detalles",
     actionHref: "/dashboard/personal/categories",
     priority: 80,
   };
@@ -322,8 +332,10 @@ function detectSubscriptionIssues(
   detectedSubscriptions: { id: string; name: string; amount: number; lastPaidAt: Date | null }[],
   historicalTransactions: { description: string; amount: number; date: Date }[],
   currency: string,
-  now: Date
+  now: Date,
+  locale: Locale
 ): Nudge | null {
+  const en = locale === "en";
   const allSubscriptionNames = new Set<string>();
   recurring.forEach((r) => allSubscriptionNames.add(normalizeText(r.name)));
   detectedSubscriptions.forEach((s) => allSubscriptionNames.add(normalizeText(s.name)));
@@ -342,12 +354,19 @@ function detectSubscriptionIssues(
       id: `subscription-unused-${unusedDetected.id}`,
       type: "tip",
       icon: "credit-card",
-      title: `¿Sigues usando ${unusedDetected.name}?`,
-      description: `No registramos pagos en los últimos 45 días. Revisa si vale ${formatCurrency(
-        unusedDetected.amount,
-        currency
-      )} mensuales.`,
-      actionLabel: "Auditar",
+      title: en ? `Still using ${unusedDetected.name}?` : `¿Sigues usando ${unusedDetected.name}?`,
+      description: en
+        ? `We haven't recorded payments in the last 45 days. Check if it's worth ${formatCurrency(
+            unusedDetected.amount,
+            currency,
+            locale
+          )} per month.`
+        : `No registramos pagos en los últimos 45 días. Revisa si vale ${formatCurrency(
+            unusedDetected.amount,
+            currency,
+            locale
+          )} mensuales.`,
+      actionLabel: en ? "Audit" : "Auditar",
       actionHref: "/dashboard/personal/subscriptions",
       priority: 70,
     };
@@ -375,12 +394,19 @@ function detectSubscriptionIssues(
         id: `subscription-price-${sub.id}`,
         type: "warning",
         icon: "trending-up",
-        title: `${sub.name} subió de precio`,
-        description: `Pasó de un promedio de ${formatCurrency(avg, currency)} a ${formatCurrency(
-          sub.amount,
-          currency
-        )}. Revisa si aún lo necesitas.`,
-        actionLabel: "Revisar",
+        title: en ? `${sub.name} raised its price` : `${sub.name} subió de precio`,
+        description: en
+          ? `It went from an average of ${formatCurrency(avg, currency, locale)} to ${formatCurrency(
+              sub.amount,
+              currency,
+              locale
+            )}. Check if you still need it.`
+          : `Pasó de un promedio de ${formatCurrency(avg, currency, locale)} a ${formatCurrency(
+              sub.amount,
+              currency,
+              locale
+            )}. Revisa si aún lo necesitas.`,
+        actionLabel: en ? "Review" : "Revisar",
         actionHref: "/dashboard/personal/subscriptions",
         priority: 85,
       };
@@ -397,12 +423,19 @@ function detectSubscriptionIssues(
         id: `recurring-price-${rec.id}`,
         type: "warning",
         icon: "trending-up",
-        title: `${rec.name} subió de precio`,
-        description: `El monto recurrente pasó de un promedio de ${formatCurrency(
-          avg,
-          currency
-        )} a ${formatCurrency(rec.amount, currency)}.`,
-        actionLabel: "Revisar",
+        title: en ? `${rec.name} raised its price` : `${rec.name} subió de precio`,
+        description: en
+          ? `The recurring amount went from an average of ${formatCurrency(
+              avg,
+              currency,
+              locale
+            )} to ${formatCurrency(rec.amount, currency, locale)}.`
+          : `El monto recurrente pasó de un promedio de ${formatCurrency(
+              avg,
+              currency,
+              locale
+            )} a ${formatCurrency(rec.amount, currency, locale)}.`,
+        actionLabel: en ? "Review" : "Revisar",
         actionHref: "/dashboard/personal/recurring",
         priority: 85,
       };
@@ -423,8 +456,10 @@ function detectLaggingGoal(
     createdAt: Date;
   }[],
   currency: string,
-  now: Date
+  now: Date,
+  locale: Locale
 ): Nudge | null {
+  const en = locale === "en";
   const lagging = goals
     .filter((g) => g.deadline && g.targetAmount > 0)
     .map((g) => {
@@ -447,11 +482,15 @@ function detectLaggingGoal(
     id: `lagging-goal-${lagging.id}`,
     type: "warning",
     icon: "target",
-    title: `Meta rezagada: ${lagging.name}`,
-    description: `Llevas ${(lagging.progressRatio * 100).toFixed(0)}% del objetivo y ya deberías tener alrededor del ${(
-      lagging.expectedRatio * 100
-    ).toFixed(0)}%.`,
-    actionLabel: "Aumentar aporte",
+    title: en ? `Lagging goal: ${lagging.name}` : `Meta rezagada: ${lagging.name}`,
+    description: en
+      ? `You're at ${(lagging.progressRatio * 100).toFixed(0)}% of the target and should be around ${(
+          lagging.expectedRatio * 100
+        ).toFixed(0)}% by now.`
+      : `Llevas ${(lagging.progressRatio * 100).toFixed(0)}% del objetivo y ya deberías tener alrededor del ${(
+          lagging.expectedRatio * 100
+        ).toFixed(0)}%.`,
+    actionLabel: en ? "Boost contribution" : "Aumentar aporte",
     actionHref: "/dashboard/personal/goals",
     priority: 75,
   };
@@ -461,9 +500,11 @@ function detectSavingsOpportunity(
   income: number,
   expense: number,
   goals: { id: string; name: string; targetAmount: number; currentAmount: number }[],
-  currency: string
+  currency: string,
+  locale: Locale
 ): Nudge | null {
   if (income <= 0) return null;
+  const en = locale === "en";
   const savingsRate = (income - expense) / income;
 
   if (savingsRate < 0.1) return null;
@@ -477,16 +518,27 @@ function detectSavingsOpportunity(
     id: "savings-opportunity",
     type: "positive",
     icon: "piggy-bank",
-    title: "Oportunidad de ahorro",
-    description: `Este mes tienes ${formatCurrency(
-      surplus,
-      currency
-    )} libres (${(savingsRate * 100).toFixed(0)}% de ingresos). ${
-      laggingGoal
-        ? `Podrías acelerar ${laggingGoal.name}.`
-        : "Ideal para crear o impulsar una meta de ahorro."
-    }`,
-    actionLabel: "Ver metas",
+    title: en ? "Savings opportunity" : "Oportunidad de ahorro",
+    description: en
+      ? `This month you have ${formatCurrency(
+          surplus,
+          currency,
+          locale
+        )} free (${(savingsRate * 100).toFixed(0)}% of income). ${
+          laggingGoal
+            ? `You could accelerate ${laggingGoal.name}.`
+            : "Ideal to create or boost a savings goal."
+        }`
+      : `Este mes tienes ${formatCurrency(
+          surplus,
+          currency,
+          locale
+        )} libres (${(savingsRate * 100).toFixed(0)}% de ingresos). ${
+          laggingGoal
+            ? `Podrías acelerar ${laggingGoal.name}.`
+            : "Ideal para crear o impulsar una meta de ahorro."
+        }`,
+    actionLabel: en ? "View goals" : "Ver metas",
     actionHref: "/dashboard/personal/goals",
     priority: 60,
   };
@@ -494,7 +546,8 @@ function detectSavingsOpportunity(
 
 export async function generatePersonalInsights(
   userId: string,
-  currency: string
+  currency: string,
+  locale: Locale = "es"
 ): Promise<Nudge[]> {
   const { org, now, monthTransactions, historicalTransactions, goals, recurring, detectedSubscriptions } =
     await fetchBaseData(userId);
@@ -509,17 +562,17 @@ export async function generatePersonalInsights(
   const nudges: Nudge[] = [];
 
   if (!org) {
-    const savingsOpportunity = detectSavingsOpportunity(income, expense, goals, currency);
+    const savingsOpportunity = detectSavingsOpportunity(income, expense, goals, currency, locale);
     if (savingsOpportunity) nudges.push(savingsOpportunity);
-    const laggingGoal = detectLaggingGoal(goals, currency, now);
+    const laggingGoal = detectLaggingGoal(goals, currency, now, locale);
     if (laggingGoal) nudges.push(laggingGoal);
     return nudges.sort((a, b) => b.priority - a.priority).slice(0, 3);
   }
 
-  const anomalous = detectAnomalousSpending(monthTransactions, historicalTransactions, currency);
+  const anomalous = detectAnomalousSpending(monthTransactions, historicalTransactions, currency, locale);
   if (anomalous) nudges.push(anomalous);
 
-  const ant = detectAntExpenses(monthTransactions, income, currency);
+  const ant = detectAntExpenses(monthTransactions, income, currency, locale);
   if (ant) nudges.push(ant);
 
   const subscription = detectSubscriptionIssues(
@@ -527,14 +580,15 @@ export async function generatePersonalInsights(
     detectedSubscriptions,
     historicalTransactions,
     currency,
-    now
+    now,
+    locale
   );
   if (subscription) nudges.push(subscription);
 
-  const laggingGoal = detectLaggingGoal(goals, currency, now);
+  const laggingGoal = detectLaggingGoal(goals, currency, now, locale);
   if (laggingGoal) nudges.push(laggingGoal);
 
-  const savings = detectSavingsOpportunity(income, expense, goals, currency);
+  const savings = detectSavingsOpportunity(income, expense, goals, currency, locale);
   if (savings) nudges.push(savings);
 
   return nudges.sort((a, b) => b.priority - a.priority).slice(0, 3);

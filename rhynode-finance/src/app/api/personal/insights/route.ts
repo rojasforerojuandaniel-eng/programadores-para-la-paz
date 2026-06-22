@@ -2,6 +2,7 @@ import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { generatePersonalInsights, type Nudge } from "@/lib/ai-insights";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { getLocale } from "@/lib/locale-server";
 
 export const GET = withRateLimit(
   async () => {
@@ -20,7 +21,8 @@ export const GET = withRateLimit(
         select: { currency: true },
       });
       const currency = org?.currency ?? "COP";
-      const insights = await generatePersonalInsights(profile.id, currency);
+      const locale = await getLocale();
+      const insights = await generatePersonalInsights(profile.id, currency, locale);
       return new Response(JSON.stringify({ insights: insights as Nudge[] }), {
         status: 200,
         headers: { "Content-Type": "application/json" },

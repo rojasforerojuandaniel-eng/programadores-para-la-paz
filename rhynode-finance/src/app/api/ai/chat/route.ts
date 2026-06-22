@@ -3,8 +3,10 @@ import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
-import { anthropicTools, executeTool, type ToolName } from "@/lib/ai-tools";
+import { getAnthropicTools, executeTool, type ToolName } from "@/lib/ai-tools";
 import { detectIntent, formatIntentReply } from "@/lib/chat-intents";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 
 // This endpoint intentionally calls the Anthropic API directly instead of going
 // through `@/lib/ai-provider`. The advisor runs a multi-round streaming tool-use
@@ -200,6 +202,8 @@ export const POST = withRateLimit(
 
     const { message: userMessage, history = [] } = parseResult.data;
 
+    const locale = await getLocale();
+
     const prisma = getPrisma();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -262,45 +266,61 @@ export const POST = withRateLimit(
           (budget) =>
             `- ${budget.name}${
               budget.category ? ` (${budget.category.name})` : ""
-            }: $${Math.round(decimalToNumber(budget.spent)).toLocaleString(
-              "es-CO"
-            )} / $${Math.round(decimalToNumber(budget.amount)).toLocaleString(
-              "es-CO"
-            )} COP`
+            }: ${formatCurrency(decimalToNumber(budget.spent), "COP", locale)} / ${formatCurrency(
+              decimalToNumber(budget.amount),
+              "COP",
+              locale
+            )}`
         )
-        .join("\n") || "Ninguno";
+        .join("\n") || (locale === "en" ? "None" : "Ninguno");
 
     const goalsText =
       goals
         .map(
           (goal) =>
-            `- ${goal.name}: $${Math.round(
-              decimalToNumber(goal.currentAmount)
-            ).toLocaleString("es-CO")} / $${Math.round(
-              decimalToNumber(goal.targetAmount)
-            ).toLocaleString("es-CO")} COP`
+            `- ${goal.name}: ${formatCurrency(
+              decimalToNumber(goal.currentAmount),
+              "COP",
+              locale
+            )} / ${formatCurrency(decimalToNumber(goal.targetAmount), "COP", locale)}`
         )
-        .join("\n") || "Ninguna";
+        .join("\n") || (locale === "en" ? "None" : "Ninguna");
 
     const debtsText =
       debts
         .map(
           (debt) =>
             `- ${debt.name}${
-              debt.counterparty ? ` con ${debt.counterparty}` : ""
-            }: $${Math.round(
-              decimalToNumber(debt.remainingAmount)
-            ).toLocaleString("es-CO")} COP restante`
+              debt.counterparty ? ` ${locale === "en" ? "with" : "con"} ${debt.counterparty}` : ""
+            }: ${formatCurrency(
+              decimalToNumber(debt.remainingAmount),
+              "COP",
+              locale
+            )} ${locale === "en" ? "remaining" : "restante"}`
         )
-        .join("\n") || "Ninguna";
+        .join("\n") || (locale === "en" ? "None" : "Ninguna");
 
-    const systemPrompt = `Eres Rhynode AI Advisor, un asesor financiero experto para LATAM.
+    const systemPrompt =
+      locale === "en"
+        ? `You are Rhynode AI Advisor, an expert financial advisor for LATAM.
+You have access to tools to query the user's real data (balance, transactions, cashflow) and create reminders. Use the tools when you need exact data or to perform actions.
+
+User context:
+- Total balance: ${formatCurrency(totalBalance, "COP", locale)}
+- Month income: ${formatCurrency(monthIncome, "COP", locale)}
+- Month expenses: ${formatCurrency(monthExpense, "COP", locale)}
+- Budgets:\n${budgetsText}
+- Active goals:\n${goalsText}
+- Debts:\n${debtsText}
+
+Reply in English, be concise and practical. Don't give generic advice — use the user's real data.`
+        : `Eres Rhynode AI Advisor, un asesor financiero experto para LATAM.
 Tienes acceso a herramientas para consultar datos reales del usuario (balance, transacciones, flujo de caja) y crear recordatorios. Usa las herramientas cuando necesites datos exactos o para ejecutar acciones.
 
 Contexto del usuario:
-- Balance total: $${Math.round(totalBalance).toLocaleString("es-CO")} COP
-- Ingresos mes: $${Math.round(monthIncome).toLocaleString("es-CO")} COP
-- Gastos mes: $${Math.round(monthExpense).toLocaleString("es-CO")} COP
+- Balance total: ${formatCurrency(totalBalance, "COP", locale)}
+- Ingresos mes: ${formatCurrency(monthIncome, "COP", locale)}
+- Gastos mes: ${formatCurrency(monthExpense, "COP", locale)}
 - Presupuestos:\n${budgetsText}
 - Metas activas:\n${goalsText}
 - Deudas:\n${debtsText}
@@ -312,7 +332,7 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
       { role: "user", content: userMessage },
     ];
 
-    const toolContext = { userId: profile.id, orgId: org.id };
+    const toolContext = { userId: profile.id, orgId: org.id, locale };
 
     // Deterministic fast-path: resolve common queries directly with the tools,
     // emitting the same SSE events the client expects — no LLM round-trip.
@@ -331,8 +351,12 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
               write({ type: "tool_start", tool: intent.tool });
               const result = await executeTool(intent.tool, intent.input, toolContext);
               write({ type: "tool_result", tool: intent.tool, result });
-              const reply = formatIntentReply(intent.tool, result);
-              const text = reply ?? "Listo — revisa el resultado arriba.";
+              const reply = formatIntentReply(intent.tool, result, locale);
+              const text =
+                reply ??
+                (locale === "en"
+                  ? "Done — check the result above."
+                  : "Listo — revisa el resultado arriba.");
               const chunkSize = 60;
               for (let i = 0; i < text.length; i += chunkSize) {
                 write({ type: "content_block_delta", delta: { text: text.slice(i, i + chunkSize) } });
@@ -341,7 +365,12 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
             } catch (error) {
               write({
                 type: "error",
-                message: error instanceof Error ? error.message : "Error procesando la consulta",
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : locale === "en"
+                      ? "Error processing the query"
+                      : "Error procesando la consulta",
               });
             }
             controller.close();
@@ -394,7 +423,7 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
                   max_tokens: 1024,
                   system: systemPrompt,
                   messages,
-                  tools: anthropicTools,
+                  tools: getAnthropicTools(locale),
                   stream: true,
                 }),
               }
@@ -473,7 +502,9 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
 
             if (isLastRound) {
               finalText =
-                "He realizado varias consultas. Revisa los resultados arriba y dime si necesitas algo más.";
+                locale === "en"
+                  ? "I ran several queries. Review the results above and let me know if you need anything else."
+                  : "He realizado varias consultas. Revisa los resultados arriba y dime si necesitas algo más.";
               break;
             }
           }
@@ -493,7 +524,9 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
             message:
               error instanceof Error
                 ? error.message
-                : "Error procesando la conversación",
+                : locale === "en"
+                  ? "Error processing the conversation"
+                  : "Error procesando la conversación",
           });
           controller.close();
         }

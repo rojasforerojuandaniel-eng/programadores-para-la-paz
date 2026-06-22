@@ -6,6 +6,9 @@
  * - Snowball: smallest balance first → maximizes psychological wins.
  */
 
+import type { Locale } from "@/lib/locale";
+import { formatCurrency } from "@/lib/format";
+
 export type PayoffStrategy = "avalanche" | "snowball";
 
 export interface DebtInput {
@@ -115,11 +118,40 @@ function firstActiveIndex(ordered: DebtInput[], balances: number[]): number {
   return -1;
 }
 
-export function formatDebtPlan(result: DebtPlanResult): string {
-  if (result.steps.length === 0) return "No tienes deudas registradas. 🎉";
-  const label = result.strategy === "avalanche" ? "avalancha (mayor interés primero)" : "bola de nieve (menor saldo primero)";
+export function formatDebtPlan(result: DebtPlanResult, locale: Locale = "es"): string {
+  if (result.steps.length === 0) {
+    return locale === "en" ? "You have no registered debts. 🎉" : "No tienes deudas registradas. 🎉";
+  }
+  const label =
+    result.strategy === "avalanche"
+      ? locale === "en"
+        ? "avalanche (highest interest first)"
+        : "avalancha (mayor interés primero)"
+      : locale === "en"
+        ? "snowball (smallest balance first)"
+        : "bola de nieve (menor saldo primero)";
   const lines = result.steps
-    .map((s) => `• ${s.name}: ~${s.monthsToPayoff} meses, intereses ≈ $${Math.round(s.totalInterest).toLocaleString("es-CO")} COP`)
+    .map(
+      (s) =>
+        `• ${s.name}: ${
+          locale === "en" ? `~${s.monthsToPayoff} months` : `~${s.monthsToPayoff} meses`
+        }, ${
+          locale === "en" ? "interest ≈" : "intereses ≈"
+        } ${formatCurrency(s.totalInterest, "COP", locale)}`
+    )
     .join("\n");
-  return `Estrategia ${label}. Con tu presupuesto, quedas libre de deudas en ~${result.debtFreeMonths} meses pagando ~$${Math.round(result.totalInterest).toLocaleString("es-CO")} COP en intereses totales.\n\nOrden sugerido:\n${lines}`;
+  const header =
+    locale === "en"
+      ? `Strategy ${label}. With your budget, you're debt-free in ~${result.debtFreeMonths} months paying ~${formatCurrency(
+          result.totalInterest,
+          "COP",
+          locale
+        )} in total interest.`
+      : `Estrategia ${label}. Con tu presupuesto, quedas libre de deudas en ~${result.debtFreeMonths} meses pagando ~${formatCurrency(
+          result.totalInterest,
+          "COP",
+          locale
+        )} en intereses totales.`;
+  const orderLabel = locale === "en" ? "Suggested order" : "Orden sugerido";
+  return `${header}\n\n${orderLabel}:\n${lines}`;
 }

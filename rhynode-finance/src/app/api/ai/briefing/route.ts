@@ -3,6 +3,7 @@ import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { generateBriefing, type BriefingData } from "@/lib/briefing";
+import { getLocale } from "@/lib/locale-server";
 
 interface BriefingCacheEntry {
   text: string;
@@ -100,7 +101,8 @@ export const GET = withRateLimit(
     };
 
     // Deterministic briefing — no LLM call, $0 per request.
-    const briefingText = generateBriefing(data).trim();
+    const locale = await getLocale();
+    const briefingText = generateBriefing(data, new Date(), locale).trim();
 
     briefingCache.set(cacheKey, {
       text: briefingText,

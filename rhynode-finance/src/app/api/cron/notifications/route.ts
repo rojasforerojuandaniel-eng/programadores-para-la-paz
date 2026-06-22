@@ -8,6 +8,7 @@ import {
   sendInvoiceOverdueReminder,
 } from "@/lib/push-events";
 import { sendPushNotification } from "@/lib/notifications";
+import type { Locale } from "@/lib/locale";
 import type { Notification } from "@/generated/prisma/client";
 import {
   decodeReminderMeta,
@@ -50,6 +51,8 @@ export async function GET(request: Request) {
   try {
     const now = new Date();
     const prisma = getPrisma();
+    // Cron has no user request → default to Spanish for push text.
+    const locale: Locale = "es";
 
     // Auto-advance overdue recurring transactions: roll nextDueDate forward by
     // its frequency until it's in the future, so recurring items don't stay
@@ -106,7 +109,7 @@ export async function GET(request: Request) {
       if (budgetsEnabled) {
         const budgets = await prisma.budget.findMany({ where: { userId } });
         for (const budget of budgets) {
-          const res = await sendBudgetAlert(userId, budget);
+          const res = await sendBudgetAlert(userId, budget, locale);
           if (!res.skipped) {
             results.budgetAlerts++;
             results.totalSent += res.sent;
@@ -118,7 +121,7 @@ export async function GET(request: Request) {
       const goals = await prisma.goal.findMany({ where: { userId } });
       for (const goal of goals) {
         for (const threshold of [0.75, 1] as const) {
-          const res = await sendGoalProgressAlert(userId, goal, threshold);
+          const res = await sendGoalProgressAlert(userId, goal, threshold, locale);
           if (!res.skipped) {
             results.goalAlerts++;
             results.totalSent += res.sent;
@@ -140,7 +143,7 @@ export async function GET(request: Request) {
           },
         });
         for (const sub of recurring) {
-          const res = await sendSubscriptionReminder(userId, sub);
+          const res = await sendSubscriptionReminder(userId, sub, locale);
           if (!res.skipped) {
             results.subscriptionReminders++;
             results.totalSent += res.sent;
@@ -157,7 +160,7 @@ export async function GET(request: Request) {
         },
       });
       for (const invoice of overdueInvoices) {
-        const res = await sendInvoiceOverdueReminder(invoice, userId);
+        const res = await sendInvoiceOverdueReminder(invoice, userId, locale);
         if (!res.skipped) {
           results.invoiceOverdueReminders++;
           results.totalSent += res.sent;

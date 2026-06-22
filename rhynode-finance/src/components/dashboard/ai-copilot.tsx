@@ -1,6 +1,7 @@
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { generatePersonalInsights } from "@/lib/ai-insights";
+import { getLocale } from "@/lib/locale-server";
 import { AiCopilotClient } from "./ai-copilot-client";
 
 export async function AiCopilot({ currency }: { currency: string }) {
@@ -13,6 +14,7 @@ export async function AiCopilot({ currency }: { currency: string }) {
     select: { currency: true },
   });
 
-  const insights = await generatePersonalInsights(profile.id, org?.currency ?? currency);
+  const locale = await getLocale();
+  const insights = await generatePersonalInsights(profile.id, org?.currency ?? currency, locale);
   return <AiCopilotClient initialInsights={insights} />;
 }

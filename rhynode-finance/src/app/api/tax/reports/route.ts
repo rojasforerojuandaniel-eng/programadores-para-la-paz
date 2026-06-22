@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
+import { getLocale } from "@/lib/locale-server";
 import {
   calculateColombianTaxReport,
   generateReportCSV,
@@ -48,6 +49,7 @@ export const GET = withRateLimit(
 
       const { year, month, periodType, format } = parsed.data;
       const effectiveMonth = month ?? new Date().getMonth() + 1;
+      const locale = await getLocale();
 
       const [invoices, transactions] = await Promise.all([
         prisma.invoice.findMany({
@@ -65,7 +67,7 @@ export const GET = withRateLimit(
         invoices,
         transactions,
         { year, month: effectiveMonth, periodType: periodType as TaxPeriodType },
-        { currency: org.currency, orgMetadata: org.metadata as Record<string, unknown> | null }
+        { currency: org.currency, orgMetadata: org.metadata as Record<string, unknown> | null, locale }
       );
 
       const baseFilename = sanitizeFilename(`reporte_fiscal_${report.period.label}`);
@@ -75,7 +77,7 @@ export const GET = withRateLimit(
       }
 
       if (format === "csv") {
-        const csv = generateReportCSV(report);
+        const csv = generateReportCSV(report, locale);
         return new NextResponse(csv, {
           status: 200,
           headers: {
@@ -86,7 +88,7 @@ export const GET = withRateLimit(
       }
 
       if (format === "xlsx") {
-        const buffer = generateReportXLSX(report);
+        const buffer = generateReportXLSX(report, locale);
         return new NextResponse(Buffer.from(buffer), {
           status: 200,
           headers: {
@@ -97,7 +99,7 @@ export const GET = withRateLimit(
       }
 
       // format === "pdf"
-      const pdfBytes = await generateReportPDF(report);
+      const pdfBytes = await generateReportPDF(report, locale);
       return new NextResponse(Buffer.from(pdfBytes), {
         status: 200,
         headers: {

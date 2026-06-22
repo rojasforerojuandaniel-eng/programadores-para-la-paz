@@ -1,6 +1,12 @@
 import { getPrisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
 import { sumInCop } from "@/lib/currency";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
+
+/** Pure inline es/en bifurcation. No message catalogs. */
+const tr = (locale: Locale, es: string, en: string): string =>
+  locale === "en" ? en : es;
 
 /**
  * Colombian income tax (declaración de renta) estimator for natural persons,
@@ -58,6 +64,7 @@ export interface RentDeclarationInput {
   orgId: string | null;
   year: number;
   dependents?: number;
+  locale?: Locale;
 }
 
 export interface RentDeclarationResult {
@@ -96,7 +103,7 @@ export async function computeRentDeclaration(
   input: RentDeclarationInput
 ): Promise<RentDeclarationResult> {
   const prisma = getPrisma();
-  const { userId, orgId, year, dependents = 0 } = input;
+  const { userId, orgId, year, dependents = 0, locale = "es" } = input;
   const notes: string[] = [];
 
   const start = new Date(Date.UTC(year, 0, 1));
@@ -130,7 +137,13 @@ export async function computeRentDeclaration(
   // Renta exenta laboral: 25% del ingreso laboral, capped.
   const exemptIncome = Math.min(grossIncome * RENTA_EXENTA_RATE, RENTA_EXENTA_CAP_COP);
   if (exemptIncome >= RENTA_EXENTA_CAP_COP) {
-    notes.push(`Renta exenta limitada al tope de ${RENTA_EXENTA_CAP_COP.toLocaleString("es-CO")} COP (2026).`);
+    notes.push(
+      tr(
+        locale,
+        `Renta exenta limitada al tope de ${formatNumber(RENTA_EXENTA_CAP_COP, locale)} COP (2026).`,
+        `Exempt income capped at ${formatNumber(RENTA_EXENTA_CAP_COP, locale)} COP (2026).`
+      )
+    );
   }
 
   // Deductible expenses by category keyword.
@@ -160,8 +173,22 @@ export async function computeRentDeclaration(
 
   const effectiveRate = grossIncome > 0 ? tax / grossIncome : 0;
 
-  notes.push("Estimación de planeación con tabla DT 2026 (UVT 49.799). No sustituye a un contador.");
-  if (taxableBase === 0) notes.push("Base gravable en cero — no habría impuesto a cargo según esta estimación.");
+  notes.push(
+    tr(
+      locale,
+      "Estimación de planeación con tabla DT 2026 (UVT 49.799). No sustituye a un contador.",
+      "Planning estimate using the 2026 tax table (UVT 49,799). Does not replace an accountant."
+    )
+  );
+  if (taxableBase === 0) {
+    notes.push(
+      tr(
+        locale,
+        "Base gravable en cero — no habría impuesto a cargo según esta estimación.",
+        "Taxable base is zero — no tax would be owed under this estimate."
+      )
+    );
+  }
 
   return {
     year,

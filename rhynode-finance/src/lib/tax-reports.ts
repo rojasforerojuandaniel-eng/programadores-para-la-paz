@@ -1,6 +1,8 @@
 import { Prisma } from "@/generated/prisma/client";
 import type { Invoice, Transaction } from "@/generated/prisma/client";
 import { decimalToNumber } from "@/lib/decimal";
+import { formatCurrency, formatDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import * as XLSX from "xlsx";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -103,6 +105,10 @@ const IVA_DEDUCTIBLE_CATEGORIES = new Set([
   "Otros",
 ]);
 
+/** Pure inline es/en bifurcation. No message catalogs. */
+const tr = (locale: Locale, es: string, en: string): string =>
+  locale === "en" ? en : es;
+
 function isInPeriod(
   date: Date,
   filter: TaxPeriodFilter
@@ -128,12 +134,8 @@ function addDecimals(a: Prisma.Decimal, b: Prisma.Decimal): Prisma.Decimal {
   return a.plus(b);
 }
 
-export function formatCOP(amount: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+export function formatCOP(amount: number, locale: Locale = "es"): string {
+  return formatCurrency(amount, "COP", locale);
 }
 
 function getReteFuenteRate(amount: Prisma.Decimal): number {
@@ -145,14 +147,18 @@ function getReteFuenteRate(amount: Prisma.Decimal): number {
   return 0.04;
 }
 
-function buildPeriodLabel(filter: TaxPeriodFilter): string {
+function buildPeriodLabel(filter: TaxPeriodFilter, locale: Locale): string {
   if (filter.periodType === "MONTHLY" && filter.month) {
     const date = new Date(filter.year, filter.month - 1, 1);
-    return date.toLocaleDateString("es-CO", { year: "numeric", month: "long" });
+    return formatDate(date, locale, { year: "numeric", month: "long" });
   }
   if (filter.periodType === "BIMONTHLY" && filter.month) {
     const bimester = Math.ceil(filter.month / 2);
-    return `${filter.year} - Bimestre ${bimester}`;
+    return tr(
+      locale,
+      `${filter.year} - Bimestre ${bimester}`,
+      `${filter.year} - Bimester ${bimester}`
+    );
   }
   return String(filter.year);
 }
@@ -187,13 +193,20 @@ function detectCity(
   return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
 }
 
+export interface TaxReportOptions {
+  currency?: string;
+  orgMetadata?: Record<string, unknown> | null;
+  locale?: Locale;
+}
+
 export function calculateColombianTaxReport(
   invoices: InvoiceInput[],
   transactions: TransactionInput[],
   filter: TaxPeriodFilter,
-  options: { currency?: string; orgMetadata?: Record<string, unknown> | null } = {}
+  options: TaxReportOptions = {}
 ): ColombianTaxReport {
   const currency = options.currency ?? "COP";
+  const locale: Locale = options.locale ?? "es";
   const periodInvoices = invoices.filter((inv) => isInPeriod(inv.issueDate, filter));
   const periodTransactions = transactions.filter((tx) => isInPeriod(tx.date, filter));
 
@@ -262,53 +275,101 @@ export function calculateColombianTaxReport(
       year: filter.year,
       month: filter.month,
       bimester: filter.month && filter.periodType === "BIMONTHLY" ? Math.ceil(filter.month / 2) : undefined,
-      label: buildPeriodLabel(filter),
+      label: buildPeriodLabel(filter, locale),
     },
     generatedAt: new Date().toISOString(),
     currency,
     disclaimers: [
-      "Este reporte es un borrador orientativo generado automáticamente a partir de la información registrada en Rhynode Finance.",
-      "La DIAN determina las tarifas, exclusiones y procedimientos definitivos. Revise siempre con un contador o revisor fiscal antes de presentar declaraciones.",
-      "El IVA descontable es una estimación basada en categorías de gastos; no reemplaza el soporte de facturas de proveedores.",
+      tr(
+        locale,
+        "Este reporte es un borrador orientativo generado automáticamente a partir de la información registrada en Rhynode Finance.",
+        "This report is an orientative draft generated automatically from the information recorded in Rhynode Finance."
+      ),
+      tr(
+        locale,
+        "La DIAN determina las tarifas, exclusiones y procedimientos definitivos. Revise siempre con un contador o revisor fiscal antes de presentar declaraciones.",
+        "The DIAN determines the definitive rates, exclusions, and procedures. Always review with an accountant or statutory auditor before filing declarations."
+      ),
+      tr(
+        locale,
+        "El IVA descontable es una estimación basada en categorías de gastos; no reemplaza el soporte de facturas de proveedores.",
+        "Deductible VAT is an estimate based on expense categories; it does not replace vendor invoice support."
+      ),
     ],
     iva: {
       generated: {
-        concept: "IVA generado (facturas emitidas/pagadas)",
+        concept: tr(
+          locale,
+          "IVA generado (facturas emitidas/pagadas)",
+          "VAT generated (issued/paid invoices)"
+        ),
         base: decimalToNumber(generatedBase),
         rate: decimalToNumber(IVA_RATE),
         tax: decimalToNumber(generatedTax),
         count: activeInvoices.length,
-        note: "Suma del impuesto registrado en facturas con estado distinto a borrador/anulado.",
+        note: tr(
+          locale,
+          "Suma del impuesto registrado en facturas con estado distinto a borrador/anulado.",
+          "Sum of tax recorded on invoices with status other than draft/cancelled."
+        ),
       },
       deductible: {
-        concept: "IVA descontable estimado (gastos)",
+        concept: tr(
+          locale,
+          "IVA descontable estimado (gastos)",
+          "Estimated deductible VAT (expenses)"
+        ),
         base: decimalToNumber(deductibleBase),
         rate: decimalToNumber(IVA_RATE),
         tax: decimalToNumber(deductibleTax),
         count: vatableExpenses.length,
-        note: "Estimación del 19% sobre gastos categorizados como susceptibles de IVA. Requiere soporte fiscal.",
+        note: tr(
+          locale,
+          "Estimación del 19% sobre gastos categorizados como susceptibles de IVA. Requiere soporte fiscal.",
+          "Estimate of 19% on expenses categorized as VAT-eligible. Requires tax support."
+        ),
       },
       netPayable: decimalToNumber(generatedTax.minus(deductibleTax)),
     },
     reteFuente: {
       onIncome: {
-        concept: "ReteFuente estimado sobre ingresos",
+        concept: tr(
+          locale,
+          "ReteFuente estimado sobre ingresos",
+          "Estimated withholding on income"
+        ),
         base: decimalToNumber(reteOnIncomeBase),
         rate: reteOnIncomeRate,
         tax: decimalToNumber(reteOnIncomeTax),
         count: activeInvoices.length,
-        note: "Umbral simplificado aplicado a la base gravable de facturas. Tarifa real según tipo de actividad y acuerdos.",
+        note: tr(
+          locale,
+          "Umbral simplificado aplicado a la base gravable de facturas. Tarifa real según tipo de actividad y acuerdos.",
+          "Simplified threshold applied to the invoice taxable base. Actual rate depends on activity type and agreements."
+        ),
       },
       onExpenses: {
-        concept: "ReteFuente estimado practicado en pagos",
+        concept: tr(
+          locale,
+          "ReteFuente estimado practicado en pagos",
+          "Estimated withholding applied on payments"
+        ),
         base: decimalToNumber(reteOnExpensesBase),
         rate: reteOnExpensesRate,
         tax: decimalToNumber(reteOnExpensesTax),
         count: reteExpenseTransactions.length,
-        note: "Estimación de retenciones aplicadas a pagos por servicios según umbrales simplificados.",
+        note: tr(
+          locale,
+          "Estimación de retenciones aplicadas a pagos por servicios según umbrales simplificados.",
+          "Estimate of withholdings applied to service payments per simplified thresholds."
+        ),
       },
       total: decimalToNumber(reteOnIncomeTax.plus(reteOnExpensesTax)),
-      note: "La retención definitiva depende del tipo de operación, contrato y responsable del impuesto.",
+      note: tr(
+        locale,
+        "La retención definitiva depende del tipo de operación, contrato y responsable del impuesto.",
+        "The final withholding depends on the operation type, contract, and tax responsible party."
+      ),
     },
     ica: {
       city,
@@ -316,8 +377,16 @@ export function calculateColombianTaxReport(
       base: decimalToNumber(icaBase),
       amount: decimalToNumber(icaTax),
       note: city
-        ? `Tarifa ICA aproximada para ${city}. Verifique la tarifa exacta ante el municipio respectivo.`
-        : "No se detectó ciudad. Configure la ciudad de la organización o incluya ubicación en transacciones para calcular ICA.",
+        ? tr(
+            locale,
+            `Tarifa ICA aproximada para ${city}. Verifique la tarifa exacta ante el municipio respectivo.`,
+            `Approximate ICA rate for ${city}. Verify the exact rate with the respective municipality.`
+          )
+        : tr(
+            locale,
+            "No se detectó ciudad. Configure la ciudad de la organización o incluya ubicación en transacciones para calcular ICA.",
+            "No city detected. Configure the organization city or include location in transactions to compute ICA."
+          ),
     },
     summary: {
       totalInvoiced: decimalToNumber(totalInvoiced),
@@ -329,16 +398,23 @@ export function calculateColombianTaxReport(
   return report;
 }
 
-export function generateReportCSV(report: ColombianTaxReport): string {
-  const headers = ["Concepto", "Base", "Tasa", "Impuesto", "Cantidad", "Nota"];
+export function generateReportCSV(report: ColombianTaxReport, locale: Locale = "es"): string {
+  const headers = [
+    tr(locale, "Concepto", "Concept"),
+    tr(locale, "Base", "Base"),
+    tr(locale, "Tasa", "Rate"),
+    tr(locale, "Impuesto", "Tax"),
+    tr(locale, "Cantidad", "Count"),
+    tr(locale, "Nota", "Note"),
+  ];
   const rows = [
     [report.iva.generated.concept, report.iva.generated.base, report.iva.generated.rate, report.iva.generated.tax, report.iva.generated.count, report.iva.generated.note],
     [report.iva.deductible.concept, report.iva.deductible.base, report.iva.deductible.rate, report.iva.deductible.tax, report.iva.deductible.count, report.iva.deductible.note],
-    ["IVA neto a pagar", report.iva.netPayable, "", "", "", ""],
+    [tr(locale, "IVA neto a pagar", "Net VAT payable"), report.iva.netPayable, "", "", "", ""],
     [report.reteFuente.onIncome.concept, report.reteFuente.onIncome.base, report.reteFuente.onIncome.rate, report.reteFuente.onIncome.tax, report.reteFuente.onIncome.count, report.reteFuente.onIncome.note],
     [report.reteFuente.onExpenses.concept, report.reteFuente.onExpenses.base, report.reteFuente.onExpenses.rate, report.reteFuente.onExpenses.tax, report.reteFuente.onExpenses.count, report.reteFuente.onExpenses.note],
-    ["ReteFuente total", report.reteFuente.total, "", "", "", report.reteFuente.note],
-    ["ICA", report.ica.base, report.ica.rate, report.ica.amount, "", report.ica.note],
+    [tr(locale, "ReteFuente total", "Total withholding"), report.reteFuente.total, "", "", "", report.reteFuente.note],
+    [tr(locale, "ICA", "ICA"), report.ica.base, report.ica.rate, report.ica.amount, "", report.ica.note],
   ].map((row) =>
     row
       .map((cell) => {
@@ -350,49 +426,57 @@ export function generateReportCSV(report: ColombianTaxReport): string {
   );
 
   const meta = [
-    `Período,${report.period.label}`,
-    `Generado,${new Date(report.generatedAt).toLocaleString("es-CO")}`,
-    `Moneda,${report.currency}`,
+    `${tr(locale, "Período", "Period")},${report.period.label}`,
+    `${tr(locale, "Generado", "Generated")},${formatDate(report.generatedAt, locale, { dateStyle: "medium", timeStyle: "short" })}`,
+    `${tr(locale, "Moneda", "Currency")},${report.currency}`,
     "",
     headers.join(","),
     ...rows,
     "",
-    "Descargos",
+    tr(locale, "Descargos", "Disclaimers"),
     ...report.disclaimers.map((d) => `"${d.replace(/"/g, '""')}"`),
   ];
 
   return meta.join("\n");
 }
 
-export function generateReportXLSX(report: ColombianTaxReport): Buffer {
+export function generateReportXLSX(report: ColombianTaxReport, locale: Locale = "es"): Buffer {
+  const conceptLabel = tr(locale, "Concepto", "Concept");
+  const valueLabel = tr(locale, "Valor", "Value");
+  const baseLabel = tr(locale, "Base", "Base");
+  const rateLabel = tr(locale, "Tasa", "Rate");
+  const taxLabel = tr(locale, "Impuesto", "Tax");
+  const countLabel = tr(locale, "Cantidad", "Count");
+
   const summaryRows = [
-    { Concepto: "Período", Valor: report.period.label },
-    { Concepto: "Total facturado", Valor: formatCOP(report.summary.totalInvoiced) },
-    { Concepto: "Ingresos registrados", Valor: formatCOP(report.summary.totalIncomeTransactions) },
-    { Concepto: "Gastos registrados", Valor: formatCOP(report.summary.totalExpenseTransactions) },
+    { [conceptLabel]: tr(locale, "Período", "Period"), [valueLabel]: report.period.label },
+    { [conceptLabel]: tr(locale, "Total facturado", "Total invoiced"), [valueLabel]: formatCOP(report.summary.totalInvoiced, locale) },
+    { [conceptLabel]: tr(locale, "Ingresos registrados", "Registered income"), [valueLabel]: formatCOP(report.summary.totalIncomeTransactions, locale) },
+    { [conceptLabel]: tr(locale, "Gastos registrados", "Registered expenses"), [valueLabel]: formatCOP(report.summary.totalExpenseTransactions, locale) },
   ];
 
   const taxRows = [
-    { Concepto: report.iva.generated.concept, Base: formatCOP(report.iva.generated.base), Tasa: report.iva.generated.rate, Impuesto: formatCOP(report.iva.generated.tax), Cantidad: report.iva.generated.count },
-    { Concepto: report.iva.deductible.concept, Base: formatCOP(report.iva.deductible.base), Tasa: report.iva.deductible.rate, Impuesto: formatCOP(report.iva.deductible.tax), Cantidad: report.iva.deductible.count },
-    { Concepto: "IVA neto a pagar", Base: "", Tasa: "", Impuesto: formatCOP(report.iva.netPayable), Cantidad: "" },
-    { Concepto: report.reteFuente.onIncome.concept, Base: formatCOP(report.reteFuente.onIncome.base), Tasa: report.reteFuente.onIncome.rate, Impuesto: formatCOP(report.reteFuente.onIncome.tax), Cantidad: report.reteFuente.onIncome.count },
-    { Concepto: report.reteFuente.onExpenses.concept, Base: formatCOP(report.reteFuente.onExpenses.base), Tasa: report.reteFuente.onExpenses.rate, Impuesto: formatCOP(report.reteFuente.onExpenses.tax), Cantidad: report.reteFuente.onExpenses.count },
-    { Concepto: "ReteFuente total", Base: "", Tasa: "", Impuesto: formatCOP(report.reteFuente.total), Cantidad: "" },
-    { Concepto: "ICA", Base: formatCOP(report.ica.base), Tasa: report.ica.rate, Impuesto: formatCOP(report.ica.amount), Cantidad: report.ica.city ?? "Sin ciudad" },
+    { [conceptLabel]: report.iva.generated.concept, [baseLabel]: formatCOP(report.iva.generated.base, locale), [rateLabel]: report.iva.generated.rate, [taxLabel]: formatCOP(report.iva.generated.tax, locale), [countLabel]: report.iva.generated.count },
+    { [conceptLabel]: report.iva.deductible.concept, [baseLabel]: formatCOP(report.iva.deductible.base, locale), [rateLabel]: report.iva.deductible.rate, [taxLabel]: formatCOP(report.iva.deductible.tax, locale), [countLabel]: report.iva.deductible.count },
+    { [conceptLabel]: tr(locale, "IVA neto a pagar", "Net VAT payable"), [baseLabel]: "", [rateLabel]: "", [taxLabel]: formatCOP(report.iva.netPayable, locale), [countLabel]: "" },
+    { [conceptLabel]: report.reteFuente.onIncome.concept, [baseLabel]: formatCOP(report.reteFuente.onIncome.base, locale), [rateLabel]: report.reteFuente.onIncome.rate, [taxLabel]: formatCOP(report.reteFuente.onIncome.tax, locale), [countLabel]: report.reteFuente.onIncome.count },
+    { [conceptLabel]: report.reteFuente.onExpenses.concept, [baseLabel]: formatCOP(report.reteFuente.onExpenses.base, locale), [rateLabel]: report.reteFuente.onExpenses.rate, [taxLabel]: formatCOP(report.reteFuente.onExpenses.tax, locale), [countLabel]: report.reteFuente.onExpenses.count },
+    { [conceptLabel]: tr(locale, "ReteFuente total", "Total withholding"), [baseLabel]: "", [rateLabel]: "", [taxLabel]: formatCOP(report.reteFuente.total, locale), [countLabel]: "" },
+    { [conceptLabel]: tr(locale, "ICA", "ICA"), [baseLabel]: formatCOP(report.ica.base, locale), [rateLabel]: report.ica.rate, [taxLabel]: formatCOP(report.ica.amount, locale), [countLabel]: report.ica.city ?? tr(locale, "Sin ciudad", "No city") },
   ];
 
-  const disclaimerRows = report.disclaimers.map((d) => ({ Nota: d }));
+  const noteLabel = tr(locale, "Nota", "Note");
+  const disclaimerRows = report.disclaimers.map((d) => ({ [noteLabel]: d }));
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryRows), "Resumen");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(taxRows), "Impuestos");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(disclaimerRows), "Descargos");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(summaryRows), tr(locale, "Resumen", "Summary"));
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(taxRows), tr(locale, "Impuestos", "Taxes"));
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(disclaimerRows), tr(locale, "Descargos", "Disclaimers"));
 
   return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 }
 
-export async function generateReportPDF(report: ColombianTaxReport): Promise<Uint8Array> {
+export async function generateReportPDF(report: ColombianTaxReport, locale: Locale = "es"): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -414,36 +498,46 @@ export async function generateReportPDF(report: ColombianTaxReport): Promise<Uin
     });
   }
 
-  drawText("Reporte Fiscal Colombia", { size: 20, bold: true, color: rgb(0.1, 0.1, 0.1) });
+  drawText(
+    tr(locale, "Reporte Fiscal Colombia", "Colombia Tax Report"),
+    { size: 20, bold: true, color: rgb(0.1, 0.1, 0.1) }
+  );
   y -= 24;
-  drawText(`Período: ${report.period.label}`, { size: 11 });
+  drawText(`${tr(locale, "Período", "Period")}: ${report.period.label}`, { size: 11 });
   y -= 16;
-  drawText(`Generado: ${new Date(report.generatedAt).toLocaleString("es-CO")}`, { size: 9, color: rgb(0.4, 0.4, 0.4) });
+  drawText(
+    `${tr(locale, "Generado", "Generated")}: ${formatDate(report.generatedAt, locale, { dateStyle: "medium", timeStyle: "short" })}`,
+    { size: 9, color: rgb(0.4, 0.4, 0.4) }
+  );
   y -= 28;
+
+  const invoicesWord = tr(locale, "facturas", "invoices");
+  const expensesWord = tr(locale, "gastos", "expenses");
+  const noCityWord = tr(locale, "Sin ciudad", "No city");
 
   const sections = [
     {
       title: "IVA",
       lines: [
-        ["Generado", formatCOP(report.iva.generated.tax), `${report.iva.generated.count} facturas`],
-        ["Descontable estimado", formatCOP(report.iva.deductible.tax), `${report.iva.deductible.count} gastos`],
-        ["Neto a pagar", formatCOP(report.iva.netPayable), ""],
+        [tr(locale, "Generado", "Generated"), formatCOP(report.iva.generated.tax, locale), `${report.iva.generated.count} ${invoicesWord}`],
+        [tr(locale, "Descontable estimado", "Estimated deductible"), formatCOP(report.iva.deductible.tax, locale), `${report.iva.deductible.count} ${expensesWord}`],
+        [tr(locale, "Neto a pagar", "Net payable"), formatCOP(report.iva.netPayable, locale), ""],
       ],
     },
     {
-      title: "ReteFuente",
+      title: tr(locale, "ReteFuente", "Withholding"),
       lines: [
-        ["Sobre ingresos", formatCOP(report.reteFuente.onIncome.tax), `${report.reteFuente.onIncome.count} facturas`],
-        ["Practicada en pagos", formatCOP(report.reteFuente.onExpenses.tax), `${report.reteFuente.onExpenses.count} gastos`],
-        ["Total", formatCOP(report.reteFuente.total), ""],
+        [tr(locale, "Sobre ingresos", "On income"), formatCOP(report.reteFuente.onIncome.tax, locale), `${report.reteFuente.onIncome.count} ${invoicesWord}`],
+        [tr(locale, "Practicada en pagos", "Applied on payments"), formatCOP(report.reteFuente.onExpenses.tax, locale), `${report.reteFuente.onExpenses.count} ${expensesWord}`],
+        [tr(locale, "Total", "Total"), formatCOP(report.reteFuente.total, locale), ""],
       ],
     },
     {
       title: "ICA",
       lines: [
-        ["Base", formatCOP(report.ica.base), report.ica.city ?? "Sin ciudad"],
-        ["Tarifa", `${(report.ica.rate * 1000).toFixed(2)}‰`, ""],
-        ["A pagar", formatCOP(report.ica.amount), ""],
+        [tr(locale, "Base", "Base"), formatCOP(report.ica.base, locale), report.ica.city ?? noCityWord],
+        [tr(locale, "Tarifa", "Rate"), `${(report.ica.rate * 1000).toFixed(2)}‰`, ""],
+        [tr(locale, "A pagar", "Payable"), formatCOP(report.ica.amount, locale), ""],
       ],
     },
   ];
@@ -463,7 +557,7 @@ export async function generateReportPDF(report: ColombianTaxReport): Promise<Uin
   }
 
   y -= 10;
-  drawText("Descargos", { y, size: 12, bold: true });
+  drawText(tr(locale, "Descargos", "Disclaimers"), { y, size: 12, bold: true });
   y -= 16;
   for (const disclaimer of report.disclaimers) {
     const wrapped = wrapText(disclaimer, 80);
