@@ -327,6 +327,84 @@
         "title": "No hay facturas aún",
         "description": "Crea tu primera factura para empezar a facturar y dar seguimiento a pagos.",
         "hint": "Todas tus facturas electrónicas aparecerán aquí."
+      },
+      "form": {
+        "fields": {
+          "client": "Cliente",
+          "number": "Número de factura",
+          "currency": "Moneda",
+          "issueDate": "Fecha de emisión",
+          "dueDate": "Fecha de vencimiento",
+          "notes": "Notas",
+          "terms": "Términos"
+        },
+        "placeholders": {
+          "selectClient": "Seleccionar cliente...",
+          "number": "Ej. F-001 (se genera automáticamente si se deja vacío)",
+          "description": "Descripción",
+          "quantity": "Cant.",
+          "unitPrice": "Precio",
+          "taxRate": "IVA %",
+          "notes": "Notas adicionales para el cliente",
+          "terms": "Ej. Pago a 30 días"
+        },
+        "aria": {
+          "itemDescription": "Descripción del ítem {index}",
+          "itemQuantity": "Cantidad del ítem {index}",
+          "itemUnitPrice": "Precio unitario del ítem {index}",
+          "itemTaxRate": "Porcentaje de impuesto del ítem {index}",
+          "removeItem": "Eliminar ítem {index}"
+        },
+        "itemsTitle": "Ítems",
+        "addItem": "Agregar ítem",
+        "cancel": "Cancelar",
+        "preview": "Vista previa",
+        "hidePreview": "Ocultar vista previa",
+        "saving": "Guardando...",
+        "save": "Guardar Factura",
+        "errors": {
+          "selectClient": "Selecciona un cliente",
+          "addItem": "Agrega al menos un ítem válido"
+        },
+        "toasts": {
+          "created": "Factura creada correctamente",
+          "createError": "Error al crear factura"
+        }
+      },
+      "actions": {
+        "title": "Acciones",
+        "sheetDescription": "Factura {number}",
+        "view": "Ver",
+        "duplicate": "Duplicar",
+        "send": "Enviar",
+        "sending": "Enviando...",
+        "markPaid": "Marcar pagada",
+        "marking": "Marcando...",
+        "cancelInvoice": "Anular",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando...",
+        "cancel": "Cancelar",
+        "viewTitle": "Vista de factura",
+        "previewOf": "Previsualización de {number}",
+        "deleteTitle": "Eliminar factura",
+        "deleteDescriptionPre": "Estás a punto de eliminar la factura",
+        "deleteDescriptionPost": ". Esta acción no se puede deshacer.",
+        "aria": {
+          "actions": "Acciones de factura {number}"
+        },
+        "toasts": {
+          "statusUpdated": "Estado actualizado",
+          "statusError": "Error al actualizar estado",
+          "sent": "Factura enviada",
+          "sentWithDate": "Factura enviada el {date}",
+          "sendError": "Error al enviar factura",
+          "markedPaid": "Factura marcada como pagada",
+          "markedPaidWithIncome": "Factura marcada como pagada e ingreso creado",
+          "markPaidError": "Error al marcar factura como pagada",
+          "deleted": "Factura eliminada",
+          "deleteError": "Error al eliminar factura"
+        }
       }
     },
     "debts": {
@@ -456,6 +534,77 @@
         "title": "Detecta suscripciones automáticamente",
         "description": "Analizamos tus transacciones para encontrar pagos recurrentes y ayudarte a ahorrar.",
         "hint": "Presiona detectar para descubrir tus suscripciones."
+      },
+      "managerSubtitle": "Detecta, monitorea y cancela suscripciones para ahorrar",
+      "filterAriaLabel": "Filtrar suscripciones por estado",
+      "listAriaLabel": "Lista de suscripciones",
+      "daysCount": "{count} días",
+      "perMonth": "/ mes",
+      "monthlyLabel": "Mensual",
+      "unused": "Sin usar",
+      "increased": "Subió",
+      "filters": {
+        "ACTIVE": "Activas",
+        "PENDING_CANCELLATION": "Para cancelar",
+        "CANCELED": "Canceladas",
+        "ALL": "Todas"
+      },
+      "statuses": {
+        "ACTIVE": "Activa",
+        "PENDING_CANCELLATION": "Por cancelar",
+        "CANCELED": "Cancelada"
+      },
+      "frequencies": {
+        "MONTHLY": "Mensual",
+        "QUARTERLY": "Trimestral",
+        "YEARLY": "Anual"
+      },
+      "kpis": {
+        "monthlySpend": "Gasto mensual",
+        "annualSpend": "Gasto anual estimado",
+        "activeCount": "Suscripciones activas",
+        "nextRenewal": "Próxima renovación"
+      },
+      "columns": {
+        "name": "Suscripción",
+        "amount": "Monto",
+        "frequency": "Frecuencia",
+        "nextCharge": "Próximo cargo",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "emptyFiltered": {
+        "title": "No hay suscripciones",
+        "description": "No encontramos suscripciones en este filtro.",
+        "hint": "Prueba otro filtro o presiona detectar para buscar nuevas."
+      },
+      "actions": {
+        "edit": "Editar",
+        "reactivate": "Reactivar",
+        "markForCancel": "Marcar para cancelar",
+        "delete": "Eliminar",
+        "deleting": "Eliminando...",
+        "cancel": "Cancelar",
+        "editLink": "Editar enlace",
+        "close": "Cerrar",
+        "save": "Guardar",
+        "confirmCanceled": "Ya cancelé",
+        "markForCancelAriaLabel": "Marcar para cancelar",
+        "confirmCanceledAriaLabel": "Confirmar que ya cancelé",
+        "reactivateAriaLabel": "Reactivar suscripción",
+        "openActionsAriaLabel": "Abrir acciones",
+        "cancelLinkTitle": "Enlace de cancelación",
+        "cancelLinkDescription": "Guarda el enlace directo para cancelar esta suscripción.",
+        "urlLabel": "URL para cancelar",
+        "confirmDelete": "¿Eliminar la suscripción \"{name}\"?",
+        "deletedToast": "Suscripción eliminada",
+        "deleteErrorToast": "No se pudo eliminar",
+        "reactivatedToast": "Suscripción activada nuevamente",
+        "markedCancelToast": "Marcada para cancelar",
+        "statusErrorToast": "No se pudo cambiar el estado",
+        "networkErrorToast": "Error de red",
+        "updateErrorToast": "No se pudo actualizar",
+        "canceledToast": "Suscripción cancelada"
       }
     },
     "calendar": {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,7 @@ function toItemString(value: number | undefined, fallback: string): string {
 }
 
 export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormProps) {
+  const t = useTranslations("dashboard.invoices");
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -172,7 +174,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!form.clientId) {
-      toast.error("Selecciona un cliente");
+      toast.error(t("form.errors.selectClient"));
       return;
     }
 
@@ -187,7 +189,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
       }));
 
     if (validItems.length === 0) {
-      toast.error("Agrega al menos un ítem válido");
+      toast.error(t("form.errors.addItem"));
       return;
     }
 
@@ -210,7 +212,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
               currency: form.currency,
               itemCount: validItems.length,
             });
-            toast.success("Factura creada correctamente");
+            toast.success(t("form.toasts.created"));
             setForm({
               clientId: "",
               number: "",
@@ -227,7 +229,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
             onSuccess();
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear factura");
+            toast.error(err.message || t("form.toasts.createError"));
           },
         },
       );
@@ -240,13 +242,13 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
     <form onSubmit={handleSubmit} className="space-y-4 pt-2">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="inv-client">Cliente *</Label>
+          <Label htmlFor="inv-client">{t("form.fields.client")} *</Label>
           <Select
             value={form.clientId}
             onValueChange={(value) => setForm({ ...form, clientId: value })}
           >
             <SelectTrigger id="inv-client">
-              <SelectValue placeholder="Seleccionar cliente..." />
+              <SelectValue placeholder={t("form.placeholders.selectClient")} />
             </SelectTrigger>
             <SelectContent>
               {clients.map((client) => (
@@ -258,21 +260,21 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="inv-number">Número de factura</Label>
+          <Label htmlFor="inv-number">{t("form.fields.number")}</Label>
           <Input
             id="inv-number"
             value={form.number}
             onChange={(event) =>
               setForm({ ...form, number: event.target.value })
             }
-            placeholder="Ej. F-001 (se genera automáticamente si se deja vacío)"
+            placeholder={t("form.placeholders.number")}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="inv-currency">Moneda</Label>
+          <Label htmlFor="inv-currency">{t("form.fields.currency")}</Label>
           <Select
             value={form.currency}
             onValueChange={(value) => setForm({ ...form, currency: value })}
@@ -289,7 +291,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="inv-issue">Fecha de emisión</Label>
+          <Label htmlFor="inv-issue">{t("form.fields.issueDate")}</Label>
           <Input
             id="inv-issue"
             type="date"
@@ -300,7 +302,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="inv-due">Fecha de vencimiento</Label>
+          <Label htmlFor="inv-due">{t("form.fields.dueDate")}</Label>
           <Input
             id="inv-due"
             type="date"
@@ -314,14 +316,14 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Ítems</h3>
+          <h3 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{t("form.itemsTitle")}</h3>
           <Button
             type="button"
             variant="outline"
             className="h-10"
             onClick={addItem}
           >
-            <Plus className="mr-1.5 h-4 w-4" /> Agregar ítem
+            <Plus className="mr-1.5 h-4 w-4" /> {t("form.addItem")}
           </Button>
         </div>
         <div className="space-y-3">
@@ -332,8 +334,8 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
             >
               <div className="sm:col-span-5">
                 <Input
-                  placeholder="Descripción"
-                  aria-label={`Descripción del ítem ${idx + 1}`}
+                  placeholder={t("form.placeholders.description")}
+                  aria-label={t("form.aria.itemDescription", { index: idx + 1 })}
                   value={item.description}
                   onChange={(event) =>
                     updateItem(idx, "description", event.target.value)
@@ -344,8 +346,8 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
                 <Input
                   type="number"
                   min={1}
-                  placeholder="Cant."
-                  aria-label={`Cantidad del ítem ${idx + 1}`}
+                  placeholder={t("form.placeholders.quantity")}
+                  aria-label={t("form.aria.itemQuantity", { index: idx + 1 })}
                   value={item.quantity}
                   onChange={(event) =>
                     updateItem(idx, "quantity", event.target.value)
@@ -356,8 +358,8 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
                 <Input
                   type="number"
                   min={0}
-                  placeholder="Precio"
-                  aria-label={`Precio unitario del ítem ${idx + 1}`}
+                  placeholder={t("form.placeholders.unitPrice")}
+                  aria-label={t("form.aria.itemUnitPrice", { index: idx + 1 })}
                   value={item.unitPrice}
                   onChange={(event) =>
                     updateItem(idx, "unitPrice", event.target.value)
@@ -368,8 +370,8 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
                 <Input
                   type="number"
                   min={0}
-                  placeholder="IVA %"
-                  aria-label={`Porcentaje de impuesto del ítem ${idx + 1}`}
+                  placeholder={t("form.placeholders.taxRate")}
+                  aria-label={t("form.aria.itemTaxRate", { index: idx + 1 })}
                   value={item.taxRate}
                   onChange={(event) =>
                     updateItem(idx, "taxRate", event.target.value)
@@ -384,7 +386,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
                   className="h-10 w-10 shrink-0"
                   onClick={() => removeItem(idx)}
                   disabled={items.length <= 1}
-                  aria-label={`Eliminar ítem ${idx + 1}`}
+                  aria-label={t("form.aria.removeItem", { index: idx + 1 })}
                 >
                   <Trash2 className="h-5 w-5 text-red-400" aria-hidden="true" />
                 </Button>
@@ -395,22 +397,22 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="inv-notes">Notas</Label>
+        <Label htmlFor="inv-notes">{t("form.fields.notes")}</Label>
         <Input
           id="inv-notes"
           value={form.notes}
           onChange={(event) => setForm({ ...form, notes: event.target.value })}
-          placeholder="Notas adicionales para el cliente"
+          placeholder={t("form.placeholders.notes")}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="inv-terms">Términos</Label>
+        <Label htmlFor="inv-terms">{t("form.fields.terms")}</Label>
         <Input
           id="inv-terms"
           value={form.terms}
           onChange={(event) => setForm({ ...form, terms: event.target.value })}
-          placeholder="Ej. Pago a 30 días"
+          placeholder={t("form.placeholders.terms")}
         />
       </div>
 
@@ -427,7 +429,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           className="h-10 w-full sm:w-auto"
           onClick={() => onCancel?.()}
         >
-          Cancelar
+          {t("form.cancel")}
         </Button>
         <Button
           type="button"
@@ -437,11 +439,11 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
         >
           {showPreview ? (
             <>
-              <EyeOff className="h-4 w-4" /> Ocultar vista previa
+              <EyeOff className="h-4 w-4" /> {t("form.hidePreview")}
             </>
           ) : (
             <>
-              <Eye className="h-4 w-4" /> Vista previa
+              <Eye className="h-4 w-4" /> {t("form.preview")}
             </>
           )}
         </Button>
@@ -450,7 +452,7 @@ export function InvoiceForm({ onSuccess, onCancel, defaultValues }: InvoiceFormP
           disabled={loading}
           className="h-10 w-full sm:w-auto"
         >
-          {loading ? "Guardando..." : "Guardar Factura"}
+          {loading ? t("form.saving") : t("form.save")}
         </Button>
       </div>
     </form>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   MoreVertical,
   Pencil,
@@ -43,6 +44,7 @@ export function SubscriptionActions({
   onDelete,
 }: SubscriptionActionsProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.subscriptions");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,19 +52,19 @@ export function SubscriptionActions({
   const isMarkedForCancel = item.status === "PENDING_CANCELLATION";
 
   async function handleDelete() {
-    if (!window.confirm(`¿Eliminar la suscripción "${item.name}"?`)) return;
+    if (!window.confirm(t("actions.confirmDelete", { name: item.name }))) return;
     setLoading(true);
     try {
       const result = await deleteSubscription(item.id);
       if (result.success) {
-        toast.success("Suscripción eliminada");
+        toast.success(t("actions.deletedToast"));
         onDelete?.(item.id);
         router.refresh();
       } else {
-        toast.error(result.error || "No se pudo eliminar");
+        toast.error(result.error || t("actions.deleteErrorToast"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("actions.networkErrorToast"));
     } finally {
       setLoading(false);
       setSheetOpen(false);
@@ -76,16 +78,16 @@ export function SubscriptionActions({
       if (result.success) {
         toast.success(
           isMarkedForCancel
-            ? "Suscripción activada nuevamente"
-            : "Marcada para cancelar"
+            ? t("actions.reactivatedToast")
+            : t("actions.markedCancelToast")
         );
         onUpdate?.({ ...item, status: isMarkedForCancel ? "ACTIVE" : "PENDING_CANCELLATION" });
         router.refresh();
       } else {
-        toast.error(result.error || "No se pudo cambiar el estado");
+        toast.error(result.error || t("actions.statusErrorToast"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("actions.networkErrorToast"));
     } finally {
       setLoading(false);
       setSheetOpen(false);
@@ -102,7 +104,7 @@ export function SubscriptionActions({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Abrir acciones"
+      aria-label={t("actions.openActionsAriaLabel")}
       className="md:hidden"
     >
       <MoreVertical className="size-4" />
@@ -113,7 +115,7 @@ export function SubscriptionActions({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Abrir acciones"
+      aria-label={t("actions.openActionsAriaLabel")}
       className="hidden md:flex"
     >
       <MoreVertical className="size-4" />
@@ -135,7 +137,7 @@ export function SubscriptionActions({
               onClick={() => setEditOpen(true)}
               disabled={loading}
             >
-              <Pencil className="size-4" /> Editar
+              <Pencil className="size-4" /> {t("actions.edit")}
             </Button>
             <Button
               variant="ghost"
@@ -146,12 +148,12 @@ export function SubscriptionActions({
               {isMarkedForCancel ? (
                 <>
                   <RotateCcw className="size-4" />
-                  Reactivar
+                  {t("actions.reactivate")}
                 </>
               ) : (
                 <>
                   <Ban className="size-4" />
-                  Marcar para cancelar
+                  {t("actions.markForCancel")}
                 </>
               )}
             </Button>
@@ -162,7 +164,7 @@ export function SubscriptionActions({
               disabled={loading}
             >
               <Trash2 className="size-4" />
-              {loading ? "Eliminando..." : "Eliminar"}
+              {loading ? t("actions.deleting") : t("actions.delete")}
             </Button>
           </div>
         </SheetContent>
@@ -178,7 +180,7 @@ export function SubscriptionActions({
             }}
             disabled={loading}
           >
-            <Pencil className="size-4" /> Editar
+            <Pencil className="size-4" /> {t("actions.edit")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={(e) => {
@@ -189,11 +191,11 @@ export function SubscriptionActions({
           >
             {isMarkedForCancel ? (
               <>
-                <RotateCcw className="size-4" /> Reactivar
+                <RotateCcw className="size-4" /> {t("actions.reactivate")}
               </>
             ) : (
               <>
-                <Ban className="size-4" /> Marcar para cancelar
+                <Ban className="size-4" /> {t("actions.markForCancel")}
               </>
             )}
           </DropdownMenuItem>
@@ -206,7 +208,7 @@ export function SubscriptionActions({
             disabled={loading}
           >
             <Trash2 className="size-4" />
-            {loading ? "Eliminando..." : "Eliminar"}
+            {loading ? t("actions.deleting") : t("actions.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
