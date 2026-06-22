@@ -19,14 +19,7 @@ export const metadata = dashboardMetadata(
   "Gestiona tus clientes, su historial de facturas y datos fiscales para facturación DIAN."
 );
 
-const countryLabels: Record<string, string> = {
-  CO: "Colombia",
-  MX: "México",
-  BR: "Brasil",
-  AR: "Argentina",
-  CL: "Chile",
-  PE: "Perú",
-};
+const COUNTRY_CODES = ["CO", "MX", "BR", "AR", "CL", "PE"] as const;
 
 function formatCOP(amount: number | null | undefined, locale: Locale) {
   if (amount == null) return "—";
@@ -143,6 +136,9 @@ async function ClientsContent({ locale }: { locale: Locale }) {
   }));
 
   const t = await getTranslations({ locale, namespace: "dashboard.clients" });
+  const countryLabels: Record<string, string> = Object.fromEntries(
+    COUNTRY_CODES.map((c) => [c, t(`countries.${c}` as never)] as const),
+  );
 
   return (
     <CardContent>

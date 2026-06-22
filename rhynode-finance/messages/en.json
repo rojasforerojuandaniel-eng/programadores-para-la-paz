@@ -264,6 +264,14 @@
         "title": "New Client",
         "button": "New Client",
         "createError": "Error creating client"
+      },
+      "countries": {
+        "CO": "Colombia",
+        "MX": "Mexico",
+        "BR": "Brazil",
+        "AR": "Argentina",
+        "CL": "Chile",
+        "PE": "Peru"
       }
     },
     "budgets": {

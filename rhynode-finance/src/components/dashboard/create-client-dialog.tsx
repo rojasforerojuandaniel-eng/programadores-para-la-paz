@@ -141,12 +141,12 @@ export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="CO">Colombia</SelectItem>
-                <SelectItem value="MX">México</SelectItem>
-                <SelectItem value="BR">Brasil</SelectItem>
-                <SelectItem value="AR">Argentina</SelectItem>
-                <SelectItem value="CL">Chile</SelectItem>
-                <SelectItem value="PE">Perú</SelectItem>
+                <SelectItem value="CO">{t(`countries.CO` as never)}</SelectItem>
+                <SelectItem value="MX">{t(`countries.MX` as never)}</SelectItem>
+                <SelectItem value="BR">{t(`countries.BR` as never)}</SelectItem>
+                <SelectItem value="AR">{t(`countries.AR` as never)}</SelectItem>
+                <SelectItem value="CL">{t(`countries.CL` as never)}</SelectItem>
+                <SelectItem value="PE">{t(`countries.PE` as never)}</SelectItem>
               </SelectContent>
             </Select>
           </div>
