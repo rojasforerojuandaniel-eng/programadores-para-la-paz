@@ -697,6 +697,55 @@
     "personalHome": {
       "title": "Personal finances",
       "subtitle": "Manage your goals, accounts, budgets and movements."
+    },
+    "advisor": {
+      "back": "Back to dashboard",
+      "title": "Rhynode AI Advisor",
+      "subtitle": "Intelligent financial advisor",
+      "chatAria": "Chat messages",
+      "greeting": "Hi, I'm your financial advisor. How can I help you today?",
+      "error": "Sorry, an error occurred while processing your message. Please try again."
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "subtitle": "Users with the most XP",
+      "periods": {
+        "week": "Weekly",
+        "month": "Monthly",
+        "all": "All-time"
+      },
+      "ordinals": {
+        "1": "1st",
+        "2": "2nd",
+        "3": "3rd"
+      },
+      "levelXp": "Level {level} · {xp} XP",
+      "streakDays": "{count} days",
+      "myRankSummary": "{xp} XP · {count} day streak",
+      "stats": {
+        "transactions": "Transactions",
+        "activeUsers": "Active users",
+        "avgStreak": "Avg streak"
+      },
+      "rank": "Rank",
+      "player": "Player",
+      "level": "Level",
+      "xp": "XP",
+      "streak": "Streak",
+      "empty": {
+        "errorTitle": "Couldn't load the leaderboard",
+        "firstTitle": "Be the first to earn XP",
+        "description": "Complete actions on Rhynode to earn points and appear in the ranking."
+      },
+      "errors": {
+        "load": "Failed to load leaderboard",
+        "unknown": "Unknown error"
+      },
+      "personalProgress": {
+        "title": "Your personal progress",
+        "description": "Review your detailed stats and compare your progress week over week.",
+        "viewStats": "View my stats"
+      }
     }
   },
   "nav": {
