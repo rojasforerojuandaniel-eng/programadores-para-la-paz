@@ -519,7 +519,18 @@
       "actions": {
         "optionsAria": "Opciones de {name}",
         "edit": "Editar",
-        "delete": "Eliminar"
+        "delete": "Eliminar",
+        "errors": {
+          "unauthorized": "No autorizado.",
+          "invalidData": "Datos inválidos.",
+          "notFound": "Cuenta no encontrada.",
+          "updateFailed": "No se pudo actualizar la cuenta.",
+          "deleteFailed": "No se pudo eliminar la cuenta."
+        },
+        "validation": {
+          "nameRequired": "El nombre es obligatorio",
+          "bankRequired": "El banco es obligatorio"
+        }
       }
     },
     "invoices": {

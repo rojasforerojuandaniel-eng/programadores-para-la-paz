@@ -519,7 +519,18 @@
       "actions": {
         "optionsAria": "Options for {name}",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "errors": {
+          "unauthorized": "Unauthorized.",
+          "invalidData": "Invalid data.",
+          "notFound": "Account not found.",
+          "updateFailed": "Couldn't update the account.",
+          "deleteFailed": "Couldn't delete the account."
+        },
+        "validation": {
+          "nameRequired": "Name is required",
+          "bankRequired": "Bank is required"
+        }
       }
     },
     "invoices": {
