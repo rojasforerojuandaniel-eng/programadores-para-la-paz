@@ -452,6 +452,39 @@
         "toastImportError": "Error al importar transacciones",
         "toastImported": "{count} transacciones importadas",
         "toastImportNetworkError": "Error de red al importar"
+      },
+      "createDialog": {
+        "triggerButton": "Nueva Cuenta",
+        "title": "Nueva Cuenta Bancaria",
+        "nameLabel": "Nombre de la cuenta *",
+        "namePlaceholder": "Ej. Cuenta Corriente Principal",
+        "bankLabel": "Banco *",
+        "bankPlaceholder": "Ej. Bancolombia",
+        "numberLabel": "Número (últimos 4)",
+        "balanceLabel": "Saldo inicial",
+        "saving": "Guardando...",
+        "save": "Guardar",
+        "toastError": "Error al crear cuenta bancaria",
+        "toastNetworkError": "Error de red"
+      },
+      "editDialog": {
+        "title": "Editar Cuenta",
+        "saveChanges": "Guardar cambios",
+        "toastSuccess": "Cuenta actualizada",
+        "toastError": "Error al actualizar la cuenta"
+      },
+      "deleteDialog": {
+        "title": "Eliminar cuenta",
+        "description": "Estás a punto de eliminar <strong>{name}</strong> de {bankName}. Esta acción no se puede deshacer.",
+        "deleting": "Eliminando...",
+        "confirm": "Eliminar cuenta",
+        "toastSuccess": "Cuenta eliminada",
+        "toastError": "Error al eliminar la cuenta"
+      },
+      "actions": {
+        "optionsAria": "Opciones de {name}",
+        "edit": "Editar",
+        "delete": "Eliminar"
       }
     },
     "invoices": {
@@ -1362,6 +1395,32 @@
           "generated": "Generado",
           "disclaimerBody": "Estos valores son orientativos. Consulta con un contador antes de declarar."
         }
+      },
+      "createReportDialog": {
+        "trigger": "Nuevo Reporte",
+        "title": "Nuevo Reporte Fiscal",
+        "authority": "Autoridad",
+        "authorities": {
+          "DIAN": "DIAN (Colombia)",
+          "SAT": "SAT (México)",
+          "AFIP": "AFIP (Argentina)",
+          "SII": "SII (Chile)",
+          "SUNAT": "SUNAT (Perú)"
+        },
+        "type": "Tipo",
+        "period": "Período",
+        "quarterly": "Trimestral",
+        "annual": "Anual",
+        "quarter": "Trimestre",
+        "dueDate": "Fecha de vencimiento",
+        "amount": "Monto",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "toast": {
+          "createError": "Error al crear reporte fiscal",
+          "networkError": "Error de red"
+        }
       }
     },
     "scope": {
@@ -1733,7 +1792,9 @@
         "ariaLabel": "Gráfico de proyección del escenario versus la línea base",
         "breakEvenLabel": "Quiebre: {month}",
         "scenarioSeries": "Escenario",
-        "baseSeries": "Línea base"
+        "baseSeries": "Línea base",
+        "balanceAriaLabel": "Gráfico de proyección de saldo a {months} meses. Muestra tres escenarios: base, optimista (+10% ingresos, -5% gastos) y pesimista (-10% ingresos, +10% gastos).",
+        "balanceSrOnly": "Proyección de saldo a {months} meses. Los valores varían según el escenario seleccionado."
       }
     },
     "categories": {

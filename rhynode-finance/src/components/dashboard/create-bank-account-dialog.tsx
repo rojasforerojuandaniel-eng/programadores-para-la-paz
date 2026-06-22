@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,10 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 
+const typeKeys = ["CHECKING", "SAVINGS", "CREDIT", "VIRTUAL"] as const;
+
 export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("dashboard.accounts");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -52,10 +56,10 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
         setForm({ name: "", bankName: "", accountNumber: "", type: "CHECKING", currency: "COP", balance: "" });
         onCreate();
       } else {
-        toast.error("Error al crear cuenta bancaria");
+        toast.error(t("createDialog.toastError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("createDialog.toastNetworkError"));
     } finally {
       setLoading(false);
     }
@@ -69,37 +73,37 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nueva Cuenta
+          {t("createDialog.triggerButton")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Cuenta Bancaria</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="ba-name">Nombre de la cuenta *</Label>
+            <Label htmlFor="ba-name">{t("createDialog.nameLabel")}</Label>
             <Input
               id="ba-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Cuenta Corriente Principal"
+              placeholder={t("createDialog.namePlaceholder")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="ba-bank">Banco *</Label>
+              <Label htmlFor="ba-bank">{t("createDialog.bankLabel")}</Label>
               <Input
                 id="ba-bank"
                 required
                 value={form.bankName}
                 onChange={(e) => setForm({ ...form, bankName: e.target.value })}
-                placeholder="Ej. Bancolombia"
+                placeholder={t("createDialog.bankPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ba-number">Número (últimos 4)</Label>
+              <Label htmlFor="ba-number">{t("createDialog.numberLabel")}</Label>
               <Input
                 id="ba-number"
                 value={form.accountNumber}
@@ -110,7 +114,7 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="ba-type">Tipo</Label>
+              <Label htmlFor="ba-type">{t("table.type")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v as typeof form.type })}
@@ -119,15 +123,16 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CHECKING">Corriente</SelectItem>
-                  <SelectItem value="SAVINGS">Ahorros</SelectItem>
-                  <SelectItem value="CREDIT">Crédito</SelectItem>
-                  <SelectItem value="VIRTUAL">Virtual</SelectItem>
+                  {typeKeys.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {t(`types.${key}` as never)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ba-currency">Moneda</Label>
+              <Label htmlFor="ba-currency">{t("table.currency")}</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -144,7 +149,7 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ba-balance">Saldo inicial</Label>
+              <Label htmlFor="ba-balance">{t("createDialog.balanceLabel")}</Label>
               <Input
                 id="ba-balance"
                 type="number"
@@ -157,10 +162,10 @@ export function CreateBankAccountDialog({ onCreate }: { onCreate: () => void }) 
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("bankImport.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("createDialog.saving") : t("createDialog.save")}
             </Button>
           </div>
         </form>

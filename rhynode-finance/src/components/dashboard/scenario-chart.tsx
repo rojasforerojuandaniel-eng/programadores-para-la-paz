@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import {
   AreaChart,
   Area,
@@ -10,20 +11,14 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 export interface ScenarioData {
   month: string;
   base: number;
   optimistic: number;
   pessimistic: number;
-}
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 export function ScenarioChartSkeleton() {
@@ -36,16 +31,17 @@ export function ScenarioChartSkeleton() {
 }
 
 export function ScenarioChart({ data }: { data: ScenarioData[] }) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
   const monthCount = data.length;
   return (
     <div
       className="h-[300px] w-full sm:h-[400px]"
       role="img"
-      aria-label={`Gráfico de proyección de saldo a ${monthCount} meses. Muestra tres escenarios: base, optimista (+10% ingresos, -5% gastos) y pesimista (-10% ingresos, +10% gastos).`}
+      aria-label={t("chart.balanceAriaLabel", { months: monthCount })}
     >
       <span className="sr-only">
-        Proyección de saldo a {monthCount} meses. Los valores varían según el
-        escenario seleccionado.
+        {t("chart.balanceSrOnly", { months: monthCount })}
       </span>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -73,7 +69,7 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
             tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
           />
           <Tooltip
-            formatter={(value) => formatCurrency(Number(value))}
+            formatter={(value) => formatCurrency(Number(value), "COP", locale)}
             contentStyle={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
@@ -85,7 +81,7 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
           <Area
             type="monotone"
             dataKey="pessimistic"
-            name="Pesimista"
+            name={t("types.pessimistic")}
             stroke="var(--rose-500, #f43f5e)"
             strokeWidth={2}
             fillOpacity={1}
@@ -95,7 +91,7 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
           <Area
             type="monotone"
             dataKey="base"
-            name="Base"
+            name={t("types.base")}
             stroke="var(--primary)"
             strokeWidth={2}
             fillOpacity={1}
@@ -105,7 +101,7 @@ export function ScenarioChart({ data }: { data: ScenarioData[] }) {
           <Area
             type="monotone"
             dataKey="optimistic"
-            name="Optimista"
+            name={t("types.optimistic")}
             stroke="var(--emerald-500, #10b981)"
             strokeWidth={2}
             fillOpacity={1}
