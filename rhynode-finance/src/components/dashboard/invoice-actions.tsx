@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Ban,
   CheckCircle,
@@ -40,6 +41,8 @@ import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { InvoicePreview } from "@/components/dashboard/invoice-preview";
 import { CreateInvoiceSheet } from "@/components/dashboard/create-invoice-sheet";
 import { EditInvoiceDialog } from "./edit-invoice-dialog";
+import { formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface InvoiceItem {
   description: string;
@@ -116,6 +119,8 @@ function MobileActionItem({
 }
 
 export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
+  const t = useTranslations("dashboard.invoices");
+  const locale = useLocale() as Locale;
   const isMobile = useIsMobile();
   const { canEdit } = useOrganizationRole();
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -137,10 +142,10 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error("Update failed");
-      toast.success("Estado actualizado");
+      toast.success(t("actions.toasts.statusUpdated"));
       onRefresh();
     } catch {
-      toast.error("Error al actualizar estado");
+      toast.error(t("actions.toasts.statusError"));
     } finally {
       setActionsOpen(false);
     }
@@ -155,11 +160,13 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       if (!res.ok) throw new Error("Send failed");
       const data = (await res.json()) as { sentAt?: string };
       toast.success(
-        `Factura enviada${data.sentAt ? ` el ${new Date(data.sentAt).toLocaleDateString("es-CO")}` : ""}`
+        data.sentAt
+          ? t("actions.toasts.sentWithDate", { date: fmtDate(data.sentAt, locale) })
+          : t("actions.toasts.sent")
       );
       onRefresh();
     } catch {
-      toast.error("Error al enviar factura");
+      toast.error(t("actions.toasts.sendError"));
     } finally {
       setLoadingSend(false);
       setActionsOpen(false);
@@ -176,12 +183,12 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       const data = (await res.json()) as { transaction?: { id: string } };
       toast.success(
         data.transaction?.id
-          ? "Factura marcada como pagada e ingreso creado"
-          : "Factura marcada como pagada"
+          ? t("actions.toasts.markedPaidWithIncome")
+          : t("actions.toasts.markedPaid")
       );
       onRefresh();
     } catch {
-      toast.error("Error al marcar factura como pagada");
+      toast.error(t("actions.toasts.markPaidError"));
     } finally {
       setLoadingPay(false);
       setActionsOpen(false);
@@ -195,10 +202,10 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Delete failed");
-      toast.success("Factura eliminada");
+      toast.success(t("actions.toasts.deleted"));
       onRefresh();
     } catch {
-      toast.error("Error al eliminar factura");
+      toast.error(t("actions.toasts.deleteError"));
     } finally {
       setLoadingDelete(false);
       setDeleteOpen(false);
@@ -232,7 +239,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
     <Button
       variant="ghost"
       size="icon"
-      aria-label={`Acciones de factura ${invoice.number}`}
+      aria-label={t("actions.aria.actions", { number: invoice.number })}
       className="h-10 w-10 shrink-0"
     >
       <MoreVertical className="h-4 w-4" />
@@ -243,7 +250,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
     <div className="flex flex-col gap-1 py-2">
       <MobileActionItem
         icon={Eye}
-        label="Ver"
+        label={t("actions.view")}
         onClick={() => {
           setActionsOpen(false);
           setViewOpen(true);
@@ -251,7 +258,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       />
       <MobileActionItem
         icon={Copy}
-        label="Duplicar"
+        label={t("actions.duplicate")}
         onClick={() => {
           setActionsOpen(false);
           setDuplicateOpen(true);
@@ -260,7 +267,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       {canSend && (
         <MobileActionItem
           icon={Send}
-          label="Enviar"
+          label={t("actions.send")}
           onClick={() => {
             setActionsOpen(false);
             void handleSend();
@@ -271,7 +278,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       {canPay && (
         <MobileActionItem
           icon={CheckCircle}
-          label="Marcar pagada"
+          label={t("actions.markPaid")}
           onClick={() => {
             setActionsOpen(false);
             void handleMarkPaid();
@@ -282,7 +289,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       {canCancel && (
         <MobileActionItem
           icon={Ban}
-          label="Anular"
+          label={t("actions.cancelInvoice")}
           onClick={() => {
             setActionsOpen(false);
             void updateStatus("CANCELLED");
@@ -291,7 +298,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       )}
       <MobileActionItem
         icon={Pencil}
-        label="Editar"
+        label={t("actions.edit")}
         onClick={() => {
           setActionsOpen(false);
           setEditOpen(true);
@@ -299,7 +306,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       />
       <MobileActionItem
         icon={Trash2}
-        label="Eliminar"
+        label={t("actions.delete")}
         destructive
         onClick={() => {
           setActionsOpen(false);
@@ -317,9 +324,9 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
           <BottomSheetTrigger asChild>{trigger}</BottomSheetTrigger>
           <BottomSheetContent>
             <BottomSheetHeader>
-              <BottomSheetTitle>Acciones</BottomSheetTitle>
+              <BottomSheetTitle>{t("actions.title")}</BottomSheetTitle>
               <BottomSheetDescription>
-                Factura {invoice.number}
+                {t("actions.sheetDescription", { number: invoice.number })}
               </BottomSheetDescription>
             </BottomSheetHeader>
             {mobileActions}
@@ -337,7 +344,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               className="gap-2"
             >
               <Eye className="h-4 w-4" />
-              Ver
+              {t("actions.view")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
@@ -347,7 +354,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               className="gap-2"
             >
               <Copy className="h-4 w-4" />
-              Duplicar
+              {t("actions.duplicate")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {canSend && (
@@ -357,7 +364,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
                 className="gap-2"
               >
                 <Send className="h-4 w-4" />
-                {loadingSend ? "Enviando..." : "Enviar"}
+                {loadingSend ? t("actions.sending") : t("actions.send")}
               </DropdownMenuItem>
             )}
             {canPay && (
@@ -367,7 +374,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
                 className="gap-2"
               >
                 <CheckCircle className="h-4 w-4" />
-                {loadingPay ? "Marcando..." : "Marcar pagada"}
+                {loadingPay ? t("actions.marking") : t("actions.markPaid")}
               </DropdownMenuItem>
             )}
             {canCancel && (
@@ -376,7 +383,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
                 className="gap-2"
               >
                 <Ban className="h-4 w-4" />
-                Anular
+                {t("actions.cancelInvoice")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
@@ -387,7 +394,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               className="gap-2"
             >
               <Pencil className="h-4 w-4" />
-              Editar
+              {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -399,7 +406,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               className="gap-2 text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
-              {loadingDelete ? "Eliminando..." : "Eliminar"}
+              {loadingDelete ? t("actions.deleting") : t("actions.delete")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -415,9 +422,9 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="heading-card">Vista de factura</DialogTitle>
+            <DialogTitle className="heading-card">{t("actions.viewTitle")}</DialogTitle>
             <DialogDescription className="body-default">
-              Previsualización de {invoice.number}
+              {t("actions.previewOf", { number: invoice.number })}
             </DialogDescription>
           </DialogHeader>
           <div className="pt-2">
@@ -437,10 +444,10 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="heading-card">Eliminar factura</DialogTitle>
+            <DialogTitle className="heading-card">{t("actions.deleteTitle")}</DialogTitle>
             <DialogDescription className="body-default">
-              Estás a punto de eliminar la factura{" "}
-              <strong>{invoice.number}</strong>. Esta acción no se puede deshacer.
+              {t("actions.deleteDescriptionPre")}{" "}
+              <strong>{invoice.number}</strong>{t("actions.deleteDescriptionPost")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
@@ -450,7 +457,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               onClick={() => setDeleteOpen(false)}
               disabled={loadingDelete}
             >
-              Cancelar
+              {t("actions.cancel")}
             </Button>
             <Button
               type="button"
@@ -458,7 +465,7 @@ export function InvoiceActions({ invoice, onRefresh }: InvoiceActionsProps) {
               onClick={() => void handleDelete()}
               disabled={loadingDelete}
             >
-              {loadingDelete ? "Eliminando..." : "Eliminar"}
+              {loadingDelete ? t("actions.deleting") : t("actions.delete")}
             </Button>
           </div>
         </DialogContent>

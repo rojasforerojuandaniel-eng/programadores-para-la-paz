@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ import {
   SubscriptionStatusActions,
   SubscriptionStatus,
 } from "./subscription-status-actions";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   CreditCard,
   Activity,
@@ -64,33 +67,22 @@ interface SubscriptionManagerProps {
   initialFilter: string;
 }
 
-const filters: { value: string; label: string }[] = [
-  { value: "ACTIVE", label: "Activas" },
-  { value: "PENDING_CANCELLATION", label: "Para cancelar" },
-  { value: "CANCELED", label: "Canceladas" },
-  { value: "ALL", label: "Todas" },
-];
+const FILTER_KEYS = ["ACTIVE", "PENDING_CANCELLATION", "CANCELED", "ALL"] as const;
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
+const statusBadgeConfig: Record<
+  SubscriptionStatus,
+  { variant: "default" | "secondary" | "outline" | "destructive"; labelKey: string }
+> = {
+  ACTIVE: { variant: "default", labelKey: "statuses.ACTIVE" },
+  PENDING_CANCELLATION: { variant: "outline", labelKey: "statuses.PENDING_CANCELLATION" },
+  CANCELED: { variant: "secondary", labelKey: "statuses.CANCELED" },
+};
 
-function frequencyLabel(frequency: string) {
-  switch (frequency) {
-    case "MONTHLY":
-      return "Mensual";
-    case "QUARTERLY":
-      return "Trimestral";
-    case "YEARLY":
-      return "Anual";
-    default:
-      return frequency;
-  }
-}
+const frequencyLabelKey: Record<string, string> = {
+  MONTHLY: "frequencies.MONTHLY",
+  QUARTERLY: "frequencies.QUARTERLY",
+  YEARLY: "frequencies.YEARLY",
+};
 
 function monthlyEquivalent(amount: number, frequency: string): number {
   switch (frequency) {
@@ -113,16 +105,9 @@ function daysUntil(date: Date | null): number | null {
 }
 
 function StatusBadge({ status }: { status: SubscriptionStatus }) {
-  const config: Record<
-    SubscriptionStatus,
-    { variant: "default" | "secondary" | "outline" | "destructive"; label: string }
-  > = {
-    ACTIVE: { variant: "default", label: "Activa" },
-    PENDING_CANCELLATION: { variant: "outline", label: "Por cancelar" },
-    CANCELED: { variant: "secondary", label: "Cancelada" },
-  };
-  const { variant, label } = config[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  const t = useTranslations("dashboard.subscriptions");
+  const { variant, labelKey } = statusBadgeConfig[status];
+  return <Badge variant={variant}>{t(labelKey as never)}</Badge>;
 }
 
 export function SubscriptionManager({
@@ -133,6 +118,8 @@ export function SubscriptionManager({
 }: SubscriptionManagerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("dashboard.subscriptions");
+  const locale = useLocale() as Locale;
   const [filter, setFilter] = useState(initialFilter);
 
   function handleFilterChange(value: string) {
@@ -150,15 +137,13 @@ export function SubscriptionManager({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Suscripciones</h1>
-          <p className="body-default mt-1">
-            Detecta, monitorea y cancela suscripciones para ahorrar
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("managerSubtitle")}</p>
         </div>
         <form action="/api/personal/subscriptions/detect" method="POST">
           <Button type="submit" className="gap-2">
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Detectar
+            {t("detect")}
           </Button>
         </form>
       </div>
@@ -170,11 +155,11 @@ export function SubscriptionManager({
       >
         <TabsList
           className="w-full sm:w-auto"
-          aria-label="Filtrar suscripciones por estado"
+          aria-label={t("filterAriaLabel")}
         >
-          {filters.map((f) => (
-            <TabsTrigger key={f.value} value={f.value}>
-              {f.label}
+          {FILTER_KEYS.map((value) => (
+            <TabsTrigger key={value} value={value}>
+              {t(`filters.${value}` as never)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -182,32 +167,34 @@ export function SubscriptionManager({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          label="Gasto mensual"
-          value={formatCurrency(kpis.monthlySpend, currency)}
+          label={t("kpis.monthlySpend")}
+          value={formatCurrency(kpis.monthlySpend, currency, locale)}
           icon={Wallet}
         />
         <KpiCard
-          label="Gasto anual estimado"
-          value={formatCurrency(kpis.annualSpend, currency)}
+          label={t("kpis.annualSpend")}
+          value={formatCurrency(kpis.annualSpend, currency, locale)}
           icon={TrendingUp}
         />
         <KpiCard
-          label="Suscripciones activas"
+          label={t("kpis.activeCount")}
           value={kpis.activeCount}
           icon={Activity}
         />
         <KpiCard
-          label="Próxima renovación"
+          label={t("kpis.nextRenewal")}
           value={
             kpis.nextRenewal ? (
-              new Date(kpis.nextRenewal).toLocaleDateString("es-CO")
+              fmtDate(kpis.nextRenewal, locale)
             ) : (
               "—"
             )
           }
           icon={Clock}
           footer={
-            kpis.nextRenewal ? `${daysUntil(kpis.nextRenewal)} días` : undefined
+            kpis.nextRenewal
+              ? t("daysCount", { count: daysUntil(kpis.nextRenewal) ?? 0 })
+              : undefined
           }
         />
       </div>
@@ -216,9 +203,9 @@ export function SubscriptionManager({
         {subscriptions.length === 0 ? (
           <EmptyStateCard
             icon={CreditCard}
-            title="No hay suscripciones"
-            description="No encontramos suscripciones en este filtro."
-            hint="Prueba otro filtro o presiona detectar para buscar nuevas."
+            title={t("emptyFiltered.title")}
+            description={t("emptyFiltered.description")}
+            hint={t("emptyFiltered.hint")}
           />
         ) : (
           <>
@@ -226,13 +213,13 @@ export function SubscriptionManager({
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead scope="col">Suscripción</TableHead>
-                    <TableHead scope="col">Monto</TableHead>
-                    <TableHead scope="col">Frecuencia</TableHead>
-                    <TableHead scope="col">Próximo cargo</TableHead>
-                    <TableHead scope="col">Estado</TableHead>
+                    <TableHead scope="col">{t("columns.name")}</TableHead>
+                    <TableHead scope="col">{t("columns.amount")}</TableHead>
+                    <TableHead scope="col">{t("columns.frequency")}</TableHead>
+                    <TableHead scope="col">{t("columns.nextCharge")}</TableHead>
+                    <TableHead scope="col">{t("columns.status")}</TableHead>
                     <TableHead scope="col" className="text-right">
-                      Acciones
+                      {t("columns.actions")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -248,7 +235,7 @@ export function SubscriptionManager({
                                 variant="outline"
                                 className="gap-1 border-amber-700/30 text-amber-700"
                               >
-                                <AlertTriangle className="h-3 w-3" aria-hidden="true" /> Sin usar
+                                <AlertTriangle className="h-3 w-3" aria-hidden="true" /> {t("unused")}
                               </Badge>
                             )}
                             {sub.increased && (
@@ -256,7 +243,7 @@ export function SubscriptionManager({
                                 variant="outline"
                                 className="gap-1 border-rose-700/30 text-rose-700"
                               >
-                                <ArrowUp className="h-3 w-3" aria-hidden="true" /> Subió
+                                <ArrowUp className="h-3 w-3" aria-hidden="true" /> {t("increased")}
                               </Badge>
                             )}
                           </div>
@@ -265,30 +252,29 @@ export function SubscriptionManager({
                       <TableCell className="py-3">
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {formatCurrency(sub.amount, sub.currency)}
+                            {formatCurrency(sub.amount, sub.currency, locale)}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {formatCurrency(
                               monthlyEquivalent(sub.amount, sub.frequency),
-                              sub.currency
+                              sub.currency,
+                              locale
                             )}{" "}
-                            / mes
+                            {t("perMonth")}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell className="py-3">
-                        {frequencyLabel(sub.frequency)}
+                        {t(frequencyLabelKey[sub.frequency] as never)}
                       </TableCell>
                       <TableCell className="py-3">
                         {sub.nextChargeDate ? (
                           <div className="flex flex-col">
                             <span>
-                              {new Date(sub.nextChargeDate).toLocaleDateString(
-                                "es-CO"
-                              )}
+                              {fmtDate(sub.nextChargeDate, locale)}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {daysUntil(sub.nextChargeDate)} días
+                              {t("daysCount", { count: daysUntil(sub.nextChargeDate) ?? 0 })}
                             </span>
                           </div>
                         ) : (
@@ -314,7 +300,7 @@ export function SubscriptionManager({
             <ul
               className="grid grid-cols-1 gap-4 md:hidden"
               role="list"
-              aria-label="Lista de suscripciones"
+              aria-label={t("listAriaLabel")}
             >
               {subscriptions.map((sub) => (
                 <li key={sub.id}>
@@ -329,7 +315,7 @@ export function SubscriptionManager({
                                 variant="outline"
                                 className="gap-1 border-amber-700/30 text-amber-700"
                               >
-                                <AlertTriangle className="h-3 w-3" aria-hidden="true" /> Sin usar
+                                <AlertTriangle className="h-3 w-3" aria-hidden="true" /> {t("unused")}
                               </Badge>
                             )}
                             {sub.increased && (
@@ -337,7 +323,7 @@ export function SubscriptionManager({
                                 variant="outline"
                                 className="gap-1 border-rose-700/30 text-rose-700"
                               >
-                                <ArrowUp className="h-3 w-3" aria-hidden="true" /> Subió
+                                <ArrowUp className="h-3 w-3" aria-hidden="true" /> {t("increased")}
                               </Badge>
                             )}
                           </div>
@@ -345,27 +331,26 @@ export function SubscriptionManager({
                         <StatusBadge status={sub.status} />
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="text-muted-foreground">Monto</div>
+                        <div className="text-muted-foreground">{t("columns.amount")}</div>
                         <div className="text-right font-medium">
-                          {formatCurrency(sub.amount, sub.currency)}
+                          {formatCurrency(sub.amount, sub.currency, locale)}
                         </div>
-                        <div className="text-muted-foreground">Mensual</div>
+                        <div className="text-muted-foreground">{t("monthlyLabel")}</div>
                         <div className="text-right">
                           {formatCurrency(
                             monthlyEquivalent(sub.amount, sub.frequency),
-                            sub.currency
+                            sub.currency,
+                            locale
                           )}
                         </div>
-                        <div className="text-muted-foreground">Frecuencia</div>
+                        <div className="text-muted-foreground">{t("columns.frequency")}</div>
                         <div className="text-right">
-                          {frequencyLabel(sub.frequency)}
+                          {t(frequencyLabelKey[sub.frequency] as never)}
                         </div>
-                        <div className="text-muted-foreground">Próximo cargo</div>
+                        <div className="text-muted-foreground">{t("columns.nextCharge")}</div>
                         <div className="text-right">
                           {sub.nextChargeDate
-                            ? new Date(
-                                sub.nextChargeDate
-                              ).toLocaleDateString("es-CO")
+                            ? fmtDate(sub.nextChargeDate, locale)
                             : "—"}
                         </div>
                       </div>

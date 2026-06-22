@@ -327,6 +327,84 @@
         "title": "No invoices yet",
         "description": "Create your first invoice to start billing and tracking payments.",
         "hint": "All your electronic invoices will appear here."
+      },
+      "form": {
+        "fields": {
+          "client": "Client",
+          "number": "Invoice number",
+          "currency": "Currency",
+          "issueDate": "Issue date",
+          "dueDate": "Due date",
+          "notes": "Notes",
+          "terms": "Terms"
+        },
+        "placeholders": {
+          "selectClient": "Select client...",
+          "number": "e.g. INV-001 (auto-generated if left blank)",
+          "description": "Description",
+          "quantity": "Qty",
+          "unitPrice": "Price",
+          "taxRate": "VAT %",
+          "notes": "Additional notes for the client",
+          "terms": "e.g. Payment within 30 days"
+        },
+        "aria": {
+          "itemDescription": "Description of item {index}",
+          "itemQuantity": "Quantity of item {index}",
+          "itemUnitPrice": "Unit price of item {index}",
+          "itemTaxRate": "Tax percentage of item {index}",
+          "removeItem": "Remove item {index}"
+        },
+        "itemsTitle": "Items",
+        "addItem": "Add item",
+        "cancel": "Cancel",
+        "preview": "Preview",
+        "hidePreview": "Hide preview",
+        "saving": "Saving...",
+        "save": "Save Invoice",
+        "errors": {
+          "selectClient": "Select a client",
+          "addItem": "Add at least one valid item"
+        },
+        "toasts": {
+          "created": "Invoice created successfully",
+          "createError": "Error creating invoice"
+        }
+      },
+      "actions": {
+        "title": "Actions",
+        "sheetDescription": "Invoice {number}",
+        "view": "View",
+        "duplicate": "Duplicate",
+        "send": "Send",
+        "sending": "Sending...",
+        "markPaid": "Mark as paid",
+        "marking": "Marking...",
+        "cancelInvoice": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "cancel": "Cancel",
+        "viewTitle": "Invoice view",
+        "previewOf": "Preview of {number}",
+        "deleteTitle": "Delete invoice",
+        "deleteDescriptionPre": "You are about to delete invoice",
+        "deleteDescriptionPost": ". This action cannot be undone.",
+        "aria": {
+          "actions": "Actions for invoice {number}"
+        },
+        "toasts": {
+          "statusUpdated": "Status updated",
+          "statusError": "Error updating status",
+          "sent": "Invoice sent",
+          "sentWithDate": "Invoice sent on {date}",
+          "sendError": "Error sending invoice",
+          "markedPaid": "Invoice marked as paid",
+          "markedPaidWithIncome": "Invoice marked as paid and income created",
+          "markPaidError": "Error marking invoice as paid",
+          "deleted": "Invoice deleted",
+          "deleteError": "Error deleting invoice"
+        }
       }
     },
     "debts": {
@@ -456,6 +534,77 @@
         "title": "Detect subscriptions automatically",
         "description": "We analyze your transactions to find recurring payments and help you save.",
         "hint": "Press detect to discover your subscriptions."
+      },
+      "managerSubtitle": "Detect, monitor, and cancel subscriptions to save money",
+      "filterAriaLabel": "Filter subscriptions by status",
+      "listAriaLabel": "Subscriptions list",
+      "daysCount": "{count} days",
+      "perMonth": "/ mo",
+      "monthlyLabel": "Monthly",
+      "unused": "Unused",
+      "increased": "Raised",
+      "filters": {
+        "ACTIVE": "Active",
+        "PENDING_CANCELLATION": "Pending cancellation",
+        "CANCELED": "Canceled",
+        "ALL": "All"
+      },
+      "statuses": {
+        "ACTIVE": "Active",
+        "PENDING_CANCELLATION": "Pending cancellation",
+        "CANCELED": "Canceled"
+      },
+      "frequencies": {
+        "MONTHLY": "Monthly",
+        "QUARTERLY": "Quarterly",
+        "YEARLY": "Yearly"
+      },
+      "kpis": {
+        "monthlySpend": "Monthly spend",
+        "annualSpend": "Estimated annual spend",
+        "activeCount": "Active subscriptions",
+        "nextRenewal": "Next renewal"
+      },
+      "columns": {
+        "name": "Subscription",
+        "amount": "Amount",
+        "frequency": "Frequency",
+        "nextCharge": "Next charge",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "emptyFiltered": {
+        "title": "No subscriptions",
+        "description": "We couldn't find any subscriptions in this filter.",
+        "hint": "Try another filter or press detect to find new ones."
+      },
+      "actions": {
+        "edit": "Edit",
+        "reactivate": "Reactivate",
+        "markForCancel": "Mark for cancellation",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "cancel": "Cancel",
+        "editLink": "Edit link",
+        "close": "Close",
+        "save": "Save",
+        "confirmCanceled": "I already canceled",
+        "markForCancelAriaLabel": "Mark for cancellation",
+        "confirmCanceledAriaLabel": "Confirm you already canceled",
+        "reactivateAriaLabel": "Reactivate subscription",
+        "openActionsAriaLabel": "Open actions",
+        "cancelLinkTitle": "Cancellation link",
+        "cancelLinkDescription": "Save the direct link to cancel this subscription.",
+        "urlLabel": "URL to cancel",
+        "confirmDelete": "Delete the \"{name}\" subscription?",
+        "deletedToast": "Subscription deleted",
+        "deleteErrorToast": "Could not delete",
+        "reactivatedToast": "Subscription reactivated",
+        "markedCancelToast": "Marked for cancellation",
+        "statusErrorToast": "Could not change status",
+        "networkErrorToast": "Network error",
+        "updateErrorToast": "Could not update",
+        "canceledToast": "Subscription canceled"
       }
     },
     "calendar": {

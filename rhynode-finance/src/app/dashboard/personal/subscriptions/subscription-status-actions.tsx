@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,6 +40,7 @@ export function SubscriptionStatusActions({
   cancellationUrl,
 }: SubscriptionStatusActionsProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.subscriptions");
   const [loading, setLoading] = useState(false);
   const [urlDialogOpen, setUrlDialogOpen] = useState(false);
   const [url, setUrl] = useState(cancellationUrl || "");
@@ -59,20 +61,20 @@ export function SubscriptionStatusActions({
         }),
       });
       if (!res.ok) {
-        toast.error("No se pudo actualizar");
+        toast.error(t("actions.updateErrorToast"));
         return false;
       }
       router.refresh();
       toast.success(
         newStatus === "PENDING_CANCELLATION"
-          ? "Marcada para cancelar"
+          ? t("actions.markedCancelToast")
           : newStatus === "CANCELED"
-            ? "Suscripción cancelada"
-            : "Suscripción reactivada"
+            ? t("actions.canceledToast")
+            : t("actions.reactivatedToast")
       );
       return true;
     } catch {
-      toast.error("Error de red");
+      toast.error(t("actions.networkErrorToast"));
       return false;
     } finally {
       setLoading(false);
@@ -101,7 +103,7 @@ export function SubscriptionStatusActions({
         disabled={loading}
       >
         <RotateCcw className="h-4 w-4" aria-hidden="true" />
-        Reactivar
+        {t("actions.reactivate")}
       </Button>
     );
   }
@@ -115,34 +117,34 @@ export function SubscriptionStatusActions({
             size="sm"
             onClick={handleCancel}
             disabled={loading}
-            aria-label="Marcar para cancelar"
+            aria-label={t("actions.markForCancelAriaLabel")}
           >
             {cancellationUrl ? (
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             ) : (
               <XCircle className="h-4 w-4" aria-hidden="true" />
             )}
-            Cancelar
+            {t("actions.cancel")}
           </Button>
           <Dialog open={urlDialogOpen} onOpenChange={setUrlDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm">
                 <Link2 className="h-4 w-4" aria-hidden="true" />
-                Editar enlace
+                {t("actions.editLink")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle className="heading-card">
-                  Enlace de cancelación
+                  {t("actions.cancelLinkTitle")}
                 </DialogTitle>
                 <DialogDescription>
-                  Guarda el enlace directo para cancelar esta suscripción.
+                  {t("actions.cancelLinkDescription")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSaveUrl} className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label htmlFor={`cancel-url-${id}`}>URL para cancelar</Label>
+                  <Label htmlFor={`cancel-url-${id}`}>{t("actions.urlLabel")}</Label>
                   <Input
                     id={`cancel-url-${id}`}
                     type="url"
@@ -157,10 +159,10 @@ export function SubscriptionStatusActions({
                     variant="ghost"
                     onClick={() => setUrlDialogOpen(false)}
                   >
-                    Cerrar
+                    {t("actions.close")}
                   </Button>
                   <Button type="submit" disabled={loading}>
-                    Guardar
+                    {t("actions.save")}
                   </Button>
                 </div>
               </form>
@@ -175,20 +177,20 @@ export function SubscriptionStatusActions({
             size="sm"
             onClick={() => updateStatus("CANCELED")}
             disabled={loading}
-            aria-label="Confirmar que ya cancelé"
+            aria-label={t("actions.confirmCanceledAriaLabel")}
           >
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            Ya cancelé
+            {t("actions.confirmCanceled")}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => updateStatus("ACTIVE")}
             disabled={loading}
-            aria-label="Reactivar suscripción"
+            aria-label={t("actions.reactivateAriaLabel")}
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            Reactivar
+            {t("actions.reactivate")}
           </Button>
         </>
       )}
