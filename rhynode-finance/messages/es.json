@@ -2634,6 +2634,44 @@
           "tomorrow": "Vence mañana",
           "inDays": "En {count} días"
         }
+      },
+      "kpiGrid": {
+        "deltaLabel": "vs mes pasado",
+        "balanceTotal": "Balance Total",
+        "netWorth": "Patrimonio Neto",
+        "incomeMonth": "Ingresos del Mes",
+        "expenseMonth": "Gastos del Mes",
+        "available": "Disponible para Gastar",
+        "activeGoals": "Metas Activas",
+        "pendingDebts": "Deudas Pendientes",
+        "transactionsMonth": "Transacciones del Mes",
+        "invoiced": "Facturado",
+        "collected": "Cobrado",
+        "pending": "Pendiente",
+        "overdue": "Vencido",
+        "clients": "Clientes",
+        "taxesPending": "Impuestos Pend.",
+        "bankBalance": "Saldo Bancario",
+        "totalInvoices": "Facturas Totales"
+      },
+      "widgetsKpi": {
+        "balanceTotal": "Balance Total",
+        "income": "Ingresos",
+        "expenses": "Gastos",
+        "activeGoals": "Metas Activas",
+        "debts": "Deudas",
+        "transactions": "Transacciones",
+        "available": "Disponible",
+        "savings": "Ahorro",
+        "invoiced": "Facturado",
+        "collected": "Cobrado",
+        "pending": "Pendiente",
+        "overdue": "Vencido",
+        "clients": "Clientes",
+        "taxesPending": "Impuestos Pend.",
+        "bankBalance": "Saldo Bancario",
+        "invoices": "Facturas",
+        "noData": "Sin datos"
       }
     },
     "commandPalette": {
@@ -2729,6 +2767,93 @@
       "loading": "Cargando notificaciones",
       "preferences": "Preferencias de notificaciones",
       "centerAria": "Centro de notificaciones"
+    },
+    "ai": {
+      "briefing": {
+        "ariaLabel": "Briefing diario",
+        "advisorButton": "Ver advisor",
+        "greeting": {
+          "morning": "Buenos días",
+          "afternoon": "Buenas tardes",
+          "night": "Buenas noches"
+        },
+        "items": {
+          "balance": {
+            "label": "Balance total"
+          },
+          "yesterday": {
+            "label": "Gastos de ayer",
+            "labelWithAvg": "Gastos de ayer vs {avg} promedio"
+          },
+          "income": {
+            "label": "Ingresos del mes"
+          },
+          "due": {
+            "label": "Vencimientos hoy",
+            "none": "Ninguno",
+            "singular": "{n} pendiente",
+            "plural": "{n} pendientes"
+          },
+          "goal": {
+            "label": "Meta más cercana",
+            "none": "Sin metas activas",
+            "subvalue": "{current} de {target}"
+          },
+          "insight": {
+            "label": "Insight del día",
+            "defaultTitle": "Consejo del día",
+            "defaultDesc": "Registra tus transacciones diarias para descubrir patrones y tomar mejores decisiones."
+          }
+        }
+      },
+      "insights": {
+        "title": "Insights inteligentes",
+        "savings-great": {
+          "title": "Excelente ritmo de ahorro",
+          "description": "Estás ahorrando {pct}% de tus ingresos este mes.",
+          "action": "Ver metas"
+        },
+        "savings-low": {
+          "title": "Tu tasa de ahorro es baja",
+          "description": "Solo estás ahorrando {pct}% este mes. Intenta reducir gastos discrecionales.",
+          "action": "Ver presupuestos"
+        },
+        "budget-overflow": {
+          "title": "Presupuesto excedido: {name}",
+          "description": "Llevas {spent} de {amount}.",
+          "action": "Revisar"
+        },
+        "budget-near": {
+          "title": "Casi al límite: {name}",
+          "description": "Has usado {pct}% del presupuesto.",
+          "action": "Ver"
+        },
+        "debt-upcoming": {
+          "title": "Deuda próxima: {name}",
+          "description": "Vence en {days} días por {amount}.",
+          "action": "Ver deudas"
+        },
+        "goal-near": {
+          "title": "Meta casi lista: {name}",
+          "description": "Llevas {pct}% del objetivo.",
+          "action": "Ver metas"
+        },
+        "subscriptions-high": {
+          "title": "Revisa tus suscripciones",
+          "description": "Gastas {amount} mensuales en suscripciones ({pct}% de tus ingresos).",
+          "action": "Auditar"
+        },
+        "investment-loss": {
+          "title": "Inversión en caída: {name}",
+          "description": "Su valor actual es notablemente menor al monto invertido.",
+          "action": "Ver portafolio"
+        },
+        "default-tip": {
+          "title": "Consejo del día",
+          "description": "Registra tus transacciones diarias para descubrir gastos hormiga y tomar mejores decisiones.",
+          "action": "Agregar movimiento"
+        }
+      }
     }
   },
   "nav": {

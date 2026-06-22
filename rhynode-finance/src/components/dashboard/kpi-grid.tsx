@@ -1,4 +1,7 @@
 import { ReactNode } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
 import { sumInCop, convertToCop, getTrm } from "@/lib/currency";
@@ -22,7 +25,6 @@ import {
 } from "lucide-react";
 
 const TREND_MONTHS = 6;
-const DELTA_LABEL = "vs mes pasado";
 
 interface KpiItem {
   label: string;
@@ -32,14 +34,6 @@ interface KpiItem {
   delta?: number;
   deltaLabel?: string;
   valueClassName?: string;
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function getMonthRange() {
@@ -99,6 +93,9 @@ interface KpiGridProps {
 }
 
 export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
   const { start, end } = getMonthRange();
   const trendStart = getTrendStart(TREND_MONTHS);
@@ -187,38 +184,38 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
     );
 
     personalCards = [
-      { label: "Balance Total", value: formatCurrency(balanceTotal, currency), icon: Wallet },
+      { label: t("kpiGrid.balanceTotal"), value: formatCurrency(balanceTotal, currency, locale), icon: Wallet },
       {
-        label: "Patrimonio Neto",
-        value: formatCurrency(decimalToNumber(netWorthSnapshot?.netWorth), currency),
+        label: t("kpiGrid.netWorth"),
+        value: formatCurrency(decimalToNumber(netWorthSnapshot?.netWorth), currency, locale),
         icon: Landmark,
       },
       {
-        label: "Ingresos del Mes",
-        value: formatCurrency(incomeMonth, currency),
+        label: t("kpiGrid.incomeMonth"),
+        value: formatCurrency(incomeMonth, currency, locale),
         icon: ArrowUpRight,
         trend: incomeSeries,
         delta: computeDelta(incomeSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       {
-        label: "Gastos del Mes",
-        value: formatCurrency(expenseMonth, currency),
+        label: t("kpiGrid.expenseMonth"),
+        value: formatCurrency(expenseMonth, currency, locale),
         icon: ArrowDownRight,
         trend: expenseSeries,
         delta: computeDelta(expenseSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
-      { label: "Disponible para Gastar", value: formatCurrency(available, currency), icon: PiggyBank },
-      { label: "Metas Activas", value: goals.toString(), icon: Target },
-      { label: "Deudas Pendientes", value: debts.toString(), icon: CreditCard },
+      { label: t("kpiGrid.available"), value: formatCurrency(available, currency, locale), icon: PiggyBank },
+      { label: t("kpiGrid.activeGoals"), value: goals.toString(), icon: Target },
+      { label: t("kpiGrid.pendingDebts"), value: debts.toString(), icon: CreditCard },
       {
-        label: "Transacciones del Mes",
+        label: t("kpiGrid.transactionsMonth"),
         value: transactionsCount.toString(),
         icon: ArrowLeftRight,
         trend: transactionsCountSeries,
         delta: computeDelta(transactionsCountSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       { label: "Health Score", value: "—", icon: HeartPulse },
     ];
@@ -316,54 +313,54 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
 
     businessCards = [
       {
-        label: "Facturado",
-        value: formatCurrency(totalInvoiced, currency),
+        label: t("kpiGrid.invoiced"),
+        value: formatCurrency(totalInvoiced, currency, locale),
         icon: FileText,
         trend: invoiceSeries,
         delta: computeDelta(invoiceSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       {
-        label: "Cobrado",
-        value: formatCurrency(totalPaid, currency),
+        label: t("kpiGrid.collected"),
+        value: formatCurrency(totalPaid, currency, locale),
         icon: ArrowUpRight,
         trend: paidSeries,
         delta: computeDelta(paidSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       {
-        label: "Pendiente",
-        value: formatCurrency(totalPending, currency),
+        label: t("kpiGrid.pending"),
+        value: formatCurrency(totalPending, currency, locale),
         icon: ArrowDownRight,
         trend: pendingSeries,
         delta: computeDelta(pendingSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       {
-        label: "Vencido",
-        value: formatCurrency(totalOverdue, currency),
+        label: t("kpiGrid.overdue"),
+        value: formatCurrency(totalOverdue, currency, locale),
         icon: ArrowDownRight,
         trend: overdueSeries,
         delta: computeDelta(overdueSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
       {
-        label: "Clientes",
+        label: t("kpiGrid.clients"),
         value: clientsCount.toString(),
         icon: Users,
         trend: clientsSeries,
         delta: computeDelta(clientsSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
-      { label: "Impuestos Pend.", value: taxesPending.toString(), icon: ShieldCheck },
-      { label: "Saldo Bancario", value: formatCurrency(bankBalance, currency), icon: Landmark },
+      { label: t("kpiGrid.taxesPending"), value: taxesPending.toString(), icon: ShieldCheck },
+      { label: t("kpiGrid.bankBalance"), value: formatCurrency(bankBalance, currency, locale), icon: Landmark },
       {
-        label: "Facturas Totales",
+        label: t("kpiGrid.totalInvoices"),
         value: invoiceCount.toString(),
         icon: FileText,
         trend: invoiceCountSeries,
         delta: computeDelta(invoiceCountSeries),
-        deltaLabel: DELTA_LABEL,
+        deltaLabel: t("kpiGrid.deltaLabel"),
       },
     ];
   }
@@ -375,39 +372,39 @@ export async function KpiGrid({ scope, orgId, userId, currency }: KpiGridProps) 
     cards = businessCards;
   } else {
     cards = [
-      personalCards.find((c) => c.label === "Balance Total") || businessCards[6],
-      personalCards.find((c) => c.label === "Ingresos del Mes") || {
-        label: "Ingresos del Mes",
+      personalCards.find((c) => c.label === t("kpiGrid.balanceTotal")) || businessCards[6],
+      personalCards.find((c) => c.label === t("kpiGrid.incomeMonth")) || {
+        label: t("kpiGrid.incomeMonth"),
         value: "—",
         icon: ArrowUpRight,
       },
-      businessCards.find((c) => c.label === "Facturado") || {
-        label: "Facturado",
+      businessCards.find((c) => c.label === t("kpiGrid.invoiced")) || {
+        label: t("kpiGrid.invoiced"),
         value: "—",
         icon: FileText,
       },
-      businessCards.find((c) => c.label === "Cobrado") || {
-        label: "Cobrado",
+      businessCards.find((c) => c.label === t("kpiGrid.collected")) || {
+        label: t("kpiGrid.collected"),
         value: "—",
         icon: ArrowUpRight,
       },
-      personalCards.find((c) => c.label === "Gastos del Mes") || {
-        label: "Gastos del Mes",
+      personalCards.find((c) => c.label === t("kpiGrid.expenseMonth")) || {
+        label: t("kpiGrid.expenseMonth"),
         value: "—",
         icon: ArrowDownRight,
       },
-      businessCards.find((c) => c.label === "Clientes") || {
-        label: "Clientes",
+      businessCards.find((c) => c.label === t("kpiGrid.clients")) || {
+        label: t("kpiGrid.clients"),
         value: "—",
         icon: Users,
       },
-      personalCards.find((c) => c.label === "Metas Activas") || {
-        label: "Metas Activas",
+      personalCards.find((c) => c.label === t("kpiGrid.activeGoals")) || {
+        label: t("kpiGrid.activeGoals"),
         value: "—",
         icon: Target,
       },
-      businessCards.find((c) => c.label === "Impuestos Pend.") || {
-        label: "Impuestos Pend.",
+      businessCards.find((c) => c.label === t("kpiGrid.taxesPending")) || {
+        label: t("kpiGrid.taxesPending"),
         value: "—",
         icon: ShieldCheck,
       },
