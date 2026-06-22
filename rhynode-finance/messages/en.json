@@ -210,6 +210,43 @@
         "title": "Control your spending with budgets",
         "description": "Set limits per category and get alerts before you go over.",
         "hint": "Start by creating your first budget."
+      },
+      "createDialog": {
+        "title": "New Budget",
+        "trigger": "New Budget",
+        "name": "Name *",
+        "namePlaceholder": "e.g. Monthly budget",
+        "amount": "Amount *",
+        "period": "Period",
+        "periods": {
+          "WEEKLY": "Weekly",
+          "MONTHLY": "Monthly",
+          "YEARLY": "Yearly"
+        },
+        "startDate": "Start date *",
+        "endDate": "End date",
+        "alertThreshold": "Alert threshold",
+        "alertPlaceholder": "e.g. 80",
+        "rollover": "Rollover balance",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "created": "Budget created",
+        "createError": "Error creating budget"
+      },
+      "shareDialog": {
+        "trigger": "Share",
+        "title": "Share Budget",
+        "collaboratorEmail": "Collaborator email",
+        "emailPlaceholder": "email@example.com",
+        "inviteCode": "Invitation code",
+        "copied": "Copied",
+        "copy": "Copy",
+        "generating": "Generating...",
+        "generate": "Generate invite",
+        "generateError": "Error generating invite",
+        "copiedToast": "Code copied",
+        "currentMembers": "Current members"
       }
     },
     "goals": {
@@ -247,6 +284,36 @@
         "title": "Reach your savings goals",
         "description": "Set clear objectives and track your progress visually day by day.",
         "hint": "Start by creating your first goal."
+      },
+      "createDialog": {
+        "title": "New Goal",
+        "trigger": "New Goal",
+        "description": "Define the goal's objective, amount and deadline.",
+        "name": "Name *",
+        "namePlaceholder": "e.g. Trip to Europe",
+        "targetAmount": "Target amount *",
+        "deadline": "Deadline",
+        "color": "Color",
+        "icon": "Icon (Lucide name)",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "created": "Goal created",
+        "createError": "Error creating goal"
+      },
+      "addSavings": {
+        "trigger": "Add savings",
+        "title": "Add savings to \"{goalName}\"",
+        "description": "Enter the amount you want to add to this goal's savings.",
+        "amountLabel": "Amount ({currency}) *",
+        "hint": "This amount is added to the goal's current savings.",
+        "cancel": "Cancel",
+        "save": "Add savings",
+        "saving": "Saving...",
+        "invalidAmount": "Enter a valid amount",
+        "added": "Savings added",
+        "addError": "Could not add savings",
+        "networkError": "Network error"
       }
     },
     "accounts": {
@@ -472,6 +539,51 @@
         "title": "Keep your debts under control",
         "description": "Log loans and obligations to plan payments and reduce interest.",
         "hint": "Start by creating your first debt."
+      },
+      "createDialog": {
+        "title": "New Debt",
+        "description": "Register a pending loan or obligation.",
+        "fields": {
+          "name": "Name *",
+          "type": "Type",
+          "counterparty": "Counterparty",
+          "principal": "Principal amount *",
+          "remaining": "Remaining amount",
+          "interestRate": "Interest rate (%)",
+          "currency": "Currency",
+          "dueDate": "Due date",
+          "notes": "Notes"
+        },
+        "placeholders": {
+          "name": "e.g. Bank loan",
+          "counterparty": "e.g. Bank XYZ",
+          "remaining": "Same as principal",
+          "notes": "Additional notes"
+        },
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "toast": {
+          "created": "Debt created",
+          "error": "Error creating debt"
+        }
+      },
+      "recordPaymentDialog": {
+        "remainingLabel": "remaining balance",
+        "transactionNote": "An associated transaction will be created in your history.",
+        "fields": {
+          "amount": "Payment amount"
+        },
+        "maxPrefix": "Maximum",
+        "cancel": "Cancel",
+        "submitting": "Recording...",
+        "toast": {
+          "invalidAmount": "Enter a valid amount",
+          "exceedsRemaining": "Payment cannot exceed {amount}",
+          "registered": "Payment registered",
+          "error": "Could not register the payment",
+          "networkError": "Network error"
+        }
       }
     },
     "recurring": {
@@ -786,6 +898,31 @@
         "title": "Grow your net worth",
         "description": "Track stocks, bonds, crypto, ETFs and real estate in one place.",
         "hint": "Start by registering your first investment."
+      },
+      "createDialog": {
+        "triggerButton": "New Investment",
+        "title": "Create Investment",
+        "description": "Add a new asset to your portfolio.",
+        "fields": {
+          "name": "Name",
+          "type": "Type",
+          "balance": "Current Value",
+          "invested": "Amount Invested",
+          "currency": "Currency",
+          "provider": "Provider / Broker",
+          "externalId": "External ID"
+        },
+        "placeholders": {
+          "name": "e.g. Apple Inc.",
+          "type": "Select a type",
+          "provider": "e.g. TD Ameritrade",
+          "externalId": "e.g. ticker symbol"
+        },
+        "submitting": "Creating...",
+        "toast": {
+          "error": "Error creating investment",
+          "unknownError": "Unknown error"
+        }
       }
     },
     "achievements": {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -31,12 +32,13 @@ export function AddSavingsDialog({
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const router = useRouter();
+  const t = useTranslations("dashboard.goals");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const value = Number(amount);
     if (!amount || value <= 0) {
-      toast.error("Ingresa un monto válido");
+      toast.error(t("addSavings.invalidAmount"));
       return;
     }
 
@@ -49,16 +51,16 @@ export function AddSavingsDialog({
       });
 
       if (res.ok) {
-        toast.success("Ahorro añadido");
+        toast.success(t("addSavings.added"));
         setAmount("");
         setOpen(false);
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "No se pudo añadir el ahorro");
+        toast.error(data.error || t("addSavings.addError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("addSavings.networkError"));
     } finally {
       setLoading(false);
     }
@@ -69,21 +71,23 @@ export function AddSavingsDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" aria-hidden="true" />
-          Añadir ahorro
+          {t("addSavings.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="heading-card">
-            Añadir ahorro a &ldquo;{goalName}&rdquo;
+            {t("addSavings.title", { goalName })}
           </DialogTitle>
           <DialogDescription>
-            Ingresa el monto que deseas sumar al ahorro de esta meta.
+            {t("addSavings.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="savings-amount">Monto ({currency}) *</Label>
+            <Label htmlFor="savings-amount">
+              {t("addSavings.amountLabel", { currency })}
+            </Label>
             <Input
               id="savings-amount"
               type="number"
@@ -96,7 +100,7 @@ export function AddSavingsDialog({
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              Este monto se suma al ahorro actual de la meta.
+              {t("addSavings.hint")}
             </p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -106,10 +110,10 @@ export function AddSavingsDialog({
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancelar
+              {t("addSavings.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Añadir ahorro"}
+              {loading ? t("addSavings.saving") : t("addSavings.save")}
             </Button>
           </div>
         </form>

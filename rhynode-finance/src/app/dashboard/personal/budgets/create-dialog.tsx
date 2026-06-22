@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +25,17 @@ import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import { executeMutation } from "@/lib/offline-queue";
 
+const periodLabelKeys: Record<string, string> = {
+  WEEKLY: "createDialog.periods.WEEKLY",
+  MONTHLY: "createDialog.periods.MONTHLY",
+  YEARLY: "createDialog.periods.YEARLY",
+};
+
 export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("dashboard.budgets");
   const [form, setForm] = useState({
     name: "",
     amount: "",
@@ -78,10 +86,10 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
               alertThreshold: "",
             });
             router.refresh();
-            toast.success("Presupuesto creado");
+            toast.success(t("createDialog.created"));
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear presupuesto");
+            toast.error(err.message || t("createDialog.createError"));
           },
         },
       );
@@ -96,28 +104,28 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
         {trigger || (
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Nuevo Presupuesto
+            {t("createDialog.trigger")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nuevo Presupuesto</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="bud-name">Nombre *</Label>
+            <Label htmlFor="bud-name">{t("createDialog.name")}</Label>
             <Input
               id="bud-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Presupuesto mensual"
+              placeholder={t("createDialog.namePlaceholder")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="bud-amount">Monto *</Label>
+              <Label htmlFor="bud-amount">{t("createDialog.amount")}</Label>
               <Input
                 id="bud-amount"
                 type="number"
@@ -129,7 +137,7 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bud-period">Periodo</Label>
+              <Label htmlFor="bud-period">{t("createDialog.period")}</Label>
               <Select
                 value={form.period}
                 onValueChange={(v) => setForm({ ...form, period: v })}
@@ -138,16 +146,16 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="WEEKLY">Semanal</SelectItem>
-                  <SelectItem value="MONTHLY">Mensual</SelectItem>
-                  <SelectItem value="YEARLY">Anual</SelectItem>
+                  <SelectItem value="WEEKLY">{t(periodLabelKeys.WEEKLY as never)}</SelectItem>
+                  <SelectItem value="MONTHLY">{t(periodLabelKeys.MONTHLY as never)}</SelectItem>
+                  <SelectItem value="YEARLY">{t(periodLabelKeys.YEARLY as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="bud-start">Fecha inicio *</Label>
+              <Label htmlFor="bud-start">{t("createDialog.startDate")}</Label>
               <Input
                 id="bud-start"
                 type="date"
@@ -157,7 +165,7 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bud-end">Fecha fin</Label>
+              <Label htmlFor="bud-end">{t("createDialog.endDate")}</Label>
               <Input
                 id="bud-end"
                 type="date"
@@ -168,14 +176,14 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="bud-alert">Umbral de alerta</Label>
+              <Label htmlFor="bud-alert">{t("createDialog.alertThreshold")}</Label>
               <Input
                 id="bud-alert"
                 type="number"
                 min={0}
                 value={form.alertThreshold}
                 onChange={(e) => setForm({ ...form, alertThreshold: e.target.value })}
-                placeholder="Ej. 80"
+                placeholder={t("createDialog.alertPlaceholder")}
               />
             </div>
             <div className="flex items-center gap-2 pt-6">
@@ -186,15 +194,15 @@ export function CreateBudgetDialog({ trigger }: { trigger?: React.ReactNode } = 
                 checked={form.rollover}
                 onChange={(e) => setForm({ ...form, rollover: e.target.checked })}
               />
-              <Label htmlFor="bud-rollover">Acumular saldo</Label>
+              <Label htmlFor="bud-rollover">{t("createDialog.rollover")}</Label>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("createDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("createDialog.saving") : t("createDialog.save")}
             </Button>
           </div>
         </form>
@@ -221,6 +229,7 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
   const [loading, setLoading] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("dashboard.budgets");
 
   async function handleGenerateInvite() {
     if (!email.trim()) return;
@@ -230,7 +239,7 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
       const code = `RHY-${budgetId.slice(0, 6).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
       setInviteCode(code);
     } catch {
-      toast.error("Error al generar invitacion");
+      toast.error(t("shareDialog.generateError"));
     } finally {
       setLoading(false);
     }
@@ -241,7 +250,7 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
     navigator.clipboard.writeText(inviteCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success("Codigo copiado");
+    toast.success(t("shareDialog.copiedToast"));
   }
 
   return (
@@ -249,21 +258,21 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
           <Share2 className="h-4 w-4" />
-          Compartir
+          {t("shareDialog.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Compartir Presupuesto</DialogTitle>
+          <DialogTitle className="heading-card">{t("shareDialog.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
             <p className="text-sm font-medium">{budgetName}</p>
-            <Label htmlFor="share-email">Correo del colaborador</Label>
+            <Label htmlFor="share-email">{t("shareDialog.collaboratorEmail")}</Label>
             <Input
               id="share-email"
               type="email"
-              placeholder="correo@ejemplo.com"
+              placeholder={t("shareDialog.emailPlaceholder")}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -274,7 +283,7 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
 
           {inviteCode ? (
             <div className="rounded-lg border border-border bg-muted p-3">
-              <p className="text-xs text-muted-foreground">Codigo de invitacion</p>
+              <p className="text-xs text-muted-foreground">{t("shareDialog.inviteCode")}</p>
               <div className="mt-1 flex items-center gap-2">
                 <code className="flex-1 rounded bg-background px-2 py-1 text-sm font-mono">
                   {inviteCode}
@@ -283,12 +292,12 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
                   {copied ? (
                     <>
                       <Check className="h-4 w-4" />
-                      Copiado
+                      {t("shareDialog.copied")}
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4" />
-                      Copiar
+                      {t("shareDialog.copy")}
                     </>
                   )}
                 </Button>
@@ -300,13 +309,13 @@ export function ShareBudgetDialog({ budgetId, budgetName, members = [] }: ShareB
               disabled={loading || !email.trim()}
               className="w-full"
             >
-              {loading ? "Generando..." : "Generar invitacion"}
+              {loading ? t("shareDialog.generating") : t("shareDialog.generate")}
             </Button>
           )}
 
           {members.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium">Miembros actuales</p>
+              <p className="text-sm font-medium">{t("shareDialog.currentMembers")}</p>
               <div className="flex flex-wrap gap-2">
                 {members.map((member) => {
                   const initials = member.name
