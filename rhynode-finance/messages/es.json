@@ -3263,6 +3263,16 @@
     "error": {
       "title": "Algo salió mal en el dashboard",
       "description": "No pudimos cargar esta sección. Intenta de nuevo o selecciona otra opción en el menú."
+    },
+    "meta": {
+      "layout": {
+        "title": "Dashboard",
+        "description": "Gestiona tus finanzas personales y empresariales en Colombia: transacciones, presupuestos, facturas electrónicas, impuestos DIAN, inversiones y asesoría con IA."
+      },
+      "personal": {
+        "title": "Finanzas personales",
+        "description": "Gestiona tus metas, cuentas, presupuestos y movimientos personales en Rhynode."
+      }
     }
   },
   "nav": {

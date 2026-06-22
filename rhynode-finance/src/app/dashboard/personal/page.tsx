@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
@@ -5,18 +6,19 @@ import { getLocale } from "@/lib/locale-server";
 import { ChecklistCard } from "@/components/onboarding/checklist-card";
 import { buildMetadata } from "@/lib/seo-metadata";
 
-export const metadata = buildMetadata({
-  title: "Finanzas personales",
-  description:
-    "Gestiona tus metas, cuentas, presupuestos y movimientos personales en Rhynode.",
-  path: "/dashboard/personal",
-  keywords: [
-    "finanzas personales",
-    "metas de ahorro",
-    "presupuestos",
-    "movimientos",
-  ],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.meta.personal" });
+  return buildMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/dashboard/personal",
+    keywords:
+      locale === "en"
+        ? ["personal finance", "savings goals", "budgets", "transactions"]
+        : ["finanzas personales", "metas de ahorro", "presupuestos", "movimientos"],
+  });
+}
 
 function getInitialChecklist(profile: { metadata: unknown } | null) {
   const metadata = (profile?.metadata ?? {}) as Record<string, unknown>;

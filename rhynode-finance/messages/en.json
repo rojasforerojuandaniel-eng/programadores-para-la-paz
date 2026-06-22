@@ -3263,6 +3263,16 @@
     "error": {
       "title": "Something went wrong in the dashboard",
       "description": "We couldn't load this section. Try again or pick another option from the menu."
+    },
+    "meta": {
+      "layout": {
+        "title": "Dashboard",
+        "description": "Manage your personal and business finances in Colombia: transactions, budgets, electronic invoices, DIAN taxes, investments, and AI advisory."
+      },
+      "personal": {
+        "title": "Personal finance",
+        "description": "Manage your goals, accounts, budgets, and personal transactions on Rhynode."
+      }
     }
   },
   "nav": {
