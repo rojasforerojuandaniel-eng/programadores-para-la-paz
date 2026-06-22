@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import type { Locale } from "@/lib/locale";
+import { formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +39,7 @@ import {
   startOfDay,
   parseISO,
 } from "date-fns";
-import { es } from "date-fns/locale/es";
+import { es as esFns, enUS } from "date-fns/locale";
 import {
   CreditCard,
   Repeat,
@@ -78,56 +81,47 @@ interface CalendarViewProps {
 
 const typeConfig: Record<
   CalendarEventType,
-  { label: string; icon: React.ElementType; color: string; href: string }
+  { icon: React.ElementType; color: string; href: string }
 > = {
   debt: {
-    label: "Deuda",
     icon: CreditCard,
     color: "bg-rose-500/15 text-rose-500 border-rose-500/20",
     href: "/dashboard/personal/debts",
   },
   recurring: {
-    label: "Recurrente",
     icon: Repeat,
     color: "bg-blue-500/15 text-blue-500 border-blue-500/20",
     href: "/dashboard/personal/recurring",
   },
   subscription: {
-    label: "Suscripción",
     icon: Star,
     color: "bg-pink-500/15 text-pink-500 border-pink-500/20",
     href: "/dashboard/personal/subscriptions",
   },
   goal: {
-    label: "Meta",
     icon: Target,
     color: "bg-emerald-500/15 text-emerald-500 border-emerald-500/20",
     href: "/dashboard/personal/goals",
   },
   invoice: {
-    label: "Factura",
     icon: FileText,
     color: "bg-violet-500/15 text-violet-500 border-violet-500/20",
     href: "/dashboard/invoices",
   },
   tax: {
-    label: "Impuesto",
     icon: Scale,
     color: "bg-amber-500/15 text-amber-500 border-amber-500/20",
     href: "/dashboard/tax",
   },
 };
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+function fnsLocale(locale: Locale) {
+  return locale === "en" ? enUS : esFns;
 }
 
-function formatLongDate(date: Date) {
-  return format(date, "EEEE, d 'de' MMMM", { locale: es });
+function formatLongDate(date: Date, locale: Locale) {
+  const fmt = locale === "en" ? "EEEE, MMMM d" : "EEEE, d 'de' MMMM";
+  return format(date, fmt, { locale: fnsLocale(locale) });
 }
 
 function getDisplayStatus(event: CalendarEvent): EventStatus {
@@ -144,19 +138,16 @@ function getStatusConfig(status: EventStatus) {
   switch (status) {
     case "paid":
       return {
-        label: "Pagado",
         className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
         icon: CheckCircle2,
       };
     case "overdue":
       return {
-        label: "Vencido",
         className: "bg-rose-500/10 text-rose-600 border-rose-500/20",
         icon: AlertTriangle,
       };
     default:
       return {
-        label: "Próximo",
         className: "bg-slate-500/10 text-slate-600 border-slate-500/20",
         icon: Clock,
       };
@@ -189,8 +180,9 @@ async function loadEvents(view: View, date: Date): Promise<CalendarEvent[]> {
 }
 
 function DayHeader({ day }: { day: Date }) {
-  const narrow = format(day, "EEEEE", { locale: es }).toUpperCase();
-  const full = format(day, "EEEE", { locale: es });
+  const locale = useLocale() as Locale;
+  const narrow = format(day, "EEEEE", { locale: fnsLocale(locale) }).toUpperCase();
+  const full = format(day, "EEEE", { locale: fnsLocale(locale) });
   return (
     <div
       className="py-2 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs"
@@ -202,6 +194,7 @@ function DayHeader({ day }: { day: Date }) {
 }
 
 function EventDot({ event, size = "sm" }: { event: CalendarEvent; size?: "sm" | "md" }) {
+  const t = useTranslations("dashboard.calendar");
   const cfg = typeConfig[event.type];
   const status = getDisplayStatus(event);
   return (
@@ -212,7 +205,7 @@ function EventDot({ event, size = "sm" }: { event: CalendarEvent; size?: "sm" | 
         size === "md" ? "h-2.5 w-2.5" : "h-2 w-2",
         status === "overdue" && "bg-rose-500 border-rose-500"
       )}
-      title={`${cfg.label} — ${getStatusConfig(status).label}`}
+      title={`${t(`view.types.${event.type}` as never)} — ${t(`view.status.${status}` as never)}`}
       aria-hidden="true"
     />
   );
@@ -229,6 +222,8 @@ function EventCard({
   paying?: boolean;
   showLabels?: boolean;
 }) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const cfg = typeConfig[event.type];
   const Icon = cfg.icon;
   const status = getDisplayStatus(event);
@@ -254,22 +249,22 @@ function EventCard({
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Badge variant="outline" className={statusCfg.className}>
               <StatusIcon className="h-3 w-3" />
-              <span>{statusCfg.label}</span>
+              <span>{t(`view.status.${status}` as never)}</span>
             </Badge>
             <Badge variant="outline" className={cn("gap-1", cfg.color)}>
               <Icon className="h-3 w-3" />
-              <span>{cfg.label}</span>
+              <span>{t(`view.types.${event.type}` as never)}</span>
             </Badge>
           </div>
         </div>
       </div>
       <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
-        <span className="font-semibold">{formatCurrency(event.amount, event.currency)}</span>
+        <span className="font-semibold">{formatCurrency(event.amount, event.currency, locale)}</span>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={cfg.href}>
               <Eye className={cn("h-4 w-4", showLabels ? "mr-1" : "sm:mr-1")} />
-              <span className={cn(!showLabels && "hidden sm:inline")}>Ver detalle</span>
+              <span className={cn(!showLabels && "hidden sm:inline")}>{t("view.actions.viewDetails")}</span>
             </Link>
           </Button>
           {payable && onPay && (
@@ -277,11 +272,11 @@ function EventCard({
               size="sm"
               onClick={() => onPay(event)}
               disabled={paying}
-              aria-label={`Marcar ${event.title} como pagado`}
+              aria-label={t("view.actions.markPaidAria", { title: event.title })}
             >
               <CheckCircle className={cn("h-4 w-4", showLabels ? "mr-1" : "sm:mr-1")} />
               <span className={cn(!showLabels && "hidden sm:inline")}>
-                {event.type === "tax" ? "Presentar" : "Pagar"}
+                {event.type === "tax" ? t("view.actions.file") : t("view.actions.pay")}
               </span>
             </Button>
           )}
@@ -304,6 +299,8 @@ function DayCell({
   events: CalendarEvent[];
   onSelect: (day: Date) => void;
 }) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), day));
   const muted = !isSameMonth(day, currentDate);
   const selected = isSameDay(day, selectedDate);
@@ -312,7 +309,7 @@ function DayCell({
     <button
       type="button"
       onClick={() => onSelect(day)}
-      aria-label={`${formatLongDate(day)}, ${dayEvents.length} vencimientos`}
+      aria-label={t("view.aria.dayCell", { date: formatLongDate(day, locale), count: dayEvents.length })}
       aria-pressed={selected}
       className={cn(
         "relative flex min-h-[4.5rem] flex-col items-start justify-start rounded-lg border p-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary sm:min-h-[6rem] sm:p-2",
@@ -352,14 +349,16 @@ function SelectedDayPanel({
   onPay?: (event: CalendarEvent) => void;
   payingId?: string | null;
 }) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), date));
 
   return (
     <Card className="surface-elevated-2 h-fit">
       <CardHeader className="p-4 pb-2">
-        <CardTitle className="text-base sm:text-lg">{formatLongDate(date)}</CardTitle>
+        <CardTitle className="text-base sm:text-lg">{formatLongDate(date, locale)}</CardTitle>
         <CardDescription>
-          {dayEvents.length} vencimiento{dayEvents.length !== 1 ? "s" : ""}
+          {t("view.count.dueDates", { count: dayEvents.length })}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0">
@@ -367,8 +366,8 @@ function SelectedDayPanel({
           <EmptyStateCard
             variant="sm"
             icon={Calendar}
-            title="Sin vencimientos"
-            description="Selecciona otro día con actividad."
+            title={t("view.empty.title")}
+            description={t("view.empty.description")}
           />
         ) : (
           <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
@@ -403,15 +402,17 @@ function MobileDaySheet({
   onPay?: (event: CalendarEvent) => void;
   payingId?: string | null;
 }) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const dayEvents = events.filter((ev) => isSameDay(parseISO(ev.date), date));
 
   return (
     <BottomSheet open={open} onOpenChange={onOpenChange}>
       <BottomSheetContent side="bottom" snapPoints={["75dvh", "50dvh"]}>
         <BottomSheetHeader>
-          <BottomSheetTitle>{formatLongDate(date)}</BottomSheetTitle>
+          <BottomSheetTitle>{formatLongDate(date, locale)}</BottomSheetTitle>
           <BottomSheetDescription>
-            {dayEvents.length} vencimiento{dayEvents.length !== 1 ? "s" : ""}
+            {t("view.count.dueDates", { count: dayEvents.length })}
           </BottomSheetDescription>
         </BottomSheetHeader>
         <div className="flex flex-col gap-3">
@@ -419,8 +420,8 @@ function MobileDaySheet({
             <EmptyStateCard
               variant="sm"
               icon={Calendar}
-              title="Sin vencimientos"
-              description="Toca un día con color para ver sus detalles."
+              title={t("view.empty.title")}
+              description={t("view.empty.mobileDescription")}
             />
           ) : (
             dayEvents.map((ev) => (
@@ -440,6 +441,8 @@ function MobileDaySheet({
 }
 
 export function CalendarView({ orgCurrency }: CalendarViewProps) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const isMobile = useIsMobile();
   const [view, setView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -458,7 +461,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
       } catch {
         if (!cancelled) {
           setEvents([]);
-          toast.error("No se pudieron cargar los vencimientos");
+          toast.error(t("view.errors.loadToast"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -468,7 +471,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [view, currentDate]);
+  }, [view, currentDate, t]);
 
   const handlePay = async (event: CalendarEvent) => {
     setPayingId(event.id);
@@ -477,11 +480,11 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
         method: "POST",
       });
       if (!res.ok) throw new Error("Error al marcar como pagado");
-      toast.success(`${event.title} marcado como resuelto`);
+      toast.success(t("view.actions.markedResolved", { title: event.title }));
       const data = await loadEvents(view, currentDate);
       setEvents(data);
     } catch {
-      toast.error("No se pudo marcar como pagado");
+      toast.error(t("view.errors.markPaidToast"));
     } finally {
       setPayingId(null);
     }
@@ -491,13 +494,14 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
   const days = useMemo(() => eachDayOfInterval({ start: from, end: to }), [from, to]);
 
   const periodLabel = useMemo(() => {
+    const fns = fnsLocale(locale);
     if (view === "week") {
-      return `${format(from, "d MMM", { locale: es })} — ${format(to, "d MMM yyyy", {
-        locale: es,
+      return `${format(from, "d MMM", { locale: fns })} — ${format(to, "d MMM yyyy", {
+        locale: fns,
       })}`;
     }
-    return format(currentDate, "MMMM yyyy", { locale: es });
-  }, [view, from, to, currentDate]);
+    return format(currentDate, "MMMM yyyy", { locale: fns });
+  }, [view, from, to, currentDate, locale]);
 
   const kpis = useMemo(() => {
     let totalAmount = 0;
@@ -560,41 +564,41 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Calendario de Vencimientos</h1>
-          <p className="body-default mt-1">Visualiza y gestiona tus obligaciones financieras</p>
+          <h1 className="heading-section">{t("view.title")}</h1>
+          <p className="body-default mt-1">{t("view.subtitle")}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard label="Eventos" value={kpis.count} icon={Calendar} />
+        <KpiCard label={t("view.kpis.events")} value={kpis.count} icon={Calendar} />
         <KpiCard
-          label="Por vencer"
-          value={formatCurrency(kpis.totalAmount, orgCurrency)}
+          label={t("view.kpis.upcoming")}
+          value={formatCurrency(kpis.totalAmount, orgCurrency, locale)}
           icon={CreditCard}
         />
         <KpiCard
-          label="Vencidos"
+          label={t("view.kpis.overdue")}
           value={kpis.overdue}
           icon={AlertTriangle}
           valueClassName={kpis.overdue > 0 ? "text-rose-600" : undefined}
         />
-        <KpiCard label="Pagados" value={kpis.paid} icon={CheckCircle2} />
+        <KpiCard label={t("view.kpis.paid")} value={kpis.paid} icon={CheckCircle2} />
       </div>
 
       <Tabs value={view} onValueChange={(v) => setView(v as View)} className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList aria-label="Vista del calendario">
-            <TabsTrigger value="month" aria-label="Vista mensual">
+          <TabsList aria-label={t("view.aria.calendarView")}>
+            <TabsTrigger value="month" aria-label={t("view.aria.monthView")}>
               <Calendar className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Mensual</span>
+              <span className="hidden sm:inline">{t("view.tabs.month")}</span>
             </TabsTrigger>
-            <TabsTrigger value="week" aria-label="Vista semanal">
+            <TabsTrigger value="week" aria-label={t("view.aria.weekView")}>
               <CalendarDays className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Semanal</span>
+              <span className="hidden sm:inline">{t("view.tabs.week")}</span>
             </TabsTrigger>
-            <TabsTrigger value="list" aria-label="Vista de lista">
+            <TabsTrigger value="list" aria-label={t("view.aria.listView")}>
               <List className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Lista</span>
+              <span className="hidden sm:inline">{t("view.tabs.list")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -603,7 +607,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
               variant="outline"
               size="icon-lg"
               onClick={navigatePrev}
-              aria-label="Anterior"
+              aria-label={t("view.aria.prev")}
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
@@ -614,12 +618,12 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
               variant="outline"
               size="icon-lg"
               onClick={navigateNext}
-              aria-label="Siguiente"
+              aria-label={t("view.aria.next")}
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
             <Button variant="ghost" size="sm" onClick={goToToday}>
-              Hoy
+              {t("days.today")}
             </Button>
           </div>
         </div>
@@ -678,12 +682,12 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
                   >
                     <CardHeader className="p-3 pb-0">
                       <CardTitle className={cn("text-sm", isToday(day) && "text-primary")}>
-                        {formatLongDate(day)}
+                        {formatLongDate(day, locale)}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 p-3">
                       {dayEvents.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Sin vencimientos</p>
+                        <p className="text-sm text-muted-foreground">{t("view.noDueDates")}</p>
                       ) : (
                         <div className="flex flex-col gap-2">
                           {dayEvents.map((ev) => (
@@ -707,7 +711,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
               {groupEventsByDate(events).map(([dateKey, dayEvents]) => (
                 <div key={dateKey}>
                   <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                    {formatLongDate(parseISO(dateKey))}
+                    {formatLongDate(parseISO(dateKey), locale)}
                   </h2>
                   <div className="flex flex-col gap-3">
                     {dayEvents.map((ev) => (
@@ -744,6 +748,8 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
 }
 
 function MiniEvent({ event }: { event: CalendarEvent }) {
+  const t = useTranslations("dashboard.calendar");
+  const locale = useLocale() as Locale;
   const cfg = typeConfig[event.type];
   const Icon = cfg.icon;
   const status = getDisplayStatus(event);
@@ -764,11 +770,11 @@ function MiniEvent({ event }: { event: CalendarEvent }) {
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{event.title}</p>
         <p className="truncate text-xs text-muted-foreground">
-          {formatCurrency(event.amount, event.currency)}
+          {formatCurrency(event.amount, event.currency, locale)}
         </p>
       </div>
       <Badge variant="outline" className={statusCfg.className}>
-        {statusCfg.label}
+        {t(`view.status.${status}` as never)}
       </Badge>
     </Link>
   );
@@ -789,40 +795,42 @@ function groupEventsByDate(events: CalendarEvent[]): [string, CalendarEvent[]][]
 }
 
 function EmptyState() {
+  const t = useTranslations("dashboard.calendar");
   return (
     <EmptyStateCard
       variant="lg"
       icon={Calendar}
-      title="Sin vencimientos en este periodo"
-      description="Aquí aparecerán deudas, pagos recurrentes, suscripciones, metas, facturas e impuestos con fecha de vencimiento."
-      hint="Navega a otro periodo o crea tus primeros registros."
+      title={t("view.empty.periodTitle")}
+      description={t("view.empty.periodDescription")}
+      hint={t("view.empty.periodHint")}
     />
   );
 }
 
 function EventLegend() {
+  const t = useTranslations("dashboard.calendar");
   return (
     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-      <span>Tipos:</span>
+      <span>{t("view.legend.types")}</span>
       {(Object.keys(typeConfig) as CalendarEventType[]).map((type) => {
         const cfg = typeConfig[type];
         return (
           <span key={type} className="inline-flex items-center gap-1">
             <span className={cn("inline-block h-2 w-2 rounded-full", cfg.color.split(" ")[0])} />
-            {cfg.label}
+            {t(`view.types.${type}` as never)}
           </span>
         );
       })}
       <span className="mx-1 hidden sm:inline">|</span>
-      <span>Estados:</span>
+      <span>{t("view.legend.statuses")}</span>
       <span className="inline-flex items-center gap-1">
-        <Clock className="h-3 w-3" /> Próximo
+        <Clock className="h-3 w-3" /> {t("view.status.upcoming" as never)}
       </span>
       <span className="inline-flex items-center gap-1 text-rose-600">
-        <AlertTriangle className="h-3 w-3" /> Vencido
+        <AlertTriangle className="h-3 w-3" /> {t("view.status.overdue" as never)}
       </span>
       <span className="inline-flex items-center gap-1 text-emerald-600">
-        <CheckCircle2 className="h-3 w-3" /> Pagado
+        <CheckCircle2 className="h-3 w-3" /> {t("view.status.paid" as never)}
       </span>
     </div>
   );

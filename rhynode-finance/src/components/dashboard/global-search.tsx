@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Search,
   ArrowLeftRight,
@@ -60,6 +61,7 @@ function groupResults(results: SearchResult[]) {
 }
 
 function useSearchQuery() {
+  const t = useTranslations("dashboard.search");
   const [query, setQueryState] = React.useState("");
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -99,7 +101,7 @@ function useSearchQuery() {
       .then(async (res) => {
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.error || "Error al buscar");
+          throw new Error(body.error || t("searchError"));
         }
         return res.json() as Promise<SearchResponse>;
       })
@@ -116,7 +118,7 @@ function useSearchQuery() {
       })
       .catch((err) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : "Error al buscar");
+        setError(err instanceof Error ? err.message : t("searchError"));
         setResults([]);
       })
       .finally(() => {
@@ -126,7 +128,7 @@ function useSearchQuery() {
     return () => {
       controller.abort();
     };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, t]);
 
   return { query, setQuery, results, loading, error };
 }
@@ -170,11 +172,12 @@ function useKeyboardNavigation(
 }
 
 function EmptyState({ query, loading }: { query: string; loading: boolean }) {
+  const t = useTranslations("dashboard.search");
   if (loading) {
     return (
       <div className="flex h-32 items-center justify-center gap-2 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-        <span>Buscando...</span>
+        <span>{t("searching")}</span>
       </div>
     );
   }
@@ -183,8 +186,8 @@ function EmptyState({ query, loading }: { query: string; loading: boolean }) {
     return (
       <div className="flex h-32 flex-col items-center justify-center gap-1 px-6 text-center text-muted-foreground">
         <Search className="h-6 w-6 opacity-40" aria-hidden="true" />
-        <p className="text-sm">Escribe para buscar</p>
-        <p className="text-xs">Transacciones, facturas, clientes, proyectos y cuentas</p>
+        <p className="text-sm">{t("typeToSearch")}</p>
+        <p className="text-xs">{t("typeToSearchHint")}</p>
       </div>
     );
   }
@@ -195,15 +198,14 @@ function EmptyState({ query, loading }: { query: string; loading: boolean }) {
       aria-live="polite"
     >
       <Search className="h-6 w-6 opacity-40" aria-hidden="true" />
-      <p className="text-sm">No se encontraron resultados</p>
-      <p className="text-xs">
-        Prueba con otro término para transacciones, facturas, clientes, proyectos o cuentas.
-      </p>
+      <p className="text-sm">{t("noResults")}</p>
+      <p className="text-xs">{t("noResultsHint")}</p>
     </div>
   );
 }
 
 export function GlobalSearch({ compact = false }: { compact?: boolean }) {
+  const t = useTranslations("dashboard.search");
   const [isOpen, setIsOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -255,7 +257,7 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           size="icon"
           className="h-10 w-10 shrink-0"
           onClick={() => setIsOpen(true)}
-          aria-label="Abrir búsqueda global (⌘⇧K)"
+          aria-label={t("openGlobalCompact")}
         >
           <Search className="h-5 w-5" aria-hidden="true" />
         </Button>
@@ -265,10 +267,10 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           variant="outline"
           className="relative h-9 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none hover:bg-accent hover:text-foreground"
           onClick={() => setIsOpen(true)}
-          aria-label="Abrir búsqueda global"
+          aria-label={t("openGlobal")}
         >
           <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">Buscar...</span>
+          <span className="truncate">{t("searchPlaceholder")}</span>
           <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
             <span className="text-xs">⌘</span>K
           </kbd>
@@ -286,9 +288,9 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           className="max-h-[80vh] gap-0 overflow-hidden p-0 sm:max-w-xl"
           aria-modal="true"
         >
-          <DialogTitle className="sr-only">Búsqueda global</DialogTitle>
+          <DialogTitle className="sr-only">{t("title")}</DialogTitle>
           <DialogDescription className="sr-only">
-            Busca transacciones, facturas, clientes, proyectos y cuentas.
+            {t("description")}
           </DialogDescription>
           <div className="flex items-center gap-3 border-b px-4 py-3">
             <Search className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
@@ -296,9 +298,9 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar transacciones, facturas, clientes..."
+              placeholder={t("inputPlaceholder")}
               className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-              aria-label="Término de búsqueda"
+              aria-label={t("inputAriaLabel")}
               autoComplete="off"
             />
             {loading && (
@@ -312,7 +314,7 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
           <div
             className="min-h-[12rem] overflow-y-auto p-2"
             role="listbox"
-            aria-label="Resultados de búsqueda"
+            aria-label={t("resultsAriaLabel")}
             aria-live={loading ? "polite" : "off"}
           >
             {results.length === 0 && !error && (
@@ -322,19 +324,20 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
             {error && (
               <div className="flex h-32 flex-col items-center justify-center px-6 text-center text-destructive">
                 <p className="text-sm font-medium">{error}</p>
-                <p className="text-xs text-muted-foreground">Intenta de nuevo en un momento.</p>
+                <p className="text-xs text-muted-foreground">{t("errorHint")}</p>
               </div>
             )}
 
             {Array.from(groups.entries()).map(([type, items]) => {
               const meta = typeMeta[type];
               const Icon = meta.icon;
+              const groupLabel = t(`types.${type}` as never);
               return (
                 <div key={type} className="mt-2 first:mt-0">
                   <h3 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {meta.label}
+                    {groupLabel}
                   </h3>
-                  <ul className="space-y-0.5" role="group" aria-label={meta.label}>
+                  <ul className="space-y-0.5" role="group" aria-label={groupLabel}>
                     {items.map((result) => {
                       runningIndex += 1;
                       const isSelected = runningIndex === selectedIndex;
@@ -396,11 +399,11 @@ export function GlobalSearch({ compact = false }: { compact?: boolean }) {
 
           <div className="flex items-center justify-between border-t px-4 py-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span>Máx. 15 resultados</span>
+              <span>{t("maxResults")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden sm:inline">↑↓ navegar</span>
-              <span className="hidden sm:inline">Enter seleccionar</span>
+              <span className="hidden sm:inline">{t("navHint")}</span>
+              <span className="hidden sm:inline">{t("selectHint")}</span>
               <span className="sm:hidden">⌘K</span>
             </div>
           </div>

@@ -948,6 +948,72 @@
           "QUARTERLY": "Trimestral",
           "DAILY": "Diario"
         }
+      },
+      "view": {
+        "title": "Calendario de Vencimientos",
+        "subtitle": "Visualiza y gestiona tus obligaciones financieras",
+        "kpis": {
+          "events": "Eventos",
+          "upcoming": "Por vencer",
+          "overdue": "Vencidos",
+          "paid": "Pagados"
+        },
+        "tabs": {
+          "month": "Mensual",
+          "week": "Semanal",
+          "list": "Lista"
+        },
+        "types": {
+          "debt": "Deuda",
+          "recurring": "Recurrente",
+          "subscription": "Suscripción",
+          "goal": "Meta",
+          "invoice": "Factura",
+          "tax": "Impuesto"
+        },
+        "status": {
+          "paid": "Pagado",
+          "overdue": "Vencido",
+          "upcoming": "Próximo"
+        },
+        "actions": {
+          "viewDetails": "Ver detalle",
+          "pay": "Pagar",
+          "file": "Presentar",
+          "markPaidAria": "Marcar {title} como pagado",
+          "markedResolved": "{title} marcado como resuelto"
+        },
+        "aria": {
+          "calendarView": "Vista del calendario",
+          "monthView": "Vista mensual",
+          "weekView": "Vista semanal",
+          "listView": "Vista de lista",
+          "prev": "Anterior",
+          "next": "Siguiente",
+          "dayCell": "{date}, {count} vencimientos"
+        },
+        "count": {
+          "dueDates": "{count, plural, one {# vencimiento} other {# vencimientos}}"
+        },
+        "empty": {
+          "title": "Sin vencimientos",
+          "description": "Selecciona otro día con actividad.",
+          "mobileDescription": "Toca un día con color para ver sus detalles.",
+          "periodTitle": "Sin vencimientos en este periodo",
+          "periodDescription": "Aquí aparecerán deudas, pagos recurrentes, suscripciones, metas, facturas e impuestos con fecha de vencimiento.",
+          "periodHint": "Navega a otro periodo o crea tus primeros registros."
+        },
+        "legend": {
+          "types": "Tipos:",
+          "statuses": "Estados:"
+        },
+        "errors": {
+          "loadEvents": "Error al cargar eventos",
+          "loadToast": "No se pudieron cargar los vencimientos",
+          "markPaid": "Error al marcar como pagado",
+          "markPaidToast": "No se pudo marcar como pagado"
+        },
+        "noDueDates": "Sin vencimientos"
       }
     },
     "split": {
@@ -2487,6 +2553,69 @@
           "recurring": "Recurrente",
           "goal": "Meta"
         }
+      }
+    },
+    "commandPalette": {
+      "openPalette": "Abrir paleta de comandos (⌘K)",
+      "title": "Paleta de comandos",
+      "description": "Paleta de comandos para navegar rápidamente a secciones y ejecutar acciones.",
+      "searchPlaceholder": "Buscar comando o ir a...",
+      "searchAriaLabel": "Buscar comando",
+      "listAriaLabel": "Comandos",
+      "noResults": "No se encontraron comandos",
+      "tryAgain": "Prueba con otro término",
+      "commandsCount": "{count} comandos",
+      "navHint": "↑↓ navegar",
+      "executeHint": "Enter ejecutar",
+      "closeHint": "Esc cerrar",
+      "sections": {
+        "recent": "Reciente",
+        "goTo": "Ir a",
+        "actions": "Acciones",
+        "help": "Ayuda"
+      },
+      "actions": {
+        "newTransaction": "Crear transacción",
+        "newInvoice": "Crear factura",
+        "newGoal": "Añadir meta",
+        "newReminder": "Nuevo recordatorio",
+        "newTransactionShortcut": "Nueva transacción",
+        "newInvoiceShortcut": "Nueva factura",
+        "newGoalShortcut": "Nueva meta",
+        "newReminderShortcut": "Nuevo recordatorio"
+      },
+      "help": {
+        "helpCenter": "Centro de ayuda"
+      },
+      "navLabel": {
+        "goals": "Metas"
+      }
+    },
+    "search": {
+      "openGlobalCompact": "Abrir búsqueda global (⌘⇧K)",
+      "openGlobal": "Abrir búsqueda global",
+      "searchPlaceholder": "Buscar...",
+      "title": "Búsqueda global",
+      "description": "Busca transacciones, facturas, clientes, proyectos y cuentas.",
+      "inputPlaceholder": "Buscar transacciones, facturas, clientes...",
+      "inputAriaLabel": "Término de búsqueda",
+      "resultsAriaLabel": "Resultados de búsqueda",
+      "searching": "Buscando...",
+      "typeToSearch": "Escribe para buscar",
+      "typeToSearchHint": "Transacciones, facturas, clientes, proyectos y cuentas",
+      "noResults": "No se encontraron resultados",
+      "noResultsHint": "Prueba con otro término para transacciones, facturas, clientes, proyectos o cuentas.",
+      "errorHint": "Intenta de nuevo en un momento.",
+      "searchError": "Error al buscar",
+      "maxResults": "Máx. 15 resultados",
+      "navHint": "↑↓ navegar",
+      "selectHint": "Enter seleccionar",
+      "types": {
+        "transaction": "Transacciones",
+        "invoice": "Facturas",
+        "client": "Clientes",
+        "project": "Proyectos",
+        "account": "Cuentas"
       }
     }
   },
