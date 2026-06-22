@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +22,20 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import type { Locale } from "@/lib/locale";
+
+const typeLabelKeys: Record<string, string> = {
+  CHECKING: "dialog.types.CHECKING",
+  SAVINGS: "dialog.types.SAVINGS",
+  CREDIT: "dialog.types.CREDIT",
+  INVESTMENT: "dialog.types.INVESTMENT",
+  CASH: "dialog.types.CASH",
+  OTHER: "dialog.types.OTHER",
+};
 
 export function CreateAccountDialog() {
+  const t = useTranslations("dashboard.personalAccounts");
+  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -56,12 +69,12 @@ export function CreateAccountDialog() {
         setOpen(false);
         setForm({ name: "", type: "CHECKING", balance: "", currency: "COP", color: "", icon: "" });
         router.refresh();
-        toast.success("Cuenta creada");
+        toast.success(t("dialog.toast.created"));
       } else {
-        toast.error("Error al crear cuenta");
+        toast.error(t("dialog.toast.createError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("dialog.toast.networkError"));
     } finally {
       setLoading(false);
     }
@@ -72,27 +85,27 @@ export function CreateAccountDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nueva Cuenta
+          {t("dialog.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Cuenta</DialogTitle>
+          <DialogTitle className="heading-card">{t("dialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="acc-name">Nombre *</Label>
+            <Label htmlFor="acc-name">{t("dialog.labels.name")}</Label>
             <Input
               id="acc-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Cuenta de Ahorros"
+              placeholder={t("dialog.placeholders.name")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="acc-type">Tipo</Label>
+              <Label htmlFor="acc-type">{t("dialog.labels.type")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
@@ -101,17 +114,17 @@ export function CreateAccountDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CHECKING">Corriente</SelectItem>
-                  <SelectItem value="SAVINGS">Ahorros</SelectItem>
-                  <SelectItem value="CREDIT">Crédito</SelectItem>
-                  <SelectItem value="INVESTMENT">Inversión</SelectItem>
-                  <SelectItem value="CASH">Efectivo</SelectItem>
-                  <SelectItem value="OTHER">Otro</SelectItem>
+                  <SelectItem value="CHECKING">{t(typeLabelKeys.CHECKING as never)}</SelectItem>
+                  <SelectItem value="SAVINGS">{t(typeLabelKeys.SAVINGS as never)}</SelectItem>
+                  <SelectItem value="CREDIT">{t(typeLabelKeys.CREDIT as never)}</SelectItem>
+                  <SelectItem value="INVESTMENT">{t(typeLabelKeys.INVESTMENT as never)}</SelectItem>
+                  <SelectItem value="CASH">{t(typeLabelKeys.CASH as never)}</SelectItem>
+                  <SelectItem value="OTHER">{t(typeLabelKeys.OTHER as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="acc-balance">Saldo inicial</Label>
+              <Label htmlFor="acc-balance">{t("dialog.labels.initialBalance")}</Label>
               <Input
                 id="acc-balance"
                 type="number"
@@ -124,7 +137,7 @@ export function CreateAccountDialog() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="acc-currency">Moneda</Label>
+              <Label htmlFor="acc-currency">{t("dialog.labels.currency")}</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -141,7 +154,7 @@ export function CreateAccountDialog() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="acc-color">Color</Label>
+              <Label htmlFor="acc-color">{t("dialog.labels.color")}</Label>
               <Input
                 id="acc-color"
                 value={form.color}
@@ -151,7 +164,7 @@ export function CreateAccountDialog() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="acc-icon">Icono (nombre Lucide)</Label>
+            <Label htmlFor="acc-icon">{t("dialog.labels.icon")}</Label>
             <Input
               id="acc-icon"
               value={form.icon}
@@ -161,10 +174,10 @@ export function CreateAccountDialog() {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("dialog.buttons.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("dialog.buttons.saving") : t("dialog.buttons.save")}
             </Button>
           </div>
         </form>

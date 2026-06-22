@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,7 @@ export function EditPaymentLinkDialog({
   onOpenChange,
   onRefresh,
 }: EditPaymentLinkDialogProps) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [form, setForm] = useState({
     name: link.name,
     description: link.description || "",
@@ -68,11 +70,11 @@ export function EditPaymentLinkDialog({
         body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error("Update failed");
-      toast.success("Link actualizado");
+      toast.success(t("toasts.updated"));
       onRefresh();
       onOpenChange(false);
     } catch {
-      toast.error("No se pudo actualizar el link");
+      toast.error(t("toasts.updateError"));
     } finally {
       setSaving(false);
     }
@@ -83,12 +85,12 @@ export function EditPaymentLinkDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="heading-card">
-            Editar Link de Cobro
+            {t("dialogs.edit.title")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="pl-edit-name">Nombre</Label>
+            <Label htmlFor="pl-edit-name">{t("fields.name")}</Label>
             <Input
               id="pl-edit-name"
               required
@@ -99,7 +101,7 @@ export function EditPaymentLinkDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pl-edit-desc">Descripción</Label>
+            <Label htmlFor="pl-edit-desc">{t("fields.description")}</Label>
             <Input
               id="pl-edit-desc"
               value={form.description}
@@ -110,7 +112,7 @@ export function EditPaymentLinkDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="pl-edit-amount">Monto</Label>
+              <Label htmlFor="pl-edit-amount">{t("fields.amount")}</Label>
               <Input
                 id="pl-edit-amount"
                 type="number"
@@ -123,13 +125,13 @@ export function EditPaymentLinkDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pl-edit-max">Límite de pagos</Label>
+              <Label htmlFor="pl-edit-max">{t("fields.maxPayments")}</Label>
               <Input
                 id="pl-edit-max"
                 type="number"
                 min={1}
                 value={form.maxPayments}
-                placeholder="Sin límite"
+                placeholder={t("placeholders.noLimit")}
                 onChange={(event) =>
                   setForm({ ...form, maxPayments: event.target.value })
                 }
@@ -137,7 +139,7 @@ export function EditPaymentLinkDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pl-edit-expires">Fecha de expiración</Label>
+            <Label htmlFor="pl-edit-expires">{t("fields.expiresAt")}</Label>
             <Input
               id="pl-edit-expires"
               type="date"
@@ -153,10 +155,10 @@ export function EditPaymentLinkDialog({
               variant="ghost"
               onClick={() => onOpenChange(false)}
             >
-              Cancelar
+              {t("buttons.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Guardando..." : "Guardar"}
+              {saving ? t("buttons.saving") : t("buttons.save")}
             </Button>
           </div>
         </form>

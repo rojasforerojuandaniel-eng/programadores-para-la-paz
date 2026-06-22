@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,13 @@ interface ReminderDialogProps {
   defaultOpen?: boolean;
 }
 
+const repeatLabelKeys: Record<ReminderRow["repeat"], string> = {
+  NONE: "repeats.NONE",
+  DAILY: "repeats.DAILY",
+  WEEKLY: "repeats.WEEKLY",
+  MONTHLY: "repeats.MONTHLY",
+};
+
 function toLocalInputValue(iso: string | undefined): string {
   if (!iso) return "";
   const date = new Date(iso);
@@ -55,6 +63,7 @@ function fromLocalInputValue(value: string): string {
 }
 
 export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: ReminderDialogProps) {
+  const t = useTranslations("dashboard.reminders");
   const isEdit = Boolean(reminder);
   const [open, setOpen] = useState(defaultOpen);
   const [loading, setLoading] = useState(false);
@@ -88,10 +97,10 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
           onSuccess: () => {
             setOpen(false);
             onSuccess();
-            toast.success(isEdit ? "Recordatorio actualizado" : "Recordatorio creado");
+            toast.success(isEdit ? t("toast.updated") : t("toast.created"));
           },
           onError: (err) => {
-            toast.error(err.message || "Error al guardar recordatorio");
+            toast.error(err.message || t("toast.saveError"));
           },
         },
       );
@@ -104,48 +113,48 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button variant="ghost" size="icon" aria-label="Editar recordatorio">
+          <Button variant="ghost" size="icon" aria-label={t("aria.edit")}>
             <Pencil className="h-4 w-4" aria-hidden="true" />
           </Button>
         ) : (
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Nuevo recordatorio
+            {t("dialog.trigger")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="heading-card">
-            {isEdit ? "Editar recordatorio" : "Nuevo recordatorio"}
+            {isEdit ? t("dialog.editTitle") : t("dialog.title")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="reminder-title">Título *</Label>
+            <Label htmlFor="reminder-title">{t("dialog.labels.title")}</Label>
             <Input
               id="reminder-title"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Ej. Revisar gastos del mes"
+              placeholder={t("dialog.placeholders.title")}
               required
               maxLength={120}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reminder-message">Mensaje *</Label>
+            <Label htmlFor="reminder-message">{t("dialog.labels.message")}</Label>
             <Input
               id="reminder-message"
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
-              placeholder="Ej. Revisa tus gastos hormiga antes de dormir"
+              placeholder={t("dialog.placeholders.message")}
               required
               maxLength={500}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="reminder-date">Fecha y hora *</Label>
+              <Label htmlFor="reminder-date">{t("dialog.labels.scheduledAt")}</Label>
               <Input
                 id="reminder-date"
                 type="datetime-local"
@@ -155,7 +164,7 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reminder-repeat">Repetición</Label>
+              <Label htmlFor="reminder-repeat">{t("dialog.labels.repeat")}</Label>
               <Select
                 value={form.repeat}
                 onValueChange={(v) => setForm({ ...form, repeat: v as typeof form.repeat })}
@@ -164,10 +173,10 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">Una vez</SelectItem>
-                  <SelectItem value="DAILY">Diario</SelectItem>
-                  <SelectItem value="WEEKLY">Semanal</SelectItem>
-                  <SelectItem value="MONTHLY">Mensual</SelectItem>
+                  <SelectItem value="NONE">{t(repeatLabelKeys.NONE as never)}</SelectItem>
+                  <SelectItem value="DAILY">{t(repeatLabelKeys.DAILY as never)}</SelectItem>
+                  <SelectItem value="WEEKLY">{t(repeatLabelKeys.WEEKLY as never)}</SelectItem>
+                  <SelectItem value="MONTHLY">{t(repeatLabelKeys.MONTHLY as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -178,14 +187,14 @@ export function ReminderDialog({ reminder, onSuccess, defaultOpen = false }: Rem
               checked={form.active}
               onCheckedChange={(checked) => setForm({ ...form, active: checked })}
             />
-            <Label htmlFor="reminder-active" className="text-sm">{form.active ? "Activo" : "Inactivo"}</Label>
+            <Label htmlFor="reminder-active" className="text-sm">{form.active ? t("dialog.labels.active") : t("dialog.labels.inactive")}</Label>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("dialog.buttons.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : isEdit ? "Guardar" : "Crear"}
+              {loading ? t("dialog.buttons.saving") : isEdit ? t("dialog.buttons.save") : t("dialog.buttons.create")}
             </Button>
           </div>
         </form>
