@@ -1040,6 +1040,178 @@
         "scenarioSeries": "Scenario",
         "baseSeries": "Baseline"
       }
+    },
+    "categories": {
+      "title": "Categories",
+      "subtitle": "Manage your categories, visualize your monthly movements and their associated budget.",
+      "empty": {
+        "title": "Organize your transactions",
+        "description": "Create custom categories to classify income and expenses with precision.",
+        "hint": "Start by creating your first category and visualize how much you spend and earn in each."
+      },
+      "types": {
+        "INCOME": "Income",
+        "EXPENSE": "Expense",
+        "TRANSFER": "Transfer"
+      },
+      "budget": {
+        "label": "Budget",
+        "over": "Over budget"
+      },
+      "card": {
+        "spentMonth": "Spent this month",
+        "earnedMonth": "Earned this month",
+        "monthProportion": "Month proportion"
+      },
+      "actions": {
+        "optionsLabel": "Options for {name}",
+        "title": "Actions",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "dialogs": {
+        "edit": {
+          "title": "Edit Category",
+          "description": "Modify the details of the selected category.",
+          "nameLabel": "Name *",
+          "namePlaceholder": "e.g. Groceries",
+          "typeLabel": "Type",
+          "parentLabel": "Parent category",
+          "parentNone": "None",
+          "colorLabel": "Color",
+          "iconLabel": "Icon (Lucide name)",
+          "cancel": "Cancel",
+          "saving": "Saving...",
+          "save": "Save changes",
+          "updated": "Category updated",
+          "error": "Error updating category"
+        },
+        "create": {
+          "trigger": "New Category",
+          "title": "New Category",
+          "description": "Create a category to classify income and expenses.",
+          "nameLabel": "Name *",
+          "namePlaceholder": "e.g. Groceries",
+          "typeLabel": "Type",
+          "parentLabel": "Parent category",
+          "parentNone": "None",
+          "colorLabel": "Color",
+          "iconLabel": "Icon (Lucide name)",
+          "cancel": "Cancel",
+          "saving": "Saving...",
+          "save": "Save",
+          "created": "Category created",
+          "error": "Error creating category"
+        },
+        "delete": {
+          "title": "Delete category",
+          "confirm": "You are about to delete <strong>{name}</strong>. This action cannot be undone.",
+          "cancel": "Cancel",
+          "deleting": "Deleting...",
+          "confirmButton": "Delete category",
+          "deleted": "Category deleted",
+          "error": "Error deleting category"
+        }
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your organization and preferences",
+      "saved": "Saved",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "toast": {
+        "saveError": "Error saving changes",
+        "networkError": "Network error",
+        "prefsSaved": "Preferences saved",
+        "prefsError": "Error saving preferences",
+        "pushEnabled": "Push notifications enabled",
+        "pushRegisterError": "Error registering subscription",
+        "pushUnsupported": "Your browser doesn't support push notifications",
+        "pushEnableError": "Error enabling notifications",
+        "checkoutError": "Error starting checkout. Check your Stripe configuration."
+      },
+      "tabs": {
+        "profile": "Profile",
+        "company": "Company",
+        "localization": "Localization",
+        "billing": "Billing",
+        "members": "Members",
+        "notifications": "Notifications",
+        "security": "Security",
+        "webhooks": "Webhooks"
+      },
+      "company": {
+        "title": "Company Data",
+        "name": "Name",
+        "namePlaceholder": "My Company Inc",
+        "taxId": "NIT / RFC / CNPJ",
+        "taxIdPlaceholder": "900.123.456-7"
+      },
+      "profile": {
+        "title": "Profile & Appearance",
+        "theme": "Theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "themeSystem": "System"
+      },
+      "security": {
+        "title": "Account Security",
+        "description": "Authentication and credential management are protected by Clerk. To update your password, enable two-factor authentication, or review active sessions, use the user menu in the sidebar.",
+        "password": {
+          "title": "Strong password",
+          "description": "Use a unique password saved in a password manager."
+        },
+        "twoFactor": {
+          "title": "Two-factor authentication",
+          "description": "Enable 2FA from the user portal to protect access."
+        },
+        "sessions": {
+          "title": "Sessions and devices",
+          "description": "Review and close suspicious sessions from your identity provider."
+        },
+        "data": {
+          "title": "Your data",
+          "description": "Download a copy of your personal and business data. The file may take a few seconds to generate.",
+          "format": "Format",
+          "formatPlaceholder": "Select a format",
+          "export": "Export my data",
+          "generating": "Generating...",
+          "disclaimer": "Your export does not include passwords, tokens, hashes, or sensitive third-party data.",
+          "exportError": "Error exporting data"
+        }
+      },
+      "localization": {
+        "title": "Regional",
+        "country": "Country",
+        "currency": "Currency",
+        "timezone": "Timezone",
+        "countries": {
+          "CO": "Colombia",
+          "MX": "Mexico",
+          "BR": "Brazil",
+          "AR": "Argentina",
+          "CL": "Chile",
+          "PE": "Peru"
+        },
+        "currencies": {
+          "COP": "COP — Colombian Peso",
+          "MXN": "MXN — Mexican Peso",
+          "BRL": "BRL — Brazilian Real",
+          "ARS": "ARS — Argentine Peso",
+          "CLP": "CLP — Chilean Peso",
+          "PEN": "PEN — Peruvian Sol",
+          "USD": "USD — US Dollar"
+        },
+        "timezones": {
+          "America/Bogota": "Bogota",
+          "America/Mexico_City": "Mexico City",
+          "America/Sao_Paulo": "Sao Paulo",
+          "America/Argentina/Buenos_Aires": "Buenos Aires",
+          "America/Santiago": "Santiago",
+          "America/Lima": "Lima"
+        }
+      }
     }
   },
   "nav": {

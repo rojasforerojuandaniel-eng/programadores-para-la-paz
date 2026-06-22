@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,7 @@ interface CategoryActionsProps {
 }
 
 export function CategoryActions({ category, categories }: CategoryActionsProps) {
+  const t = useTranslations("dashboard.categories");
   const isMobile = useIsMobile();
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -36,7 +38,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
     <Button
       variant="ghost"
       size="icon"
-      aria-label={`Opciones de ${category.name}`}
+      aria-label={t("actions.optionsLabel", { name: category.name })}
       className="h-9 w-9 shrink-0"
     >
       <MoreVertical className="h-4 w-4" />
@@ -51,7 +53,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
         className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        Editar
+        {t("actions.edit")}
       </button>
       <button
         type="button"
@@ -59,7 +61,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
         className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-destructive outline-hidden transition-colors hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <Trash2 className="h-4 w-4" aria-hidden="true" />
-        Eliminar
+        {t("actions.delete")}
       </button>
     </>
   );
@@ -71,7 +73,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
           <BottomSheetTrigger asChild>{trigger}</BottomSheetTrigger>
           <BottomSheetContent className="px-4 pb-6" showCloseButton>
             <BottomSheetHeader className="pb-2">
-              <BottomSheetTitle>Acciones</BottomSheetTitle>
+              <BottomSheetTitle>{t("actions.title")}</BottomSheetTitle>
             </BottomSheetHeader>
             <div className="flex flex-col gap-1">{menuItems}</div>
           </BottomSheetContent>
@@ -85,7 +87,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
               className="h-10 cursor-pointer px-3"
             >
               <Pencil className="h-4 w-4" aria-hidden="true" />
-              Editar
+              {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setOpenDelete(true)}
@@ -93,7 +95,7 @@ export function CategoryActions({ category, categories }: CategoryActionsProps) 
               variant="destructive"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
-              Eliminar
+              {t("actions.delete")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

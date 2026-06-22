@@ -1,4 +1,7 @@
 import { Suspense } from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
@@ -33,45 +36,25 @@ interface CategoryWithStats {
   budgets: BudgetSummary[];
 }
 
-function EmptyState() {
+const typeLabelKeys: Record<CategoryType, string> = {
+  INCOME: "types.INCOME",
+  EXPENSE: "types.EXPENSE",
+  TRANSFER: "types.TRANSFER",
+};
+
+async function EmptyState() {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.categories" });
   return (
     <EmptyStateCard
       variant="lg"
       icon={Tags}
-      title="Organiza tus movimientos"
-      description="Crea categorías personalizadas para clasificar ingresos y gastos con precisión."
-      hint="Empieza creando tu primera categoría y visualiza cuánto gastas e ingresas en cada una."
+      title={t("empty.title")}
+      description={t("empty.description")}
+      hint={t("empty.hint")}
       action={<CreateCategoryDialog categories={[]} />}
     />
   );
-}
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function TypeBadge({ type }: { type: CategoryType }) {
-  if (type === "INCOME") {
-    return (
-      <Badge className="gap-1 border-transparent bg-success/10 text-success hover:bg-success/10">
-        <TrendingUp className="h-3 w-3" aria-hidden="true" />
-        Ingreso
-      </Badge>
-    );
-  }
-  if (type === "EXPENSE") {
-    return (
-      <Badge className="gap-1 border-transparent bg-danger/10 text-danger hover:bg-danger/10">
-        <TrendingDown className="h-3 w-3" aria-hidden="true" />
-        Gasto
-      </Badge>
-    );
-  }
-  return <Badge variant="outline">Transferencia</Badge>;
 }
 
 function decimalToNumber(value: unknown): number {
@@ -79,15 +62,39 @@ function decimalToNumber(value: unknown): number {
   return Number(value);
 }
 
-function BudgetBar({ spent, budget }: { spent: number; budget: number }) {
+async function TypeBadge({ type }: { type: CategoryType }) {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.categories" });
+  if (type === "INCOME") {
+    return (
+      <Badge className="gap-1 border-transparent bg-success/10 text-success hover:bg-success/10">
+        <TrendingUp className="h-3 w-3" aria-hidden="true" />
+        {t(typeLabelKeys[type] as never)}
+      </Badge>
+    );
+  }
+  if (type === "EXPENSE") {
+    return (
+      <Badge className="gap-1 border-transparent bg-danger/10 text-danger hover:bg-danger/10">
+        <TrendingDown className="h-3 w-3" aria-hidden="true" />
+        {t(typeLabelKeys[type] as never)}
+      </Badge>
+    );
+  }
+  return <Badge variant="outline">{t(typeLabelKeys[type] as never)}</Badge>;
+}
+
+async function BudgetBar({ spent, budget }: { spent: number; budget: number }) {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.categories" });
   const width = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
   const overBudget = spent > budget;
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Presupuesto</span>
+        <span>{t("budget.label")}</span>
         <span className="font-medium text-foreground">
-          {formatCurrency(spent)} / {formatCurrency(budget)}
+          {formatCurrency(spent, "COP", locale)} / {formatCurrency(budget, "COP", locale)}
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -96,18 +103,20 @@ function BudgetBar({ spent, budget }: { spent: number; budget: number }) {
           style={{ width: `${width}%` }}
         />
       </div>
-      {overBudget ? <p className="text-xs text-danger">Sobre presupuesto</p> : null}
+      {overBudget ? <p className="text-xs text-danger">{t("budget.over")}</p> : null}
     </div>
   );
 }
 
-function CategoryCard({
+async function CategoryCard({
   category,
   categories,
 }: {
   category: CategoryWithStats;
   categories: CategoryRow[];
 }) {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.categories" });
   const primaryAmount =
     category.type === "INCOME" ? category.earned : category.spent;
   const fgClass = getContrastColor(category.color);
@@ -154,12 +163,12 @@ function CategoryCard({
 
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p className="text-xs text-muted-foreground">Gastado mes</p>
-          <p className="font-medium text-danger">{formatCurrency(category.spent)}</p>
+          <p className="text-xs text-muted-foreground">{t("card.spentMonth")}</p>
+          <p className="font-medium text-danger">{formatCurrency(category.spent, "COP", locale)}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">Ingresado mes</p>
-          <p className="font-medium text-success">{formatCurrency(category.earned)}</p>
+          <p className="text-xs text-muted-foreground">{t("card.earnedMonth")}</p>
+          <p className="font-medium text-success">{formatCurrency(category.earned, "COP", locale)}</p>
         </div>
       </div>
 
@@ -167,8 +176,8 @@ function CategoryCard({
         <div className="mt-4">
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Proporción del mes</span>
-              <span className="font-medium text-foreground">{formatCurrency(primaryAmount)}</span>
+              <span>{t("card.monthProportion")}</span>
+              <span className="font-medium text-foreground">{formatCurrency(primaryAmount, "COP", locale)}</span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -196,6 +205,10 @@ function CategoryCard({
 export default async function CategoriesPage() {
   const profile = await getUserProfile();
   if (!profile) return null;
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.categories" });
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -284,10 +297,8 @@ export default async function CategoriesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Categorías</h1>
-          <p className="body-default mt-1">
-            Administra tus categorías, visualiza tus movimientos del mes y su presupuesto asociado.
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateCategoryDialog categories={categoryRows} />
       </div>
