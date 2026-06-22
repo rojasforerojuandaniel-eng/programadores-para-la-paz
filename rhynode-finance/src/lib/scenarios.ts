@@ -1,3 +1,6 @@
+import type { Locale } from "./locale";
+import { formatCurrency as formatCurrencyLocale } from "./format";
+
 export type ScenarioType = "optimistic" | "base" | "pessimistic";
 
 export interface Scenario {
@@ -35,12 +38,8 @@ export interface ScenarioProjectionResult {
   deltaVsBaseline: number;
 }
 
-export function formatCurrency(amount: number, currency = "COP"): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+export function formatCurrency(amount: number, currency = "COP", locale: Locale = "es"): string {
+  return formatCurrencyLocale(amount, currency, locale);
 }
 
 export function formatPercentage(value: number): string {
@@ -99,13 +98,13 @@ export function calculateScenarioProjection(
   };
 }
 
-export function getScenarioTypeLabel(type: ScenarioType): string {
-  const labels: Record<ScenarioType, string> = {
-    optimistic: "Optimista",
-    base: "Base",
-    pessimistic: "Pesimista",
+export function getScenarioTypeLabel(type: ScenarioType, locale: Locale = "es"): string {
+  const labels: Record<ScenarioType, Record<Locale, string>> = {
+    optimistic: { es: "Optimista", en: "Optimistic" },
+    base: { es: "Base", en: "Base" },
+    pessimistic: { es: "Pesimista", en: "Pessimistic" },
   };
-  return labels[type];
+  return labels[type][locale];
 }
 
 export function sortScenarios(scenarios: Scenario[]): Scenario[] {

@@ -51,6 +51,7 @@ export default async function RentDeclarationPage({
     orgId: org?.id ?? null,
     year,
     dependents,
+    locale,
   });
 
   return (

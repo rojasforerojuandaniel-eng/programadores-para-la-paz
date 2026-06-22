@@ -78,7 +78,7 @@ function getMonthRange(now: Date) {
   };
 }
 
-async function fetchBriefingData(userId: string, currency: string, now: Date) {
+async function fetchBriefingData(userId: string, currency: string, now: Date, locale: Locale) {
   const prisma = getPrisma();
   const { start: monthStart, end: monthEnd } = getMonthRange(now);
   const { start: yesterdayStart, end: yesterdayEnd } = getDayBounds(-1, now);
@@ -151,7 +151,7 @@ async function fetchBriefingData(userId: string, currency: string, now: Date) {
         deadline: true,
       },
     }),
-    generatePersonalInsights(userId, currency),
+    generatePersonalInsights(userId, currency, locale),
   ]);
 
   const balanceTotal = accounts.reduce(
@@ -294,7 +294,7 @@ export async function DailyBriefing({
   const displayName = name?.trim() || "";
 
   const { balanceTotal, yesterdayTotal, avgDaily, incomeMonth, dueToday, nearestGoal, topInsight } =
-    await fetchBriefingData(userId, currency, now);
+    await fetchBriefingData(userId, currency, now, locale);
 
   const items = buildBriefingItems(
     balanceTotal,

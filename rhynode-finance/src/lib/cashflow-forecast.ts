@@ -7,6 +7,8 @@ import {
   parseISO,
   startOfMonth,
 } from "date-fns";
+import { formatCurrency } from "./format";
+import type { Locale } from "./locale";
 
 export interface HistoricalMonth {
   month: string; // yyyy-MM
@@ -222,7 +224,8 @@ function applyColombianEvents(
   baseExpenses: number,
   historicalIncomeMedian: number,
   recurringIncomeInMonth: number,
-  config: ColombianEventsConfig
+  config: ColombianEventsConfig,
+  locale: Locale
 ): { income: number; expenses: number; events: string[]; eventIncome: number; eventExpenses: number } {
   const events: string[] = [];
   let eventIncome = 0;
@@ -232,20 +235,23 @@ function applyColombianEvents(
   if (config.includeAguinaldo && monthIndex === 11) {
     const bonus = historicalIncomeMedian > 0 ? historicalIncomeMedian : recurringIncomeInMonth;
     eventIncome += bonus;
-    events.push(`Aguinaldo estimado: ${formatCurrency(bonus)}`);
+    const label = locale === "en" ? "Estimated year-end bonus" : "Aguinaldo estimado";
+    events.push(`${label}: ${formatCurrency(bonus, "COP", locale)}`);
   }
 
   if (config.includePrima && monthIndex === 5) {
     const bonus = historicalIncomeMedian > 0 ? historicalIncomeMedian : recurringIncomeInMonth;
     eventIncome += bonus;
-    events.push(`Prima estimada: ${formatCurrency(bonus)}`);
+    const label = locale === "en" ? "Estimated mid-year bonus" : "Prima estimada";
+    events.push(`${label}: ${formatCurrency(bonus, "COP", locale)}`);
   }
 
   if (config.includeIvaBimestral && (monthIndex + 1) % 2 === 0) {
     const iva = config.averageMonthlyIva ?? 0;
     if (iva > 0) {
       eventExpenses += iva;
-      events.push(`Pago IVA bimestral estimado: ${formatCurrency(iva)}`);
+      const label = locale === "en" ? "Estimated bimonthly VAT payment" : "Pago IVA bimestral estimado";
+      events.push(`${label}: ${formatCurrency(iva, "COP", locale)}`);
     }
   }
 
@@ -258,32 +264,34 @@ function applyColombianEvents(
   };
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function buildRecommendation(
   riskMonth: string | null,
   lowestBalance: number,
-  currentBalance: number
+  currentBalance: number,
+  locale: Locale
 ): string {
   if (riskMonth && lowestBalance < 0) {
-    return `Tu saldo proyectado caerá por debajo de cero en ${riskMonth}. Reduce gastos variables, posterga compras o busca ingresos adicionales.`;
+    return locale === "en"
+      ? `Your projected balance drops below zero in ${riskMonth}. Cut variable spending, postpone purchases, or find extra income.`
+      : `Tu saldo proyectado caerá por debajo de cero en ${riskMonth}. Reduce gastos variables, posterga compras o busca ingresos adicionales.`;
   }
 
   if (lowestBalance < currentBalance * 0.1) {
-    return `El saldo más bajo es ${formatCurrency(lowestBalance)} en ${riskMonth ?? "el horizonte"}; mantén una reserva de emergencia.`;
+    const horizon = riskMonth ?? (locale === "en" ? "the horizon" : "el horizonte");
+    return locale === "en"
+      ? `The lowest balance is ${formatCurrency(lowestBalance, "COP", locale)} in ${horizon}; keep an emergency reserve.`
+      : `El saldo más bajo es ${formatCurrency(lowestBalance, "COP", locale)} en ${horizon}; mantén una reserva de emergencia.`;
   }
 
   if (lowestBalance >= currentBalance) {
-    return "La proyección es saludable; tu saldo crece en todos los escenarios. Mantén el ritmo de ahorro.";
+    return locale === "en"
+      ? "The projection is healthy; your balance grows in every scenario. Keep up the saving pace."
+      : "La proyección es saludable; tu saldo crece en todos los escenarios. Mantén el ritmo de ahorro.";
   }
 
-  return "La proyección es estable. Sigue monitoreando gastos recurrentes y eventos estacionales.";
+  return locale === "en"
+    ? "The projection is stable. Keep monitoring recurring expenses and seasonal events."
+    : "La proyección es estable. Sigue monitoreando gastos recurrentes y eventos estacionales.";
 }
 
 export function generateCashflowProjection({
@@ -294,6 +302,7 @@ export function generateCashflowProjection({
   colombianEvents = {},
   scenarioConfig = DEFAULT_SCENARIO_CONFIG,
   referenceDate = new Date(),
+  locale = "es",
 }: {
   currentBalance: number;
   historical: HistoricalMonth[];
@@ -302,6 +311,7 @@ export function generateCashflowProjection({
   colombianEvents?: ColombianEventsConfig;
   scenarioConfig?: ScenarioConfig;
   referenceDate?: Date;
+  locale?: Locale;
 }): CashflowProjection {
   const horizon = Math.min(Math.max(monthsToProject, 3), MAX_MONTHS);
   const startDate = startOfMonth(referenceDate);
@@ -358,7 +368,8 @@ export function generateCashflowProjection({
       baseExpenses,
       historicalIncomeMedian,
       recurringInMonth.income,
-      colombianEvents
+      colombianEvents,
+      locale
     );
 
     const totalIncome = eventData.income;
@@ -424,7 +435,7 @@ export function generateCashflowProjection({
       riskMonth,
       lowestBalance,
       averageMonthlyNet: Math.round(averageMonthlyNet),
-      recommendation: buildRecommendation(riskMonth, lowestBalance, currentBalance),
+      recommendation: buildRecommendation(riskMonth, lowestBalance, currentBalance, locale),
     },
   };
 }

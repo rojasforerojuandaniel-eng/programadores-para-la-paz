@@ -4,6 +4,9 @@
  * monthly contribution or the projected completion date.
  */
 
+import type { Locale } from "@/lib/locale";
+import { formatCurrency, formatDate } from "@/lib/format";
+
 export interface GoalProjectionInput {
   name: string;
   target: number;
@@ -94,14 +97,35 @@ export function projectGoal(input: GoalProjectionInput): GoalProjectionResult {
   return result;
 }
 
-export function formatGoalProjection(r: GoalProjectionResult): string {
-  if (r.alreadyDone) return `🎉 Meta "${r.name}" completada (${r.progressPct}%).`;
-  const parts = [`Meta "${r.name}": ${r.progressPct}% ($${Math.round(r.current).toLocaleString("es-CO")} / $${Math.round(r.target).toLocaleString("es-CO")} COP).`];
-  if (r.requiredMonthly !== undefined) {
-    parts.push(`Para llegar a tiempo necesitas ahorrar ~$${r.requiredMonthly.toLocaleString("es-CO")} COP/mes.`);
+export function formatGoalProjection(r: GoalProjectionResult, locale: Locale = "es"): string {
+  if (r.alreadyDone) {
+    return locale === "en"
+      ? `🎉 Goal "${r.name}" completed (${r.progressPct}%).`
+      : `🎉 Meta "${r.name}" completada (${r.progressPct}%).`;
   }
-  if (r.projectedMonths !== undefined) {
-    parts.push(`Con tu aporte actual, la alcanzas en ~${r.projectedMonths} meses (${r.projectedCompletionDate}).`);
+  const header =
+    locale === "en"
+      ? `Goal "${r.name}": ${r.progressPct}% (${formatCurrency(r.current, "COP", locale)} / ${formatCurrency(r.target, "COP", locale)}).`
+      : `Meta "${r.name}": ${r.progressPct}% (${formatCurrency(r.current, "COP", locale)} / ${formatCurrency(r.target, "COP", locale)}).`;
+  const parts = [header];
+  if (r.requiredMonthly !== undefined) {
+    parts.push(
+      locale === "en"
+        ? `To stay on track you need to save ~${formatCurrency(r.requiredMonthly, "COP", locale)}/month.`
+        : `Para llegar a tiempo necesitas ahorrar ~${formatCurrency(r.requiredMonthly, "COP", locale)}/mes.`
+    );
+  }
+  if (r.projectedMonths !== undefined && r.projectedCompletionDate) {
+    const dateText = formatDate(r.projectedCompletionDate, locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    parts.push(
+      locale === "en"
+        ? `At your current pace, you'll reach it in ~${r.projectedMonths} months (${dateText}).`
+        : `Con tu aporte actual, la alcanzas en ~${r.projectedMonths} meses (${dateText}).`
+    );
   }
   return parts.join(" ");
 }

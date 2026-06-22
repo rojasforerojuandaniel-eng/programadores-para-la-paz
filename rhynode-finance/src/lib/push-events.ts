@@ -9,20 +9,38 @@ import {
   goalAlertStatus,
   subscriptionReminderDue,
 } from "./push-thresholds";
+import { formatDate as fmtDate } from "./format";
+import type { Locale } from "./locale";
 import type { Budget, Goal, RecurringTransaction, Invoice } from "@/generated/prisma/client";
 
 type SendResult = { sent: number; errors: number; skipped: boolean };
 
-const DEFAULT_ACTIONS = [
-  { action: "view", title: "Ver" },
-  { action: "dismiss", title: "Descartar" },
-];
-
-const INVOICE_ACTIONS = [
-  { action: "view", title: "Ver" },
-  { action: "pay", title: "Marcar pagado" },
-  { action: "dismiss", title: "Descartar" },
-];
+function buildActions(locale: Locale) {
+  if (locale === "en") {
+    return {
+      default: [
+        { action: "view", title: "View" },
+        { action: "dismiss", title: "Dismiss" },
+      ],
+      invoice: [
+        { action: "view", title: "View" },
+        { action: "pay", title: "Mark paid" },
+        { action: "dismiss", title: "Dismiss" },
+      ],
+    };
+  }
+  return {
+    default: [
+      { action: "view", title: "Ver" },
+      { action: "dismiss", title: "Descartar" },
+    ],
+    invoice: [
+      { action: "view", title: "Ver" },
+      { action: "pay", title: "Marcar pagado" },
+      { action: "dismiss", title: "Descartar" },
+    ],
+  };
+}
 
 async function hasRecentNotification(
   userId: string,
@@ -85,7 +103,8 @@ async function notifyOnce(
 
 export async function sendBudgetAlert(
   userId: string,
-  budget: Budget
+  budget: Budget,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   const amount = decimalToNumber(budget.amount);
   const spent = decimalToNumber(budget.spent);
@@ -103,11 +122,13 @@ export async function sendBudgetAlert(
     actionUrl,
     budget.startDate,
     {
-      title: "Alerta de presupuesto",
-      body: `Has usado ${percentage}% de tu presupuesto "${budget.name}".`,
+      title: locale === "en" ? "Budget alert" : "Alerta de presupuesto",
+      body: locale === "en"
+        ? `You've used ${percentage}% of your budget "${budget.name}".`
+        : `Has usado ${percentage}% de tu presupuesto "${budget.name}".`,
       tag: `budget-${budget.id}`,
       url: actionUrl,
-      actions: DEFAULT_ACTIONS,
+      actions: buildActions(locale).default,
     }
   );
 }
@@ -115,7 +136,8 @@ export async function sendBudgetAlert(
 export async function sendGoalProgressAlert(
   userId: string,
   goal: Goal,
-  threshold: 0.75 | 1
+  threshold: 0.75 | 1,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   const target = decimalToNumber(goal.targetAmount);
   const current = decimalToNumber(goal.currentAmount);
@@ -126,7 +148,9 @@ export async function sendGoalProgressAlert(
 
   const percentage = status.percentage;
   const suffix = threshold === 1 ? "GOAL_100" : "GOAL_75";
-  const label = threshold === 1 ? "completada" : `al ${Math.round(threshold * 100)}%`;
+  const label = locale === "en"
+    ? threshold === 1 ? "complete" : `at ${Math.round(threshold * 100)}%`
+    : threshold === 1 ? "completada" : `al ${Math.round(threshold * 100)}%`;
   const actionUrl = `/dashboard/personal?goal=${goal.id}`;
 
   return notifyOnce(
@@ -135,18 +159,23 @@ export async function sendGoalProgressAlert(
     actionUrl,
     goal.createdAt,
     {
-      title: threshold === 1 ? "Meta alcanzada" : "Vas por buen camino",
-      body: `Tu meta "${goal.name}" está ${label}: ${percentage}% ahorrado.`,
+      title: threshold === 1
+        ? (locale === "en" ? "Goal reached" : "Meta alcanzada")
+        : (locale === "en" ? "You're on track" : "Vas por buen camino"),
+      body: locale === "en"
+        ? `Your goal "${goal.name}" is ${label}: ${percentage}% saved.`
+        : `Tu meta "${goal.name}" está ${label}: ${percentage}% ahorrado.`,
       tag: `goal-${goal.id}-${suffix}`,
       url: actionUrl,
-      actions: DEFAULT_ACTIONS,
+      actions: buildActions(locale).default,
     }
   );
 }
 
 export async function sendSubscriptionReminder(
   userId: string,
-  sub: RecurringTransaction
+  sub: RecurringTransaction,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   if (!sub.isSubscription || sub.status !== "ACTIVE") {
     return { sent: 0, errors: 0, skipped: true };
@@ -168,18 +197,21 @@ export async function sendSubscriptionReminder(
     actionUrl,
     addDays(startOfDay(nextDue), -7),
     {
-      title: "Suscripción próxima a vencer",
-      body: `"${sub.name}" vence el ${nextDue.toLocaleDateString("es-CO")}.`,
+      title: locale === "en" ? "Subscription due soon" : "Suscripción próxima a vencer",
+      body: locale === "en"
+        ? `"${sub.name}" is due on ${fmtDate(nextDue, locale, { month: "short", day: "numeric" })}.`
+        : `"${sub.name}" vence el ${fmtDate(nextDue, locale, { month: "short", day: "numeric" })}.`,
       tag: `subscription-${sub.id}-${dueKey}`,
       url: actionUrl,
-      actions: DEFAULT_ACTIONS,
+      actions: buildActions(locale).default,
     }
   );
 }
 
 export async function sendInvoiceOverdueReminder(
   invoice: Invoice,
-  organizationUserId: string | null | undefined
+  organizationUserId: string | null | undefined,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   if (!organizationUserId || !invoice.dueDate) {
     return { sent: 0, errors: 0, skipped: true };
@@ -196,8 +228,12 @@ export async function sendInvoiceOverdueReminder(
   const reminder = overdueDays >= 3 ? "3d" : "1d";
   const suffix = reminder === "3d" ? "INVOICE_OVERDUE_3D" : "INVOICE_OVERDUE_1D";
   const body = reminder === "3d"
-    ? `La factura ${invoice.number} lleva más de 3 días vencida. Revisa el cobro.`
-    : `La factura ${invoice.number} venció ayer. No olvides hacer seguimiento.`;
+    ? (locale === "en"
+      ? `Invoice ${invoice.number} is more than 3 days overdue. Follow up on the charge.`
+      : `La factura ${invoice.number} lleva más de 3 días vencida. Revisa el cobro.`)
+    : (locale === "en"
+      ? `Invoice ${invoice.number} was due yesterday. Don't forget to follow up.`
+      : `La factura ${invoice.number} venció ayer. No olvides hacer seguimiento.`);
 
   const actionUrl = `/dashboard/invoices?id=${invoice.id}&reminder=${reminder}`;
 
@@ -207,25 +243,26 @@ export async function sendInvoiceOverdueReminder(
     actionUrl,
     due,
     {
-      title: "Factura vencida",
+      title: locale === "en" ? "Overdue invoice" : "Factura vencida",
       body,
       tag: `invoice-${invoice.id}-${suffix}`,
       url: `/dashboard/invoices?id=${invoice.id}`,
       actionUrl,
-      actions: INVOICE_ACTIONS,
+      actions: buildActions(locale).invoice,
     }
   );
 }
 
 export async function checkAndNotifyBudgetThreshold(
   userId: string,
-  budgetId: string
+  budgetId: string,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   try {
     const prisma = getPrisma();
     const budget = await prisma.budget.findUnique({ where: { id: budgetId } });
     if (!budget || budget.userId !== userId) return { sent: 0, errors: 0, skipped: true };
-    return sendBudgetAlert(userId, budget);
+    return sendBudgetAlert(userId, budget, locale);
   } catch (error) {
     logger.error("checkAndNotifyBudgetThreshold failed", { error: error instanceof Error ? error.message : String(error) });
     return { sent: 0, errors: 1, skipped: false };
@@ -234,15 +271,16 @@ export async function checkAndNotifyBudgetThreshold(
 
 export async function checkAndNotifyGoalThresholds(
   userId: string,
-  goalId: string
+  goalId: string,
+  locale: Locale = "es"
 ): Promise<{ results: SendResult[] }> {
   try {
     const prisma = getPrisma();
     const goal = await prisma.goal.findUnique({ where: { id: goalId } });
     if (!goal || goal.userId !== userId) return { results: [] };
     const results = await Promise.all([
-      sendGoalProgressAlert(userId, goal, 0.75),
-      sendGoalProgressAlert(userId, goal, 1),
+      sendGoalProgressAlert(userId, goal, 0.75, locale),
+      sendGoalProgressAlert(userId, goal, 1, locale),
     ]);
     return { results };
   } catch (error) {
@@ -253,13 +291,14 @@ export async function checkAndNotifyGoalThresholds(
 
 export async function checkAndNotifySubscriptionReminder(
   userId: string,
-  recurringId: string
+  recurringId: string,
+  locale: Locale = "es"
 ): Promise<SendResult> {
   try {
     const prisma = getPrisma();
     const sub = await prisma.recurringTransaction.findUnique({ where: { id: recurringId } });
     if (!sub || sub.userId !== userId) return { sent: 0, errors: 0, skipped: true };
-    return sendSubscriptionReminder(userId, sub);
+    return sendSubscriptionReminder(userId, sub, locale);
   } catch (error) {
     logger.error("checkAndNotifySubscriptionReminder failed", { error: error instanceof Error ? error.message : String(error) });
     return { sent: 0, errors: 1, skipped: false };

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { checkAndNotifySubscriptionReminder } from "@/lib/push-events";
+import { getLocale } from "@/lib/locale-server";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -97,7 +98,8 @@ export const POST = withRateLimit(async function POST(request: Request) {
 
     // Event-triggered push if this subscription is due within 7 days
     if (isSubscription) {
-      void checkAndNotifySubscriptionReminder(profile.id, recurring.id).catch(() => null);
+      const locale = await getLocale();
+      void checkAndNotifySubscriptionReminder(profile.id, recurring.id, locale).catch(() => null);
     }
 
     return NextResponse.json({ recurring });

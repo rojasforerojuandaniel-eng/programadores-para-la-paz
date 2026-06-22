@@ -6,6 +6,8 @@ import { sumInCop, convertToCop, getTrm } from "@/lib/currency";
 import { encodeReminderMeta } from "@/lib/reminders";
 import { planDebtPayoff, formatDebtPlan, type PayoffStrategy } from "@/lib/debt-strategy";
 import { projectGoal, formatGoalProjection } from "@/lib/goal-projection";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 const TOOL_NAMES = [
   "get_balance",
@@ -21,6 +23,7 @@ export type ToolName = (typeof TOOL_NAMES)[number];
 export interface ToolContext {
   userId: string;
   orgId: string;
+  locale: Locale;
 }
 
 interface AnthropicJsonSchema {
@@ -72,8 +75,8 @@ type ParamsMap = {
   goal_projection: z.infer<typeof goalProjectionParams>;
 };
 
-function formatCop(value: number): string {
-  return `$${Math.round(value).toLocaleString("es-CO")} COP`;
+function formatCop(value: number, locale: Locale): string {
+  return formatCurrency(value, "COP", locale);
 }
 
 /** Scope filter so an org member's advisor only sees business txns + their own
@@ -105,14 +108,14 @@ async function handleGetBalance(ctx: ToolContext) {
 
   return {
     total,
-    totalFormatted: formatCop(total),
+    totalFormatted: formatCop(total, ctx.locale),
     currency: "COP",
     accounts: accounts.map((account) => ({
       id: account.id,
       name: account.name,
       type: account.type,
       balance: decimalToNumber(account.balance),
-      balanceFormatted: formatCop(decimalToNumber(account.balance)),
+      balanceFormatted: formatCop(decimalToNumber(account.balance), ctx.locale),
       currency: account.currency,
     })),
   };
@@ -148,7 +151,7 @@ async function handleListTransactions(
       id: transaction.id,
       description: transaction.description,
       amount: decimalToNumber(transaction.amount),
-      amountFormatted: formatCop(decimalToNumber(transaction.amount)),
+      amountFormatted: formatCop(decimalToNumber(transaction.amount), ctx.locale),
       type: transaction.type,
       category: transaction.categoryRef?.name ?? transaction.category ?? null,
       currency: transaction.currency,
@@ -232,6 +235,7 @@ async function handleGetCashflowSummary(
   let income = 0;
   let expense = 0;
   const categoryMap = new Map<string, number>();
+  const uncategorizedKey = ctx.locale === "en" ? "Uncategorized" : "Sin categoría";
 
   for (const transaction of transactions) {
     const amount = (
@@ -241,26 +245,39 @@ async function handleGetCashflowSummary(
       income += amount;
     } else if (transaction.type === "EXPENSE") {
       expense += amount;
-      const key = transaction.categoryRef?.name ?? transaction.category ?? "Sin categoría";
+      const key = transaction.categoryRef?.name ?? transaction.category ?? uncategorizedKey;
       categoryMap.set(key, (categoryMap.get(key) ?? 0) + amount);
     }
   }
 
   const topExpenseCategories = Array.from(categoryMap.entries())
-    .map(([name, amount]) => ({ name, amount, amountFormatted: formatCop(amount) }))
+    .map(([name, amount]) => ({
+      name,
+      amount,
+      amountFormatted: formatCop(amount, ctx.locale),
+    }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
 
+  const period =
+    months === 1
+      ? ctx.locale === "en"
+        ? "current month"
+        : "mes actual"
+      : ctx.locale === "en"
+        ? `last ${months} months`
+        : `últimos ${months} meses`;
+
   return {
-    period: months === 1 ? "mes actual" : `últimos ${months} meses`,
+    period,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
     income,
-    incomeFormatted: formatCop(income),
+    incomeFormatted: formatCop(income, ctx.locale),
     expense,
-    expenseFormatted: formatCop(expense),
+    expenseFormatted: formatCop(expense, ctx.locale),
     net: income - expense,
-    netFormatted: formatCop(income - expense),
+    netFormatted: formatCop(income - expense, ctx.locale),
     topExpenseCategories,
   };
 }
@@ -275,7 +292,13 @@ async function handleDebtPayoffStrategy(
     select: { id: true, name: true, remainingAmount: true, interestRate: true, type: true },
   });
   if (debts.length === 0) {
-    return { message: "No tienes deudas activas registradas.", plan: null };
+    return {
+      message:
+        ctx.locale === "en"
+          ? "You have no active debts registered."
+          : "No tienes deudas activas registradas.",
+      plan: null,
+    };
   }
   // Estimate minimum payment as ~5% of balance when not stored, and rate defaults per debt type.
   const inputs = debts.map((d) => {
@@ -294,7 +317,7 @@ async function handleDebtPayoffStrategy(
   return {
     budget,
     plan: result,
-    recommendation: formatDebtPlan(result),
+    recommendation: formatDebtPlan(result, ctx.locale),
   };
 }
 
@@ -308,7 +331,12 @@ async function handleGoalProjection(
     select: { id: true, name: true, currentAmount: true, targetAmount: true, deadline: true },
   });
   if (!goal) {
-    return { error: "No encontré una meta con ese ID." };
+    return {
+      error:
+        ctx.locale === "en"
+          ? "I couldn't find a goal with that ID."
+          : "No encontré una meta con ese ID.",
+    };
   }
   const result = projectGoal({
     name: goal.name,
@@ -317,7 +345,11 @@ async function handleGoalProjection(
     monthlyContribution: params.monthlyContribution,
     deadline: goal.deadline ? goal.deadline.toISOString() : undefined,
   });
-  return { goalId: goal.id, projection: result, summary: formatGoalProjection(result) };
+  return {
+    goalId: goal.id,
+    projection: result,
+    summary: formatGoalProjection(result, ctx.locale),
+  };
 }
 
 const paramSchemas: { [T in ToolName]: z.ZodType<ParamsMap[T]> } = {
@@ -329,115 +361,161 @@ const paramSchemas: { [T in ToolName]: z.ZodType<ParamsMap[T]> } = {
   goal_projection: goalProjectionParams,
 };
 
-export const anthropicTools: AnthropicTool[] = [
-  {
-    name: "get_balance",
-    description:
-      "Obtiene el balance total del usuario y el desglose por cuenta. Devuelve montos en COP.",
-    input_schema: {
-      type: "object",
-      properties: {},
+/**
+ * Tool descriptions are generated per-locale so the Anthropic API sees the
+ * same language the user is writing in (keeps tool-selection aligned).
+ */
+export function getAnthropicTools(locale: Locale): AnthropicTool[] {
+  const t = (es: string, en: string) => (locale === "en" ? en : es);
+  return [
+    {
+      name: "get_balance",
+      description: t(
+        "Obtiene el balance total del usuario y el desglose por cuenta. Devuelve montos en COP.",
+        "Gets the user's total balance and per-account breakdown. Amounts returned in COP."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {},
+      },
     },
-  },
-  {
-    name: "list_transactions",
-    description:
-      "Devuelve las últimas transacciones del usuario, opcionalmente filtradas por tipo (INCOME/EXPENSE) o categoría.",
-    input_schema: {
-      type: "object",
-      properties: {
-        limit: {
-          type: "integer",
-          description: "Número máximo de transacciones (1-50). Por defecto 10.",
-        },
-        type: {
-          type: "string",
-          enum: ["INCOME", "EXPENSE"],
-          description: "Filtrar por tipo de transacción.",
-        },
-        category: {
-          type: "string",
-          description: "Filtrar por nombre de categoría (búsqueda parcial, insensible a mayúsculas).",
+    {
+      name: "list_transactions",
+      description: t(
+        "Devuelve las últimas transacciones del usuario, opcionalmente filtradas por tipo (INCOME/EXPENSE) o categoría.",
+        "Returns the user's latest transactions, optionally filtered by type (INCOME/EXPENSE) or category."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "integer",
+            description: t(
+              "Número máximo de transacciones (1-50). Por defecto 10.",
+              "Maximum number of transactions (1-50). Defaults to 10."
+            ),
+          },
+          type: {
+            type: "string",
+            enum: ["INCOME", "EXPENSE"],
+            description: t(
+              "Filtrar por tipo de transacción.",
+              "Filter by transaction type."
+            ),
+          },
+          category: {
+            type: "string",
+            description: t(
+              "Filtrar por nombre de categoría (búsqueda parcial, insensible a mayúsculas).",
+              "Filter by category name (partial match, case-insensitive)."
+            ),
+          },
         },
       },
     },
-  },
-  {
-    name: "create_reminder",
-    description:
-      "Crea un recordatorio para el usuario. Lo guarda como una notificación interna.",
-    input_schema: {
-      type: "object",
-      properties: {
-        title: {
-          type: "string",
-          description: "Título breve del recordatorio.",
+    {
+      name: "create_reminder",
+      description: t(
+        "Crea un recordatorio para el usuario. Lo guarda como una notificación interna.",
+        "Creates a reminder for the user. Stored as an in-app notification."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {
+          title: {
+            type: "string",
+            description: t(
+              "Título breve del recordatorio.",
+              "Short reminder title."
+            ),
+          },
+          body: {
+            type: "string",
+            description: t("Detalle del recordatorio.", "Reminder detail."),
+          },
+          dueDate: {
+            type: "string",
+            description: t(
+              "Fecha límite opcional en formato ISO (YYYY-MM-DD).",
+              "Optional due date in ISO format (YYYY-MM-DD)."
+            ),
+          },
         },
-        body: {
-          type: "string",
-          description: "Detalle del recordatorio.",
-        },
-        dueDate: {
-          type: "string",
-          description: "Fecha límite opcional en formato ISO (YYYY-MM-DD).",
-        },
-      },
-      required: ["title", "body"],
-    },
-  },
-  {
-    name: "get_cashflow_summary",
-    description:
-      "Devuelve un resumen de ingresos y gastos del usuario para el mes actual o los últimos N meses.",
-    input_schema: {
-      type: "object",
-      properties: {
-        months: {
-          type: "integer",
-          description: "Cantidad de meses hacia atrás (1-12). Por defecto 1.",
-        },
+        required: ["title", "body"],
       },
     },
-  },
-  {
-    name: "debt_payoff_strategy",
-    description:
-      "Plan de pago de deudas: avalancha (mayor interés primero, minimiza intereses) o bola de nieve (menor saldo primero). Devuelve el plan ordenado y el resumen legible.",
-    input_schema: {
-      type: "object",
-      properties: {
-        strategy: {
-          type: "string",
-          enum: ["avalanche", "snowball"],
-          description: "Estrategia. Por defecto avalanche.",
-        },
-        monthlyBudget: {
-          type: "number",
-          description: "Presupuesto mensual total para pagar deudas (COP). Opcional.",
+    {
+      name: "get_cashflow_summary",
+      description: t(
+        "Devuelve un resumen de ingresos y gastos del usuario para el mes actual o los últimos N meses.",
+        "Returns a summary of the user's income and expenses for the current month or the last N months."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {
+          months: {
+            type: "integer",
+            description: t(
+              "Cantidad de meses hacia atrás (1-12). Por defecto 1.",
+              "Number of months to look back (1-12). Defaults to 1."
+            ),
+          },
         },
       },
     },
-  },
-  {
-    name: "goal_projection",
-    description:
-      "Proyecta una meta de ahorro: si tiene deadline calcula el aporte mensual necesario; si recibe monthlyContribution proyecta la fecha de cumplimiento.",
-    input_schema: {
-      type: "object",
-      properties: {
-        goalId: {
-          type: "string",
-          description: "ID de la meta a proyectar.",
-        },
-        monthlyContribution: {
-          type: "number",
-          description: "Aporte mensual actual (COP) para proyectar fecha de cumplimiento.",
+    {
+      name: "debt_payoff_strategy",
+      description: t(
+        "Plan de pago de deudas: avalancha (mayor interés primero, minimiza intereses) o bola de nieve (menor saldo primero). Devuelve el plan ordenado y el resumen legible.",
+        "Debt payoff plan: avalanche (highest interest first, minimizes interest) or snowball (smallest balance first). Returns the ordered plan and a readable summary."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {
+          strategy: {
+            type: "string",
+            enum: ["avalanche", "snowball"],
+            description: t("Estrategia. Por defecto avalanche.", "Strategy. Defaults to avalanche."),
+          },
+          monthlyBudget: {
+            type: "number",
+            description: t(
+              "Presupuesto mensual total para pagar deudas (COP). Opcional.",
+              "Total monthly budget for paying debts (COP). Optional."
+            ),
+          },
         },
       },
-      required: ["goalId"],
     },
-  },
-];
+    {
+      name: "goal_projection",
+      description: t(
+        "Proyecta una meta de ahorro: si tiene deadline calcula el aporte mensual necesario; si recibe monthlyContribution proyecta la fecha de cumplimiento.",
+        "Projects a savings goal: given a deadline, computes the required monthly contribution; given monthlyContribution, projects the completion date."
+      ),
+      input_schema: {
+        type: "object",
+        properties: {
+          goalId: {
+            type: "string",
+            description: t("ID de la meta a proyectar.", "ID of the goal to project."),
+          },
+          monthlyContribution: {
+            type: "number",
+            description: t(
+              "Aporte mensual actual (COP) para proyectar fecha de cumplimiento.",
+              "Current monthly contribution (COP) to project completion date."
+            ),
+          },
+        },
+        required: ["goalId"],
+      },
+    },
+  ];
+}
+
+/** Back-compat: default-locale tool list. Prefer getAnthropicTools(locale). */
+export const anthropicTools: AnthropicTool[] = getAnthropicTools("es");
 
 export function isToolName(name: string): name is ToolName {
   return TOOL_NAMES.includes(name as ToolName);
@@ -449,14 +527,18 @@ export async function executeTool(
   ctx: ToolContext
 ): Promise<unknown> {
   if (!isToolName(name)) {
-    return { error: `Tool desconocida: ${name}` };
+    return {
+      error:
+        ctx.locale === "en" ? `Unknown tool: ${name}` : `Tool desconocida: ${name}`,
+    };
   }
 
   const schema = paramSchemas[name];
   const parsed = schema.safeParse(input ?? {});
   if (!parsed.success) {
     return {
-      error: "Parámetros inválidos",
+      error:
+        ctx.locale === "en" ? "Invalid parameters" : "Parámetros inválidos",
       details: parsed.error.flatten(),
     };
   }
@@ -497,7 +579,10 @@ export async function executeTool(
       error: error instanceof Error ? error.message : String(error),
     });
     return {
-      error: `No pude ejecutar la herramienta ${name}. Inténtalo de nuevo.`,
+      error:
+        ctx.locale === "en"
+          ? `I couldn't run the ${name} tool. Try again.`
+          : `No pude ejecutar la herramienta ${name}. Inténtalo de nuevo.`,
     };
   }
 }

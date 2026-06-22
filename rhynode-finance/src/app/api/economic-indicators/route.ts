@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { fetchEconomicIndicators } from "@/lib/economic-indicators";
+import { getLocale } from "@/lib/locale-server";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
 
 export const GET = withRateLimit(async function GET() {
   try {
-    const result = await fetchEconomicIndicators();
+    const locale = await getLocale();
+    const result = await fetchEconomicIndicators(locale);
     logger.info("Economic indicators served", {
       indicatorsCount: result.indicators.length,
       isFallback: result.isFallback,

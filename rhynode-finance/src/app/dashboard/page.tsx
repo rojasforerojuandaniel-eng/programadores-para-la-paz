@@ -346,7 +346,7 @@ export default async function DashboardPage() {
 
   const healthScores = await getHealthScores(profile?.id, org.id, scope);
 
-  const indicatorsData = await fetchEconomicIndicators();
+  const indicatorsData = await fetchEconomicIndicators(locale);
 
   const txCount = await getPrisma().transaction.count({ where: { organizationId: org.id } });
 

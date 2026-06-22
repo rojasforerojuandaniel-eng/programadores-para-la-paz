@@ -1,6 +1,7 @@
 import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { computeRentDeclaration } from "@/lib/rent-declaration";
+import { getLocale } from "@/lib/locale-server";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -23,11 +24,13 @@ export const GET = withRateLimit(
     }
 
     const org = await getOrCreateAuthOrg().catch(() => null);
+    const locale = await getLocale();
     const result = await computeRentDeclaration({
       userId: profile.id,
       orgId: org?.id ?? null,
       year: parsed.data.year,
       dependents: parsed.data.dependents,
+      locale,
     });
 
     return Response.json(result);

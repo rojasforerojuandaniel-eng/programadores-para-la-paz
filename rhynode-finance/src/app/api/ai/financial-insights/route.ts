@@ -4,6 +4,7 @@ import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
 import { computeFinancialInsights } from "@/lib/ai-financial-insights";
+import { getLocale } from "@/lib/locale-server";
 import {
   FinancialInsightsSchema,
   type FinancialInsights,
@@ -28,11 +29,13 @@ export const GET = withRateLimit(async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
+    const locale = await getLocale();
     const insights: FinancialInsights = await computeFinancialInsights({
       userId: profile.id,
       orgId: org.id,
       currency: org.currency,
       scope: "PERSONAL",
+      locale,
     });
 
     const validated = FinancialInsightsSchema.parse(insights);

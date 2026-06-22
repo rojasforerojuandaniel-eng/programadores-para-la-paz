@@ -45,7 +45,7 @@ export default async function EconomicIndicatorsPage() {
   if (!org) redirect("/sign-in");
 
   const { indicators, lastUpdated, source, attribution, isFallback } =
-    await fetchEconomicIndicators();
+    await fetchEconomicIndicators(locale);
 
   return (
     <div className="space-y-6">

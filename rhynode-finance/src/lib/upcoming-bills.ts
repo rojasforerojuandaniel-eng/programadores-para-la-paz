@@ -4,14 +4,14 @@ import { formatDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
 
 /**
- * Optional translator + locale. When provided (e.g. from the server widget
- * via getTranslations), bill title/subtitle and due labels are localized.
- * When omitted (API route, tests), the legacy Spanish strings are produced.
+ * Optional translator (e.g. from the server widget via getTranslations). When
+ * provided, bill title/subtitle and due labels are localized via message
+ * catalogs. When omitted, inline es/en bifurcation by `locale` is used.
  */
-export interface BillsI18n {
-  t: (key: string, values?: Record<string, string | number>) => string;
-  locale: Locale;
-}
+export type BillTranslator = (
+  key: string,
+  values?: Record<string, string | number>
+) => string;
 
 export type BillKind = "debt" | "subscription" | "invoice" | "tax";
 
@@ -37,6 +37,10 @@ const FREQUENCY_DAYS: Record<string, number> = {
   YEARLY: 365,
 };
 
+/** Pure inline es/en bifurcation. No message catalogs. */
+const tr = (locale: Locale, es: string, en: string): string =>
+  locale === "en" ? en : es;
+
 function daysBetween(from: Date, to: Date): number {
   return Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -52,12 +56,12 @@ export async function getUpcomingBills(
   userId: string,
   orgId: string | null,
   horizonDays = 60,
-  i18n?: BillsI18n
+  locale: Locale = "es",
+  t?: BillTranslator
 ): Promise<UpcomingBill[]> {
   const prisma = getPrisma();
   const now = new Date();
   const bills: UpcomingBill[] = [];
-  const t = i18n?.t;
 
   // 1. Active debts with a due date (owed money).
   const debts = await prisma.debt.findMany({
@@ -75,7 +79,7 @@ export async function getUpcomingBills(
       subtitle: debt.counterparty
         ? t
           ? t("upcomingBills.debtWith", { counterparty: debt.counterparty })
-          : `con ${debt.counterparty}`
+          : tr(locale, `con ${debt.counterparty}`, `with ${debt.counterparty}`)
         : undefined,
       amount: decimalToNumber(debt.remainingAmount),
       currency: debt.currency,
@@ -141,12 +145,12 @@ export async function getUpcomingBills(
         kind: "invoice",
         title: t
           ? t("upcomingBills.invoiceTitle", { number: invoice.number })
-          : `Factura ${invoice.number}`,
+          : tr(locale, `Factura ${invoice.number}`, `Invoice ${invoice.number}`),
         subtitle: t
           ? t(invoice.status === "OVERDUE" ? "upcomingBills.statusOverdue" : "upcomingBills.statusToCollect")
           : invoice.status === "OVERDUE"
-            ? "Vencida"
-            : "Por cobrar",
+            ? tr(locale, "Vencida", "Overdue")
+            : tr(locale, "Por cobrar", "To collect"),
         amount: decimalToNumber(invoice.total),
         currency: invoice.currency,
         dueDate: invoice.dueDate.toISOString(),
@@ -169,7 +173,7 @@ export async function getUpcomingBills(
         id: tax.id,
         kind: "tax",
         title: `${tax.type} ${tax.period}`,
-        subtitle: t ? t("upcomingBills.taxLabel") : "Impuesto",
+        subtitle: t ? t("upcomingBills.taxLabel") : tr(locale, "Impuesto", "Tax"),
         amount: tax.amount ? decimalToNumber(tax.amount) : 0,
         currency: "COP",
         dueDate: tax.dueDate.toISOString(),
@@ -183,20 +187,31 @@ export async function getUpcomingBills(
   return bills.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
 }
 
-export function formatDueLabel(daysUntilDue: number, i18n?: BillsI18n): string {
-  const t = i18n?.t;
-  const locale = i18n?.locale;
+export function formatDueLabel(
+  daysUntilDue: number,
+  locale: Locale = "es",
+  t?: BillTranslator
+): string {
   if (daysUntilDue < 0) {
     if (t) return t("upcomingBills.due.overdue", { days: Math.abs(daysUntilDue) });
-    return `Vencida hace ${Math.abs(daysUntilDue)}d`;
+    return tr(
+      locale,
+      `Vencida hace ${Math.abs(daysUntilDue)}d`,
+      `Overdue ${Math.abs(daysUntilDue)}d ago`
+    );
   }
-  if (daysUntilDue === 0) return t ? t("upcomingBills.due.today") : "Vence hoy";
-  if (daysUntilDue === 1) return t ? t("upcomingBills.due.tomorrow") : "Vence mañana";
+  if (daysUntilDue === 0) {
+    if (t) return t("upcomingBills.due.today");
+    return tr(locale, "Vence hoy", "Due today");
+  }
+  if (daysUntilDue === 1) {
+    if (t) return t("upcomingBills.due.tomorrow");
+    return tr(locale, "Vence mañana", "Due tomorrow");
+  }
   if (daysUntilDue <= 7) {
     if (t) return t("upcomingBills.due.inDays", { count: daysUntilDue });
-    return `En ${daysUntilDue} días`;
+    return tr(locale, `En ${daysUntilDue} días`, `In ${daysUntilDue} days`);
   }
   const date = new Date(Date.now() + daysUntilDue * 24 * 60 * 60 * 1000);
-  if (locale) return formatDate(date, locale, { day: "numeric", month: "short" });
-  return date.toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+  return formatDate(date, locale, { day: "numeric", month: "short" });
 }

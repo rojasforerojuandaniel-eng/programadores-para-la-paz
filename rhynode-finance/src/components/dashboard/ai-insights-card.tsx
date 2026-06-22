@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { computeFinancialInsights } from "@/lib/ai-financial-insights";
 import { AiInsightsCardClient } from "@/components/dashboard/ai-insights-card-client";
 import { AiInsightsCardSkeleton } from "@/components/dashboard/ai-insights-card-skeleton";
+import { getLocale } from "@/lib/locale-server";
 import type { UserScope } from "@/lib/scope";
 
 interface AiInsightsCardProps {
@@ -24,11 +25,13 @@ async function AiInsightsCardInner({
 }) {
   let insights: Awaited<ReturnType<typeof computeFinancialInsights>> | null = null;
   try {
+    const locale = await getLocale();
     insights = await computeFinancialInsights({
       userId,
       orgId,
       currency,
       scope: scope === "PERSONAL" || scope === "BOTH" ? "PERSONAL" : scope,
+      locale,
     });
   } catch {
     insights = null;

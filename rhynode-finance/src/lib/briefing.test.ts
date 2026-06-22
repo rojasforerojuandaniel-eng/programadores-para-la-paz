@@ -24,7 +24,7 @@ describe("generateBriefing", () => {
       now
     );
     expect(text).toMatch(/gastando más rápido|frena/i);
-    expect(text).toContain("$1.000.000 COP");
+    expect(text).toMatch(/\$\s?1\.000\.000 COP/);
   });
 
   it("surplus message when income exceeds expense and no budgets exceeded", () => {

@@ -24,7 +24,7 @@ export async function UpcomingBillsCard({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "dashboard.home" });
 
-  const bills = await getUpcomingBills(userId, orgId, 60, { t, locale });
+  const bills = await getUpcomingBills(userId, orgId, 60, locale, t);
   const total = bills.reduce((sum, bill) => sum + bill.amount, 0);
   const overdueCount = bills.filter((bill) => bill.overdue).length;
 
@@ -92,7 +92,7 @@ export async function UpcomingBillsCard({
                             bill.overdue ? "text-destructive font-medium" : "text-muted-foreground"
                           }`}
                         >
-                          {formatDueLabel(bill.daysUntilDue, { t, locale })}
+                          {formatDueLabel(bill.daysUntilDue, locale, t)}
                         </span>
                       </div>
                     </Link>

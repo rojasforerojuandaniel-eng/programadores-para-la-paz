@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { checkAndNotifyGoalThresholds } from "@/lib/push-events";
+import { getLocale } from "@/lib/locale-server";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { auditLog } from "@/lib/audit-log";
@@ -80,7 +81,8 @@ export const POST = withRateLimit(
       });
 
       // Event-triggered push when the new goal already hit 75% or 100%
-      void checkAndNotifyGoalThresholds(profile.id, goal.id).catch(() => null);
+      const locale = await getLocale();
+      void checkAndNotifyGoalThresholds(profile.id, goal.id, locale).catch(() => null);
 
       return NextResponse.json({ goal });
     } catch (error) {
