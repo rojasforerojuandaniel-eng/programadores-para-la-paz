@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +24,7 @@ export function DeleteConfirmDialog({
   onOpenChange,
   onConfirm,
 }: DeleteConfirmDialogProps) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [deleting, setDeleting] = useState(false);
 
   async function handleConfirm() {
@@ -35,12 +37,10 @@ export function DeleteConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Eliminar link</DialogTitle>
+          <DialogTitle className="heading-card">{t("dialogs.delete.title")}</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          ¿Estás seguro de eliminar{" "}
-          <strong className="text-foreground">{link.name}</strong>? Esta acción
-          no se puede deshacer.
+          {t("dialogs.delete.confirm", { name: link.name })}
         </p>
         <div className="flex justify-end gap-2 pt-4">
           <Button
@@ -49,7 +49,7 @@ export function DeleteConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={deleting}
           >
-            Cancelar
+            {t("buttons.cancel")}
           </Button>
           <Button
             type="button"
@@ -57,7 +57,7 @@ export function DeleteConfirmDialog({
             onClick={handleConfirm}
             disabled={deleting}
           >
-            {deleting ? "Eliminando..." : "Eliminar"}
+            {deleting ? t("buttons.deleting") : t("buttons.delete")}
           </Button>
         </div>
       </DialogContent>

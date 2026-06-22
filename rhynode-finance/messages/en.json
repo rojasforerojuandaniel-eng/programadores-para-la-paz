@@ -1457,6 +1457,239 @@
           "retryError": "Error retrying: {message}"
         }
       }
+    },
+    "paymentLinks": {
+      "title": "Payment Links",
+      "subtitle": "Create payment links to share with customers",
+      "cardTitle": "Active Links",
+      "columns": {
+        "name": "Name",
+        "amount": "Amount",
+        "status": "Status",
+        "uses": "Uses",
+        "expires": "Expires",
+        "actions": "Actions"
+      },
+      "cardLabels": {
+        "uses": "Uses",
+        "expires": "Expires"
+      },
+      "statuses": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "EXPIRED": "Expired",
+        "EXHAUSTED": "Exhausted"
+      },
+      "uses": {
+        "noLimit": "no limit"
+      },
+      "dates": {
+        "never": "Never"
+      },
+      "kpis": {
+        "active": "Active links",
+        "activeAmount": "Active amount",
+        "receivedPayments": "Payments received",
+        "inactive": "Inactive"
+      },
+      "empty": {
+        "title": "Charge online in minutes",
+        "description": "Create unique payment links and share them via WhatsApp, email or social media. Your customers pay with Wompi, PayU, PSE or Stripe.",
+        "hint": "Start by creating your first payment link."
+      },
+      "actions": {
+        "copyAria": "Copy link",
+        "copiedAria": "Link copied",
+        "qrAria": "View QR",
+        "actionsAria": "Actions",
+        "open": "Open link",
+        "edit": "Edit",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "delete": "Delete"
+      },
+      "qr": {
+        "title": "QR: {name}",
+        "alt": "QR code for {name}"
+      },
+      "toasts": {
+        "copied": "Link copied to clipboard",
+        "copyError": "Couldn't copy the link",
+        "activated": "Link activated",
+        "deactivated": "Link deactivated",
+        "toggleError": "Couldn't change the status",
+        "deleted": "Link deleted",
+        "deleteError": "Couldn't delete the link",
+        "updated": "Link updated",
+        "updateError": "Couldn't update the link",
+        "createError": "Error creating payment link",
+        "networkError": "Network error"
+      },
+      "buttons": {
+        "new": "New Link",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save",
+        "deleting": "Deleting...",
+        "delete": "Delete"
+      },
+      "fields": {
+        "name": "Name",
+        "nameRequired": "Name *",
+        "description": "Description",
+        "amount": "Amount",
+        "amountRequired": "Amount *",
+        "currency": "Currency",
+        "urlSlugRequired": "URL Slug *",
+        "maxPayments": "Payment limit",
+        "expiresAt": "Expiration date"
+      },
+      "placeholders": {
+        "nameExample": "e.g. Service payment",
+        "description": "Brief description visible to the customer",
+        "urlSlug": "e.g. may-service-payment",
+        "noLimit": "No limit"
+      },
+      "dialogs": {
+        "create": {
+          "title": "New Payment Link"
+        },
+        "edit": {
+          "title": "Edit Payment Link"
+        },
+        "delete": {
+          "title": "Delete link",
+          "confirm": "Are you sure you want to delete {name}? This action cannot be undone."
+        }
+      }
+    },
+    "personalAccounts": {
+      "title": "Accounts",
+      "subtitle": "Manage your personal accounts",
+      "kpis": {
+        "totalBalance": "Total balance",
+        "accounts": "Accounts"
+      },
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "balance": "Balance",
+        "currency": "Currency",
+        "color": "Color"
+      },
+      "card": {
+        "balance": "Balance",
+        "currency": "Currency"
+      },
+      "empty": {
+        "title": "Consolidate your accounts",
+        "description": "Connect banks, cash and cards for a complete view of your money.",
+        "hint": "Start by creating your first account."
+      },
+      "dialog": {
+        "trigger": "New Account",
+        "title": "New Account",
+        "labels": {
+          "name": "Name *",
+          "type": "Type",
+          "initialBalance": "Initial balance",
+          "currency": "Currency",
+          "color": "Color",
+          "icon": "Icon (Lucide name)"
+        },
+        "placeholders": {
+          "name": "e.g. Savings Account"
+        },
+        "types": {
+          "CHECKING": "Checking",
+          "SAVINGS": "Savings",
+          "CREDIT": "Credit",
+          "INVESTMENT": "Investment",
+          "CASH": "Cash",
+          "OTHER": "Other"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "saving": "Saving...",
+          "save": "Save"
+        },
+        "toast": {
+          "created": "Account created",
+          "createError": "Error creating account",
+          "networkError": "Network error"
+        }
+      }
+    },
+    "reminders": {
+      "title": "Reminders",
+      "subtitle": "Manage your scheduled reminders",
+      "stats": {
+        "total": "Total",
+        "active": "Active"
+      },
+      "columns": {
+        "title": "Title",
+        "message": "Message",
+        "scheduled": "Date",
+        "repeat": "Repeat",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "repeats": {
+        "NONE": "Once",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly"
+      },
+      "status": {
+        "completed": "Completed",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "aria": {
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "delete": "Delete",
+        "edit": "Edit reminder"
+      },
+      "empty": {
+        "title": "Create custom reminders",
+        "description": "Schedule alerts for payments, goals or any financial reminder.",
+        "hint": "Start by creating your first reminder."
+      },
+      "toast": {
+        "activated": "Reminder activated",
+        "deactivated": "Reminder deactivated",
+        "toggleError": "Error changing status",
+        "deleted": "Reminder deleted",
+        "deleteError": "Error deleting",
+        "updated": "Reminder updated",
+        "created": "Reminder created",
+        "saveError": "Error saving reminder"
+      },
+      "dialog": {
+        "trigger": "New reminder",
+        "title": "New reminder",
+        "editTitle": "Edit reminder",
+        "labels": {
+          "title": "Title *",
+          "message": "Message *",
+          "scheduledAt": "Date and time *",
+          "repeat": "Repeat",
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "placeholders": {
+          "title": "e.g. Review monthly expenses",
+          "message": "e.g. Review your small expenses before bed"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "saving": "Saving...",
+          "save": "Save",
+          "create": "Create"
+        }
+      }
     }
   },
   "nav": {

@@ -1457,6 +1457,239 @@
           "retryError": "Error al reintentar: {message}"
         }
       }
+    },
+    "paymentLinks": {
+      "title": "Links de Cobro",
+      "subtitle": "Crea links de pago para compartir con clientes",
+      "cardTitle": "Links Activos",
+      "columns": {
+        "name": "Nombre",
+        "amount": "Monto",
+        "status": "Estado",
+        "uses": "Usos",
+        "expires": "Expiración",
+        "actions": "Acciones"
+      },
+      "cardLabels": {
+        "uses": "Usos",
+        "expires": "Expira"
+      },
+      "statuses": {
+        "ACTIVE": "Activo",
+        "INACTIVE": "Inactivo",
+        "EXPIRED": "Expirado",
+        "EXHAUSTED": "Agotado"
+      },
+      "uses": {
+        "noLimit": "sin límite"
+      },
+      "dates": {
+        "never": "Nunca"
+      },
+      "kpis": {
+        "active": "Links activos",
+        "activeAmount": "Monto activo",
+        "receivedPayments": "Pagos recibidos",
+        "inactive": "Inactivos"
+      },
+      "empty": {
+        "title": "Cobra en línea en minutos",
+        "description": "Crea links de pago únicos y compártelos por WhatsApp, email o redes sociales. Tus clientes pagan con Wompi, PayU, PSE o Stripe.",
+        "hint": "Empieza creando tu primer link de cobro."
+      },
+      "actions": {
+        "copyAria": "Copiar link",
+        "copiedAria": "Link copiado",
+        "qrAria": "Ver QR",
+        "actionsAria": "Acciones",
+        "open": "Abrir link",
+        "edit": "Editar",
+        "activate": "Activar",
+        "deactivate": "Desactivar",
+        "delete": "Eliminar"
+      },
+      "qr": {
+        "title": "QR: {name}",
+        "alt": "Código QR para {name}"
+      },
+      "toasts": {
+        "copied": "Link copiado al portapapeles",
+        "copyError": "No se pudo copiar el link",
+        "activated": "Link activado",
+        "deactivated": "Link desactivado",
+        "toggleError": "No se pudo cambiar el estado",
+        "deleted": "Link eliminado",
+        "deleteError": "No se pudo eliminar el link",
+        "updated": "Link actualizado",
+        "updateError": "No se pudo actualizar el link",
+        "createError": "Error al crear link de cobro",
+        "networkError": "Error de red"
+      },
+      "buttons": {
+        "new": "Nuevo Link",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar",
+        "deleting": "Eliminando...",
+        "delete": "Eliminar"
+      },
+      "fields": {
+        "name": "Nombre",
+        "nameRequired": "Nombre *",
+        "description": "Descripción",
+        "amount": "Monto",
+        "amountRequired": "Monto *",
+        "currency": "Moneda",
+        "urlSlugRequired": "URL Slug *",
+        "maxPayments": "Límite de pagos",
+        "expiresAt": "Fecha de expiración"
+      },
+      "placeholders": {
+        "nameExample": "Ej. Pago de servicios",
+        "description": "Breve descripción visible para el cliente",
+        "urlSlug": "ej. pago-servicios-mayo",
+        "noLimit": "Sin límite"
+      },
+      "dialogs": {
+        "create": {
+          "title": "Nuevo Link de Cobro"
+        },
+        "edit": {
+          "title": "Editar Link de Cobro"
+        },
+        "delete": {
+          "title": "Eliminar link",
+          "confirm": "¿Estás seguro de eliminar {name}? Esta acción no se puede deshacer."
+        }
+      }
+    },
+    "personalAccounts": {
+      "title": "Cuentas",
+      "subtitle": "Administra tus cuentas personales",
+      "kpis": {
+        "totalBalance": "Saldo total",
+        "accounts": "Cuentas"
+      },
+      "columns": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "balance": "Saldo",
+        "currency": "Moneda",
+        "color": "Color"
+      },
+      "card": {
+        "balance": "Saldo",
+        "currency": "Moneda"
+      },
+      "empty": {
+        "title": "Consolida tus cuentas",
+        "description": "Conecta bancos, efectivo y tarjetas para tener una vista completa de tu dinero.",
+        "hint": "Empieza creando tu primera cuenta."
+      },
+      "dialog": {
+        "trigger": "Nueva Cuenta",
+        "title": "Nueva Cuenta",
+        "labels": {
+          "name": "Nombre *",
+          "type": "Tipo",
+          "initialBalance": "Saldo inicial",
+          "currency": "Moneda",
+          "color": "Color",
+          "icon": "Icono (nombre Lucide)"
+        },
+        "placeholders": {
+          "name": "Ej. Cuenta de Ahorros"
+        },
+        "types": {
+          "CHECKING": "Corriente",
+          "SAVINGS": "Ahorros",
+          "CREDIT": "Crédito",
+          "INVESTMENT": "Inversión",
+          "CASH": "Efectivo",
+          "OTHER": "Otro"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "saving": "Guardando...",
+          "save": "Guardar"
+        },
+        "toast": {
+          "created": "Cuenta creada",
+          "createError": "Error al crear cuenta",
+          "networkError": "Error de red"
+        }
+      }
+    },
+    "reminders": {
+      "title": "Recordatorios",
+      "subtitle": "Administra tus recordatorios programados",
+      "stats": {
+        "total": "Total",
+        "active": "Activos"
+      },
+      "columns": {
+        "title": "Título",
+        "message": "Mensaje",
+        "scheduled": "Fecha",
+        "repeat": "Repetición",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "repeats": {
+        "NONE": "Una vez",
+        "DAILY": "Diario",
+        "WEEKLY": "Semanal",
+        "MONTHLY": "Mensual"
+      },
+      "status": {
+        "completed": "Completado",
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "aria": {
+        "activate": "Activar",
+        "deactivate": "Desactivar",
+        "delete": "Eliminar",
+        "edit": "Editar recordatorio"
+      },
+      "empty": {
+        "title": "Crea recordatorios personalizados",
+        "description": "Programa alertas para pagos, metas o cualquier recordatorio financiero.",
+        "hint": "Empieza creando tu primer recordatorio."
+      },
+      "toast": {
+        "activated": "Recordatorio activado",
+        "deactivated": "Recordatorio desactivado",
+        "toggleError": "Error al cambiar estado",
+        "deleted": "Recordatorio eliminado",
+        "deleteError": "Error al eliminar",
+        "updated": "Recordatorio actualizado",
+        "created": "Recordatorio creado",
+        "saveError": "Error al guardar recordatorio"
+      },
+      "dialog": {
+        "trigger": "Nuevo recordatorio",
+        "title": "Nuevo recordatorio",
+        "editTitle": "Editar recordatorio",
+        "labels": {
+          "title": "Título *",
+          "message": "Mensaje *",
+          "scheduledAt": "Fecha y hora *",
+          "repeat": "Repetición",
+          "active": "Activo",
+          "inactive": "Inactivo"
+        },
+        "placeholders": {
+          "title": "Ej. Revisar gastos del mes",
+          "message": "Ej. Revisa tus gastos hormiga antes de dormir"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "saving": "Guardando...",
+          "save": "Guardar",
+          "create": "Crear"
+        }
+      }
     }
   },
   "nav": {

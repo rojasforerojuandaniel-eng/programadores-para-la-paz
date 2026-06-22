@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 
 export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -56,10 +58,10 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
         onCreate();
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Error al crear link de cobro");
+        toast.error(data.error || t("toasts.createError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("toasts.networkError"));
     } finally {
       setLoading(false);
     }
@@ -73,36 +75,36 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nuevo Link
+          {t("buttons.new")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nuevo Link de Cobro</DialogTitle>
+          <DialogTitle className="heading-card">{t("dialogs.create.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="pl-name">Nombre *</Label>
+            <Label htmlFor="pl-name">{t("fields.nameRequired")}</Label>
             <Input
               id="pl-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Pago de servicios"
+              placeholder={t("placeholders.nameExample")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pl-desc">Descripción</Label>
+            <Label htmlFor="pl-desc">{t("fields.description")}</Label>
             <Input
               id="pl-desc"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Breve descripción visible para el cliente"
+              placeholder={t("placeholders.description")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="pl-amount">Monto *</Label>
+              <Label htmlFor="pl-amount">{t("fields.amountRequired")}</Label>
               <Input
                 id="pl-amount"
                 type="number"
@@ -114,7 +116,7 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pl-currency">Moneda</Label>
+              <Label htmlFor="pl-currency">{t("fields.currency")}</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -132,29 +134,29 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pl-slug">URL Slug *</Label>
+            <Label htmlFor="pl-slug">{t("fields.urlSlugRequired")}</Label>
             <Input
               id="pl-slug"
               required
               value={form.urlSlug}
               onChange={(e) => setForm({ ...form, urlSlug: e.target.value })}
-              placeholder="ej. pago-servicios-mayo"
+              placeholder={t("placeholders.urlSlug")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="pl-max">Límite de pagos</Label>
+              <Label htmlFor="pl-max">{t("fields.maxPayments")}</Label>
               <Input
                 id="pl-max"
                 type="number"
                 min={1}
                 value={form.maxPayments}
                 onChange={(e) => setForm({ ...form, maxPayments: e.target.value })}
-                placeholder="Sin límite"
+                placeholder={t("placeholders.noLimit")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pl-expires">Fecha de expiración</Label>
+              <Label htmlFor="pl-expires">{t("fields.expiresAt")}</Label>
               <Input
                 id="pl-expires"
                 type="date"
@@ -165,10 +167,10 @@ export function CreatePaymentLinkDialog({ onCreate }: { onCreate: () => void }) 
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("buttons.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("buttons.saving") : t("buttons.save")}
             </Button>
           </div>
         </form>

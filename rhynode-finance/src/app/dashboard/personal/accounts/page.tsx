@@ -10,28 +10,23 @@ import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { TableCell } from "@/components/ui/table";
 import { CreateAccountDialog } from "./create-dialog";
 import { Wallet, Landmark } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 
 export const metadata = dashboardMetadata(
   "Cuentas",
   "Administra tus cuentas bancarias, efectivo, tarjetas e inversiones personales en Rhynode."
 );
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
-function EmptyState() {
+function EmptyState({ t }: { t: (key: string) => string }) {
   return (
     <EmptyStateCard
       variant="lg"
       icon={Wallet}
-      title="Consolida tus cuentas"
-      description="Conecta bancos, efectivo y tarjetas para tener una vista completa de tu dinero."
-      hint="Empieza creando tu primera cuenta."
+      title={t("empty.title")}
+      description={t("empty.description")}
+      hint={t("empty.hint")}
       action={<CreateAccountDialog />}
     />
   );
@@ -40,6 +35,10 @@ function EmptyState() {
 export default async function AccountsPage() {
   const profile = await getUserProfile();
   if (!profile) return null;
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.personalAccounts" });
 
   const prisma = getPrisma();
   const accounts = await prisma.account.findMany({
@@ -50,19 +49,19 @@ export default async function AccountsPage() {
   const totalBalance = accounts.reduce((s, a) => s + decimalToNumber(a.balance), 0);
 
   const columns = [
-    { key: "name", header: "Nombre" },
-    { key: "type", header: "Tipo" },
-    { key: "balance", header: "Saldo" },
-    { key: "currency", header: "Moneda" },
-    { key: "color", header: "Color" },
+    { key: "name", header: t("columns.name") },
+    { key: "type", header: t("columns.type") },
+    { key: "balance", header: t("columns.balance") },
+    { key: "currency", header: t("columns.currency") },
+    { key: "color", header: t("columns.color") },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Cuentas</h1>
-          <p className="body-default mt-1">Administra tus cuentas personales</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateAccountDialog />
       </div>
@@ -70,11 +69,11 @@ export default async function AccountsPage() {
       {accounts.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <KpiCard
-            label="Saldo total"
-            value={formatCurrency(totalBalance, "COP")}
+            label={t("kpis.totalBalance")}
+            value={formatCurrency(totalBalance, "COP", locale)}
             icon={Landmark}
           />
-          <KpiCard label="Cuentas" value={accounts.length} icon={Wallet} />
+          <KpiCard label={t("kpis.accounts")} value={accounts.length} icon={Wallet} />
         </div>
       )}
 
@@ -82,7 +81,7 @@ export default async function AccountsPage() {
         <ServerDataTable
           columns={columns}
           data={accounts}
-          emptyState={<EmptyState />}
+          emptyState={<EmptyState t={t} />}
           renderRow={(account) => (
             <>
               <TableCell className="py-3 font-medium">{account.name}</TableCell>
@@ -90,7 +89,7 @@ export default async function AccountsPage() {
                 <Badge variant="outline">{account.type}</Badge>
               </TableCell>
               <TableCell className="py-3 font-medium">
-                {formatCurrency(decimalToNumber(account.balance), account.currency)}
+                {formatCurrency(decimalToNumber(account.balance), account.currency, locale)}
               </TableCell>
               <TableCell className="py-3 text-muted-foreground">{account.currency}</TableCell>
               <TableCell className="py-3">
@@ -122,11 +121,11 @@ export default async function AccountsPage() {
                 <Badge variant="outline">{account.type}</Badge>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="text-muted-foreground">Saldo</div>
+                <div className="text-muted-foreground">{t("card.balance")}</div>
                 <div className="text-right font-semibold">
-                  {formatCurrency(decimalToNumber(account.balance), account.currency)}
+                  {formatCurrency(decimalToNumber(account.balance), account.currency, locale)}
                 </div>
-                <div className="text-muted-foreground">Moneda</div>
+                <div className="text-muted-foreground">{t("card.currency")}</div>
                 <div className="text-right text-muted-foreground">{account.currency}</div>
               </div>
             </div>

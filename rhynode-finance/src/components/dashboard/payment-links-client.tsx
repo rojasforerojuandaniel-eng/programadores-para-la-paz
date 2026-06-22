@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TableCell } from "@/components/ui/table";
@@ -16,6 +17,8 @@ import {
   getPublicUrl,
   type PaymentLink,
 } from "@/components/dashboard/payment-link-actions";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import {
   CreditCard,
@@ -25,47 +28,43 @@ import {
   DollarSign,
 } from "lucide-react";
 
-const statusConfig: Record<string, { label: string; className: string }> = {
+const statusConfig: Record<string, { labelKey: string; className: string }> = {
   ACTIVE: {
-    label: "Activo",
+    labelKey: "statuses.ACTIVE",
     className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600",
   },
   INACTIVE: {
-    label: "Inactivo",
+    labelKey: "statuses.INACTIVE",
     className: "border-gray-500/20 bg-gray-500/10 text-gray-600",
   },
   EXPIRED: {
-    label: "Expirado",
+    labelKey: "statuses.EXPIRED",
     className: "border-amber-500/20 bg-amber-500/10 text-amber-600",
   },
   EXHAUSTED: {
-    label: "Agotado",
+    labelKey: "statuses.EXHAUSTED",
     className: "border-red-500/20 bg-red-500/10 text-red-600",
   },
 };
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+function formatUses(link: PaymentLink, noLimitLabel: string): string {
+  if (link.maxPayments) return `${link.currentPayments} / ${link.maxPayments}`;
+  return `${link.currentPayments} · ${noLimitLabel}`;
 }
 
-function formatDate(value: string | null): string {
-  if (!value) return "Nunca";
+function formatDate(
+  value: string | null,
+  neverLabel: string,
+  locale: Locale
+): string {
+  if (!value) return neverLabel;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("es-CO", {
+  return fmtDate(value, locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(date);
-}
-
-function formatUses(link: PaymentLink): string {
-  if (link.maxPayments) return `${link.currentPayments} / ${link.maxPayments}`;
-  return `${link.currentPayments} · sin límite`;
+  });
 }
 
 function getEffectiveStatus(link: PaymentLink): string {
@@ -79,13 +78,14 @@ function getEffectiveStatus(link: PaymentLink): string {
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const t = useTranslations("dashboard.paymentLinks");
   const config = statusConfig[status] || statusConfig.ACTIVE;
   return (
     <Badge
       variant="outline"
       className={cn("font-medium", config.className)}
     >
-      {config.label}
+      {t(config.labelKey as never)}
     </Badge>
   );
 }
@@ -99,6 +99,8 @@ export function PaymentLinksClient({
   initialLinks,
   canEdit,
 }: PaymentLinksClientProps) {
+  const t = useTranslations("dashboard.paymentLinks");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const refresh = () => router.refresh();
 
@@ -114,12 +116,12 @@ export function PaymentLinksClient({
   }, [initialLinks]);
 
   const columns = [
-    { key: "name", header: "Nombre" },
-    { key: "amount", header: "Monto" },
-    { key: "status", header: "Estado" },
-    { key: "uses", header: "Usos" },
-    { key: "expires", header: "Expiración" },
-    { key: "actions", header: "Acciones", className: "text-right" },
+    { key: "name", header: t("columns.name") },
+    { key: "amount", header: t("columns.amount") },
+    { key: "status", header: t("columns.status") },
+    { key: "uses", header: t("columns.uses") },
+    { key: "expires", header: t("columns.expires") },
+    { key: "actions", header: t("columns.actions"), className: "text-right" },
   ];
 
   function renderRow(link: PaymentLink) {
@@ -127,12 +129,12 @@ export function PaymentLinksClient({
     return (
       <>
         <TableCell className="font-medium">{link.name}</TableCell>
-        <TableCell>{formatCurrency(link.amount, link.currency)}</TableCell>
+        <TableCell>{formatCurrency(link.amount, link.currency, locale)}</TableCell>
         <TableCell>
           <StatusBadge status={effectiveStatus} />
         </TableCell>
-        <TableCell className="text-sm">{formatUses(link)}</TableCell>
-        <TableCell className="text-sm">{formatDate(link.expiresAt)}</TableCell>
+        <TableCell className="text-sm">{formatUses(link, t("uses.noLimit"))}</TableCell>
+        <TableCell className="text-sm">{formatDate(link.expiresAt, t("dates.never"), locale)}</TableCell>
         <TableCell className="text-right">
           <PaymentLinkActions
             link={link}
@@ -153,19 +155,19 @@ export function PaymentLinksClient({
           <div className="min-w-0">
             <div className="truncate font-medium">{link.name}</div>
             <div className="text-lg font-semibold">
-              {formatCurrency(link.amount, link.currency)}
+              {formatCurrency(link.amount, link.currency, locale)}
             </div>
           </div>
           <StatusBadge status={effectiveStatus} />
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-muted-foreground">Usos</span>
-            <div className="font-medium">{formatUses(link)}</div>
+            <span className="text-muted-foreground">{t("cardLabels.uses")}</span>
+            <div className="font-medium">{formatUses(link, t("uses.noLimit"))}</div>
           </div>
           <div>
-            <span className="text-muted-foreground">Expira</span>
-            <div className="font-medium">{formatDate(link.expiresAt)}</div>
+            <span className="text-muted-foreground">{t("cardLabels.expires")}</span>
+            <div className="font-medium">{formatDate(link.expiresAt, t("dates.never"), locale)}</div>
           </div>
         </div>
         <div className="mt-1 flex items-center gap-2">
@@ -186,9 +188,9 @@ export function PaymentLinksClient({
     <EmptyStateCard
       variant="lg"
       icon={CreditCard}
-      title="Cobra en línea en minutos"
-      description="Crea links de pago únicos y compártelos por WhatsApp, email o redes sociales. Tus clientes pagan con Wompi, PayU, PSE o Stripe."
-      hint="Empieza creando tu primer link de cobro."
+      title={t("empty.title")}
+      description={t("empty.description")}
+      hint={t("empty.hint")}
       action={<CreatePaymentLinkDialog onCreate={refresh} />}
     />
   );
@@ -197,32 +199,32 @@ export function PaymentLinksClient({
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Links de Cobro</h1>
+          <h1 className="heading-section">{t("title")}</h1>
           <p className="body-default mt-1">
-            Crea links de pago para compartir con clientes
+            {t("subtitle")}
           </p>
         </div>
         <CreatePaymentLinkDialog onCreate={refresh} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <KpiCard label="Links activos" value={kpis.activeCount} icon={Link2} />
+        <KpiCard label={t("kpis.active")} value={kpis.activeCount} icon={Link2} />
         <KpiCard
-          label="Monto activo"
-          value={formatCurrency(kpis.activeAmount, "COP")}
+          label={t("kpis.activeAmount")}
+          value={formatCurrency(kpis.activeAmount, "COP", locale)}
           icon={DollarSign}
         />
         <KpiCard
-          label="Pagos recibidos"
+          label={t("kpis.receivedPayments")}
           value={kpis.totalPayments}
           icon={CheckCircle2}
         />
-        <KpiCard label="Inactivos" value={kpis.inactive} icon={AlertCircle} />
+        <KpiCard label={t("kpis.inactive")} value={kpis.inactive} icon={AlertCircle} />
       </div>
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Links Activos</CardTitle>
+          <CardTitle className="heading-card">{t("cardTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable

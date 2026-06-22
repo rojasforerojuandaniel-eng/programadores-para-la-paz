@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,16 +60,17 @@ export function getPublicUrl(link: PaymentLink): string {
 }
 
 export function CopyLinkButton({ url }: { url: string }) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Link copiado al portapapeles");
+      toast.success(t("toasts.copied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("No se pudo copiar el link");
+      toast.error(t("toasts.copyError"));
     }
   }
 
@@ -76,7 +78,7 @@ export function CopyLinkButton({ url }: { url: string }) {
     <Button
       variant="outline"
       size="icon"
-      aria-label={copied ? "Link copiado" : "Copiar link"}
+      aria-label={copied ? t("actions.copiedAria") : t("actions.copyAria")}
       onClick={handleCopy}
       className="h-11 w-11 shrink-0"
     >
@@ -90,6 +92,7 @@ export function CopyLinkButton({ url }: { url: string }) {
 }
 
 export function QrDialog({ url, name }: { url: string; name: string }) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [open, setOpen] = useState(false);
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(
     url
@@ -101,7 +104,7 @@ export function QrDialog({ url, name }: { url: string; name: string }) {
         <Button
           variant="outline"
           size="icon"
-          aria-label="Ver QR"
+          aria-label={t("actions.qrAria")}
           className="h-11 w-11 shrink-0"
         >
           <QrCode className="h-4 w-4" />
@@ -110,14 +113,14 @@ export function QrDialog({ url, name }: { url: string; name: string }) {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="heading-card truncate pr-6">
-            QR: {name}
+            {t("qr.title", { name })}
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
           <div className="overflow-hidden rounded-xl border">
             <Image
               src={qrSrc}
-              alt={`Código QR para ${name}`}
+              alt={t("qr.alt", { name })}
               width={280}
               height={280}
               unoptimized
@@ -131,11 +134,12 @@ export function QrDialog({ url, name }: { url: string; name: string }) {
 }
 
 function ActionsTrigger() {
+  const t = useTranslations("dashboard.paymentLinks");
   return (
     <Button
       variant="ghost"
       size="icon"
-      aria-label="Acciones"
+      aria-label={t("actions.actionsAria")}
       className="h-11 w-11 shrink-0"
     >
       <MoreVertical className="h-4 w-4" />
@@ -156,6 +160,7 @@ export function PaymentLinkActions({
   canEdit,
   className,
 }: PaymentLinkActionsProps) {
+  const t = useTranslations("dashboard.paymentLinks");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -171,10 +176,10 @@ export function PaymentLinkActions({
         body: JSON.stringify({ status: nextStatus }),
       });
       if (!response.ok) throw new Error("Toggle failed");
-      toast.success(nextStatus === "ACTIVE" ? "Link activado" : "Link desactivado");
+      toast.success(nextStatus === "ACTIVE" ? t("toasts.activated") : t("toasts.deactivated"));
       onRefresh();
     } catch {
-      toast.error("No se pudo cambiar el estado");
+      toast.error(t("toasts.toggleError"));
     }
   }
 
@@ -184,10 +189,10 @@ export function PaymentLinkActions({
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Delete failed");
-      toast.success("Link eliminado");
+      toast.success(t("toasts.deleted"));
       onRefresh();
     } catch {
-      toast.error("No se pudo eliminar el link");
+      toast.error(t("toasts.deleteError"));
     }
   }
 
@@ -204,7 +209,7 @@ export function PaymentLinkActions({
           </BottomSheetTrigger>
           <BottomSheetContent>
             <BottomSheetHeader>
-              <BottomSheetTitle>Acciones</BottomSheetTitle>
+              <BottomSheetTitle>{t("actions.actionsAria")}</BottomSheetTitle>
             </BottomSheetHeader>
             <div className="flex flex-col gap-2">
               <Button
@@ -216,7 +221,7 @@ export function PaymentLinkActions({
                 }}
               >
                 <ExternalLink className="h-4 w-4" />
-                Abrir link
+                {t("actions.open")}
               </Button>
               {canEdit && (
                 <>
@@ -229,7 +234,7 @@ export function PaymentLinkActions({
                     }}
                   >
                     <Pencil className="h-4 w-4" />
-                    Editar
+                    {t("actions.edit")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -240,7 +245,7 @@ export function PaymentLinkActions({
                     }}
                   >
                     <Power className="h-4 w-4" />
-                    {link.status === "ACTIVE" ? "Desactivar" : "Activar"}
+                    {link.status === "ACTIVE" ? t("actions.deactivate") : t("actions.activate")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -251,7 +256,7 @@ export function PaymentLinkActions({
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Eliminar
+                    {t("actions.delete")}
                   </Button>
                 </>
               )}
@@ -268,25 +273,25 @@ export function PaymentLinkActions({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={openLink}>
               <ExternalLink className="mr-2 h-4 w-4" />
-              Abrir link
+              {t("actions.open")}
             </DropdownMenuItem>
             {canEdit && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setEditOpen(true)}>
                   <Pencil className="mr-2 h-4 w-4" />
-                  Editar
+                  {t("actions.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => void toggleStatus()}>
                   <Power className="mr-2 h-4 w-4" />
-                  {link.status === "ACTIVE" ? "Desactivar" : "Activar"}
+                  {link.status === "ACTIVE" ? t("actions.deactivate") : t("actions.activate")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => setDeleteOpen(true)}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar
+                  {t("actions.delete")}
                 </DropdownMenuItem>
               </>
             )}
