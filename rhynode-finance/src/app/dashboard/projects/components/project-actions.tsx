@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { MoreVertical, Pencil, Archive, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,7 @@ interface ProjectActionsProps {
 }
 
 export function ProjectActions({ projectName }: ProjectActionsProps) {
+  const t = useTranslations("dashboard.projects");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(false);
   const { canEdit } = useOrganizationRole();
@@ -31,19 +33,25 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
   if (!canEdit) return null;
 
   const handleEdit = () => {
-    toast.info("Próximamente", { description: `Editar ${projectName}` });
+    toast.info(t("actions.comingSoon"), {
+      description: t("actions.editAction", { name: projectName }),
+    });
     setMobileOpen(false);
     setDesktopOpen(false);
   };
 
   const handleArchive = () => {
-    toast.info("Próximamente", { description: `Archivar ${projectName}` });
+    toast.info(t("actions.comingSoon"), {
+      description: t("actions.archiveAction", { name: projectName }),
+    });
     setMobileOpen(false);
     setDesktopOpen(false);
   };
 
   const handleDelete = () => {
-    toast.info("Próximamente", { description: `Eliminar ${projectName}` });
+    toast.info(t("actions.comingSoon"), {
+      description: t("actions.deleteAction", { name: projectName }),
+    });
     setMobileOpen(false);
     setDesktopOpen(false);
   };
@@ -56,14 +64,14 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
             variant="ghost"
             size="icon"
             className="h-11 w-11 shrink-0 lg:hidden"
-            aria-label={`Acciones de ${projectName}`}
+            aria-label={t("actions.actionsFor", { name: projectName })}
           >
             <MoreVertical className="h-5 w-5" />
           </Button>
         </BottomSheetTrigger>
         <BottomSheetContent>
           <BottomSheetHeader>
-            <BottomSheetTitle>Acciones del proyecto</BottomSheetTitle>
+            <BottomSheetTitle>{t("actions.title")}</BottomSheetTitle>
             <p className="text-sm text-muted-foreground">{projectName}</p>
           </BottomSheetHeader>
           <div className="flex flex-col gap-2 py-2">
@@ -73,7 +81,7 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
               onClick={handleEdit}
             >
               <Pencil className="h-4 w-4" />
-              Editar
+              {t("actions.edit")}
             </Button>
             <Button
               variant="ghost"
@@ -81,7 +89,7 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
               onClick={handleArchive}
             >
               <Archive className="h-4 w-4" />
-              Archivar
+              {t("actions.archive")}
             </Button>
             <Button
               variant="ghost"
@@ -89,7 +97,7 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
               onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
-              Eliminar
+              {t("actions.delete")}
             </Button>
           </div>
         </BottomSheetContent>
@@ -101,7 +109,7 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
             variant="ghost"
             size="icon"
             className="hidden h-11 w-11 shrink-0 lg:inline-flex"
-            aria-label={`Acciones de ${projectName}`}
+            aria-label={t("actions.actionsFor", { name: projectName })}
           >
             <MoreVertical className="h-5 w-5" />
           </Button>
@@ -109,18 +117,18 @@ export function ProjectActions({ projectName }: ProjectActionsProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleEdit} className="min-h-10 gap-2">
             <Pencil className="h-4 w-4" />
-            Editar
+            {t("actions.edit")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleArchive} className="min-h-10 gap-2">
             <Archive className="h-4 w-4" />
-            Archivar
+            {t("actions.archive")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleDelete}
             className="min-h-10 gap-2 text-destructive focus:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
-            Eliminar
+            {t("actions.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

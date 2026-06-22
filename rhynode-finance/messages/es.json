@@ -1246,6 +1246,37 @@
         "title": "Organiza tu trabajo en proyectos",
         "description": "Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado.",
         "hint": "Empieza creando tu primer proyecto."
+      },
+      "createDialog": {
+        "newProject": "Nuevo Proyecto",
+        "title": "Nuevo Proyecto",
+        "name": "Nombre",
+        "namePlaceholder": "Ej. Rediseño de marca",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Breve descripción del proyecto",
+        "status": "Estado",
+        "color": "Color",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de fin",
+        "budget": "Presupuesto (COP)",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar Proyecto",
+        "errorCreate": "Error al crear proyecto"
+      },
+      "card": {
+        "invoices": "{count} facturas"
+      },
+      "actions": {
+        "comingSoon": "Próximamente",
+        "editAction": "Editar {name}",
+        "archiveAction": "Archivar {name}",
+        "deleteAction": "Eliminar {name}",
+        "actionsFor": "Acciones de {name}",
+        "title": "Acciones del proyecto",
+        "edit": "Editar",
+        "archive": "Archivar",
+        "delete": "Eliminar"
       }
     },
     "stats": {
@@ -2551,7 +2582,57 @@
           "reminder": "Recordatorio",
           "debt": "Deuda",
           "recurring": "Recurrente",
-          "goal": "Meta"
+          "goal": "Meta",
+          "invoice": "Factura",
+          "tax": "Impuesto"
+        },
+        "status": {
+          "paid": "Pagado",
+          "overdue": "Vencido",
+          "upcoming": "Próximo"
+        },
+        "relative": {
+          "today": "Hoy",
+          "tomorrow": "Mañana",
+          "inDays": "En {days} días"
+        },
+        "desc": {
+          "debtWith": "Deuda con {counterparty}",
+          "debtDue": "Vencimiento de deuda",
+          "recurringIncome": "Ingreso recurrente",
+          "recurringPayment": "Pago recurrente",
+          "goalProgress": "Meta: {current} de {target}",
+          "invoiceNumber": "Factura {number}",
+          "client": "Cliente: {name}",
+          "taxPeriod": "Periodo {period} {year}"
+        },
+        "cardTitle": "Vencimientos próximos",
+        "emptyDueTitle": "Sin vencimientos próximos",
+        "emptyDueDescription": "Aquí verás deudas, facturas, metas, impuestos y pagos recurrentes que vencen en los próximos días.",
+        "emptyDueHint": "Crea una deuda, meta o factura para empezar.",
+        "listAriaLabel": "Próximos vencimientos",
+        "eventAria": "{title}, {type}, vence {date}, {status}"
+      },
+      "upcomingBills": {
+        "title": "Próximos Pagos",
+        "countIn60": "{count} en 60 días",
+        "noPending": "Sin pendientes",
+        "empty": "No tienes pagos próximos en los próximos 60 días. 🎉",
+        "overdue": "{count, plural, one {{count} vencido} other {{count} vencidos}} — {amount}",
+        "more": "+{count} más · Total {total}",
+        "types": {
+          "subscription": "Suscripción"
+        },
+        "debtWith": "con {counterparty}",
+        "invoiceTitle": "Factura {number}",
+        "statusOverdue": "Vencida",
+        "statusToCollect": "Por cobrar",
+        "taxLabel": "Impuesto",
+        "due": {
+          "overdue": "Vencida hace {days}d",
+          "today": "Vence hoy",
+          "tomorrow": "Vence mañana",
+          "inDays": "En {count} días"
         }
       }
     },
@@ -2617,6 +2698,37 @@
         "project": "Proyectos",
         "account": "Cuentas"
       }
+    },
+    "notifications": {
+      "empty": {
+        "title": "No tienes notificaciones",
+        "description": "Te avisaremos cuando haya algo nuevo.",
+        "action": "Entendido"
+      },
+      "error": {
+        "title": "No se pudieron cargar las notificaciones",
+        "description": "Intenta de nuevo en un momento.",
+        "retry": "Reintentar"
+      },
+      "trigger": {
+        "label": "Notificaciones",
+        "labelWithUnread": "Notificaciones, {count} sin leer"
+      },
+      "panel": {
+        "title": "Notificaciones",
+        "description": "Lista de notificaciones recientes.",
+        "allRead": "No tienes notificaciones sin leer",
+        "unreadCount": "{count} sin leer"
+      },
+      "actions": {
+        "markAllAria": "Marcar todas las notificaciones como leídas",
+        "markAll": "Todas",
+        "markOneAria": "Marcar como leída: {title}",
+        "deleteAria": "Eliminar notificación: {title}"
+      },
+      "loading": "Cargando notificaciones",
+      "preferences": "Preferencias de notificaciones",
+      "centerAria": "Centro de notificaciones"
     }
   },
   "nav": {

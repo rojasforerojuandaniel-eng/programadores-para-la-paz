@@ -1,5 +1,17 @@
 import { getPrisma } from "@/lib/prisma";
 import { decimalToNumber } from "@/lib/decimal";
+import { formatDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
+
+/**
+ * Optional translator + locale. When provided (e.g. from the server widget
+ * via getTranslations), bill title/subtitle and due labels are localized.
+ * When omitted (API route, tests), the legacy Spanish strings are produced.
+ */
+export interface BillsI18n {
+  t: (key: string, values?: Record<string, string | number>) => string;
+  locale: Locale;
+}
 
 export type BillKind = "debt" | "subscription" | "invoice" | "tax";
 
@@ -39,11 +51,13 @@ function daysBetween(from: Date, to: Date): number {
 export async function getUpcomingBills(
   userId: string,
   orgId: string | null,
-  horizonDays = 60
+  horizonDays = 60,
+  i18n?: BillsI18n
 ): Promise<UpcomingBill[]> {
   const prisma = getPrisma();
   const now = new Date();
   const bills: UpcomingBill[] = [];
+  const t = i18n?.t;
 
   // 1. Active debts with a due date (owed money).
   const debts = await prisma.debt.findMany({
@@ -58,7 +72,11 @@ export async function getUpcomingBills(
       id: debt.id,
       kind: "debt",
       title: debt.name,
-      subtitle: debt.counterparty ? `con ${debt.counterparty}` : undefined,
+      subtitle: debt.counterparty
+        ? t
+          ? t("upcomingBills.debtWith", { counterparty: debt.counterparty })
+          : `con ${debt.counterparty}`
+        : undefined,
       amount: decimalToNumber(debt.remainingAmount),
       currency: debt.currency,
       dueDate: debt.dueDate.toISOString(),
@@ -121,8 +139,14 @@ export async function getUpcomingBills(
       bills.push({
         id: invoice.id,
         kind: "invoice",
-        title: `Factura ${invoice.number}`,
-        subtitle: invoice.status === "OVERDUE" ? "Vencida" : "Por cobrar",
+        title: t
+          ? t("upcomingBills.invoiceTitle", { number: invoice.number })
+          : `Factura ${invoice.number}`,
+        subtitle: t
+          ? t(invoice.status === "OVERDUE" ? "upcomingBills.statusOverdue" : "upcomingBills.statusToCollect")
+          : invoice.status === "OVERDUE"
+            ? "Vencida"
+            : "Por cobrar",
         amount: decimalToNumber(invoice.total),
         currency: invoice.currency,
         dueDate: invoice.dueDate.toISOString(),
@@ -145,7 +169,7 @@ export async function getUpcomingBills(
         id: tax.id,
         kind: "tax",
         title: `${tax.type} ${tax.period}`,
-        subtitle: "Impuesto",
+        subtitle: t ? t("upcomingBills.taxLabel") : "Impuesto",
         amount: tax.amount ? decimalToNumber(tax.amount) : 0,
         currency: "COP",
         dueDate: tax.dueDate.toISOString(),
@@ -159,11 +183,20 @@ export async function getUpcomingBills(
   return bills.sort((a, b) => a.daysUntilDue - b.daysUntilDue);
 }
 
-export function formatDueLabel(daysUntilDue: number): string {
-  if (daysUntilDue < 0) return `Vencida hace ${Math.abs(daysUntilDue)}d`;
-  if (daysUntilDue === 0) return "Vence hoy";
-  if (daysUntilDue === 1) return "Vence mañana";
-  if (daysUntilDue <= 7) return `En ${daysUntilDue} días`;
+export function formatDueLabel(daysUntilDue: number, i18n?: BillsI18n): string {
+  const t = i18n?.t;
+  const locale = i18n?.locale;
+  if (daysUntilDue < 0) {
+    if (t) return t("upcomingBills.due.overdue", { days: Math.abs(daysUntilDue) });
+    return `Vencida hace ${Math.abs(daysUntilDue)}d`;
+  }
+  if (daysUntilDue === 0) return t ? t("upcomingBills.due.today") : "Vence hoy";
+  if (daysUntilDue === 1) return t ? t("upcomingBills.due.tomorrow") : "Vence mañana";
+  if (daysUntilDue <= 7) {
+    if (t) return t("upcomingBills.due.inDays", { count: daysUntilDue });
+    return `En ${daysUntilDue} días`;
+  }
   const date = new Date(Date.now() + daysUntilDue * 24 * 60 * 60 * 1000);
+  if (locale) return formatDate(date, locale, { day: "numeric", month: "short" });
   return date.toLocaleDateString("es-CO", { day: "numeric", month: "short" });
 }

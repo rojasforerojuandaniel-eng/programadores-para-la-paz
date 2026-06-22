@@ -21,7 +21,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
+import { useTranslations, useLocale } from "next-intl";
+import type { Locale } from "@/lib/locale";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -200,11 +202,11 @@ function useNotificationStore() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-function formatTimestamp(dateString: string): string {
+function formatTimestamp(dateString: string, locale: Locale): string {
   try {
     return formatDistanceToNow(new Date(dateString), {
       addSuffix: true,
-      locale: es,
+      locale: locale === "en" ? enUS : es,
     });
   } catch {
     return dateString;
@@ -215,36 +217,48 @@ function getNotificationIcon(type: string): LucideIcon {
   return notificationIcons[type] ?? Bell;
 }
 
-function EmptyState({ onClose }: { onClose: () => void }) {
+function EmptyState({
+  onClose,
+  t,
+}: {
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
       <Inbox className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
       <div>
-        <p className="text-sm font-medium">No tienes notificaciones</p>
-        <p className="text-xs text-muted-foreground">
-          Te avisaremos cuando haya algo nuevo.
-        </p>
+        <p className="text-sm font-medium">{t("empty.title")}</p>
+        <p className="text-xs text-muted-foreground">{t("empty.description")}</p>
       </div>
       <Button variant="outline" size="sm" onClick={onClose}>
-        Entendido
+        {t("empty.action")}
       </Button>
     </div>
   );
 }
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
+function ErrorState({
+  onRetry,
+  t,
+}: {
+  onRetry: () => void;
+  t: (key: string) => string;
+}) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
-      <p className="text-sm font-medium">No se pudieron cargar las notificaciones</p>
-      <p className="text-xs text-muted-foreground">Intenta de nuevo en un momento.</p>
+      <p className="text-sm font-medium">{t("error.title")}</p>
+      <p className="text-xs text-muted-foreground">{t("error.description")}</p>
       <Button variant="outline" size="sm" onClick={onRetry}>
-        Reintentar
+        {t("error.retry")}
       </Button>
     </div>
   );
 }
 
 export function NotificationCenter() {
+  const t = useTranslations("dashboard.notifications");
+  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const { notifications, unreadCount, loading, error } = useNotificationStore();
 
@@ -253,19 +267,19 @@ export function NotificationCenter() {
   }, []);
 
   const triggerLabel = useMemo(() => {
-    if (unreadCount === 0) return "Notificaciones";
-    return `Notificaciones, ${unreadCount} sin leer`;
-  }, [unreadCount]);
+    if (unreadCount === 0) return t("trigger.label");
+    return t("trigger.labelWithUnread", { count: unreadCount });
+  }, [unreadCount, t]);
 
   const content = (
     <div className="flex flex-col">
       <div className="flex items-center justify-between px-4 py-3">
         <div>
-          <h2 className="text-base font-semibold">Notificaciones</h2>
+          <h2 className="text-base font-semibold">{t("panel.title")}</h2>
           <p className="text-xs text-muted-foreground">
             {unreadCount === 0
-              ? "No tienes notificaciones sin leer"
-              : `${unreadCount} sin leer`}
+              ? t("panel.allRead")
+              : t("panel.unreadCount", { count: unreadCount })}
           </p>
         </div>
         {unreadCount > 0 && (
@@ -273,10 +287,10 @@ export function NotificationCenter() {
             variant="ghost"
             size="sm"
             onClick={markAllAsReadOptimistically}
-            aria-label="Marcar todas las notificaciones como leídas"
+            aria-label={t("actions.markAllAria")}
           >
             <Check className="mr-1 h-4 w-4" aria-hidden="true" />
-            Todas
+            {t("actions.markAll")}
           </Button>
         )}
       </div>
@@ -285,12 +299,12 @@ export function NotificationCenter() {
         {loading && notifications.length === 0 ? (
           <div className="flex items-center justify-center py-10" aria-live="polite" aria-busy="true">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
-            <span className="sr-only">Cargando notificaciones</span>
+            <span className="sr-only">{t("loading")}</span>
           </div>
         ) : error ? (
-          <ErrorState onRetry={handleRetry} />
+          <ErrorState onRetry={handleRetry} t={t} />
         ) : notifications.length === 0 ? (
-          <EmptyState onClose={() => setOpen(false)} />
+          <EmptyState onClose={() => setOpen(false)} t={t} />
         ) : (
           <ul className="divide-y divide-border" role="list">
             {notifications.map((notification) => {
@@ -321,7 +335,7 @@ export function NotificationCenter() {
                       {notification.body}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatTimestamp(notification.createdAt)}
+                      {formatTimestamp(notification.createdAt, locale)}
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col gap-1">
@@ -330,7 +344,7 @@ export function NotificationCenter() {
                         variant="ghost"
                         size="icon-xs"
                         onClick={() => markAsReadOptimistically(notification.id)}
-                        aria-label={`Marcar como leída: ${notification.title}`}
+                        aria-label={t("actions.markOneAria", { title: notification.title })}
                       >
                         <Check className="h-4 w-4" aria-hidden="true" />
                       </Button>
@@ -339,7 +353,7 @@ export function NotificationCenter() {
                       variant="ghost"
                       size="icon-xs"
                       onClick={() => deleteOptimistically(notification.id)}
-                      aria-label={`Eliminar notificación: ${notification.title}`}
+                      aria-label={t("actions.deleteAria", { title: notification.title })}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
@@ -358,7 +372,7 @@ export function NotificationCenter() {
           className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Settings className="h-4 w-4" aria-hidden="true" />
-          Preferencias de notificaciones
+          {t("preferences")}
         </Link>
       </div>
     </div>
@@ -389,10 +403,10 @@ export function NotificationCenter() {
       <div className="lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>{triggerButton}</SheetTrigger>
-          <SheetContent side="right" className="w-full p-0 sm:max-w-sm" role="dialog" aria-modal="true" aria-label="Centro de notificaciones">
+          <SheetContent side="right" className="w-full p-0 sm:max-w-sm" role="dialog" aria-modal="true" aria-label={t("centerAria")}>
             <SheetHeader className="sr-only">
-              <SheetTitle>Notificaciones</SheetTitle>
-              <SheetDescription>Lista de notificaciones recientes.</SheetDescription>
+              <SheetTitle>{t("panel.title")}</SheetTitle>
+              <SheetDescription>{t("panel.description")}</SheetDescription>
             </SheetHeader>
             {content}
           </SheetContent>
@@ -407,7 +421,7 @@ export function NotificationCenter() {
             sideOffset={8}
             className="w-80 p-0"
             role="dialog"
-            aria-label="Centro de notificaciones"
+            aria-label={t("centerAria")}
           >
             {content}
           </DropdownMenuContent>
