@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ export function DeleteBankAccountDialog({
   open,
   onOpenChange,
 }: DeleteBankAccountDialogProps) {
+  const t = useTranslations("dashboard.accounts");
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
@@ -32,10 +34,10 @@ export function DeleteBankAccountDialog({
     setLoading(false);
 
     if (result.success) {
-      toast.success("Cuenta eliminada");
+      toast.success(t("deleteDialog.toastSuccess"));
       onOpenChange(false);
     } else {
-      toast.error(result.error || "Error al eliminar la cuenta");
+      toast.error(result.error || t("deleteDialog.toastError"));
     }
   }
 
@@ -43,10 +45,13 @@ export function DeleteBankAccountDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Eliminar cuenta</DialogTitle>
+          <DialogTitle className="heading-card">{t("deleteDialog.title")}</DialogTitle>
           <DialogDescription className="body-default">
-            Estás a punto de eliminar <strong>{account.name}</strong> de{" "}
-            {account.bankName}. Esta acción no se puede deshacer.
+            {t.rich("deleteDialog.description", {
+              name: account.name,
+              bankName: account.bankName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
@@ -57,7 +62,7 @@ export function DeleteBankAccountDialog({
             disabled={loading}
             className="h-11"
           >
-            Cancelar
+            {t("bankImport.cancel")}
           </Button>
           <Button
             type="button"
@@ -66,7 +71,7 @@ export function DeleteBankAccountDialog({
             disabled={loading}
             className="h-11"
           >
-            {loading ? "Eliminando..." : "Eliminar cuenta"}
+            {loading ? t("deleteDialog.deleting") : t("deleteDialog.confirm")}
           </Button>
         </div>
       </DialogContent>

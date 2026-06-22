@@ -452,6 +452,39 @@
         "toastImportError": "Error importing transactions",
         "toastImported": "{count} transactions imported",
         "toastImportNetworkError": "Network error importing"
+      },
+      "createDialog": {
+        "triggerButton": "New Account",
+        "title": "New Bank Account",
+        "nameLabel": "Account name *",
+        "namePlaceholder": "E.g. Main Checking Account",
+        "bankLabel": "Bank *",
+        "bankPlaceholder": "E.g. Bancolombia",
+        "numberLabel": "Number (last 4)",
+        "balanceLabel": "Initial balance",
+        "saving": "Saving...",
+        "save": "Save",
+        "toastError": "Error creating bank account",
+        "toastNetworkError": "Network error"
+      },
+      "editDialog": {
+        "title": "Edit Account",
+        "saveChanges": "Save changes",
+        "toastSuccess": "Account updated",
+        "toastError": "Error updating account"
+      },
+      "deleteDialog": {
+        "title": "Delete account",
+        "description": "You are about to delete <strong>{name}</strong> from {bankName}. This action cannot be undone.",
+        "deleting": "Deleting...",
+        "confirm": "Delete account",
+        "toastSuccess": "Account deleted",
+        "toastError": "Error deleting account"
+      },
+      "actions": {
+        "optionsAria": "Options for {name}",
+        "edit": "Edit",
+        "delete": "Delete"
       }
     },
     "invoices": {
@@ -1362,6 +1395,32 @@
           "generated": "Generated",
           "disclaimerBody": "These values are indicative. Consult an accountant before filing."
         }
+      },
+      "createReportDialog": {
+        "trigger": "New Report",
+        "title": "New Tax Report",
+        "authority": "Authority",
+        "authorities": {
+          "DIAN": "DIAN (Colombia)",
+          "SAT": "SAT (Mexico)",
+          "AFIP": "AFIP (Argentina)",
+          "SII": "SII (Chile)",
+          "SUNAT": "SUNAT (Peru)"
+        },
+        "type": "Type",
+        "period": "Period",
+        "quarterly": "Quarterly",
+        "annual": "Annual",
+        "quarter": "Quarter",
+        "dueDate": "Due date",
+        "amount": "Amount",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "toast": {
+          "createError": "Error creating tax report",
+          "networkError": "Network error"
+        }
       }
     },
     "scope": {
@@ -1733,7 +1792,9 @@
         "ariaLabel": "Scenario projection chart versus baseline",
         "breakEvenLabel": "Break-even: {month}",
         "scenarioSeries": "Scenario",
-        "baseSeries": "Baseline"
+        "baseSeries": "Baseline",
+        "balanceAriaLabel": "Balance projection chart over {months} months. Shows three scenarios: base, optimistic (+10% income, -5% expenses) and pessimistic (-10% income, +10% expenses).",
+        "balanceSrOnly": "Balance projection over {months} months. Values vary according to the selected scenario."
       }
     },
     "categories": {

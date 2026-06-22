@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,25 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 
+const authorityKeys: Record<string, string> = {
+  DIAN: "createReportDialog.authorities.DIAN",
+  SAT: "createReportDialog.authorities.SAT",
+  AFIP: "createReportDialog.authorities.AFIP",
+  SII: "createReportDialog.authorities.SII",
+  SUNAT: "createReportDialog.authorities.SUNAT",
+};
+
+const typeKeys: Record<string, string> = {
+  IVA: "types.IVA",
+  ISR: "types.ISR",
+  RETENTION: "types.RETENTION",
+  ICA: "types.ICA",
+  RENTA: "types.RENTA",
+  DIAN_ELECTRONIC: "types.DIAN_ELECTRONIC",
+};
+
 export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("dashboard.tax");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -70,10 +89,10 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
         });
         onCreate();
       } else {
-        toast.error("Error al crear reporte fiscal");
+        toast.error(t("createReportDialog.toast.createError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("createReportDialog.toast.networkError"));
     } finally {
       setLoading(false);
     }
@@ -87,17 +106,17 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nuevo Reporte
+          {t("createReportDialog.trigger")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nuevo Reporte Fiscal</DialogTitle>
+          <DialogTitle className="heading-card">{t("createReportDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="tax-authority">Autoridad</Label>
+              <Label htmlFor="tax-authority">{t("createReportDialog.authority")}</Label>
               <Select
                 value={form.authority}
                 onValueChange={(v) => setForm({ ...form, authority: v as typeof form.authority })}
@@ -106,16 +125,16 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DIAN">DIAN (Colombia)</SelectItem>
-                  <SelectItem value="SAT">SAT (México)</SelectItem>
-                  <SelectItem value="AFIP">AFIP (Argentina)</SelectItem>
-                  <SelectItem value="SII">SII (Chile)</SelectItem>
-                  <SelectItem value="SUNAT">SUNAT (Perú)</SelectItem>
+                  <SelectItem value="DIAN">{t(authorityKeys.DIAN as never)}</SelectItem>
+                  <SelectItem value="SAT">{t(authorityKeys.SAT as never)}</SelectItem>
+                  <SelectItem value="AFIP">{t(authorityKeys.AFIP as never)}</SelectItem>
+                  <SelectItem value="SII">{t(authorityKeys.SII as never)}</SelectItem>
+                  <SelectItem value="SUNAT">{t(authorityKeys.SUNAT as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tax-type">Tipo</Label>
+              <Label htmlFor="tax-type">{t("createReportDialog.type")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v as typeof form.type })}
@@ -124,19 +143,19 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="IVA">IVA / VAT</SelectItem>
-                  <SelectItem value="ISR">ISR</SelectItem>
-                  <SelectItem value="RETENTION">Retención</SelectItem>
-                  <SelectItem value="ICA">ICA</SelectItem>
-                  <SelectItem value="RENTA">Renta</SelectItem>
-                  <SelectItem value="DIAN_ELECTRONIC">Factura Electrónica</SelectItem>
+                  <SelectItem value="IVA">{t(typeKeys.IVA as never)}</SelectItem>
+                  <SelectItem value="ISR">{t(typeKeys.ISR as never)}</SelectItem>
+                  <SelectItem value="RETENTION">{t(typeKeys.RETENTION as never)}</SelectItem>
+                  <SelectItem value="ICA">{t(typeKeys.ICA as never)}</SelectItem>
+                  <SelectItem value="RENTA">{t(typeKeys.RENTA as never)}</SelectItem>
+                  <SelectItem value="DIAN_ELECTRONIC">{t(typeKeys.DIAN_ELECTRONIC as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="tax-period">Período</Label>
+              <Label htmlFor="tax-period">{t("createReportDialog.period")}</Label>
               <Select
                 value={form.period}
                 onValueChange={(v) => setForm({ ...form, period: v as typeof form.period })}
@@ -145,15 +164,15 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MONTHLY">Mensual</SelectItem>
-                  <SelectItem value="BIMONTHLY">Bimestral</SelectItem>
-                  <SelectItem value="QUARTERLY">Trimestral</SelectItem>
-                  <SelectItem value="ANNUAL">Anual</SelectItem>
+                  <SelectItem value="MONTHLY">{t("monthly")}</SelectItem>
+                  <SelectItem value="BIMONTHLY">{t("bimonthly")}</SelectItem>
+                  <SelectItem value="QUARTERLY">{t("createReportDialog.quarterly")}</SelectItem>
+                  <SelectItem value="ANNUAL">{t("createReportDialog.annual")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tax-year">Año</Label>
+              <Label htmlFor="tax-year">{t("year")}</Label>
               <Input
                 id="tax-year"
                 type="number"
@@ -164,7 +183,7 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
             </div>
             {form.period === "MONTHLY" && (
               <div className="space-y-2">
-                <Label htmlFor="tax-month">Mes</Label>
+                <Label htmlFor="tax-month">{t("month")}</Label>
                 <Input
                   id="tax-month"
                   type="number"
@@ -177,7 +196,7 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
             )}
             {form.period === "QUARTERLY" && (
               <div className="space-y-2">
-                <Label htmlFor="tax-quarter">Trimestre</Label>
+                <Label htmlFor="tax-quarter">{t("createReportDialog.quarter")}</Label>
                 <Input
                   id="tax-quarter"
                   type="number"
@@ -191,7 +210,7 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="tax-due">Fecha de vencimiento</Label>
+              <Label htmlFor="tax-due">{t("createReportDialog.dueDate")}</Label>
               <Input
                 id="tax-due"
                 type="date"
@@ -200,7 +219,7 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tax-amount">Monto</Label>
+              <Label htmlFor="tax-amount">{t("createReportDialog.amount")}</Label>
               <Input
                 id="tax-amount"
                 type="number"
@@ -213,10 +232,10 @@ export function CreateTaxReportDialog({ onCreate }: { onCreate: () => void }) {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("createReportDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("createReportDialog.saving") : t("createReportDialog.save")}
             </Button>
           </div>
         </form>
