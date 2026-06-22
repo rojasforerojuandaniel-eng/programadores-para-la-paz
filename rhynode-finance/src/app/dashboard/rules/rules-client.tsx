@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,19 +47,21 @@ import {
 import { type RuleSuggestion } from "@/lib/rules-suggestions";
 import { toast } from "sonner";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
-const conditionLabels: Record<RuleConditionType, string> = {
-  contains: "contiene",
-  amountGreaterThan: "monto mayor a",
-  typeIs: "tipo es",
-  categoryIs: "categoría es",
+const conditionLabelKeys: Record<RuleConditionType, string> = {
+  contains: "conditionsShort.contains",
+  amountGreaterThan: "conditionsShort.amountGreaterThan",
+  typeIs: "conditionsShort.typeIs",
+  categoryIs: "conditionsShort.categoryIs",
 };
 
-const actionLabels: Record<RuleActionType, string> = {
-  setCategory: "categoría",
-  setProject: "proyecto",
-  addTag: "etiqueta",
-  alert: "alerta",
+const actionLabelKeys: Record<RuleActionType, string> = {
+  setCategory: "actionsShort.setCategory",
+  setProject: "actionsShort.setProject",
+  addTag: "actionsShort.addTag",
+  alert: "actionsShort.alert",
 };
 
 const actionIcons: Record<RuleActionType, typeof Plus> = {
@@ -76,14 +79,6 @@ interface PreviewTransaction {
   date: string;
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function generateRuleId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -97,6 +92,8 @@ export default function RulesClient({
   initialRules,
   initialSuggestions,
 }: RulesClientProps) {
+  const t = useTranslations("dashboard.rules");
+  const locale = useLocale() as Locale;
   const { canEdit } = useOrganizationRole();
 
   const [rules, setRules] = useState<Rule[]>(initialRules);
@@ -123,7 +120,7 @@ export default function RulesClient({
       const data = (await res.json()) as { rules: Rule[] };
       setRules(data.rules ?? []);
     } catch {
-      toast.error("No se pudieron recargar las reglas");
+      toast.error(t("toasts.reloadError"));
     }
   }
 
@@ -146,7 +143,7 @@ export default function RulesClient({
       setPreviewTransactions(data.transactions ?? []);
     } catch {
       setPreviewTransactions([]);
-      toast.error("No se pudo cargar la vista previa");
+      toast.error(t("toasts.previewError"));
     } finally {
       setPreviewLoading(false);
     }
@@ -187,7 +184,7 @@ export default function RulesClient({
       });
       if (!res.ok) {
         const err = (await res.json()) as { error?: string };
-        throw new Error(err.error ?? "Error guardando regla");
+        throw new Error(err.error ?? t("toasts.saveError"));
       }
       await refreshRules();
       resetForm();
@@ -198,9 +195,9 @@ export default function RulesClient({
           enabled: form.enabled,
         });
       }
-      toast.success(editingId ? "Regla actualizada" : "Regla creada");
+      toast.success(editingId ? t("toasts.updated") : t("toasts.created"));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error guardando regla");
+      toast.error(error instanceof Error ? error.message : t("toasts.saveError"));
     } finally {
       setSaving(false);
     }
@@ -226,9 +223,9 @@ export default function RulesClient({
       if (!res.ok) throw new Error("Error eliminando regla");
       await refreshRules();
       if (editingId === id) resetForm();
-      toast.success("Regla eliminada");
+      toast.success(t("toasts.deleted"));
     } catch {
-      toast.error("Error eliminando regla");
+      toast.error(t("toasts.deleteError"));
     }
   }
 
@@ -243,7 +240,7 @@ export default function RulesClient({
       if (!res.ok) throw new Error("Error cambiando estado");
       await refreshRules();
     } catch {
-      toast.error("Error cambiando estado de la regla");
+      toast.error(t("toasts.toggleError"));
     }
   }
 
@@ -252,7 +249,7 @@ export default function RulesClient({
     const currentNames = new Set(rules.map((r) => r.name));
     const newExamples = examples.filter((r) => !currentNames.has(r.name));
     if (newExamples.length === 0) {
-      toast.info("Ya tienes todos los ejemplos cargados");
+      toast.info(t("toasts.examplesAllLoaded"));
       return;
     }
 
@@ -267,10 +264,10 @@ export default function RulesClient({
     )
       .then(() => {
         void refreshRules();
-        toast.success("Ejemplos cargados");
+        toast.success(t("toasts.examplesLoaded"));
       })
       .catch(() => {
-        toast.error("Error cargando ejemplos");
+        toast.error(t("toasts.examplesError"));
       });
   }
 
@@ -295,14 +292,14 @@ export default function RulesClient({
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Reglas automáticas</h1>
+          <h1 className="heading-section">{t("title")}</h1>
           <p className="body-default mt-1">
-            Crea reglas para categorizar, etiquetar y alertar sobre tus transacciones.
+            {t("subtitle")}
           </p>
         </div>
         <Button variant="outline" onClick={handleLoadExamples} className="gap-2">
           <Sparkles className="h-4 w-4" aria-hidden="true" />
-          Cargar ejemplos
+          {t("actions.loadExamples")}
         </Button>
       </div>
 
@@ -310,29 +307,28 @@ export default function RulesClient({
         <Card className="surface-elevated-2">
           <CardHeader>
             <CardTitle className="heading-card">
-              {editingId ? "Editar regla" : "Nueva regla"}
+              {editingId ? t("form.editTitle") : t("form.newTitle")}
             </CardTitle>
             <CardDescription>
-              Define una condición (cuándo) y una acción (entonces). Se aplican a transacciones sin
-              categoría.
+              {t("form.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="rule-name">Nombre de la regla</Label>
+                <Label htmlFor="rule-name">{t("form.nameLabel")}</Label>
                 <Input
                   id="rule-name"
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
-                  placeholder="Ej. Transporte: Uber"
+                  placeholder={t("form.namePlaceholder")}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="rule-condition-type">Cuando...</Label>
+                  <Label htmlFor="rule-condition-type">{t("form.whenLabel")}</Label>
                   <Select
                     value={form.conditionType}
                     onValueChange={(value) =>
@@ -343,15 +339,15 @@ export default function RulesClient({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="contains">descripción contiene</SelectItem>
-                      <SelectItem value="amountGreaterThan">monto es mayor a</SelectItem>
-                      <SelectItem value="typeIs">tipo es</SelectItem>
-                      <SelectItem value="categoryIs">categoría es</SelectItem>
+                      <SelectItem value="contains">{t("conditions.contains")}</SelectItem>
+                      <SelectItem value="amountGreaterThan">{t("conditions.amountGreaterThan")}</SelectItem>
+                      <SelectItem value="typeIs">{t("conditions.typeIs")}</SelectItem>
+                      <SelectItem value="categoryIs">{t("conditions.categoryIs")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="rule-condition-value">Valor</Label>
+                  <Label htmlFor="rule-condition-value">{t("form.valueLabel")}</Label>
                   <Input
                     id="rule-condition-value"
                     value={form.conditionValue}
@@ -359,7 +355,7 @@ export default function RulesClient({
                       setForm({ ...form, conditionValue: event.target.value })
                     }
                     placeholder={
-                      form.conditionType === "amountGreaterThan" ? "200000" : "Ej. Uber"
+                      form.conditionType === "amountGreaterThan" ? "200000" : t("form.valueTextPlaceholder")
                     }
                     required
                   />
@@ -368,7 +364,7 @@ export default function RulesClient({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="rule-action-type">Entonces...</Label>
+                  <Label htmlFor="rule-action-type">{t("form.thenLabel")}</Label>
                   <Select
                     value={form.actionType}
                     onValueChange={(value) =>
@@ -379,15 +375,15 @@ export default function RulesClient({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="setCategory">asignar categoría</SelectItem>
-                      <SelectItem value="setProject">asignar proyecto</SelectItem>
-                      <SelectItem value="addTag">agregar etiqueta</SelectItem>
-                      <SelectItem value="alert">mostrar alerta</SelectItem>
+                      <SelectItem value="setCategory">{t("actionsLong.setCategory")}</SelectItem>
+                      <SelectItem value="setProject">{t("actionsLong.setProject")}</SelectItem>
+                      <SelectItem value="addTag">{t("actionsLong.addTag")}</SelectItem>
+                      <SelectItem value="alert">{t("actionsLong.alert")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="rule-action-value">Valor</Label>
+                  <Label htmlFor="rule-action-value">{t("form.valueLabel")}</Label>
                   <Input
                     id="rule-action-value"
                     value={form.actionValue}
@@ -395,7 +391,7 @@ export default function RulesClient({
                       setForm({ ...form, actionValue: event.target.value })
                     }
                     placeholder={
-                      form.actionType === "alert" ? "Mensaje de alerta" : "Ej. Transporte"
+                      form.actionType === "alert" ? t("form.alertValuePlaceholder") : t("form.actionValuePlaceholder")
                     }
                     required
                   />
@@ -409,14 +405,14 @@ export default function RulesClient({
                   onCheckedChange={(checked) => setForm({ ...form, enabled: checked })}
                 />
                 <Label htmlFor="rule-enabled" className="cursor-pointer">
-                  Regla activa
+                  {t("form.enabledLabel")}
                 </Label>
               </div>
 
               {form.conditionValue.trim() && (
                 <div className="surface-elevated-1 rounded-xl p-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <h4 className="text-sm font-medium">Vista previa de coincidencias</h4>
+                    <h4 className="text-sm font-medium">{t("preview.title")}</h4>
                     <Button
                       type="button"
                       variant="ghost"
@@ -430,28 +426,28 @@ export default function RulesClient({
                       ) : (
                         <Eye className="h-4 w-4" aria-hidden="true" />
                       )}
-                      Previsualizar
+                      {t("actions.preview")}
                     </Button>
                   </div>
                   {previewLoading ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      Buscando transacciones...
+                      {t("preview.searching")}
                     </div>
                   ) : previewTransactions.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      Pulsa Previsualizar para ver transacciones sin categoría que coincidan.
+                      {t("preview.empty")}
                     </p>
                   ) : (
                     <ul className="divide-y divide-border" role="list">
-                      {previewTransactions.map((t) => (
+                      {previewTransactions.map((tx) => (
                         <li
-                          key={t.id}
+                          key={tx.id}
                           className="flex items-center justify-between py-2 text-sm"
                         >
-                          <span className="truncate pr-4">{t.description}</span>
+                          <span className="truncate pr-4">{tx.description}</span>
                           <span className="shrink-0 font-medium">
-                            {formatCurrency(t.amount)}
+                            {formatCurrency(tx.amount, "COP", locale)}
                           </span>
                         </li>
                       ))}
@@ -463,12 +459,12 @@ export default function RulesClient({
               <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
                 {editingId && (
                   <Button type="button" variant="ghost" onClick={resetForm}>
-                    Cancelar
+                    {t("actions.cancel")}
                   </Button>
                 )}
                 <Button type="submit" disabled={saving} className="gap-2">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Plus className="h-4 w-4" aria-hidden="true" />}
-                  {editingId ? "Guardar cambios" : "Crear regla"}
+                  {editingId ? t("actions.saveChanges") : t("actions.create")}
                 </Button>
               </div>
             </form>
@@ -481,11 +477,10 @@ export default function RulesClient({
           <CardHeader>
             <CardTitle className="heading-card flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-warning" aria-hidden="true" />
-              Reglas sugeridas
+              {t("suggestions.title")}
             </CardTitle>
             <CardDescription>
-              Detectamos transacciones frecuentes sin categoría. Usa una sugerencia para crear una
-              regla automática.
+              {t("suggestions.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -498,11 +493,11 @@ export default function RulesClient({
                   <div className="min-w-0">
                     <p className="font-medium">{suggestion.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {suggestion.frequency} transacciones
+                      {t("suggestions.frequency", { count: suggestion.frequency })}
                       {suggestion.suggestedCategoryName
-                        ? ` · sugerido: ${suggestion.suggestedCategoryName}`
+                        ? t("suggestions.suggested", { category: suggestion.suggestedCategoryName })
                         : ""}
-                      {" · "}promedio {formatCurrency(suggestion.averageAmount)}
+                      {t("suggestions.average", { amount: formatCurrency(suggestion.averageAmount, "COP", locale) })}
                     </p>
                   </div>
                   <Button
@@ -512,7 +507,7 @@ export default function RulesClient({
                     onClick={() => handleApplySuggestion(suggestion)}
                   >
                     <Check className="h-4 w-4" />
-                    Usar
+                    {t("actions.use")}
                   </Button>
                 </li>
               ))}
@@ -523,16 +518,16 @@ export default function RulesClient({
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Tus reglas</CardTitle>
+          <CardTitle className="heading-card">{t("list.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           {rules.length === 0 ? (
             <EmptyStateCard
               variant="md"
               icon={BookOpen}
-              title="No tienes reglas creadas"
-              description="Crea reglas de categorización para automatizar cómo Rhynode clasifica tus transacciones."
-              hint="También puedes cargar ejemplos o usar una sugerencia."
+              title={t("empty.title")}
+              description={t("empty.description")}
+              hint={t("empty.hint")}
             />
           ) : (
             <ul className="divide-y divide-border" role="list">
@@ -553,18 +548,18 @@ export default function RulesClient({
                         <ActionIcon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                         <span className="font-medium">{rule.name}</span>
                         <Badge variant={rule.enabled ? "default" : "secondary"}>
-                          {rule.enabled ? "Activa" : "Inactiva"}
+                          {rule.enabled ? t("statuses.active") : t("statuses.inactive")}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Cuando{" "}
+                        {t("list.whenPrefix")}{" "}
                         <span className="font-medium text-foreground">
-                          {conditionLabels[rule.condition.type]}
+                          {t(conditionLabelKeys[rule.condition.type] as never)}
                         </span>{" "}
                         <span className="font-medium text-foreground">{rule.condition.value}</span>
-                        , entonces{" "}
+                        , {t("list.thenPrefix")}{" "}
                         <span className="font-medium text-foreground">
-                          {actionLabels[rule.action.type]}
+                          {t(actionLabelKeys[rule.action.type] as never)}
                         </span>{" "}
                         <span className="font-medium text-foreground">{rule.action.value}</span>
                       </p>
@@ -575,20 +570,23 @@ export default function RulesClient({
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEdit(rule)}
-                          aria-label={`Editar regla ${rule.name}`}
+                          aria-label={t("aria.editRule", { name: rule.name })}
                         >
                           <Pencil className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         </Button>
                         <Switch
                           checked={rule.enabled}
                           onCheckedChange={() => handleToggle(rule)}
-                          aria-label={`${rule.enabled ? "Desactivar" : "Activar"} regla ${rule.name}`}
+                          aria-label={t("aria.toggleRule", {
+                            action: rule.enabled ? t("aria.deactivate") : t("aria.activate"),
+                            name: rule.name,
+                          })}
                         />
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(rule.id)}
-                          aria-label={`Eliminar regla ${rule.name}`}
+                          aria-label={t("aria.deleteRule", { name: rule.name })}
                         >
                           <Trash2 className="h-4 w-4 text-danger" aria-hidden="true" />
                         </Button>

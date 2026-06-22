@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import type { ScenarioType } from "@/lib/scenarios";
+import type { Locale } from "@/lib/locale";
 
 interface ScenarioFormData {
   name: string;
@@ -37,11 +39,7 @@ interface ScenarioFormProps {
   isSubmitting?: boolean;
 }
 
-const TYPE_OPTIONS: { value: ScenarioType; label: string }[] = [
-  { value: "optimistic", label: "Optimista" },
-  { value: "base", label: "Base" },
-  { value: "pessimistic", label: "Pesimista" },
-];
+const TYPE_OPTIONS: ScenarioType[] = ["optimistic", "base", "pessimistic"];
 
 export function ScenarioForm({
   open,
@@ -49,6 +47,8 @@ export function ScenarioForm({
   onSubmit,
   isSubmitting = false,
 }: ScenarioFormProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
   const [name, setName] = useState("");
   const [type, setType] = useState<ScenarioType>("base");
   const [incomeAdjustment, setIncomeAdjustment] = useState([0]);
@@ -82,36 +82,35 @@ export function ScenarioForm({
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Crear escenario</DialogTitle>
+            <DialogTitle>{t("form.title")}</DialogTitle>
             <DialogDescription>
-              Define ajustes de ingresos y gastos para simular un escenario
-              financiero.
+              {t("form.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-5 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="scenario-name">Nombre del escenario</Label>
+              <Label htmlFor="scenario-name">{t("form.name")}</Label>
               <Input
                 id="scenario-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Promoción de fin de año"
+                placeholder={t("form.namePlaceholder")}
                 maxLength={100}
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="scenario-type">Tipo</Label>
+              <Label htmlFor="scenario-type">{t("form.type")}</Label>
               <Select value={type} onValueChange={(v) => setType(v as ScenarioType)}>
                 <SelectTrigger id="scenario-type">
-                  <SelectValue placeholder="Selecciona un tipo" />
+                  <SelectValue placeholder={t("form.typePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                    <SelectItem key={option} value={option}>
+                      {t(`types.${option}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -120,7 +119,7 @@ export function ScenarioForm({
 
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="income-adjustment">Ajuste de ingresos</Label>
+                <Label htmlFor="income-adjustment">{t("form.incomeAdjustment")}</Label>
                 <span className="text-sm font-medium">
                   {incomeAdjustment[0] > 0 ? "+" : ""}
                   {incomeAdjustment[0]}%
@@ -133,13 +132,13 @@ export function ScenarioForm({
                 min={-100}
                 max={100}
                 step={5}
-                aria-label="Ajuste porcentual de ingresos"
+                aria-label={t("form.incomeAdjustmentAria")}
               />
             </div>
 
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="expense-adjustment">Ajuste de gastos</Label>
+                <Label htmlFor="expense-adjustment">{t("form.expenseAdjustment")}</Label>
                 <span className="text-sm font-medium">
                   {expenseAdjustment[0] > 0 ? "+" : ""}
                   {expenseAdjustment[0]}%
@@ -152,14 +151,16 @@ export function ScenarioForm({
                 min={-100}
                 max={100}
                 step={5}
-                aria-label="Ajuste porcentual de gastos"
+                aria-label={t("form.expenseAdjustmentAria")}
               />
             </div>
 
             <div className="grid gap-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="duration-months">Duración de la proyección</Label>
-                <span className="text-sm font-medium">{durationMonths[0]} meses</span>
+                <Label htmlFor="duration-months">{t("form.duration")}</Label>
+                <span className="text-sm font-medium">
+                  {t("form.months", { count: durationMonths[0] })}
+                </span>
               </div>
               <Slider
                 id="duration-months"
@@ -168,7 +169,7 @@ export function ScenarioForm({
                 min={1}
                 max={60}
                 step={1}
-                aria-label="Duración de la proyección en meses"
+                aria-label={t("form.durationAria")}
               />
             </div>
           </div>
@@ -180,10 +181,10 @@ export function ScenarioForm({
               onClick={() => handleClose(false)}
               disabled={isSubmitting}
             >
-              Cancelar
+              {t("form.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting || !name.trim()}>
-              {isSubmitting ? "Guardando..." : "Guardar escenario"}
+              {isSubmitting ? t("form.saving") : t("form.save")}
             </Button>
           </DialogFooter>
         </form>
