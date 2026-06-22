@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,27 +34,28 @@ export function RecurringActions({
   onDelete,
 }: RecurringActionsProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.recurring");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
-    if (!window.confirm("¿Eliminar esta transacción recurrente?")) return;
+    if (!window.confirm(t("actions.confirmDelete"))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/personal/recurring/${item.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        toast.success("Transacción eliminada");
+        toast.success(t("actions.deleted"));
         onDelete?.(item.id);
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "No se pudo eliminar");
+        toast.error(data.error || t("actions.deleteError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("toasts.networkError"));
     } finally {
       setDeleting(false);
       setSheetOpen(false);
@@ -70,7 +72,7 @@ export function RecurringActions({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Abrir acciones"
+      aria-label={t("actions.openActions")}
       className="md:hidden"
     >
       <MoreVertical className="size-4" />
@@ -81,7 +83,7 @@ export function RecurringActions({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Abrir acciones"
+      aria-label={t("actions.openActions")}
       className="hidden md:flex"
     >
       <MoreVertical className="size-4" />
@@ -102,7 +104,7 @@ export function RecurringActions({
               className="justify-start gap-2"
               onClick={() => setEditOpen(true)}
             >
-              <Pencil className="size-4" /> Editar
+              <Pencil className="size-4" /> {t("actions.edit")}
             </Button>
             <Button
               variant="ghost"
@@ -111,7 +113,7 @@ export function RecurringActions({
               disabled={deleting}
             >
               <Trash2 className="size-4" />
-              {deleting ? "Eliminando..." : "Eliminar"}
+              {deleting ? t("actions.deleting") : t("actions.delete")}
             </Button>
           </div>
         </SheetContent>
@@ -127,7 +129,7 @@ export function RecurringActions({
             }}
             disabled={deleting}
           >
-            <Pencil className="size-4" /> Editar
+            <Pencil className="size-4" /> {t("actions.edit")}
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
@@ -138,7 +140,7 @@ export function RecurringActions({
             disabled={deleting}
           >
             <Trash2 className="size-4" />
-            {deleting ? "Eliminando..." : "Eliminar"}
+            {deleting ? t("actions.deleting") : t("actions.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

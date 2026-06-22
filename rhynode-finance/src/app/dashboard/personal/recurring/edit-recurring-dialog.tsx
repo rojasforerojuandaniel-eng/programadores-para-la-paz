@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { RecurringItem } from "./recurring-utils";
-import { frequencyLabel, typeLabel } from "./recurring-utils";
 
 const FREQUENCIES = [
   "DAILY",
@@ -47,6 +47,7 @@ export function EditRecurringDialog({
   onSaved,
 }: EditRecurringDialogProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.recurring");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: item.name,
@@ -81,7 +82,7 @@ export function EditRecurringDialog({
       });
 
       if (res.ok) {
-        toast.success("Transacción recurrente actualizada");
+        toast.success(t("editDialog.updated"));
         onSaved?.({
           ...item,
           name: form.name,
@@ -96,10 +97,10 @@ export function EditRecurringDialog({
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "No se pudo actualizar");
+        toast.error(data.error || t("editDialog.updateError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("toasts.networkError"));
     } finally {
       setLoading(false);
     }
@@ -109,11 +110,11 @@ export function EditRecurringDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Editar recurrente</DialogTitle>
+          <DialogTitle className="heading-card">{t("editDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Nombre</Label>
+            <Label htmlFor="edit-name">{t("list.name")}</Label>
             <Input
               id="edit-name"
               required
@@ -122,7 +123,7 @@ export function EditRecurringDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-desc">Descripción</Label>
+            <Label htmlFor="edit-desc">{t("dialog.desc")}</Label>
             <Input
               id="edit-desc"
               value={form.description}
@@ -131,7 +132,7 @@ export function EditRecurringDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-amount">Monto</Label>
+              <Label htmlFor="edit-amount">{t("list.amount")}</Label>
               <Input
                 id="edit-amount"
                 type="number"
@@ -142,7 +143,7 @@ export function EditRecurringDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-type">Tipo</Label>
+              <Label htmlFor="edit-type">{t("dialog.type")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
@@ -151,9 +152,9 @@ export function EditRecurringDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {typeLabel(t)}
+                  {TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(`types.${type}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -162,7 +163,7 @@ export function EditRecurringDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-frequency">Frecuencia</Label>
+              <Label htmlFor="edit-frequency">{t("dialog.frequency")}</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
@@ -173,14 +174,14 @@ export function EditRecurringDialog({
                 <SelectContent>
                   {FREQUENCIES.map((f) => (
                     <SelectItem key={f} value={f}>
-                      {frequencyLabel(f)}
+                      {t(`frequencies.${f}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-next">Próximo vencimiento</Label>
+              <Label htmlFor="edit-next">{t("list.next")}</Label>
               <Input
                 id="edit-next"
                 type="date"
@@ -191,12 +192,12 @@ export function EditRecurringDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-provider">Proveedor</Label>
+            <Label htmlFor="edit-provider">{t("dialog.provider")}</Label>
             <Input
               id="edit-provider"
               value={form.provider}
               onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              placeholder="Ej. Netflix, Spotify"
+              placeholder={t("dialog.providerPh")}
             />
           </div>
           <div className="flex items-center gap-2 pt-1">
@@ -208,7 +209,7 @@ export function EditRecurringDialog({
               className="h-4 w-4 rounded border-input"
             />
             <Label htmlFor="edit-sub" className="text-sm">
-              Es suscripción
+              {t("dialog.isSub")}
             </Label>
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -217,10 +218,10 @@ export function EditRecurringDialog({
               variant="ghost"
               onClick={() => onOpenChange(false)}
             >
-              Cancelar
+              {t("dialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("dialog.saving") : t("dialog.save")}
             </Button>
           </div>
         </form>

@@ -181,6 +181,64 @@
         "title": "Manage your clients",
         "description": "Add tax and contact details to invoice in an organized way.",
         "hint": "Start by adding your first client."
+      },
+      "status": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "ARCHIVED": "Archived"
+      },
+      "list": {
+        "noEmail": "No email",
+        "nit": "NIT",
+        "phone": "Phone",
+        "city": "City",
+        "invoices": "{count} invoices ·",
+        "actionsFor": "Actions for {name}",
+        "actions": "Actions",
+        "call": "Call",
+        "sendEmail": "Send email",
+        "editClient": "Edit client",
+        "deleteConfirm": "Delete this client permanently?",
+        "deleteTitle": "Delete client",
+        "ariaLabel": "Client list",
+        "headers": {
+          "name": "Name",
+          "nit": "NIT / RFC / CNPJ",
+          "email": "Email",
+          "phone": "Phone",
+          "city": "City",
+          "status": "Status",
+          "invoices": "Invoices",
+          "totalInvoiced": "Total invoiced",
+          "actions": "Actions"
+        }
+      },
+      "form": {
+        "name": "Name *",
+        "namePlaceholder": "e.g. Comercializadora del Norte SAS",
+        "email": "Email",
+        "emailPlaceholder": "contact@company.com",
+        "taxId": "NIT / RFC / CNPJ",
+        "taxIdPlaceholder": "900.123.456-7",
+        "phone": "Phone",
+        "phonePlaceholder": "+57 301 234 5678",
+        "city": "City",
+        "cityPlaceholder": "Bogota",
+        "country": "Country",
+        "status": "Status",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+      "editDialog": {
+        "title": "Edit Client",
+        "updateError": "Error updating client",
+        "networkError": "Network error"
+      },
+      "createDialog": {
+        "title": "New Client",
+        "button": "New Client",
+        "createError": "Error creating client"
       }
     },
     "budgets": {
@@ -656,6 +714,20 @@
         "saving": "Saving...",
         "created": "Recurring transaction created",
         "error": "Failed to create recurring transaction"
+      },
+      "editDialog": {
+        "title": "Edit recurring",
+        "updated": "Recurring transaction updated",
+        "updateError": "Couldn't update"
+      },
+      "actions": {
+        "openActions": "Open actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleting": "Deleting...",
+        "confirmDelete": "Delete this recurring transaction?",
+        "deleted": "Transaction deleted",
+        "deleteError": "Couldn't delete"
       }
     },
     "subscriptions": {
@@ -767,6 +839,33 @@
         "today": "Today",
         "overdue": "Overdue {days} days ago",
         "left": "{days} days"
+      },
+      "subscription": {
+        "trigger": "New subscription",
+        "title": "Add subscription",
+        "name": "Name *",
+        "namePh": "e.g. Netflix, Gym",
+        "amount": "Amount *",
+        "frequency": "Frequency *",
+        "next": "Next payment date *",
+        "category": "Category",
+        "categoryPh": "e.g. Entertainment",
+        "provider": "Provider",
+        "providerPh": "e.g. Netflix, Spotify",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "created": "Subscription created",
+        "error": "Failed to create subscription",
+        "networkError": "Network error",
+        "frequencies": {
+          "MONTHLY": "Monthly",
+          "WEEKLY": "Weekly",
+          "YEARLY": "Yearly",
+          "BIWEEKLY": "Biweekly",
+          "QUARTERLY": "Quarterly",
+          "DAILY": "Daily"
+        }
       }
     },
     "split": {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ import { trackEvent } from "@/lib/analytics";
 import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
+  const t = useTranslations("dashboard.clients");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -53,7 +55,7 @@ export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
             onCreate();
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear cliente");
+            toast.error(err.message || t("createDialog.createError"));
           },
         },
       );
@@ -70,67 +72,67 @@ export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Nuevo Cliente
+          {t("createDialog.button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nuevo Cliente</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="client-name">Nombre *</Label>
+            <Label htmlFor="client-name">{t("form.name")}</Label>
             <Input
               id="client-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Comercializadora del Norte SAS"
+              placeholder={t("form.namePlaceholder")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="client-email">Email</Label>
+              <Label htmlFor="client-email">{t("form.email")}</Label>
               <Input
                 id="client-email"
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="contacto@empresa.com"
+                placeholder={t("form.emailPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client-taxId">NIT / RFC / CNPJ</Label>
+              <Label htmlFor="client-taxId">{t("form.taxId")}</Label>
               <Input
                 id="client-taxId"
                 value={form.taxId}
                 onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                placeholder="900.123.456-7"
+                placeholder={t("form.taxIdPlaceholder")}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="client-phone">Teléfono</Label>
+              <Label htmlFor="client-phone">{t("form.phone")}</Label>
               <Input
                 id="client-phone"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                placeholder="+57 301 234 5678"
+                placeholder={t("form.phonePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client-city">Ciudad</Label>
+              <Label htmlFor="client-city">{t("form.city")}</Label>
               <Input
                 id="client-city"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
-                placeholder="Bogotá"
+                placeholder={t("form.cityPlaceholder")}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="client-country">País</Label>
+            <Label htmlFor="client-country">{t("form.country")}</Label>
             <Select
               value={form.country}
               onValueChange={(v) => setForm({ ...form, country: v })}
@@ -150,10 +152,10 @@ export function CreateClientDialog({ onCreate }: { onCreate: () => void }) {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("form.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("form.saving") : t("form.save")}
             </Button>
           </div>
         </form>

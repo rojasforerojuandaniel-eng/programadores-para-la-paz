@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,10 +46,10 @@ interface ClientListProps {
   formatCOP: (amount: number | null | undefined) => string;
 }
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: "Activo", className: "bg-emerald-500/10 text-emerald-600" },
-  INACTIVE: { label: "Inactivo", className: "bg-gray-500/10 text-gray-600" },
-  ARCHIVED: { label: "Archivado", className: "bg-gray-500/10 text-gray-600" },
+const statusConfig: Record<string, { labelKey: string; className: string }> = {
+  ACTIVE: { labelKey: "status.ACTIVE", className: "bg-emerald-500/10 text-emerald-600" },
+  INACTIVE: { labelKey: "status.INACTIVE", className: "bg-gray-500/10 text-gray-600" },
+  ARCHIVED: { labelKey: "status.ARCHIVED", className: "bg-gray-500/10 text-gray-600" },
 };
 
 function ContactLink({
@@ -86,6 +87,7 @@ function MobileClientCard({
   formatCOP: (amount: number | null | undefined) => string;
   onUpdate: () => void;
 }) {
+  const t = useTranslations("dashboard.clients");
   const [open, setOpen] = useState(false);
   const { canEdit } = useOrganizationRole();
   const status = statusConfig[client.status] || statusConfig.ACTIVE;
@@ -109,11 +111,11 @@ function MobileClientCard({
                   {client.email}
                 </a>
               ) : (
-                <span className="text-sm text-muted-foreground">Sin email</span>
+                <span className="text-sm text-muted-foreground">{t("list.noEmail")}</span>
               )}
             </div>
             <Badge variant="outline" className={status.className}>
-              {status.label}
+              {t(status.labelKey as never)}
             </Badge>
           </div>
         </div>
@@ -121,11 +123,11 @@ function MobileClientCard({
 
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="min-w-0">
-          <dt className="text-xs text-muted-foreground">NIT</dt>
+          <dt className="text-xs text-muted-foreground">{t("list.nit")}</dt>
           <dd className="truncate font-mono">{client.taxId || "—"}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-xs text-muted-foreground">Teléfono</dt>
+          <dt className="text-xs text-muted-foreground">{t("list.phone")}</dt>
           <dd className="truncate">
             {client.phone ? (
               <a
@@ -140,14 +142,14 @@ function MobileClientCard({
           </dd>
         </div>
         <div className="col-span-2 min-w-0">
-          <dt className="text-xs text-muted-foreground">Ciudad</dt>
+          <dt className="text-xs text-muted-foreground">{t("list.city")}</dt>
           <dd className="truncate">{location || "—"}</dd>
         </div>
       </dl>
 
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
         <div className="min-w-0 text-sm">
-          <span className="text-muted-foreground">{client.invoiceCount} facturas · </span>
+          <span className="text-muted-foreground">{t("list.invoices", { count: client.invoiceCount })} </span>
           <span className="font-semibold">{formatCOP(client.invoiceTotal)}</span>
         </div>
 
@@ -157,14 +159,14 @@ function MobileClientCard({
               variant="outline"
               size="icon"
               className="shrink-0"
-              aria-label={`Acciones de ${client.name}`}
+              aria-label={t("list.actionsFor", { name: client.name })}
             >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </BottomSheetTrigger>
           <BottomSheetContent>
             <BottomSheetHeader>
-              <BottomSheetTitle>Acciones</BottomSheetTitle>
+              <BottomSheetTitle>{t("list.actions")}</BottomSheetTitle>
               <BottomSheetDescription>{client.name}</BottomSheetDescription>
             </BottomSheetHeader>
             <div className="flex flex-col gap-1 py-2">
@@ -172,7 +174,7 @@ function MobileClientCard({
                 <ContactLink
                   href={`tel:${client.phone}`}
                   icon={Phone}
-                  label="Llamar"
+                  label={t("list.call")}
                   value={client.phone}
                 />
               )}
@@ -180,7 +182,7 @@ function MobileClientCard({
                 <ContactLink
                   href={`mailto:${client.email}`}
                   icon={Mail}
-                  label="Enviar email"
+                  label={t("list.sendEmail")}
                   value={client.email}
                 />
               )}
@@ -192,7 +194,7 @@ function MobileClientCard({
                     onClick={() => setOpen(false)}
                   >
                     <Pencil className="h-4 w-4 text-muted-foreground" />
-                    Editar cliente
+                    {t("list.editClient")}
                   </button>
                 </EditClientDialog>
               )}
@@ -200,8 +202,8 @@ function MobileClientCard({
                 <div className="px-1">
                   <DeleteButton
                     endpoint={`/api/clients/${client.id}`}
-                    confirmMessage="¿Eliminar este cliente permanentemente?"
-                    title="Eliminar cliente"
+                    confirmMessage={t("list.deleteConfirm")}
+                    title={t("list.deleteTitle")}
                   />
                 </div>
               )}
@@ -224,20 +226,21 @@ function DesktopTable({
   formatCOP: (amount: number | null | undefined) => string;
   onUpdate: () => void;
 }) {
+  const t = useTranslations("dashboard.clients");
   return (
     <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead scope="col">Nombre</TableHead>
-            <TableHead scope="col">NIT / RFC / CNPJ</TableHead>
-            <TableHead scope="col">Email</TableHead>
-            <TableHead scope="col">Teléfono</TableHead>
-            <TableHead scope="col">Ciudad</TableHead>
-            <TableHead scope="col">Estado</TableHead>
-            <TableHead scope="col" className="text-right">Facturas</TableHead>
-            <TableHead scope="col" className="text-right">Total facturado</TableHead>
-            <TableHead scope="col" className="text-right">Acciones</TableHead>
+            <TableHead scope="col">{t("list.headers.name")}</TableHead>
+            <TableHead scope="col">{t("list.headers.nit")}</TableHead>
+            <TableHead scope="col">{t("list.headers.email")}</TableHead>
+            <TableHead scope="col">{t("list.headers.phone")}</TableHead>
+            <TableHead scope="col">{t("list.headers.city")}</TableHead>
+            <TableHead scope="col">{t("list.headers.status")}</TableHead>
+            <TableHead scope="col" className="text-right">{t("list.headers.invoices")}</TableHead>
+            <TableHead scope="col" className="text-right">{t("list.headers.totalInvoiced")}</TableHead>
+            <TableHead scope="col" className="text-right">{t("list.headers.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -283,7 +286,7 @@ function DesktopTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={status.className}>
-                    {status.label}
+                    {t(status.labelKey as never)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right text-sm">
@@ -297,8 +300,8 @@ function DesktopTable({
                     <EditClientDialog client={client} onUpdate={onUpdate} />
                     <DeleteButton
                       endpoint={`/api/clients/${client.id}`}
-                      confirmMessage="¿Eliminar este cliente permanentemente?"
-                      title="Eliminar cliente"
+                      confirmMessage={t("list.deleteConfirm")}
+                      title={t("list.deleteTitle")}
                     />
                   </div>
                 </TableCell>
@@ -312,12 +315,13 @@ function DesktopTable({
 }
 
 export function ClientList({ rows, countryLabels, formatCOP }: ClientListProps) {
+  const t = useTranslations("dashboard.clients");
   const router = useRouter();
   const onUpdate = () => router.refresh();
 
   return (
     <>
-      <ul className="grid grid-cols-1 gap-4 md:hidden" role="list" aria-label="Lista de clientes">
+      <ul className="grid grid-cols-1 gap-4 md:hidden" role="list" aria-label={t("list.ariaLabel")}>
         {rows.map((client) => (
           <MobileClientCard
             key={client.id}
