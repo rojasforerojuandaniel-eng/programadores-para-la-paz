@@ -405,6 +405,26 @@
           "deleted": "Factura eliminada",
           "deleteError": "Error al eliminar factura"
         }
+      },
+      "preview": {
+        "title": "Factura {number}",
+        "dueLabel": "Vence",
+        "from": "De",
+        "yourOrganization": "Tu organización",
+        "to": "Para",
+        "project": "Proyecto",
+        "itemHeader": "Ítem",
+        "noItems": "Sin ítems",
+        "subtotal": "Subtotal",
+        "tax": "Impuesto ({rate}%)"
+      },
+      "editDialog": {
+        "title": "Editar factura",
+        "saveChanges": "Guardar cambios",
+        "toasts": {
+          "updated": "Factura actualizada",
+          "updateError": "Error al actualizar factura"
+        }
       }
     },
     "debts": {
@@ -552,12 +572,16 @@
       "statuses": {
         "ACTIVE": "Activa",
         "PENDING_CANCELLATION": "Por cancelar",
-        "CANCELED": "Cancelada"
+        "CANCELED": "Cancelada",
+        "CANCELLED": "Cancelada"
       },
       "frequencies": {
         "MONTHLY": "Mensual",
         "QUARTERLY": "Trimestral",
-        "YEARLY": "Anual"
+        "YEARLY": "Anual",
+        "DAILY": "Diario",
+        "WEEKLY": "Semanal",
+        "BIWEEKLY": "Quincenal"
       },
       "kpis": {
         "monthlySpend": "Gasto mensual",
@@ -605,7 +629,19 @@
         "networkErrorToast": "Error de red",
         "updateErrorToast": "No se pudo actualizar",
         "canceledToast": "Suscripción cancelada"
-      }
+      },
+      "expiresToday": "Vence hoy",
+      "expiredDaysAgo": "Vence hace {count} días",
+      "inDays": "En {count} días",
+      "matchedPayment": "Coincide pago",
+      "lastPaid": "Último pago",
+      "editDialogTitle": "Editar suscripción",
+      "fieldName": "Nombre",
+      "fieldDescription": "Descripción",
+      "fieldProvider": "Proveedor",
+      "providerPlaceholder": "Ej. Netflix, Spotify",
+      "saving": "Guardando...",
+      "updatedToast": "Suscripción actualizada"
     },
     "calendar": {
       "title": "Calendario de Pagos",
