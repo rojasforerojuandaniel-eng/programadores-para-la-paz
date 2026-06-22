@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ interface AnomaliesResponse {
 }
 
 export function Anomalies() {
+  const t = useTranslations("dashboard.ai.anomalies");
   const [data, setData] = useState<AnomaliesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,17 +27,17 @@ export function Anomalies() {
     async function fetchAnomalies() {
       try {
         const res = await fetch("/api/ai/anomalies");
-        if (!res.ok) throw new Error("Error al cargar anomalías");
+        if (!res.ok) throw new Error(t("loadError"));
         const json = await res.json();
         setData(json);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t("unknownError"));
       } finally {
         setLoading(false);
       }
     }
     fetchAnomalies();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -52,7 +54,7 @@ export function Anomalies() {
   if (error || !data) {
     return (
       <div className="surface-elevated-2 rounded-xl border border-border p-4">
-        <p className="text-sm text-muted-foreground">No pudimos cargar las anomalías.</p>
+        <p className="text-sm text-muted-foreground">{t("errorState")}</p>
       </div>
     );
   }
@@ -64,7 +66,7 @@ export function Anomalies() {
     <div className="mb-6 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-4">
       <div className="mb-3 flex items-center gap-2">
         <AlertTriangle className="h-5 w-5 text-yellow-400" />
-        <h3 className="text-sm font-semibold text-yellow-400">Anomalías detectadas</h3>
+        <h3 className="text-sm font-semibold text-yellow-400">{t("title")}</h3>
       </div>
       <div className="space-y-2">
         {data.anomalies.map((anomaly) => (
@@ -90,7 +92,7 @@ export function Anomalies() {
                     : "border-green-400 text-green-400"
                 )}
               >
-                {anomaly.severity === "high" ? "Alta" : anomaly.severity === "medium" ? "Media" : "Baja"}
+                {t(`severity.${anomaly.severity}` as never)}
               </Badge>
             </div>
           </div>
@@ -101,13 +103,14 @@ export function Anomalies() {
 }
 
 export function AnomaliesEmptyState() {
+  const t = useTranslations("dashboard.ai.anomalies");
   return (
     <EmptyStateCard
       variant="sm"
       className="mb-6 border-dashed"
       icon={ShieldCheck}
-      title="Todo en orden"
-      description="No detectamos anomalías este mes."
+      title={t("emptyTitle")}
+      description={t("emptyDescription")}
     />
   );
 }
