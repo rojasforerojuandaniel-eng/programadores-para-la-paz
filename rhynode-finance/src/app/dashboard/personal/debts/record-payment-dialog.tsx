@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Coins } from "lucide-react";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface RecordPaymentDialogProps {
   debtId: string;
@@ -24,14 +27,6 @@ interface RecordPaymentDialogProps {
   trigger?: React.ReactNode;
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
 export function RecordPaymentDialog({
   debtId,
   debtName,
@@ -39,6 +34,8 @@ export function RecordPaymentDialog({
   currency,
   trigger,
 }: RecordPaymentDialogProps) {
+  const t = useTranslations("dashboard.debts");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -48,11 +45,11 @@ export function RecordPaymentDialog({
     e.preventDefault();
     const payment = Number(amount);
     if (!Number.isFinite(payment) || payment <= 0) {
-      toast.error("Ingresa un monto válido");
+      toast.error(t("recordPaymentDialog.toast.invalidAmount"));
       return;
     }
     if (payment > remaining) {
-      toast.error(`El pago no puede superar ${formatCurrency(remaining, currency)}`);
+      toast.error(t("recordPaymentDialog.toast.exceedsRemaining", { amount: formatCurrency(remaining, currency, locale) }));
       return;
     }
 
@@ -65,16 +62,16 @@ export function RecordPaymentDialog({
       });
 
       if (res.ok) {
-        toast.success("Pago registrado");
+        toast.success(t("recordPaymentDialog.toast.registered"));
         router.refresh();
         setOpen(false);
         setAmount("");
       } else {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "No se pudo registrar el pago");
+        toast.error(data.error || t("recordPaymentDialog.toast.error"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("recordPaymentDialog.toast.networkError"));
     } finally {
       setLoading(false);
     }
@@ -86,26 +83,26 @@ export function RecordPaymentDialog({
         {trigger || (
           <Button variant="outline" size="sm" className="gap-2">
             <Coins className="h-4 w-4" aria-hidden="true" />
-            Registrar pago
+            {t("recordPayment")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Registrar pago</DialogTitle>
+          <DialogTitle className="heading-card">{t("recordPayment")}</DialogTitle>
           <DialogDescription>
-            {debtName} · saldo restante{" "}
+            {debtName} · {t("recordPaymentDialog.remainingLabel")}{" "}
             <span className="font-medium text-foreground">
-              {formatCurrency(remaining, currency)}
+              {formatCurrency(remaining, currency, locale)}
             </span>
             <span className="block pt-1 text-xs text-muted-foreground">
-              Se creará una transacción asociada en tu historial.
+              {t("recordPaymentDialog.transactionNote")}
             </span>
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor={`payment-amount-${debtId}`}>Monto del pago</Label>
+            <Label htmlFor={`payment-amount-${debtId}`}>{t("recordPaymentDialog.fields.amount")}</Label>
             <Input
               id={`payment-amount-${debtId}`}
               type="number"
@@ -114,12 +111,12 @@ export function RecordPaymentDialog({
               max={remaining}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder={formatCurrency(Math.min(remaining, 100000), currency)}
+              placeholder={formatCurrency(Math.min(remaining, 100000), currency, locale)}
               required
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              Máximo {formatCurrency(remaining, currency)}
+              {t("recordPaymentDialog.maxPrefix")} {formatCurrency(remaining, currency, locale)}
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -129,10 +126,10 @@ export function RecordPaymentDialog({
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              Cancelar
+              {t("recordPaymentDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-              {loading ? "Registrando..." : "Registrar pago"}
+              {loading ? t("recordPaymentDialog.submitting") : t("recordPayment")}
             </Button>
           </div>
         </form>

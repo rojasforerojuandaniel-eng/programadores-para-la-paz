@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,15 +23,16 @@ import {
 import { Plus } from "lucide-react";
 
 const investmentTypes = [
-  { value: "STOCK", label: "Acciones" },
-  { value: "BOND", label: "Bonos" },
-  { value: "CRYPTO", label: "Cripto" },
-  { value: "ETF", label: "ETF" },
-  { value: "REAL_ESTATE", label: "Bienes Raíces" },
-  { value: "OTHER", label: "Otro" },
+  { value: "STOCK" },
+  { value: "BOND" },
+  { value: "CRYPTO" },
+  { value: "ETF" },
+  { value: "REAL_ESTATE" },
+  { value: "OTHER" },
 ];
 
 export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
+  const t = useTranslations("dashboard.investments");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -64,13 +66,13 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Error al crear inversión");
+        throw new Error(data.error || t("createDialog.toast.error"));
       }
 
       setOpen(false);
       window.location.reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : t("createDialog.toast.unknownError"));
     } finally {
       setLoading(false);
     }
@@ -82,38 +84,38 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
         {trigger || (
           <Button size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
-            Nueva Inversión
+            {t("createDialog.triggerButton")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="w-full max-w-[calc(100%-1rem)] sm:max-w-lg max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Crear Inversión</DialogTitle>
+          <DialogTitle>{t("createDialog.title")}</DialogTitle>
           <DialogDescription>
-            Agrega un nuevo activo a tu portafolio.
+            {t("createDialog.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre</Label>
+            <Label htmlFor="name">{t("createDialog.fields.name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej. Apple Inc."
+              placeholder={t("createDialog.placeholders.name")}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo</Label>
+            <Label htmlFor="type">{t("createDialog.fields.type")}</Label>
             <Select value={investmentType} onValueChange={setInvestmentType}>
               <SelectTrigger id="type">
-                <SelectValue placeholder="Selecciona un tipo" />
+                <SelectValue placeholder={t("createDialog.placeholders.type")} />
               </SelectTrigger>
               <SelectContent>
-                {investmentTypes.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                {investmentTypes.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {t(`types.${item.value}` as never)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -121,7 +123,7 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="balance">Valor Actual</Label>
+              <Label htmlFor="balance">{t("createDialog.fields.balance")}</Label>
               <Input
                 id="balance"
                 type="number"
@@ -134,7 +136,7 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="invested">Monto Invertido</Label>
+              <Label htmlFor="invested">{t("createDialog.fields.invested")}</Label>
               <Input
                 id="invested"
                 type="number"
@@ -147,7 +149,7 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="currency">Moneda</Label>
+            <Label htmlFor="currency">{t("createDialog.fields.currency")}</Label>
             <Input
               id="currency"
               value={currency}
@@ -157,26 +159,26 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="provider">Proveedor / Broker</Label>
+            <Label htmlFor="provider">{t("createDialog.fields.provider")}</Label>
             <Input
               id="provider"
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              placeholder="Ej. TD Ameritrade"
+              placeholder={t("createDialog.placeholders.provider")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="externalId">ID Externo</Label>
+            <Label htmlFor="externalId">{t("createDialog.fields.externalId")}</Label>
             <Input
               id="externalId"
               value={externalId}
               onChange={(e) => setExternalId(e.target.value)}
-              placeholder="Ej. símbolo de ticker"
+              placeholder={t("createDialog.placeholders.externalId")}
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creando..." : "Crear Inversión"}
+            {loading ? t("createDialog.submitting") : t("createDialog.title")}
           </Button>
         </form>
       </DialogContent>

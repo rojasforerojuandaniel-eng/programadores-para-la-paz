@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ export function CreateGoalDialog({
   const [open, setOpen] = useState(defaultOpen);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("dashboard.goals");
   const [form, setForm] = useState({
     name: defaultValues?.name ?? "",
     targetAmount: defaultValues?.targetAmount
@@ -86,10 +88,10 @@ export function CreateGoalDialog({
               color: "",
             });
             router.refresh();
-            toast.success("Meta creada");
+            toast.success(t("createDialog.created"));
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear meta");
+            toast.error(err.message || t("createDialog.createError"));
           },
         },
       );
@@ -104,31 +106,31 @@ export function CreateGoalDialog({
         {trigger ?? (
           <Button className="gap-2">
             <Plus className="h-4 w-4" aria-hidden="true" />
-            Nueva Meta
+            {t("createDialog.trigger")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Meta</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
           <DialogDescription>
-            Define el objetivo, monto y fecha límite de la meta.
+            {t("createDialog.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="goal-name">Nombre *</Label>
+            <Label htmlFor="goal-name">{t("createDialog.name")}</Label>
             <Input
               id="goal-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Viaje a Europa"
+              placeholder={t("createDialog.namePlaceholder")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="goal-target">Monto meta *</Label>
+              <Label htmlFor="goal-target">{t("createDialog.targetAmount")}</Label>
               <Input
                 id="goal-target"
                 type="number"
@@ -140,7 +142,7 @@ export function CreateGoalDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="goal-deadline">Fecha límite</Label>
+              <Label htmlFor="goal-deadline">{t("createDialog.deadline")}</Label>
               <Input
                 id="goal-deadline"
                 type="date"
@@ -151,7 +153,7 @@ export function CreateGoalDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="goal-color">Color</Label>
+              <Label htmlFor="goal-color">{t("createDialog.color")}</Label>
               <Input
                 id="goal-color"
                 value={form.color}
@@ -160,7 +162,7 @@ export function CreateGoalDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="goal-icon">Icono (nombre Lucide)</Label>
+              <Label htmlFor="goal-icon">{t("createDialog.icon")}</Label>
               <Input
                 id="goal-icon"
                 value={form.icon}
@@ -171,10 +173,10 @@ export function CreateGoalDialog({
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("createDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("createDialog.saving") : t("createDialog.save")}
             </Button>
           </div>
         </form>

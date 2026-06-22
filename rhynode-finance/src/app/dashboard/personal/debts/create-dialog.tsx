@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ import { toast } from "sonner";
 import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateDebtDialog() {
+  const t = useTranslations("dashboard.debts");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -69,10 +71,10 @@ export function CreateDebtDialog() {
               interestRate: "", remainingAmount: "", currency: "COP", dueDate: "", notes: "",
             });
             router.refresh();
-            toast.success("Deuda creada");
+            toast.success(t("createDialog.toast.created"));
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear deuda");
+            toast.error(err.message || t("createDialog.toast.error"));
           },
         },
       );
@@ -86,30 +88,30 @@ export function CreateDebtDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" aria-hidden="true" />
-          Nueva Deuda
+          {t("createDialog.title")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Deuda</DialogTitle>
+          <DialogTitle className="heading-card">{t("createDialog.title")}</DialogTitle>
           <DialogDescription>
-            Registra un préstamo u obligación pendiente.
+            {t("createDialog.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="debt-name">Nombre *</Label>
+            <Label htmlFor="debt-name">{t("createDialog.fields.name")}</Label>
             <Input
               id="debt-name"
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Préstamo bancario"
+              placeholder={t("createDialog.placeholders.name")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="debt-type">Tipo</Label>
+              <Label htmlFor="debt-type">{t("createDialog.fields.type")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v })}
@@ -118,24 +120,24 @@ export function CreateDebtDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="OWE">Debo</SelectItem>
-                  <SelectItem value="OWED">Me deben</SelectItem>
+                  <SelectItem value="OWE">{t("type.owe" as never)}</SelectItem>
+                  <SelectItem value="OWED">{t("type.owed" as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="debt-counterparty">Contraparte</Label>
+              <Label htmlFor="debt-counterparty">{t("createDialog.fields.counterparty")}</Label>
               <Input
                 id="debt-counterparty"
                 value={form.counterparty}
                 onChange={(e) => setForm({ ...form, counterparty: e.target.value })}
-                placeholder="Ej. Banco XYZ"
+                placeholder={t("createDialog.placeholders.counterparty")}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="debt-principal">Monto principal *</Label>
+              <Label htmlFor="debt-principal">{t("createDialog.fields.principal")}</Label>
               <Input
                 id="debt-principal"
                 type="number"
@@ -147,20 +149,20 @@ export function CreateDebtDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="debt-remaining">Monto restante</Label>
+              <Label htmlFor="debt-remaining">{t("createDialog.fields.remaining")}</Label>
               <Input
                 id="debt-remaining"
                 type="number"
                 min={0}
                 value={form.remainingAmount}
                 onChange={(e) => setForm({ ...form, remainingAmount: e.target.value })}
-                placeholder="Igual al principal"
+                placeholder={t("createDialog.placeholders.remaining")}
               />
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="debt-interest">Tasa de interés (%)</Label>
+              <Label htmlFor="debt-interest">{t("createDialog.fields.interestRate")}</Label>
               <Input
                 id="debt-interest"
                 type="number"
@@ -172,7 +174,7 @@ export function CreateDebtDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="debt-currency">Moneda</Label>
+              <Label htmlFor="debt-currency">{t("createDialog.fields.currency")}</Label>
               <Select
                 value={form.currency}
                 onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -190,7 +192,7 @@ export function CreateDebtDialog() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="debt-due">Fecha de vencimiento</Label>
+            <Label htmlFor="debt-due">{t("createDialog.fields.dueDate")}</Label>
             <Input
               id="debt-due"
               type="date"
@@ -199,20 +201,20 @@ export function CreateDebtDialog() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="debt-notes">Notas</Label>
+            <Label htmlFor="debt-notes">{t("createDialog.fields.notes")}</Label>
             <Input
               id="debt-notes"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Notas adicionales"
+              placeholder={t("createDialog.placeholders.notes")}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t("createDialog.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("createDialog.saving") : t("createDialog.save")}
             </Button>
           </div>
         </form>
