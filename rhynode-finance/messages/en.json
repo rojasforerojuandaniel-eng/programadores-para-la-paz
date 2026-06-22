@@ -919,7 +919,15 @@
         "statusErrorToast": "Could not change status",
         "networkErrorToast": "Network error",
         "updateErrorToast": "Could not update",
-        "canceledToast": "Subscription canceled"
+        "canceledToast": "Subscription canceled",
+        "errors": {
+          "unauthorized": "Unauthorized.",
+          "invalidData": "Invalid data.",
+          "notFound": "Subscription not found.",
+          "updateFailed": "Couldn't update the subscription.",
+          "deleteFailed": "Couldn't delete the subscription.",
+          "statusFailed": "Couldn't change status."
+        }
       },
       "expiresToday": "Expires today",
       "expiredDaysAgo": "Expired {count} days ago",
@@ -1121,6 +1129,12 @@
         "title": "Your net worth starts here",
         "description": "Save periodic snapshots to see how your assets and debts evolve.",
         "hint": "Start by creating your first net worth record."
+      },
+      "updateButton": {
+        "label": "Update",
+        "saving": "Saving…",
+        "errorSave": "Couldn't save. Try again.",
+        "errorUnknown": "Unexpected error while saving."
       }
     },
     "investments": {
@@ -1324,6 +1338,29 @@
         "edit": "Edit",
         "archive": "Archive",
         "delete": "Delete"
+      },
+      "kpis": {
+        "projects": {
+          "label": "Projects",
+          "sub": "{active} active · {completed} completed"
+        },
+        "budget": {
+          "label": "Budget",
+          "sub": "Total allocated"
+        },
+        "spent": {
+          "label": "Spent",
+          "sub": "{percent}% used"
+        },
+        "completed": {
+          "label": "Completed",
+          "sub": "{percent}% of total"
+        }
+      },
+      "progress": {
+        "ariaLabel": "Project progress: {percent}%",
+        "budgetLine": "Budget: {budget}",
+        "noBudget": "No budget set"
       }
     },
     "stats": {
@@ -1967,7 +2004,18 @@
         "optionsLabel": "Options for {name}",
         "title": "Actions",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "errors": {
+          "unauthorized": "Unauthorized.",
+          "invalidData": "Invalid data.",
+          "notFound": "Category not found.",
+          "isDefaultEdit": "Default category can't be edited.",
+          "isDefaultDelete": "Default category can't be deleted.",
+          "selfParent": "A category can't be its own parent.",
+          "invalidParent": "Invalid parent category.",
+          "updateFailed": "Couldn't update the category.",
+          "deleteFailed": "Couldn't delete the category."
+        }
       },
       "dialogs": {
         "edit": {
@@ -3505,6 +3553,38 @@
       "kw2": "create account",
       "kw3": "Colombia fintech",
       "kw4": "free finance app"
+    }
+  },
+  "charts": {
+    "kpiSparkline": {
+      "trendAriaLabel": "Trend of {label} (last 6 months): {values}",
+      "trendCaption": "Trend of {label}: {values}"
+    },
+    "progressBar": {
+      "valueOfMax": "{value} / {max}",
+      "progressLabel": "Progress"
+    },
+    "antExpenses": {
+      "title": "Recurring spending patterns",
+      "loadError": "We couldn't load your spending patterns.",
+      "noPatterns": "No patterns detected yet. Keep logging transactions.",
+      "countTimes": "{count} times · {amount}",
+      "totalLabel": "Total detected",
+      "apiError": "Error connecting to the service.",
+      "unknownError": "Unexpected error."
+    },
+    "revenue": {
+      "series": "Revenue",
+      "srCaption": "Monthly business revenue",
+      "srMonthHeader": "Month",
+      "srIncomeHeader": "Revenue"
+    },
+    "netWorth": {
+      "series": {
+        "netWorth": "Net worth",
+        "assets": "Assets",
+        "liabilities": "Liabilities"
+      }
     }
   }
 }

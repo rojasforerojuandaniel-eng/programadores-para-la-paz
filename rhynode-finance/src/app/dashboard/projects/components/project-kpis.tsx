@@ -2,6 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { decimalToNumber } from "@/lib/decimal";
 import { cn } from "@/lib/utils";
 import { FolderKanban, Wallet, TrendingUp, CheckCircle2 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import type { Prisma } from "@/generated/prisma/client";
 
 interface ProjectKpisProps {
@@ -12,15 +15,11 @@ interface ProjectKpisProps {
   }>;
 }
 
-function formatCOP(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+export async function ProjectKpis({ projects }: ProjectKpisProps) {
+  const locale: Locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.projects" });
 
-export function ProjectKpis({ projects }: ProjectKpisProps) {
   const totalProjects = projects.length;
   const activeProjects = projects.filter((p) => p.status === "ACTIVE").length;
   const completedProjects = projects.filter((p) => p.status === "COMPLETED").length;
@@ -30,34 +29,36 @@ export function ProjectKpis({ projects }: ProjectKpisProps) {
     0
   );
   const utilization = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+  const completedPct =
+    totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
 
   const kpis = [
     {
       icon: FolderKanban,
-      label: "Proyectos",
+      label: t("kpis.projects.label"),
       value: totalProjects.toString(),
-      sub: `${activeProjects} activos · ${completedProjects} completados`,
+      sub: t("kpis.projects.sub", { active: activeProjects, completed: completedProjects }),
       tone: "text-primary",
     },
     {
       icon: Wallet,
-      label: "Presupuesto total",
-      value: formatCOP(totalBudget),
-      sub: "COP",
+      label: t("kpis.budget.label"),
+      value: formatCurrency(totalBudget, "COP", locale),
+      sub: t("kpis.budget.sub"),
       tone: "text-emerald-500",
     },
     {
       icon: TrendingUp,
-      label: "Gastado",
-      value: formatCOP(totalSpent),
-      sub: `${utilization}% usado`,
+      label: t("kpis.spent.label"),
+      value: formatCurrency(totalSpent, "COP", locale),
+      sub: t("kpis.spent.sub", { percent: utilization }),
       tone: utilization > 100 ? "text-destructive" : "text-amber-500",
     },
     {
       icon: CheckCircle2,
-      label: "Completados",
+      label: t("kpis.completed.label"),
       value: completedProjects.toString(),
-      sub: totalProjects > 0 ? `${Math.round((completedProjects / totalProjects) * 100)}% del total` : "—",
+      sub: totalProjects > 0 ? t("kpis.completed.sub", { percent: completedPct }) : "—",
       tone: "text-blue-500",
     },
   ];

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ export function UpdateSnapshotButton({
   totalLiabilities: number;
   currency: string;
 }) {
+  const t = useTranslations("dashboard.netWorth.updateButton");
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -24,10 +26,10 @@ export function UpdateSnapshotButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ totalAssets, totalLiabilities, currency }),
       });
-      if (!res.ok) throw new Error("No se pudo guardar el snapshot");
+      if (!res.ok) throw new Error(t("errorSave"));
       window.location.reload();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Error desconocido";
+      const message = err instanceof Error ? err.message : t("errorUnknown");
       toast.error(message);
     } finally {
       setLoading(false);
@@ -37,7 +39,7 @@ export function UpdateSnapshotButton({
   return (
     <Button size="default" className="gap-2" onClick={handleClick} disabled={loading}>
       <Plus className="h-4 w-4" aria-hidden="true" />
-      {loading ? "Guardando..." : "Actualizar Snapshot"}
+      {loading ? t("saving") : t("label")}
     </Button>
   );
 }

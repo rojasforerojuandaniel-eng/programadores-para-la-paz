@@ -1,3 +1,8 @@
+import {
+  formatCurrency as fmtCurrency,
+  formatDate as fmtDate,
+} from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import type { Transaction, DetectedSubscription } from "@/generated/prisma/client";
 
 export interface SubscriptionItem {
@@ -19,40 +24,51 @@ export interface SubscriptionItem {
   daysRemaining: number | null;
 }
 
-export function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
+const FREQUENCY_LABELS: Record<Locale, Record<string, string>> = {
+  es: {
+    DAILY: "Diario",
+    WEEKLY: "Semanal",
+    BIWEEKLY: "Quincenal",
+    MONTHLY: "Mensual",
+    QUARTERLY: "Trimestral",
+    YEARLY: "Anual",
+  },
+  en: {
+    DAILY: "Daily",
+    WEEKLY: "Weekly",
+    BIWEEKLY: "Biweekly",
+    MONTHLY: "Monthly",
+    QUARTERLY: "Quarterly",
+    YEARLY: "Yearly",
+  },
+};
+
+const STATUS_LABELS: Record<Locale, Record<string, string>> = {
+  es: {
+    ACTIVE: "Activa",
+    PENDING_CANCELLATION: "Para cancelar",
+    CANCELED: "Cancelada",
+    CANCELLED: "Cancelada",
+  },
+  en: {
+    ACTIVE: "Active",
+    PENDING_CANCELLATION: "Pending cancellation",
+    CANCELED: "Canceled",
+    CANCELLED: "Canceled",
+  },
+};
+
+export function formatCurrency(amount: number, currency: string, locale: Locale = "es") {
+  return fmtCurrency(amount, currency, locale, { minimumFractionDigits: 0 });
 }
 
-export function formatDate(date: string | Date | null) {
+export function formatDate(date: string | Date | null, locale: Locale = "es") {
   if (!date) return "—";
-  return new Date(date).toLocaleDateString("es-CO", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return fmtDate(date, locale, { day: "numeric", month: "short", year: "numeric" });
 }
 
-export function frequencyLabel(frequency: string) {
-  switch (frequency) {
-    case "DAILY":
-      return "Diario";
-    case "WEEKLY":
-      return "Semanal";
-    case "BIWEEKLY":
-      return "Quincenal";
-    case "MONTHLY":
-      return "Mensual";
-    case "QUARTERLY":
-      return "Trimestral";
-    case "YEARLY":
-      return "Anual";
-    default:
-      return frequency;
-  }
+export function frequencyLabel(frequency: string, locale: Locale = "es") {
+  return FREQUENCY_LABELS[locale][frequency] ?? frequency;
 }
 
 export function monthlyEquivalent(amount: number, frequency: string): number {
@@ -251,16 +267,6 @@ export function computeSubscriptionMeta(
   return { increased, unused, matched, nextRenewal, daysRemaining };
 }
 
-export function statusLabel(status: string) {
-  switch (status) {
-    case "ACTIVE":
-      return "Activa";
-    case "PENDING_CANCELLATION":
-      return "Para cancelar";
-    case "CANCELED":
-    case "CANCELLED":
-      return "Cancelada";
-    default:
-      return status;
-  }
+export function statusLabel(status: string, locale: Locale = "es") {
+  return STATUS_LABELS[locale][status] ?? status;
 }
