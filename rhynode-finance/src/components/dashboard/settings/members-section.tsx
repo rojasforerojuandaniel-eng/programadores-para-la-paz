@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { usePlanLimit } from "@/hooks/use-plan-limit";
-import { ROLE_LABELS, type OrganizationRole } from "@/lib/organization";
+import type { OrganizationRole } from "@/lib/organization";
+import type { Locale } from "@/lib/locale";
 import { Users, Mail, RefreshCw, Trash2, Plus, Loader2 } from "lucide-react";
 
 interface Member {
@@ -32,6 +34,8 @@ interface Member {
 }
 
 export function MembersSection() {
+  const t = useTranslations("dashboard.settings");
+  const locale = useLocale() as Locale;
   const { user } = useUser();
   const { isAdmin } = useOrganizationRole();
   const {
@@ -58,13 +62,13 @@ export function MembersSection() {
         setMembers(data.members ?? []);
       })
       .catch(() => {
-        toast.error("Error al cargar miembros");
+        toast.error(t("members.toasts.loadError"));
       })
       .finally(() => {
         setLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [t]);
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -78,15 +82,15 @@ export function MembersSection() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        toast.error(data.error || "Error al invitar");
+        toast.error(data.error || t("members.toasts.inviteError"));
         return;
       }
-      toast.success("Invitación enviada");
+      toast.success(t("members.toasts.inviteSent"));
       setEmail("");
       setInviteRole("VIEWER");
       await refreshMembers();
     } catch {
-      toast.error("Error de red");
+      toast.error(t("members.toasts.networkError"));
     } finally {
       setInviting(false);
     }
@@ -99,7 +103,7 @@ export function MembersSection() {
       const data = (await res.json()) as { members: Member[] };
       setMembers(data.members ?? []);
     } catch {
-      toast.error("Error al actualizar miembros");
+      toast.error(t("members.toasts.refreshError"));
     }
   }
 
@@ -112,13 +116,13 @@ export function MembersSection() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        toast.error(data.error || "Error al cambiar rol");
+        toast.error(data.error || t("members.toasts.roleChangeError"));
         return;
       }
-      toast.success("Rol actualizado");
+      toast.success(t("members.toasts.roleUpdated"));
       await refreshMembers();
     } catch {
-      toast.error("Error de red");
+      toast.error(t("members.toasts.networkError"));
     }
   }
 
@@ -129,31 +133,31 @@ export function MembersSection() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        toast.error(data.error || "Error al reenviar");
+        toast.error(data.error || t("members.toasts.resendError"));
         return;
       }
-      toast.success("Invitación reenviada");
+      toast.success(t("members.toasts.resent"));
       await refreshMembers();
     } catch {
-      toast.error("Error de red");
+      toast.error(t("members.toasts.networkError"));
     }
   }
 
   async function removeMember(memberId: string) {
-    if (!confirm("¿Seguro que quieres remover este miembro?")) return;
+    if (!confirm(t("members.removeConfirm"))) return;
     try {
       const res = await fetch(`/api/organization/members/${memberId}`, {
         method: "DELETE",
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        toast.error(data.error || "Error al remover");
+        toast.error(data.error || t("members.toasts.removeError"));
         return;
       }
-      toast.success("Miembro removido");
+      toast.success(t("members.toasts.removed"));
       await refreshMembers();
     } catch {
-      toast.error("Error de red");
+      toast.error(t("members.toasts.networkError"));
     }
   }
 
@@ -165,13 +169,16 @@ export function MembersSection() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="heading-card flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
-            Miembros del equipo
+            {t("members.title")}
           </CardTitle>
           <Badge variant="outline">{planName}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            Usuarios: {usersUsed} / {usersLimit === Infinity ? "∞" : usersLimit}
+            {t("members.usersCount", {
+              used: usersUsed,
+              limit: usersLimit === Infinity ? "∞" : usersLimit,
+            })}
           </div>
 
           {isAdmin && (
@@ -181,11 +188,11 @@ export function MembersSection() {
             >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-2 sm:col-span-1">
-                  <Label htmlFor="invite-email">Email</Label>
+                  <Label htmlFor="invite-email">{t("members.emailLabel")}</Label>
                   <Input
                     id="invite-email"
                     type="email"
-                    placeholder="colaborador@empresa.com"
+                    placeholder={t("members.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={inviting || !canInviteByPlan}
@@ -193,7 +200,7 @@ export function MembersSection() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="invite-role">Rol</Label>
+                  <Label htmlFor="invite-role">{t("members.roleLabel")}</Label>
                   <Select
                     value={inviteRole}
                     onValueChange={(v) => setInviteRole(v as OrganizationRole)}
@@ -203,12 +210,14 @@ export function MembersSection() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">{ROLE_LABELS.ADMIN}</SelectItem>
+                      <SelectItem value="ADMIN">
+                        {t(`members.roles.ADMIN` as never)}
+                      </SelectItem>
                       <SelectItem value="MANAGER">
-                        {ROLE_LABELS.MANAGER}
+                        {t(`members.roles.MANAGER` as never)}
                       </SelectItem>
                       <SelectItem value="VIEWER">
-                        {ROLE_LABELS.VIEWER}
+                        {t(`members.roles.VIEWER` as never)}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -222,12 +231,12 @@ export function MembersSection() {
                     {inviting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Invitando...
+                        {t("members.inviting")}
                       </>
                     ) : (
                       <>
                         <Plus className="h-4 w-4" />
-                        Invitar
+                        {t("members.invite")}
                       </>
                     )}
                   </Button>
@@ -235,8 +244,7 @@ export function MembersSection() {
               </div>
               {!canInviteByPlan && (
                 <p className="text-xs text-danger">
-                  Has alcanzado el límite de usuarios de tu plan. Sube de plan
-                  para invitar más miembros.
+                  {t("members.planLimitReached")}
                 </p>
               )}
             </form>
@@ -248,7 +256,7 @@ export function MembersSection() {
             </div>
           ) : members.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              Aún no hay miembros invitados.
+              {t("members.noMembers")}
             </div>
           ) : (
             <ul className="divide-y divide-border" role="list">
@@ -260,10 +268,10 @@ export function MembersSection() {
                   <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {member.name || member.email || "Miembro"}
+                        {member.name || member.email || t("members.memberFallback")}
                       </span>
                       {isCurrentUser(member) && (
-                        <Badge variant="secondary">Tú</Badge>
+                        <Badge variant="secondary">{t("members.you")}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -278,9 +286,9 @@ export function MembersSection() {
                           member.status === "ACTIVE" ? "default" : "outline"
                         }
                       >
-                        {member.status === "ACTIVE" ? "Activo" : "Pendiente"}
+                        {t(`members.status.${member.status}` as never)}
                       </Badge>
-                      <span>{ROLE_LABELS[member.role]}</span>
+                      <span>{t(`members.roles.${member.role}` as never)}</span>
                     </div>
                   </div>
 
@@ -297,13 +305,13 @@ export function MembersSection() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="ADMIN">
-                            {ROLE_LABELS.ADMIN}
+                            {t(`members.roles.ADMIN` as never)}
                           </SelectItem>
                           <SelectItem value="MANAGER">
-                            {ROLE_LABELS.MANAGER}
+                            {t(`members.roles.MANAGER` as never)}
                           </SelectItem>
                           <SelectItem value="VIEWER">
-                            {ROLE_LABELS.VIEWER}
+                            {t(`members.roles.VIEWER` as never)}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -312,8 +320,8 @@ export function MembersSection() {
                         <Button
                           variant="outline"
                           size="icon"
-                          title="Reenviar invitación"
-                          aria-label="Reenviar invitación"
+                          title={t("members.resendInvitation")}
+                          aria-label={t("members.resendInvitation")}
                           onClick={() => resendInvitation(member.id)}
                         >
                           <RefreshCw className="h-4 w-4" aria-hidden="true" />
@@ -324,8 +332,8 @@ export function MembersSection() {
                         variant="ghost"
                         size="icon"
                         className="text-danger hover:bg-danger/10"
-                        title="Remover miembro"
-                        aria-label="Remover miembro"
+                        title={t("members.removeMember")}
+                        aria-label={t("members.removeMember")}
                         onClick={() => removeMember(member.id)}
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />

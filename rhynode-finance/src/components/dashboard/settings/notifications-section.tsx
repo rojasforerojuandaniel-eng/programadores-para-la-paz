@@ -1,6 +1,6 @@
-
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -31,15 +31,17 @@ export function NotificationsSection({
   onChange,
   onEnablePush,
 }: NotificationsSectionProps) {
+  const t = useTranslations("dashboard.settings");
+
   return (
     <Card className="surface-elevated-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="heading-card flex items-center gap-2">
           <Bell className="h-5 w-5 text-primary" />
-          Notificaciones
+          {t("notifications.title")}
         </CardTitle>
         <Button type="submit" disabled={saving} size="sm" className="hidden sm:inline-flex">
-          Guardar Cambios
+          {t("saveChanges")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -53,9 +55,9 @@ export function NotificationsSection({
           <>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium" id="notif-budgets-title">Presupuestos</div>
+                <div className="font-medium" id="notif-budgets-title">{t("notifications.budgets.title")}</div>
                 <div className="text-sm text-muted-foreground" id="notif-budgets-desc">
-                  Recibe alertas cuando gastes más del 80% de un presupuesto
+                  {t("notifications.budgets.desc")}
                 </div>
               </div>
               <Switch
@@ -67,9 +69,9 @@ export function NotificationsSection({
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium" id="notif-subscriptions-title">Suscripciones</div>
+                <div className="font-medium" id="notif-subscriptions-title">{t("notifications.subscriptions.title")}</div>
                 <div className="text-sm text-muted-foreground" id="notif-subscriptions-desc">
-                  Recordatorios antes de que venzan tus suscripciones
+                  {t("notifications.subscriptions.desc")}
                 </div>
               </div>
               <Switch
@@ -81,9 +83,9 @@ export function NotificationsSection({
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium" id="notif-weekly-title">Resumen Semanal</div>
+                <div className="font-medium" id="notif-weekly-title">{t("notifications.weekly.title")}</div>
                 <div className="text-sm text-muted-foreground" id="notif-weekly-desc">
-                  Recibe un resumen de tus finanzas cada semana
+                  {t("notifications.weekly.desc")}
                 </div>
               </div>
               <Switch
@@ -98,9 +100,9 @@ export function NotificationsSection({
 
         <div className="flex items-center justify-between rounded-lg border border-border p-4">
           <div>
-            <div className="font-medium">Notificaciones Push</div>
+            <div className="font-medium">{t("notifications.push.title")}</div>
             <div className="text-sm text-muted-foreground">
-              {pushEnabled ? "Activado en este dispositivo" : "Desactivado"}
+              {pushEnabled ? t("notifications.push.enabled") : t("notifications.push.disabled")}
             </div>
           </div>
           <Button
@@ -108,19 +110,19 @@ export function NotificationsSection({
             size="sm"
             onClick={onEnablePush}
             disabled={pushLoading || pushEnabled}
-            aria-label={pushEnabled ? "Notificaciones push activadas" : "Activar notificaciones push"}
+            aria-label={pushEnabled ? t("notifications.push.enabledAria") : t("notifications.push.activateAria")}
           >
             {pushLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : pushEnabled ? (
-              "Activado"
+              t("notifications.push.activated")
             ) : (
-              "Activar"
+              t("notifications.push.activate")
             )}
           </Button>
         </div>
         <Button type="submit" disabled={saving} className="w-full sm:hidden">
-          Guardar Cambios
+          {t("saveChanges")}
         </Button>
       </CardContent>
     </Card>

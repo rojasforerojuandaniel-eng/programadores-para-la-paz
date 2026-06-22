@@ -1211,6 +1211,251 @@
           "America/Santiago": "Santiago",
           "America/Lima": "Lima"
         }
+      },
+      "billing": {
+        "planUsageTitle": "Plan y Uso",
+        "unlimitedUsage": "Uso ilimitado",
+        "usagePercent": "{percent}% utilizado",
+        "unlimitedInvoicesNote": "Plan con facturas ilimitadas",
+        "usageLimitNote": "{percent}% de tu límite de facturas utilizado",
+        "nearLimitTitle": "Estás cerca de tu límite",
+        "nearLimitDesc": "Actualiza tu plan para seguir facturando sin interrupciones.",
+        "plansCompareTitle": "Comparativa de planes",
+        "cancelConfirm": "¿Seguro que quieres cancelar tu suscripción?",
+        "paymentsHistoryTitle": "Historial de Pagos",
+        "noPaymentsTitle": "Sin pagos registrados",
+        "noPaymentsDesc": "Los pagos de tus facturas y suscripciones aparecerán aquí.",
+        "subscriptionTitle": "Facturación y Suscripción",
+        "subscriptionDesc": "Gestiona tu suscripción, métodos de pago e historial de facturación desde el portal seguro de Stripe.",
+        "billingPortalAria": "Abrir portal de facturación de Stripe",
+        "billingPortalButton": "Portal de Facturación",
+        "cancelAria": "Cancelar suscripción actual",
+        "cancelButton": "Cancelar Suscripción",
+        "paymentMethodsTitle": "Métodos de Pago (Cobros)",
+        "paymentMethodsDesc": "Conecta proveedores de pago locales para cobrar a tus clientes.",
+        "providersAria": "Proveedores de pago disponibles",
+        "kpis": {
+          "plan": "Plan",
+          "invoices": "Facturas",
+          "users": "Usuarios",
+          "usage": "Uso"
+        },
+        "plans": {
+          "current": "Actual",
+          "currentButton": "Plan actual",
+          "manageChange": "Gestionar cambio",
+          "manageChangeAria": "Gestionar cambio de plan",
+          "processing": "Procesando...",
+          "processingAria": "Procesando selección de plan",
+          "chooseAria": "Elegir plan {plan}",
+          "choose": "Elegir {plan}",
+          "starter": {
+            "price": "$0",
+            "period": "/mes",
+            "description": "Perfecto para comenzar a organizar tus finanzas.",
+            "features": {
+              "f1": "10 facturas/mes",
+              "f2": "1 usuario",
+              "f3": "Clientes ilimitados",
+              "f4": "Soporte por email",
+              "f5": "App móvil PWA"
+            },
+            "unavailable": {
+              "u1": "Facturación DIAN avanzada",
+              "u2": "API access",
+              "u3": "Soporte prioritario"
+            }
+          },
+          "growth": {
+            "price": "$29.900",
+            "period": "/mes",
+            "description": "Para freelancers y pymes que facturan regularmente.",
+            "features": {
+              "f1": "100 facturas/mes",
+              "f2": "3 usuarios",
+              "f3": "Clientes ilimitados",
+              "f4": "Compliance DIAN/SAT",
+              "f5": "Reportes avanzados",
+              "f6": "Soporte prioritario"
+            },
+            "unavailable": {
+              "u1": "API access",
+              "u2": "Onboarding dedicado"
+            }
+          },
+          "scale": {
+            "price": "$79.900",
+            "period": "/mes",
+            "description": "Potencia total para equipos en crecimiento.",
+            "features": {
+              "f1": "Facturas ilimitadas",
+              "f2": "Usuarios ilimitados",
+              "f3": "Clientes ilimitados",
+              "f4": "API access",
+              "f5": "Soporte prioritario",
+              "f6": "Onboarding dedicado",
+              "f7": "Account manager"
+            }
+          }
+        },
+        "statuses": {
+          "PAID": "Exitoso",
+          "PENDING": "Pendiente",
+          "FAILED": "Fallido",
+          "REFUNDED": "Reembolsado"
+        },
+        "paymentCols": {
+          "date": "Fecha",
+          "method": "Método",
+          "status": "Estado",
+          "amount": "Monto"
+        },
+        "providers": {
+          "comingSoon": "Próximamente",
+          "wompi": {
+            "desc": "Colombia — Tarjetas, PSE, Bancolombia"
+          },
+          "payu": {
+            "desc": "Multi-país — Tarjetas, efectivo"
+          },
+          "pse": {
+            "desc": "Colombia — Transferencia bancaria"
+          }
+        },
+        "toasts": {
+          "portalError": "Error al abrir portal",
+          "cancelSuccess": "Suscripción cancelada",
+          "cancelError": "Error al cancelar"
+        }
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "budgets": {
+          "title": "Presupuestos",
+          "desc": "Recibe alertas cuando gastes más del 80% de un presupuesto"
+        },
+        "subscriptions": {
+          "title": "Suscripciones",
+          "desc": "Recordatorios antes de que venzan tus suscripciones"
+        },
+        "weekly": {
+          "title": "Resumen Semanal",
+          "desc": "Recibe un resumen de tus finanzas cada semana"
+        },
+        "push": {
+          "title": "Notificaciones Push",
+          "enabled": "Activado en este dispositivo",
+          "disabled": "Desactivado",
+          "enabledAria": "Notificaciones push activadas",
+          "activateAria": "Activar notificaciones push",
+          "activated": "Activado",
+          "activate": "Activar"
+        }
+      },
+      "members": {
+        "title": "Miembros del equipo",
+        "usersCount": "Usuarios: {used} / {limit}",
+        "emailLabel": "Email",
+        "emailPlaceholder": "colaborador@empresa.com",
+        "roleLabel": "Rol",
+        "inviting": "Invitando...",
+        "invite": "Invitar",
+        "planLimitReached": "Has alcanzado el límite de usuarios de tu plan. Sube de plan para invitar más miembros.",
+        "noMembers": "Aún no hay miembros invitados.",
+        "memberFallback": "Miembro",
+        "you": "Tú",
+        "removeConfirm": "¿Seguro que quieres remover este miembro?",
+        "resendInvitation": "Reenviar invitación",
+        "removeMember": "Remover miembro",
+        "roles": {
+          "ADMIN": "Administrador",
+          "MANAGER": "Gerente",
+          "VIEWER": "Observador"
+        },
+        "status": {
+          "ACTIVE": "Activo",
+          "PENDING": "Pendiente"
+        },
+        "toasts": {
+          "loadError": "Error al cargar miembros",
+          "inviteError": "Error al invitar",
+          "inviteSent": "Invitación enviada",
+          "networkError": "Error de red",
+          "refreshError": "Error al actualizar miembros",
+          "roleChangeError": "Error al cambiar rol",
+          "roleUpdated": "Rol actualizado",
+          "resendError": "Error al reenviar",
+          "resent": "Invitación reenviada",
+          "removeError": "Error al remover",
+          "removed": "Miembro removido"
+        }
+      },
+      "webhookLogs": {
+        "title": "Logs de Webhooks",
+        "subtitle": "Observabilidad de eventos entrantes de Stripe y Wompi",
+        "filtersTitle": "Filtros",
+        "filtersDesc": "Refina los eventos por proveedor, estado o rango de fechas",
+        "providerLabel": "Proveedor",
+        "providerAria": "Filtrar por proveedor",
+        "statusLabel": "Estado",
+        "statusAria": "Filtrar por estado",
+        "fromLabel": "Desde",
+        "fromAria": "Fecha inicial",
+        "toLabel": "Hasta",
+        "toAria": "Fecha final",
+        "clearFilters": "Limpiar filtros",
+        "eventsTitle": "Eventos",
+        "eventsCount": "Mostrando {shown} de {total} eventos",
+        "loading": "Cargando logs...",
+        "payloadTitle": "Payload completo",
+        "retry": "Reintentar",
+        "prevPage": "Anterior",
+        "prevPageAria": "Página anterior",
+        "nextPage": "Siguiente",
+        "nextPageAria": "Página siguiente",
+        "pageOf": "Página {current} de {total}",
+        "viewPayloadAria": "Ver payload de {event}",
+        "retryAria": "Reintentar {event} de {provider}",
+        "empty": {
+          "title": "No hay eventos registrados",
+          "description": "Ajusta los filtros o vuelve más tarde cuando lleguen nuevos webhooks."
+        },
+        "providers": {
+          "all": "Todos",
+          "stripe": "Stripe",
+          "wompi": "Wompi"
+        },
+        "statusFilters": {
+          "all": "Todos",
+          "success": "Exitoso",
+          "failed": "Fallido",
+          "pending": "Pendiente"
+        },
+        "status": {
+          "PROCESSED": "Exitoso",
+          "FAILED": "Fallido",
+          "PENDING": "Pendiente"
+        },
+        "cols": {
+          "timestamp": "Timestamp",
+          "provider": "Proveedor",
+          "event": "Evento",
+          "status": "Estado",
+          "payload": "Payload preview",
+          "error": "Error",
+          "actions": "Acciones"
+        },
+        "toasts": {
+          "loadError": "Error al cargar logs",
+          "loadErrorToast": "Error al cargar logs de webhooks",
+          "retryError": "Error al reintentar",
+          "retrySuccess": "Webhook reintentado exitosamente"
+        },
+        "liveRegion": {
+          "retry": "Reintentando webhook {event}...",
+          "retrySuccess": "Reintento exitoso. Actualizando lista.",
+          "retryError": "Error al reintentar: {message}"
+        }
       }
     }
   },
