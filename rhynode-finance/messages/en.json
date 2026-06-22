@@ -79,7 +79,11 @@
         "status": "Status",
         "actions": "Actions"
       },
-      "status": { "exceeded": "Exceeded", "warning": "Warning", "ok": "OK" },
+      "status": {
+        "exceeded": "Exceeded",
+        "warning": "Warning",
+        "ok": "OK"
+      },
       "exceededMsg": "You exceeded the budget by {amount}.",
       "remainingMsg": "You have {amount} left before reaching the limit.",
       "empty": {
@@ -133,9 +137,23 @@
       "checking": "Checking",
       "savings": "Savings",
       "creditVirtual": "Credit / Virtual",
-      "types": { "CHECKING": "Checking", "SAVINGS": "Savings", "CREDIT": "Credit", "VIRTUAL": "Virtual" },
-      "status": { "negative": "Negative", "lowBalance": "Low balance" },
-      "table": { "account": "Account", "type": "Type", "currency": "Currency", "balance": "Balance", "actions": "Actions" },
+      "types": {
+        "CHECKING": "Checking",
+        "SAVINGS": "Savings",
+        "CREDIT": "Credit",
+        "VIRTUAL": "Virtual"
+      },
+      "status": {
+        "negative": "Negative",
+        "lowBalance": "Low balance"
+      },
+      "table": {
+        "account": "Account",
+        "type": "Type",
+        "currency": "Currency",
+        "balance": "Balance",
+        "actions": "Actions"
+      },
       "empty": {
         "title": "Connect your bank accounts",
         "description": "View balances and movements of checking, savings, credit and virtual accounts in one place.",
@@ -149,11 +167,42 @@
       "newInvoice": "New Invoice",
       "noClient": "No client",
       "noName": "No name",
-      "statuses": { "DRAFT": "Draft", "SENT": "Sent", "PAID": "Paid", "OVERDUE": "Overdue", "CANCELLED": "Cancelled", "PARTIAL": "Partial" },
-      "filters": { "ALL": "All", "PENDING": "Pending", "OVERDUE": "Overdue", "PAID": "Paid" },
-      "columns": { "number": "Number", "client": "Client", "status": "Status", "total": "Total", "date": "Date", "actions": "Actions" },
-      "kpis": { "pending": "Pending", "overdue": "Overdue", "paid": "Paid", "outstanding": "Total outstanding", "invoicesCount": "{count} invoices" },
-      "filters2": { "clientLabel": "Client", "allClients": "All clients", "all": "All", "from": "From", "to": "To" },
+      "statuses": {
+        "DRAFT": "Draft",
+        "SENT": "Sent",
+        "PAID": "Paid",
+        "OVERDUE": "Overdue",
+        "CANCELLED": "Cancelled",
+        "PARTIAL": "Partial"
+      },
+      "filters": {
+        "ALL": "All",
+        "PENDING": "Pending",
+        "OVERDUE": "Overdue",
+        "PAID": "Paid"
+      },
+      "columns": {
+        "number": "Number",
+        "client": "Client",
+        "status": "Status",
+        "total": "Total",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "kpis": {
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "paid": "Paid",
+        "outstanding": "Total outstanding",
+        "invoicesCount": "{count} invoices"
+      },
+      "filters2": {
+        "clientLabel": "Client",
+        "allClients": "All clients",
+        "all": "All",
+        "from": "From",
+        "to": "To"
+      },
       "empty": {
         "title": "No invoices yet",
         "description": "Create your first invoice to start billing and tracking payments.",
@@ -166,12 +215,23 @@
       "totalRemaining": "Total remaining",
       "active": "Active",
       "overdue": "Overdue",
-      "status": { "paid": "Paid", "overdue": "Overdue", "active": "Active" },
-      "type": { "owe": "I owe", "owed": "Owed to me" },
+      "status": {
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "active": "Active"
+      },
+      "type": {
+        "owe": "I owe",
+        "owed": "Owed to me"
+      },
       "pay": "Pay",
       "recordPayment": "Record payment",
       "paidAria": "Paid",
-      "card": { "balance": "Balance", "rate": "Rate", "installment": "Installment" },
+      "card": {
+        "balance": "Balance",
+        "rate": "Rate",
+        "installment": "Installment"
+      },
       "progressLabel": "{pct}% paid · {paid} of {principal}",
       "noDueDate": "No due date",
       "overdueSuffix": " · overdue",
@@ -179,7 +239,17 @@
       "payoffLabel": "Estimated payoff:",
       "days": "{days} days",
       "settled": "Debt settled",
-      "columns": { "name": "Name", "counterparty": "Creditor", "remaining": "Balance", "rate": "Rate", "payment": "Monthly payment", "progress": "Progress", "payoff": "Payoff", "dueDate": "Due date", "status": "Status" },
+      "columns": {
+        "name": "Name",
+        "counterparty": "Creditor",
+        "remaining": "Balance",
+        "rate": "Rate",
+        "payment": "Monthly payment",
+        "progress": "Progress",
+        "payoff": "Payoff",
+        "dueDate": "Due date",
+        "status": "Status"
+      },
       "empty": {
         "title": "Keep your debts under control",
         "description": "Log loans and obligations to plan payments and reduce interest.",
@@ -196,11 +266,40 @@
       "no": "No",
       "pause": "Pause",
       "activate": "Activate",
-      "list": { "name": "Name", "amount": "Amount", "frequency": "Frequency", "next": "Next due", "type": "Type", "subscription": "Subscription", "status": "Status", "actions": "Actions" },
-      "toasts": { "activated": "Recurring activated", "paused": "Recurring paused", "statusError": "Couldn't change the status", "networkError": "Network error" },
-      "card": { "amount": "Amount", "next": "Next", "providerPrefix": "Provider: {name}" },
-      "frequencies": { "DAILY": "Daily", "WEEKLY": "Weekly", "BIWEEKLY": "Biweekly", "MONTHLY": "Monthly", "QUARTERLY": "Quarterly", "YEARLY": "Yearly" },
-      "types": { "EXPENSE": "Expense", "INCOME": "Income", "TRANSFER": "Transfer" },
+      "list": {
+        "name": "Name",
+        "amount": "Amount",
+        "frequency": "Frequency",
+        "next": "Next due",
+        "type": "Type",
+        "subscription": "Subscription",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "toasts": {
+        "activated": "Recurring activated",
+        "paused": "Recurring paused",
+        "statusError": "Couldn't change the status",
+        "networkError": "Network error"
+      },
+      "card": {
+        "amount": "Amount",
+        "next": "Next",
+        "providerPrefix": "Provider: {name}"
+      },
+      "frequencies": {
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "BIWEEKLY": "Biweekly",
+        "MONTHLY": "Monthly",
+        "QUARTERLY": "Quarterly",
+        "YEARLY": "Yearly"
+      },
+      "types": {
+        "EXPENSE": "Expense",
+        "INCOME": "Income",
+        "TRANSFER": "Transfer"
+      },
       "empty": {
         "title": "Automate your recurring payments",
         "description": "Log rent, subscriptions and services so you never miss a due date and keep your cash flow under control.",
@@ -242,8 +341,16 @@
     "calendar": {
       "title": "Payment Calendar",
       "subtitle": "Visualize your subscriptions and due dates",
-      "kpis": { "total": "Estimated upcoming payments", "upcoming": "Upcoming payments", "daysNext": "Days to next payment" },
-      "days": { "today": "Today", "overdue": "Overdue {days} days ago", "left": "{days} days" }
+      "kpis": {
+        "total": "Estimated upcoming payments",
+        "upcoming": "Upcoming payments",
+        "daysNext": "Days to next payment"
+      },
+      "days": {
+        "today": "Today",
+        "overdue": "Overdue {days} days ago",
+        "left": "{days} days"
+      }
     },
     "split": {
       "title": "Split Expenses",
@@ -272,9 +379,19 @@
       "subtitle": "Tax planning estimate for individuals (DT 2026 table).",
       "signIn": "Sign in to see your tax declaration.",
       "disclaimer": "This is a <strong>planning estimate</strong>, not an official tax document. Deductible items are inferred by keywords in your categories. Confirm the values with your accountant before filing.",
-      "kpis": { "grossIncome": "Annual gross income", "exempt": "Exempt income (25%, cap)" },
+      "kpis": {
+        "grossIncome": "Annual gross income",
+        "exempt": "Exempt income (25%, cap)"
+      },
       "deductions": "Deductions",
-      "rows": { "health": "Health (16%, cap)", "education": "Education (cap)", "housing": "Housing interest (cap)", "dependents": "Dependents ({count})", "total": "Total deductions", "taxable": "Taxable base" },
+      "rows": {
+        "health": "Health (16%, cap)",
+        "education": "Education (cap)",
+        "housing": "Housing interest (cap)",
+        "dependents": "Dependents ({count})",
+        "total": "Total deductions",
+        "taxable": "Taxable base"
+      },
       "tax": "Estimated tax owed",
       "effectiveRate": "Effective rate: {rate}% of gross income.",
       "notes": "Notes"
@@ -282,49 +399,165 @@
     "netWorth": {
       "title": "Net Worth",
       "subtitle": "Track your net worth over time",
-      "kpis": { "netWorth": "Net Worth", "assets": "Total Assets", "liabilities": "Total Liabilities", "ratio": "Debt/Asset Ratio" },
-      "ratioStatus": { "healthy": "Healthy", "moderate": "Moderate", "highRisk": "High risk" },
-      "chart": { "evolution": "Net worth evolution", "lastN": "Last {count} records", "srCaption": "Net worth evolution chart showing assets, liabilities and net worth of the last {count} records.", "netWorth": "Net worth", "assets": "Assets" },
-      "columns": { "date": "Date", "assets": "Assets", "liabilities": "Liabilities", "netWorth": "Net worth" },
-      "card": { "assets": "Assets", "liabilities": "Liabilities", "ratioLabel": "Ratio {ratio} · {label}" },
-      "empty": { "title": "Your net worth starts here", "description": "Save periodic snapshots to see how your assets and debts evolve.", "hint": "Start by creating your first net worth record." }
+      "kpis": {
+        "netWorth": "Net Worth",
+        "assets": "Total Assets",
+        "liabilities": "Total Liabilities",
+        "ratio": "Debt/Asset Ratio"
+      },
+      "ratioStatus": {
+        "healthy": "Healthy",
+        "moderate": "Moderate",
+        "highRisk": "High risk"
+      },
+      "chart": {
+        "evolution": "Net worth evolution",
+        "lastN": "Last {count} records",
+        "srCaption": "Net worth evolution chart showing assets, liabilities and net worth of the last {count} records.",
+        "netWorth": "Net worth",
+        "assets": "Assets"
+      },
+      "columns": {
+        "date": "Date",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
+        "netWorth": "Net worth"
+      },
+      "card": {
+        "assets": "Assets",
+        "liabilities": "Liabilities",
+        "ratioLabel": "Ratio {ratio} · {label}"
+      },
+      "empty": {
+        "title": "Your net worth starts here",
+        "description": "Save periodic snapshots to see how your assets and debts evolve.",
+        "hint": "Start by creating your first net worth record."
+      }
     },
     "investments": {
       "title": "Investments",
       "subtitle": "Investment portfolio",
-      "kpis": { "totalInvested": "Total Invested", "currentValue": "Current Value", "totalReturn": "Total Return" },
+      "kpis": {
+        "totalInvested": "Total Invested",
+        "currentValue": "Current Value",
+        "totalReturn": "Total Return"
+      },
       "allocation": "Portfolio allocation",
-      "columns": { "name": "Name", "type": "Type", "price": "Market price", "value": "Current value", "invested": "Invested", "gain": "Gain", "return": "Return %", "source": "Source" },
-      "types": { "STOCK": "Stocks", "BOND": "Bonds", "CRYPTO": "Crypto", "ETF": "ETF", "REAL_ESTATE": "Real Estate", "OTHER": "Other" },
-      "sources": { "real": "Real price", "estimated": "Estimated", "na": "N/A" },
-      "card": { "currentValue": "Current value", "invested": "Invested", "gainLoss": "Gain / Loss", "returnLabel": "Return", "marketPrice": "Market price", "updated": "Updated" },
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "price": "Market price",
+        "value": "Current value",
+        "invested": "Invested",
+        "gain": "Gain",
+        "return": "Return %",
+        "source": "Source"
+      },
+      "types": {
+        "STOCK": "Stocks",
+        "BOND": "Bonds",
+        "CRYPTO": "Crypto",
+        "ETF": "ETF",
+        "REAL_ESTATE": "Real Estate",
+        "OTHER": "Other"
+      },
+      "sources": {
+        "real": "Real price",
+        "estimated": "Estimated",
+        "na": "N/A"
+      },
+      "card": {
+        "currentValue": "Current value",
+        "invested": "Invested",
+        "gainLoss": "Gain / Loss",
+        "returnLabel": "Return",
+        "marketPrice": "Market price",
+        "updated": "Updated"
+      },
       "units": "units",
       "unitsShort": "units",
       "noQuote": "No quote",
-      "empty": { "title": "Grow your net worth", "description": "Track stocks, bonds, crypto, ETFs and real estate in one place.", "hint": "Start by registering your first investment." }
+      "empty": {
+        "title": "Grow your net worth",
+        "description": "Track stocks, bonds, crypto, ETFs and real estate in one place.",
+        "hint": "Start by registering your first investment."
+      }
     },
     "achievements": {
       "title": "Achievements",
       "subtitle": "Unlock achievements, earn XP and level up",
-      "categories": { "starter": "First steps", "consistency": "Consistency", "advanced": "Advanced" },
-      "status": { "completed": "Completed", "pending": "Pending" },
+      "categories": {
+        "starter": "First steps",
+        "consistency": "Consistency",
+        "advanced": "Advanced"
+      },
+      "status": {
+        "completed": "Completed",
+        "pending": "Pending"
+      },
       "loading": "Loading achievements...",
-      "errors": { "loadError": "Failed to load achievements", "unknown": "Unknown error" },
-      "errorState": { "title": "Couldn't load achievements", "hint": "Check your connection and try again." },
-      "empty": { "title": "No achievements yet", "description": "Complete financial actions to unlock your first badge.", "hint": "Start by logging a transaction or creating a budget." },
-      "kpis": { "unlocked": "Unlocked", "xp": "XP Earned", "pending": "Pending" },
-      "progress": { "label": "Overall progress", "summary": "{unlocked} of {total} achievements · {pct}%" },
-      "tabs": { "all": "All", "unlocked": "Unlocked", "pending": "Pending" },
-      "unlockedEmpty": { "title": "No achievements unlocked", "description": "Complete financial actions to see your badges here.", "hint": "Every transaction, goal or budget brings you closer to a new achievement." },
-      "allDone": { "title": "All achievements completed!", "description": "You've unlocked every available badge.", "hint": "Keep using Rhynode to maintain your streak and level up." }
+      "errors": {
+        "loadError": "Failed to load achievements",
+        "unknown": "Unknown error"
+      },
+      "errorState": {
+        "title": "Couldn't load achievements",
+        "hint": "Check your connection and try again."
+      },
+      "empty": {
+        "title": "No achievements yet",
+        "description": "Complete financial actions to unlock your first badge.",
+        "hint": "Start by logging a transaction or creating a budget."
+      },
+      "kpis": {
+        "unlocked": "Unlocked",
+        "xp": "XP Earned",
+        "pending": "Pending"
+      },
+      "progress": {
+        "label": "Overall progress",
+        "summary": "{unlocked} of {total} achievements · {pct}%"
+      },
+      "tabs": {
+        "all": "All",
+        "unlocked": "Unlocked",
+        "pending": "Pending"
+      },
+      "unlockedEmpty": {
+        "title": "No achievements unlocked",
+        "description": "Complete financial actions to see your badges here.",
+        "hint": "Every transaction, goal or budget brings you closer to a new achievement."
+      },
+      "allDone": {
+        "title": "All achievements completed!",
+        "description": "You've unlocked every available badge.",
+        "hint": "Keep using Rhynode to maintain your streak and level up."
+      }
     },
     "projects": {
       "title": "Projects",
       "subtitle": "Manage your projects, budgets and associated invoices",
       "allTitle": "All Projects",
-      "statuses": { "ACTIVE": "Active", "COMPLETED": "Completed", "ARCHIVED": "Archived" },
-      "columns": { "project": "Project", "status": "Status", "budget": "Budget", "spent": "Spent", "progress": "Progress", "dates": "Dates", "invoices": "Invoices", "actions": "Actions" },
-      "empty": { "title": "Organize your work into projects", "description": "Create projects with budget and dates. Link them to invoices to see in real time how much you've spent.", "hint": "Start by creating your first project." }
+      "statuses": {
+        "ACTIVE": "Active",
+        "COMPLETED": "Completed",
+        "ARCHIVED": "Archived"
+      },
+      "columns": {
+        "project": "Project",
+        "status": "Status",
+        "budget": "Budget",
+        "spent": "Spent",
+        "progress": "Progress",
+        "dates": "Dates",
+        "invoices": "Invoices",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "Organize your work into projects",
+        "description": "Create projects with budget and dates. Link them to invoices to see in real time how much you've spent.",
+        "hint": "Start by creating your first project."
+      }
     },
     "stats": {
       "title": "My stats",
@@ -335,32 +568,106 @@
       "xpPerWeek": "XP per week",
       "recentAchievements": "Recent achievements",
       "viewAchievements": "View achievements",
-      "empty": { "title": "No achievements unlocked yet", "description": "Complete financial actions to earn badges." },
-      "kpis": { "txMonth": "Transactions this month", "invMonth": "Invoices this month", "savings": "Total savings", "xpMonth": "XP earned this month", "activeDays": "Active days (30 days)" }
+      "empty": {
+        "title": "No achievements unlocked yet",
+        "description": "Complete financial actions to earn badges."
+      },
+      "kpis": {
+        "txMonth": "Transactions this month",
+        "invMonth": "Invoices this month",
+        "savings": "Total savings",
+        "xpMonth": "XP earned this month",
+        "activeDays": "Active days (30 days)"
+      }
     },
     "tax": {
       "title": "Taxes & Compliance",
       "subtitle": "Fiscal calendar and compliance reports",
-      "statuses": { "PENDING": "Pending", "FILED": "Filed", "APPROVED": "Approved", "REJECTED": "Rejected", "OVERDUE": "Overdue" },
-      "types": { "IVA": "VAT", "ISR": "ISR", "RETENTION": "Withholding", "ICA": "ICA", "RENTA": "Income tax", "DIAN_ELECTRONIC": "Electronic invoice" },
-      "kpis": { "iva": "VAT", "reteFuente": "Withholding", "ica": "ICA", "icaFooter": "Per municipal rate (e.g. Bogotá 9.66‰)" },
-      "exampleColumns": { "type": "Type", "base": "Base", "rate": "Rate", "tax": "Tax", "total": "Total", "note": "Note" },
-      "exampleCard": { "base": "Base", "tax": "Tax", "total": "Total" },
-      "reportColumns": { "authority": "Authority", "type": "Type", "period": "Period", "status": "Status", "due": "Due date" },
-      "reportCard": { "period": "Period", "due": "Due date" },
+      "statuses": {
+        "PENDING": "Pending",
+        "FILED": "Filed",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "OVERDUE": "Overdue"
+      },
+      "types": {
+        "IVA": "VAT",
+        "ISR": "ISR",
+        "RETENTION": "Withholding",
+        "ICA": "ICA",
+        "RENTA": "Income tax",
+        "DIAN_ELECTRONIC": "Electronic invoice"
+      },
+      "kpis": {
+        "iva": "VAT",
+        "reteFuente": "Withholding",
+        "ica": "ICA",
+        "icaFooter": "Per municipal rate (e.g. Bogotá 9.66‰)"
+      },
+      "exampleColumns": {
+        "type": "Type",
+        "base": "Base",
+        "rate": "Rate",
+        "tax": "Tax",
+        "total": "Total",
+        "note": "Note"
+      },
+      "exampleCard": {
+        "base": "Base",
+        "tax": "Tax",
+        "total": "Total"
+      },
+      "reportColumns": {
+        "authority": "Authority",
+        "type": "Type",
+        "period": "Period",
+        "status": "Status",
+        "due": "Due date"
+      },
+      "reportCard": {
+        "period": "Period",
+        "due": "Due date"
+      },
       "reportTitle": "Colombia Tax Report",
-      "year": "Year", "month": "Month", "periodicity": "Periodicity", "monthly": "Monthly", "bimonthly": "Bimonthly",
+      "year": "Year",
+      "month": "Month",
+      "periodicity": "Periodicity",
+      "monthly": "Monthly",
+      "bimonthly": "Bimonthly",
       "quarter": "Q{q} {year}",
-      "report": { "ivaGenerated": "VAT generated", "ivaDeductible": "Estimated deductible VAT", "reteFuente": "Estimated withholding", "ica": "Estimated ICA", "noCity": "No city" },
-      "tableHeaders": { "concept": "Concept", "base": "Base", "rate": "Rate", "tax": "Tax" },
-      "rows": { "ivaGenerated": "VAT generated ({count} invoices)", "ivaDeductible": "Estimated deductible VAT ({count} expenses)", "ivaNet": "Net VAT payable", "reteFuenteIncome": "Withholding on income ({count} invoices)", "reteFuentePayments": "Withholding applied on payments ({count} expenses)", "reteFuenteTotal": "Total estimated withholding", "ica": "ICA" },
+      "report": {
+        "ivaGenerated": "VAT generated",
+        "ivaDeductible": "Estimated deductible VAT",
+        "reteFuente": "Estimated withholding",
+        "ica": "Estimated ICA",
+        "noCity": "No city"
+      },
+      "tableHeaders": {
+        "concept": "Concept",
+        "base": "Base",
+        "rate": "Rate",
+        "tax": "Tax"
+      },
+      "rows": {
+        "ivaGenerated": "VAT generated ({count} invoices)",
+        "ivaDeductible": "Estimated deductible VAT ({count} expenses)",
+        "ivaNet": "Net VAT payable",
+        "reteFuenteIncome": "Withholding on income ({count} invoices)",
+        "reteFuentePayments": "Withholding applied on payments ({count} expenses)",
+        "reteFuenteTotal": "Total estimated withholding",
+        "ica": "ICA"
+      },
       "draft": "Indicative draft",
       "examplesTitle": "Calculation examples",
       "noExamples": "No examples available",
       "noExamplesDesc": "Reference tax calculations will appear here when available.",
       "reportsTitle": "Tax reports",
       "reportError": "Error generating the report",
-      "empty": { "title": "Keep your compliance up to date", "description": "Create VAT, ISR, withholding and filing reports for DIAN, SAT or AFIP.", "hint": "Start by creating your first tax report." }
+      "empty": {
+        "title": "Keep your compliance up to date",
+        "description": "Create VAT, ISR, withholding and filing reports for DIAN, SAT or AFIP.",
+        "hint": "Start by creating your first tax report."
+      }
     },
     "scope": {
       "personal": "Personal",
@@ -370,6 +677,26 @@
       "titlePersonal": "View only personal finances",
       "titleBusiness": "View only business finances",
       "titleBoth": "View personal and business finances"
+    },
+    "billingStatus": {
+      "title": "Billing",
+      "subtitle": "Your subscription status",
+      "success": {
+        "heading": "Subscription activated!",
+        "description": "Your payment was processed successfully. You can now enjoy the benefits of your new plan.",
+        "backToSettings": "Back to settings",
+        "goToInvoices": "Go to invoices"
+      },
+      "cancel": {
+        "heading": "Payment cancelled",
+        "description": "No charge was made. You can try again whenever you want or choose a different plan.",
+        "backToSettings": "Back to settings",
+        "help": "Help"
+      }
+    },
+    "personalHome": {
+      "title": "Personal finances",
+      "subtitle": "Manage your goals, accounts, budgets and movements."
     }
   },
   "nav": {
@@ -426,29 +753,68 @@
     "personal": "Personal",
     "business": "Business",
     "items": {
-      "budgets": { "title": "Smart budgets", "description": "Create budgets by category and get alerts before you overspend." },
-      "goals": { "title": "Savings goals with purpose", "description": "Visualize your progress and automate recurring savings effortlessly." },
-      "expenses": { "title": "AI-categorized expenses", "description": "Know exactly where your money goes without manual sorting." },
-      "invoicing": { "title": "DIAN electronic invoicing", "description": "Issue valid invoices, send them automatically and track payments." },
-      "receivables": { "title": "Accounts receivable", "description": "Manage clients and collections. Reduce late payments with automatic reminders." },
-      "taxes": { "title": "Taxes and fiscal reports", "description": "Generate pre-filled reports and meet your DIAN obligations." }
+      "budgets": {
+        "title": "Smart budgets",
+        "description": "Create budgets by category and get alerts before you overspend."
+      },
+      "goals": {
+        "title": "Savings goals with purpose",
+        "description": "Visualize your progress and automate recurring savings effortlessly."
+      },
+      "expenses": {
+        "title": "AI-categorized expenses",
+        "description": "Know exactly where your money goes without manual sorting."
+      },
+      "invoicing": {
+        "title": "DIAN electronic invoicing",
+        "description": "Issue valid invoices, send them automatically and track payments."
+      },
+      "receivables": {
+        "title": "Accounts receivable",
+        "description": "Manage clients and collections. Reduce late payments with automatic reminders."
+      },
+      "taxes": {
+        "title": "Taxes and fiscal reports",
+        "description": "Generate pre-filled reports and meet your DIAN obligations."
+      }
     }
   },
   "howItWorks": {
     "title": "Start in minutes, not days",
     "steps": {
-      "01": { "title": "Create your account", "description": "Sign up for free in under 2 minutes from web or mobile." },
-      "02": { "title": "Connect your data", "description": "Add accounts, cards and tax details. Everything encrypted." },
-      "03": { "title": "Make decisions", "description": "Use alerts, reports and AI to save more and grow your business." }
+      "01": {
+        "title": "Create your account",
+        "description": "Sign up for free in under 2 minutes from web or mobile."
+      },
+      "02": {
+        "title": "Connect your data",
+        "description": "Add accounts, cards and tax details. Everything encrypted."
+      },
+      "03": {
+        "title": "Make decisions",
+        "description": "Use alerts, reports and AI to save more and grow your business."
+      }
     }
   },
   "testimonials": {
     "title": "What our users say",
     "subtitle": "Over 10,000 people and SMBs in Colombia trust Rhynode.",
     "items": {
-      "mfl": { "name": "María Fernanda López", "role": "Freelance designer", "quote": "I used to have no idea where my money went. Now my expenses are categorized and my taxes organized in one place." },
-      "car": { "name": "Carlos Andrés Ramírez", "role": "Online store owner", "quote": "Electronic invoicing saves me hours every month. My clients get invoices automatically and DIAN is happy." },
-      "dt": { "name": "Daniela Torres", "role": "Independent accountant", "quote": "I recommend Rhynode to my clients because it unites accounting and personal finance without them needing to be tech experts." }
+      "mfl": {
+        "name": "María Fernanda López",
+        "role": "Freelance designer",
+        "quote": "I used to have no idea where my money went. Now my expenses are categorized and my taxes organized in one place."
+      },
+      "car": {
+        "name": "Carlos Andrés Ramírez",
+        "role": "Online store owner",
+        "quote": "Electronic invoicing saves me hours every month. My clients get invoices automatically and DIAN is happy."
+      },
+      "dt": {
+        "name": "Daniela Torres",
+        "role": "Independent accountant",
+        "quote": "I recommend Rhynode to my clients because it unites accounting and personal finance without them needing to be tech experts."
+      }
     }
   },
   "pricing": {
@@ -464,7 +830,13 @@
         "name": "Starter",
         "price": "Free",
         "description": "For those who want to control their personal money.",
-        "features": ["Budgets and savings goals", "Expense tracking", "Up to 2 bank accounts", "Monthly reports", "PWA mobile app"],
+        "features": [
+          "Budgets and savings goals",
+          "Expense tracking",
+          "Up to 2 bank accounts",
+          "Monthly reports",
+          "PWA mobile app"
+        ],
         "cta": "Get started free"
       },
       "growth": {
@@ -472,7 +844,13 @@
         "price": "$19,900",
         "period": "/mo",
         "description": "Personal finance with AI and advanced scenarios.",
-        "features": ["Everything in Starter", "AI categorization", "Advanced goals and simulators", "Unlimited accounts", "Smart alerts"],
+        "features": [
+          "Everything in Starter",
+          "AI categorization",
+          "Advanced goals and simulators",
+          "Unlimited accounts",
+          "Smart alerts"
+        ],
         "cta": "Join the waitlist"
       },
       "scale": {
@@ -480,7 +858,14 @@
         "price": "$79,900",
         "period": "/mo",
         "description": "DIAN invoicing, collections and team for SMBs.",
-        "features": ["Everything in Growth", "DIAN electronic invoicing", "100 invoices/month", "3 users included", "Unlimited clients", "Priority support"],
+        "features": [
+          "Everything in Growth",
+          "DIAN electronic invoicing",
+          "100 invoices/month",
+          "3 users included",
+          "Unlimited clients",
+          "Priority support"
+        ],
         "cta": "Choose Scale"
       }
     }
@@ -489,14 +874,38 @@
     "title": "Frequently asked questions",
     "subtitle": "Clear answers about DIAN, security, payments and plans in Colombia.",
     "items": {
-      "accountant": { "q": "Does Rhynode replace my accountant?", "a": "No. Rhynode automates repetitive tasks and organizes your information so you or your accountant work faster and with fewer errors." },
-      "dian": { "q": "Is the invoicing valid with DIAN?", "a": "Yes. We generate electronic invoices with the structure DIAN requires and prepare the integration with authorized invoicing providers." },
-      "payments": { "q": "Can I pay with Wompi, PSE or card?", "a": "Yes. Paid plans are processed with Wompi, letting you pay with PSE, credit/debit cards and other methods available in Colombia." },
-      "personalOnly": { "q": "Can I use it only for personal finance?", "a": "Of course. The Starter plan is free forever and you can use it without activating business features." },
-      "security": { "q": "Are my financial data safe?", "a": "We use encryption in transit and at rest, secure authentication and never sell your information. You own your data." },
-      "price": { "q": "How much does it cost and are there lock-in contracts?", "a": "The Starter plan is free. Growth and Scale are monthly with no lock-in contracts or hidden fees. Cancel anytime." },
-      "mobile": { "q": "Does it work on mobile?", "a": "Yes. Rhynode is a PWA, so you can use it from your phone browser, add it to your home screen and receive notifications." },
-      "bank": { "q": "How do I connect my bank?", "a": "You can log transactions manually or connect accounts from Bancolombia, Davivienda, Nu, Nequi and other PSE/Wompi-compatible institutions." }
+      "accountant": {
+        "q": "Does Rhynode replace my accountant?",
+        "a": "No. Rhynode automates repetitive tasks and organizes your information so you or your accountant work faster and with fewer errors."
+      },
+      "dian": {
+        "q": "Is the invoicing valid with DIAN?",
+        "a": "Yes. We generate electronic invoices with the structure DIAN requires and prepare the integration with authorized invoicing providers."
+      },
+      "payments": {
+        "q": "Can I pay with Wompi, PSE or card?",
+        "a": "Yes. Paid plans are processed with Wompi, letting you pay with PSE, credit/debit cards and other methods available in Colombia."
+      },
+      "personalOnly": {
+        "q": "Can I use it only for personal finance?",
+        "a": "Of course. The Starter plan is free forever and you can use it without activating business features."
+      },
+      "security": {
+        "q": "Are my financial data safe?",
+        "a": "We use encryption in transit and at rest, secure authentication and never sell your information. You own your data."
+      },
+      "price": {
+        "q": "How much does it cost and are there lock-in contracts?",
+        "a": "The Starter plan is free. Growth and Scale are monthly with no lock-in contracts or hidden fees. Cancel anytime."
+      },
+      "mobile": {
+        "q": "Does it work on mobile?",
+        "a": "Yes. Rhynode is a PWA, so you can use it from your phone browser, add it to your home screen and receive notifications."
+      },
+      "bank": {
+        "q": "How do I connect my bank?",
+        "a": "You can log transactions manually or connect accounts from Bancolombia, Davivienda, Nu, Nequi and other PSE/Wompi-compatible institutions."
+      }
     }
   },
   "cta": {

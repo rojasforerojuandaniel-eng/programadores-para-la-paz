@@ -79,7 +79,11 @@
         "status": "Estado",
         "actions": "Acciones"
       },
-      "status": { "exceeded": "Excedido", "warning": "Alerta", "ok": "OK" },
+      "status": {
+        "exceeded": "Excedido",
+        "warning": "Alerta",
+        "ok": "OK"
+      },
       "exceededMsg": "Has excedido el presupuesto en {amount}.",
       "remainingMsg": "Te quedan {amount} antes de alcanzar el límite.",
       "empty": {
@@ -133,9 +137,23 @@
       "checking": "Corrientes",
       "savings": "Ahorros",
       "creditVirtual": "Crédito / Virtual",
-      "types": { "CHECKING": "Corriente", "SAVINGS": "Ahorros", "CREDIT": "Crédito", "VIRTUAL": "Virtual" },
-      "status": { "negative": "Negativo", "lowBalance": "Saldo bajo" },
-      "table": { "account": "Cuenta", "type": "Tipo", "currency": "Moneda", "balance": "Saldo", "actions": "Acciones" },
+      "types": {
+        "CHECKING": "Corriente",
+        "SAVINGS": "Ahorros",
+        "CREDIT": "Crédito",
+        "VIRTUAL": "Virtual"
+      },
+      "status": {
+        "negative": "Negativo",
+        "lowBalance": "Saldo bajo"
+      },
+      "table": {
+        "account": "Cuenta",
+        "type": "Tipo",
+        "currency": "Moneda",
+        "balance": "Saldo",
+        "actions": "Acciones"
+      },
       "empty": {
         "title": "Conecta tus cuentas bancarias",
         "description": "Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales en un solo lugar.",
@@ -149,11 +167,42 @@
       "newInvoice": "Nueva Factura",
       "noClient": "Sin cliente",
       "noName": "Sin nombre",
-      "statuses": { "DRAFT": "Borrador", "SENT": "Enviada", "PAID": "Pagada", "OVERDUE": "Vencida", "CANCELLED": "Anulada", "PARTIAL": "Parcial" },
-      "filters": { "ALL": "Todos", "PENDING": "Pendientes", "OVERDUE": "Vencidas", "PAID": "Pagadas" },
-      "columns": { "number": "Número", "client": "Cliente", "status": "Estado", "total": "Total", "date": "Fecha", "actions": "Acciones" },
-      "kpis": { "pending": "Pendientes", "overdue": "Vencidas", "paid": "Pagadas", "outstanding": "Total por cobrar", "invoicesCount": "{count} facturas" },
-      "filters2": { "clientLabel": "Cliente", "allClients": "Todos los clientes", "all": "Todos", "from": "Desde", "to": "Hasta" },
+      "statuses": {
+        "DRAFT": "Borrador",
+        "SENT": "Enviada",
+        "PAID": "Pagada",
+        "OVERDUE": "Vencida",
+        "CANCELLED": "Anulada",
+        "PARTIAL": "Parcial"
+      },
+      "filters": {
+        "ALL": "Todos",
+        "PENDING": "Pendientes",
+        "OVERDUE": "Vencidas",
+        "PAID": "Pagadas"
+      },
+      "columns": {
+        "number": "Número",
+        "client": "Cliente",
+        "status": "Estado",
+        "total": "Total",
+        "date": "Fecha",
+        "actions": "Acciones"
+      },
+      "kpis": {
+        "pending": "Pendientes",
+        "overdue": "Vencidas",
+        "paid": "Pagadas",
+        "outstanding": "Total por cobrar",
+        "invoicesCount": "{count} facturas"
+      },
+      "filters2": {
+        "clientLabel": "Cliente",
+        "allClients": "Todos los clientes",
+        "all": "Todos",
+        "from": "Desde",
+        "to": "Hasta"
+      },
       "empty": {
         "title": "No hay facturas aún",
         "description": "Crea tu primera factura para empezar a facturar y dar seguimiento a pagos.",
@@ -166,12 +215,23 @@
       "totalRemaining": "Restante Total",
       "active": "Activas",
       "overdue": "Vencidas",
-      "status": { "paid": "Pagada", "overdue": "Vencida", "active": "Activa" },
-      "type": { "owe": "Debo", "owed": "Me deben" },
+      "status": {
+        "paid": "Pagada",
+        "overdue": "Vencida",
+        "active": "Activa"
+      },
+      "type": {
+        "owe": "Debo",
+        "owed": "Me deben"
+      },
       "pay": "Pagar",
       "recordPayment": "Registrar pago",
       "paidAria": "Pagada",
-      "card": { "balance": "Saldo", "rate": "Tasa", "installment": "Cuota" },
+      "card": {
+        "balance": "Saldo",
+        "rate": "Tasa",
+        "installment": "Cuota"
+      },
       "progressLabel": "{pct}% pagado · {paid} de {principal}",
       "noDueDate": "Sin vencimiento",
       "overdueSuffix": " · vencida",
@@ -179,7 +239,17 @@
       "payoffLabel": "Liquidación estimada:",
       "days": "{days} días",
       "settled": "Deuda saldada",
-      "columns": { "name": "Nombre", "counterparty": "Acreedor", "remaining": "Saldo", "rate": "Tasa", "payment": "Cuota mensual", "progress": "Progreso", "payoff": "Liquidación", "dueDate": "Vencimiento", "status": "Estado" },
+      "columns": {
+        "name": "Nombre",
+        "counterparty": "Acreedor",
+        "remaining": "Saldo",
+        "rate": "Tasa",
+        "payment": "Cuota mensual",
+        "progress": "Progreso",
+        "payoff": "Liquidación",
+        "dueDate": "Vencimiento",
+        "status": "Estado"
+      },
       "empty": {
         "title": "Mantén tus deudas bajo control",
         "description": "Registra préstamos y obligaciones para planificar su pago y reducir intereses.",
@@ -196,11 +266,40 @@
       "no": "No",
       "pause": "Pausar",
       "activate": "Activar",
-      "list": { "name": "Nombre", "amount": "Monto", "frequency": "Frecuencia", "next": "Próximo vencimiento", "type": "Tipo", "subscription": "Suscripción", "status": "Estado", "actions": "Acciones" },
-      "toasts": { "activated": "Recurrente activado", "paused": "Recurrente pausado", "statusError": "No se pudo cambiar el estado", "networkError": "Error de red" },
-      "card": { "amount": "Monto", "next": "Próximo", "providerPrefix": "Proveedor: {name}" },
-      "frequencies": { "DAILY": "Diario", "WEEKLY": "Semanal", "BIWEEKLY": "Quincenal", "MONTHLY": "Mensual", "QUARTERLY": "Trimestral", "YEARLY": "Anual" },
-      "types": { "EXPENSE": "Gasto", "INCOME": "Ingreso", "TRANSFER": "Transferencia" },
+      "list": {
+        "name": "Nombre",
+        "amount": "Monto",
+        "frequency": "Frecuencia",
+        "next": "Próximo vencimiento",
+        "type": "Tipo",
+        "subscription": "Suscripción",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "toasts": {
+        "activated": "Recurrente activado",
+        "paused": "Recurrente pausado",
+        "statusError": "No se pudo cambiar el estado",
+        "networkError": "Error de red"
+      },
+      "card": {
+        "amount": "Monto",
+        "next": "Próximo",
+        "providerPrefix": "Proveedor: {name}"
+      },
+      "frequencies": {
+        "DAILY": "Diario",
+        "WEEKLY": "Semanal",
+        "BIWEEKLY": "Quincenal",
+        "MONTHLY": "Mensual",
+        "QUARTERLY": "Trimestral",
+        "YEARLY": "Anual"
+      },
+      "types": {
+        "EXPENSE": "Gasto",
+        "INCOME": "Ingreso",
+        "TRANSFER": "Transferencia"
+      },
       "empty": {
         "title": "Automatiza tus pagos recurrentes",
         "description": "Registra alquiler, suscripciones y servicios para nunca perder un vencimiento y mantener el control de tu flujo de caja.",
@@ -242,8 +341,16 @@
     "calendar": {
       "title": "Calendario de Pagos",
       "subtitle": "Visualiza tus suscripciones y vencimientos",
-      "kpis": { "total": "Total estimado próximos pagos", "upcoming": "Próximos pagos", "daysNext": "Días para el próximo pago" },
-      "days": { "today": "Hoy", "overdue": "Vencido hace {days} días", "left": "{days} días" }
+      "kpis": {
+        "total": "Total estimado próximos pagos",
+        "upcoming": "Próximos pagos",
+        "daysNext": "Días para el próximo pago"
+      },
+      "days": {
+        "today": "Hoy",
+        "overdue": "Vencido hace {days} días",
+        "left": "{days} días"
+      }
     },
     "split": {
       "title": "Dividir Gastos",
@@ -272,9 +379,19 @@
       "subtitle": "Estimación de planeación tributaria para personas naturales (tabla DT 2026).",
       "signIn": "Inicia sesión para ver tu declaración.",
       "disclaimer": "Esta es una <strong>estimación de planeación</strong>, no un documento tributario oficial. Los rubros deducibles se infieren por palabras clave en tus categorías. Confirma los valores con tu contador antes de presentar.",
-      "kpis": { "grossIncome": "Ingreso bruto anual", "exempt": "Renta exenta (25%, tope)" },
+      "kpis": {
+        "grossIncome": "Ingreso bruto anual",
+        "exempt": "Renta exenta (25%, tope)"
+      },
       "deductions": "Deducciones",
-      "rows": { "health": "Salud (16%, tope)", "education": "Educación (tope)", "housing": "Intereses vivienda (tope)", "dependents": "Dependientes ({count})", "total": "Total deducciones", "taxable": "Base gravable" },
+      "rows": {
+        "health": "Salud (16%, tope)",
+        "education": "Educación (tope)",
+        "housing": "Intereses vivienda (tope)",
+        "dependents": "Dependientes ({count})",
+        "total": "Total deducciones",
+        "taxable": "Base gravable"
+      },
       "tax": "Impuesto estimado a cargo",
       "effectiveRate": "Tasa efectiva: {rate}% sobre el ingreso bruto.",
       "notes": "Notas"
@@ -282,49 +399,165 @@
     "netWorth": {
       "title": "Patrimonio Neto",
       "subtitle": "Seguimiento de tu patrimonio a lo largo del tiempo",
-      "kpis": { "netWorth": "Patrimonio Neto", "assets": "Activos Totales", "liabilities": "Deudas Totales", "ratio": "Ratio Deuda/Activo" },
-      "ratioStatus": { "healthy": "Saludable", "moderate": "Moderado", "highRisk": "Alto riesgo" },
-      "chart": { "evolution": "Evolución del patrimonio", "lastN": "Últimos {count} registros", "srCaption": "Gráfico de evolución del patrimonio mostrando activos, deudas y patrimonio neto de los últimos {count} registros.", "netWorth": "Patrimonio neto", "assets": "Activos" },
-      "columns": { "date": "Fecha", "assets": "Activos", "liabilities": "Deudas", "netWorth": "Patrimonio" },
-      "card": { "assets": "Activos", "liabilities": "Deudas", "ratioLabel": "Ratio {ratio} · {label}" },
-      "empty": { "title": "Tu patrimonio empieza aquí", "description": "Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas.", "hint": "Empieza creando tu primer registro de patrimonio." }
+      "kpis": {
+        "netWorth": "Patrimonio Neto",
+        "assets": "Activos Totales",
+        "liabilities": "Deudas Totales",
+        "ratio": "Ratio Deuda/Activo"
+      },
+      "ratioStatus": {
+        "healthy": "Saludable",
+        "moderate": "Moderado",
+        "highRisk": "Alto riesgo"
+      },
+      "chart": {
+        "evolution": "Evolución del patrimonio",
+        "lastN": "Últimos {count} registros",
+        "srCaption": "Gráfico de evolución del patrimonio mostrando activos, deudas y patrimonio neto de los últimos {count} registros.",
+        "netWorth": "Patrimonio neto",
+        "assets": "Activos"
+      },
+      "columns": {
+        "date": "Fecha",
+        "assets": "Activos",
+        "liabilities": "Deudas",
+        "netWorth": "Patrimonio"
+      },
+      "card": {
+        "assets": "Activos",
+        "liabilities": "Deudas",
+        "ratioLabel": "Ratio {ratio} · {label}"
+      },
+      "empty": {
+        "title": "Tu patrimonio empieza aquí",
+        "description": "Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas.",
+        "hint": "Empieza creando tu primer registro de patrimonio."
+      }
     },
     "investments": {
       "title": "Inversiones",
       "subtitle": "Portafolio de inversiones",
-      "kpis": { "totalInvested": "Total Invertido", "currentValue": "Valor Actual", "totalReturn": "Retorno Total" },
+      "kpis": {
+        "totalInvested": "Total Invertido",
+        "currentValue": "Valor Actual",
+        "totalReturn": "Retorno Total"
+      },
       "allocation": "Distribución del portafolio",
-      "columns": { "name": "Nombre", "type": "Tipo", "price": "Precio mercado", "value": "Valor actual", "invested": "Invertido", "gain": "Ganancia", "return": "Retorno %", "source": "Fuente" },
-      "types": { "STOCK": "Acciones", "BOND": "Bonos", "CRYPTO": "Cripto", "ETF": "ETF", "REAL_ESTATE": "Bienes Raíces", "OTHER": "Otro" },
-      "sources": { "real": "Precio real", "estimated": "Estimado", "na": "N/A" },
-      "card": { "currentValue": "Valor actual", "invested": "Invertido", "gainLoss": "Ganancia / Pérdida", "returnLabel": "Retorno", "marketPrice": "Precio mercado", "updated": "Actualizado" },
+      "columns": {
+        "name": "Nombre",
+        "type": "Tipo",
+        "price": "Precio mercado",
+        "value": "Valor actual",
+        "invested": "Invertido",
+        "gain": "Ganancia",
+        "return": "Retorno %",
+        "source": "Fuente"
+      },
+      "types": {
+        "STOCK": "Acciones",
+        "BOND": "Bonos",
+        "CRYPTO": "Cripto",
+        "ETF": "ETF",
+        "REAL_ESTATE": "Bienes Raíces",
+        "OTHER": "Otro"
+      },
+      "sources": {
+        "real": "Precio real",
+        "estimated": "Estimado",
+        "na": "N/A"
+      },
+      "card": {
+        "currentValue": "Valor actual",
+        "invested": "Invertido",
+        "gainLoss": "Ganancia / Pérdida",
+        "returnLabel": "Retorno",
+        "marketPrice": "Precio mercado",
+        "updated": "Actualizado"
+      },
       "units": "unidades",
       "unitsShort": "unid.",
       "noQuote": "Sin cotización",
-      "empty": { "title": "Haz crecer tu patrimonio", "description": "Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar.", "hint": "Empieza registrando tu primera inversión." }
+      "empty": {
+        "title": "Haz crecer tu patrimonio",
+        "description": "Registra acciones, bonos, cripto, ETFs y bienes raíces en un solo lugar.",
+        "hint": "Empieza registrando tu primera inversión."
+      }
     },
     "achievements": {
       "title": "Logros",
       "subtitle": "Desbloquea logros, gana XP y sube de nivel",
-      "categories": { "starter": "Primeros pasos", "consistency": "Consistencia", "advanced": "Avanzado" },
-      "status": { "completed": "Completado", "pending": "Pendiente" },
+      "categories": {
+        "starter": "Primeros pasos",
+        "consistency": "Consistencia",
+        "advanced": "Avanzado"
+      },
+      "status": {
+        "completed": "Completado",
+        "pending": "Pendiente"
+      },
       "loading": "Cargando logros...",
-      "errors": { "loadError": "Error al cargar logros", "unknown": "Error desconocido" },
-      "errorState": { "title": "No se pudieron cargar los logros", "hint": "Revisa tu conexión e intenta de nuevo." },
-      "empty": { "title": "Aún no hay logros", "description": "Completa acciones financieras para desbloquear tu primer reconocimiento.", "hint": "Empieza registrando una transacción o creando un presupuesto." },
-      "kpis": { "unlocked": "Desbloqueados", "xp": "XP Ganada", "pending": "Pendientes" },
-      "progress": { "label": "Progreso general", "summary": "{unlocked} de {total} logros · {pct}%" },
-      "tabs": { "all": "Todos", "unlocked": "Desbloqueados", "pending": "Pendientes" },
-      "unlockedEmpty": { "title": "Ningún logro desbloqueado", "description": "Completa acciones financieras para ver tus reconocimientos aquí.", "hint": "Cada transacción, meta o presupuesto te acerca a un nuevo logro." },
-      "allDone": { "title": "¡Todos los logros completados!", "description": "Has desbloqueado cada reconocimiento disponible.", "hint": "Sigue usando Rhynode para mantener tu racha y subir de nivel." }
+      "errors": {
+        "loadError": "Error al cargar logros",
+        "unknown": "Error desconocido"
+      },
+      "errorState": {
+        "title": "No se pudieron cargar los logros",
+        "hint": "Revisa tu conexión e intenta de nuevo."
+      },
+      "empty": {
+        "title": "Aún no hay logros",
+        "description": "Completa acciones financieras para desbloquear tu primer reconocimiento.",
+        "hint": "Empieza registrando una transacción o creando un presupuesto."
+      },
+      "kpis": {
+        "unlocked": "Desbloqueados",
+        "xp": "XP Ganada",
+        "pending": "Pendientes"
+      },
+      "progress": {
+        "label": "Progreso general",
+        "summary": "{unlocked} de {total} logros · {pct}%"
+      },
+      "tabs": {
+        "all": "Todos",
+        "unlocked": "Desbloqueados",
+        "pending": "Pendientes"
+      },
+      "unlockedEmpty": {
+        "title": "Ningún logro desbloqueado",
+        "description": "Completa acciones financieras para ver tus reconocimientos aquí.",
+        "hint": "Cada transacción, meta o presupuesto te acerca a un nuevo logro."
+      },
+      "allDone": {
+        "title": "¡Todos los logros completados!",
+        "description": "Has desbloqueado cada reconocimiento disponible.",
+        "hint": "Sigue usando Rhynode para mantener tu racha y subir de nivel."
+      }
     },
     "projects": {
       "title": "Proyectos",
       "subtitle": "Gestiona tus proyectos, presupuestos y facturas asociadas",
       "allTitle": "Todos los Proyectos",
-      "statuses": { "ACTIVE": "Activo", "COMPLETED": "Completado", "ARCHIVED": "Archivado" },
-      "columns": { "project": "Proyecto", "status": "Estado", "budget": "Presupuesto", "spent": "Gastado", "progress": "Avance", "dates": "Fechas", "invoices": "Facturas", "actions": "Acciones" },
-      "empty": { "title": "Organiza tu trabajo en proyectos", "description": "Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado.", "hint": "Empieza creando tu primer proyecto." }
+      "statuses": {
+        "ACTIVE": "Activo",
+        "COMPLETED": "Completado",
+        "ARCHIVED": "Archivado"
+      },
+      "columns": {
+        "project": "Proyecto",
+        "status": "Estado",
+        "budget": "Presupuesto",
+        "spent": "Gastado",
+        "progress": "Avance",
+        "dates": "Fechas",
+        "invoices": "Facturas",
+        "actions": "Acciones"
+      },
+      "empty": {
+        "title": "Organiza tu trabajo en proyectos",
+        "description": "Crea proyectos con presupuesto y fechas. Asócialos a facturas para ver en tiempo real cuánto has gastado.",
+        "hint": "Empieza creando tu primer proyecto."
+      }
     },
     "stats": {
       "title": "Mis stats",
@@ -335,32 +568,106 @@
       "xpPerWeek": "XP por semana",
       "recentAchievements": "Logros recientes",
       "viewAchievements": "Ver logros",
-      "empty": { "title": "Aún no hay logros desbloqueados", "description": "Completa acciones financieras para ganar reconocimientos." },
-      "kpis": { "txMonth": "Transacciones este mes", "invMonth": "Facturas este mes", "savings": "Ahorro acumulado", "xpMonth": "XP ganado este mes", "activeDays": "Días activos (30 días)" }
+      "empty": {
+        "title": "Aún no hay logros desbloqueados",
+        "description": "Completa acciones financieras para ganar reconocimientos."
+      },
+      "kpis": {
+        "txMonth": "Transacciones este mes",
+        "invMonth": "Facturas este mes",
+        "savings": "Ahorro acumulado",
+        "xpMonth": "XP ganado este mes",
+        "activeDays": "Días activos (30 días)"
+      }
     },
     "tax": {
       "title": "Impuestos y Compliance",
       "subtitle": "Calendario fiscal y reportes de cumplimiento",
-      "statuses": { "PENDING": "Pendiente", "FILED": "Presentado", "APPROVED": "Aprobado", "REJECTED": "Rechazado", "OVERDUE": "Vencido" },
-      "types": { "IVA": "IVA / VAT", "ISR": "ISR", "RETENTION": "Retención", "ICA": "ICA", "RENTA": "Renta", "DIAN_ELECTRONIC": "Factura Electrónica" },
-      "kpis": { "iva": "IVA", "reteFuente": "ReteFuente", "ica": "ICA", "icaFooter": "Según tarifa del municipio (ej. Bogotá 9.66‰)" },
-      "exampleColumns": { "type": "Tipo", "base": "Base", "rate": "Tasa", "tax": "Impuesto", "total": "Total", "note": "Nota" },
-      "exampleCard": { "base": "Base", "tax": "Impuesto", "total": "Total" },
-      "reportColumns": { "authority": "Autoridad", "type": "Tipo", "period": "Período", "status": "Estado", "due": "Vencimiento" },
-      "reportCard": { "period": "Período", "due": "Vencimiento" },
+      "statuses": {
+        "PENDING": "Pendiente",
+        "FILED": "Presentado",
+        "APPROVED": "Aprobado",
+        "REJECTED": "Rechazado",
+        "OVERDUE": "Vencido"
+      },
+      "types": {
+        "IVA": "IVA / VAT",
+        "ISR": "ISR",
+        "RETENTION": "Retención",
+        "ICA": "ICA",
+        "RENTA": "Renta",
+        "DIAN_ELECTRONIC": "Factura Electrónica"
+      },
+      "kpis": {
+        "iva": "IVA",
+        "reteFuente": "ReteFuente",
+        "ica": "ICA",
+        "icaFooter": "Según tarifa del municipio (ej. Bogotá 9.66‰)"
+      },
+      "exampleColumns": {
+        "type": "Tipo",
+        "base": "Base",
+        "rate": "Tasa",
+        "tax": "Impuesto",
+        "total": "Total",
+        "note": "Nota"
+      },
+      "exampleCard": {
+        "base": "Base",
+        "tax": "Impuesto",
+        "total": "Total"
+      },
+      "reportColumns": {
+        "authority": "Autoridad",
+        "type": "Tipo",
+        "period": "Período",
+        "status": "Estado",
+        "due": "Vencimiento"
+      },
+      "reportCard": {
+        "period": "Período",
+        "due": "Vencimiento"
+      },
       "reportTitle": "Reporte Fiscal Colombia",
-      "year": "Año", "month": "Mes", "periodicity": "Periodicidad", "monthly": "Mensual", "bimonthly": "Bimestral",
+      "year": "Año",
+      "month": "Mes",
+      "periodicity": "Periodicidad",
+      "monthly": "Mensual",
+      "bimonthly": "Bimestral",
       "quarter": "Q{q} {year}",
-      "report": { "ivaGenerated": "IVA generado", "ivaDeductible": "IVA descontable estimado", "reteFuente": "ReteFuente estimada", "ica": "ICA estimado", "noCity": "Sin ciudad" },
-      "tableHeaders": { "concept": "Concepto", "base": "Base", "rate": "Tasa", "tax": "Impuesto" },
-      "rows": { "ivaGenerated": "IVA generado ({count} facturas)", "ivaDeductible": "IVA descontable estimado ({count} gastos)", "ivaNet": "IVA neto a pagar", "reteFuenteIncome": "ReteFuente sobre ingresos ({count} facturas)", "reteFuentePayments": "ReteFuente practicada en pagos ({count} gastos)", "reteFuenteTotal": "Total ReteFuente estimada", "ica": "ICA" },
+      "report": {
+        "ivaGenerated": "IVA generado",
+        "ivaDeductible": "IVA descontable estimado",
+        "reteFuente": "ReteFuente estimada",
+        "ica": "ICA estimado",
+        "noCity": "Sin ciudad"
+      },
+      "tableHeaders": {
+        "concept": "Concepto",
+        "base": "Base",
+        "rate": "Tasa",
+        "tax": "Impuesto"
+      },
+      "rows": {
+        "ivaGenerated": "IVA generado ({count} facturas)",
+        "ivaDeductible": "IVA descontable estimado ({count} gastos)",
+        "ivaNet": "IVA neto a pagar",
+        "reteFuenteIncome": "ReteFuente sobre ingresos ({count} facturas)",
+        "reteFuentePayments": "ReteFuente practicada en pagos ({count} gastos)",
+        "reteFuenteTotal": "Total ReteFuente estimada",
+        "ica": "ICA"
+      },
       "draft": "Borrador orientativo",
       "examplesTitle": "Ejemplos de Cálculo",
       "noExamples": "Sin ejemplos disponibles",
       "noExamplesDesc": "Aquí verás cálculos de impuestos de referencia cuando estén disponibles.",
       "reportsTitle": "Reportes Fiscales",
       "reportError": "Error al generar el reporte",
-      "empty": { "title": "Mantén el compliance al día", "description": "Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP.", "hint": "Empieza creando tu primer reporte fiscal." }
+      "empty": {
+        "title": "Mantén el compliance al día",
+        "description": "Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP.",
+        "hint": "Empieza creando tu primer reporte fiscal."
+      }
     },
     "scope": {
       "personal": "Personal",
@@ -370,6 +677,26 @@
       "titlePersonal": "Ver solo finanzas personales",
       "titleBusiness": "Ver solo finanzas empresariales",
       "titleBoth": "Ver finanzas personales y empresariales"
+    },
+    "billingStatus": {
+      "title": "Facturación",
+      "subtitle": "Estado de tu suscripción",
+      "success": {
+        "heading": "¡Suscripción activada!",
+        "description": "Tu pago se procesó correctamente. Ya puedes disfrutar de los beneficios de tu nuevo plan.",
+        "backToSettings": "Volver a configuración",
+        "goToInvoices": "Ir a facturas"
+      },
+      "cancel": {
+        "heading": "Pago cancelado",
+        "description": "No se realizó ningún cargo. Puedes intentar de nuevo cuando quieras o elegir otro plan.",
+        "backToSettings": "Volver a configuración",
+        "help": "Ayuda"
+      }
+    },
+    "personalHome": {
+      "title": "Finanzas personales",
+      "subtitle": "Gestiona tus metas, cuentas, presupuestos y movimientos."
     }
   },
   "nav": {
@@ -426,29 +753,68 @@
     "personal": "Personal",
     "business": "Negocio",
     "items": {
-      "budgets": { "title": "Presupuestos inteligentes", "description": "Crea presupuestos por categoría y recibe alertas antes de pasarte." },
-      "goals": { "title": "Metas de ahorro con propósito", "description": "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo." },
-      "expenses": { "title": "Gastos categorizados con IA", "description": "Entiende exactamente a dónde va tu dinero sin clasificar manualmente." },
-      "invoicing": { "title": "Facturación electrónica DIAN", "description": "Emite facturas válidas, envíalas automáticamente y controla pagos." },
-      "receivables": { "title": "Cuentas por cobrar", "description": "Gestiona clientes y cobros. Reduce morosidad con recordatorios automáticos." },
-      "taxes": { "title": "Impuestos y reportes fiscales", "description": "Genera reportes pre-llenados y cumple con tus obligaciones ante la DIAN." }
+      "budgets": {
+        "title": "Presupuestos inteligentes",
+        "description": "Crea presupuestos por categoría y recibe alertas antes de pasarte."
+      },
+      "goals": {
+        "title": "Metas de ahorro con propósito",
+        "description": "Visualiza tu progreso y automatiza ahorros periódicos sin esfuerzo."
+      },
+      "expenses": {
+        "title": "Gastos categorizados con IA",
+        "description": "Entiende exactamente a dónde va tu dinero sin clasificar manualmente."
+      },
+      "invoicing": {
+        "title": "Facturación electrónica DIAN",
+        "description": "Emite facturas válidas, envíalas automáticamente y controla pagos."
+      },
+      "receivables": {
+        "title": "Cuentas por cobrar",
+        "description": "Gestiona clientes y cobros. Reduce morosidad con recordatorios automáticos."
+      },
+      "taxes": {
+        "title": "Impuestos y reportes fiscales",
+        "description": "Genera reportes pre-llenados y cumple con tus obligaciones ante la DIAN."
+      }
     }
   },
   "howItWorks": {
     "title": "Empieza en minutos, no en días",
     "steps": {
-      "01": { "title": "Crea tu cuenta", "description": "Regístrate gratis en menos de 2 minutos desde web o móvil." },
-      "02": { "title": "Conecta tu información", "description": "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado." },
-      "03": { "title": "Toma decisiones", "description": "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio." }
+      "01": {
+        "title": "Crea tu cuenta",
+        "description": "Regístrate gratis en menos de 2 minutos desde web o móvil."
+      },
+      "02": {
+        "title": "Conecta tu información",
+        "description": "Agrega cuentas, tarjetas y datos fiscales. Todo encriptado."
+      },
+      "03": {
+        "title": "Toma decisiones",
+        "description": "Usa alertas, reportes e IA para ahorrar más y crecer tu negocio."
+      }
     }
   },
   "testimonials": {
     "title": "Lo que dicen nuestros usuarios",
     "subtitle": "Más de 10.000 personas y pymes en Colombia confían en Rhynode.",
     "items": {
-      "mfl": { "name": "María Fernanda López", "role": "Freelancer de diseño", "quote": "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar." },
-      "car": { "name": "Carlos Andrés Ramírez", "role": "Dueño de tienda online", "quote": "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta." },
-      "dt": { "name": "Daniela Torres", "role": "Contadora independiente", "quote": "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología." }
+      "mfl": {
+        "name": "María Fernanda López",
+        "role": "Freelancer de diseño",
+        "quote": "Antes no sabía a dónde se iba mi plata. Ahora tengo mis gastos categorizados y mis impuestos organizados en un solo lugar."
+      },
+      "car": {
+        "name": "Carlos Andrés Ramírez",
+        "role": "Dueño de tienda online",
+        "quote": "La facturación electrónica me ahorra horas cada mes. Mis clientes reciben las facturas automáticamente y la DIAN queda contenta."
+      },
+      "dt": {
+        "name": "Daniela Torres",
+        "role": "Contadora independiente",
+        "quote": "Recomiendo Rhynode a mis clientes porque une contabilidad y finanzas personales sin que necesiten ser expertos en tecnología."
+      }
     }
   },
   "pricing": {
@@ -464,7 +830,13 @@
         "name": "Starter",
         "price": "Gratis",
         "description": "Para quienes quieren controlar su dinero personal.",
-        "features": ["Presupuestos y metas de ahorro", "Seguimiento de gastos", "Hasta 2 cuentas bancarias", "Reportes mensuales", "App móvil PWA"],
+        "features": [
+          "Presupuestos y metas de ahorro",
+          "Seguimiento de gastos",
+          "Hasta 2 cuentas bancarias",
+          "Reportes mensuales",
+          "App móvil PWA"
+        ],
         "cta": "Empezar gratis"
       },
       "growth": {
@@ -472,7 +844,13 @@
         "price": "$19.900",
         "period": "/mes",
         "description": "Finanzas personales con IA y escenarios avanzados.",
-        "features": ["Todo lo del plan Starter", "Categorización con IA", "Metas avanzadas y simuladores", "Cuentas ilimitadas", "Alertas inteligentes"],
+        "features": [
+          "Todo lo del plan Starter",
+          "Categorización con IA",
+          "Metas avanzadas y simuladores",
+          "Cuentas ilimitadas",
+          "Alertas inteligentes"
+        ],
         "cta": "Unirse a la lista"
       },
       "scale": {
@@ -480,7 +858,14 @@
         "price": "$79.900",
         "period": "/mes",
         "description": "Facturación DIAN, cobros y equipo para pymes.",
-        "features": ["Todo lo del plan Growth", "Facturación electrónica DIAN", "100 facturas/mes", "3 usuarios incluidos", "Clientes ilimitados", "Soporte prioritario"],
+        "features": [
+          "Todo lo del plan Growth",
+          "Facturación electrónica DIAN",
+          "100 facturas/mes",
+          "3 usuarios incluidos",
+          "Clientes ilimitados",
+          "Soporte prioritario"
+        ],
         "cta": "Elegir Scale"
       }
     }
@@ -489,14 +874,38 @@
     "title": "Preguntas frecuentes",
     "subtitle": "Respuestas claras sobre DIAN, seguridad, pagos y planes en Colombia.",
     "items": {
-      "accountant": { "q": "¿Rhynode reemplaza a mi contador?", "a": "No. Rhynode automatiza tareas repetitivas y organiza tu información para que tú o tu contador trabajen más rápido y con menos errores." },
-      "dian": { "q": "¿La facturación es válida ante la DIAN?", "a": "Sí. Generamos facturas electrónicas con la estructura requerida por la DIAN y preparamos la integración con proveedores de facturación autorizados." },
-      "payments": { "q": "¿Puedo pagar con Wompi, PSE o tarjeta?", "a": "Sí. Los planes pagos se procesan con Wompi, lo que te permite pagar con PSE, tarjetas de crédito/débito y otros medios disponibles en Colombia." },
-      "personalOnly": { "q": "¿Puedo usarlo solo para finanzas personales?", "a": "Por supuesto. El plan Starter es gratis para siempre y puedes usarlo sin activar funciones de negocio." },
-      "security": { "q": "¿Mis datos financieros están seguros?", "a": "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información. Tú eres dueño de tus datos." },
-      "price": { "q": "¿Cuánto cuesta y hay contratos de permanencia?", "a": "El plan Starter es gratis. Growth y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras." },
-      "mobile": { "q": "¿Funciona en móvil?", "a": "Sí. Rhynode es una PWA, así que puedes usarla desde el navegador de tu celular, agregarla a tu pantalla de inicio y recibir notificaciones." },
-      "bank": { "q": "¿Cómo conecto mi banco?", "a": "Puedes registrar movimientos manualmente o conectar cuentas de Bancolombia, Davivienda, Nu, Nequi y otras entidades compatibles con PSE/Wompi." }
+      "accountant": {
+        "q": "¿Rhynode reemplaza a mi contador?",
+        "a": "No. Rhynode automatiza tareas repetitivas y organiza tu información para que tú o tu contador trabajen más rápido y con menos errores."
+      },
+      "dian": {
+        "q": "¿La facturación es válida ante la DIAN?",
+        "a": "Sí. Generamos facturas electrónicas con la estructura requerida por la DIAN y preparamos la integración con proveedores de facturación autorizados."
+      },
+      "payments": {
+        "q": "¿Puedo pagar con Wompi, PSE o tarjeta?",
+        "a": "Sí. Los planes pagos se procesan con Wompi, lo que te permite pagar con PSE, tarjetas de crédito/débito y otros medios disponibles en Colombia."
+      },
+      "personalOnly": {
+        "q": "¿Puedo usarlo solo para finanzas personales?",
+        "a": "Por supuesto. El plan Starter es gratis para siempre y puedes usarlo sin activar funciones de negocio."
+      },
+      "security": {
+        "q": "¿Mis datos financieros están seguros?",
+        "a": "Utilizamos encriptación en tránsito y en reposo, autenticación segura y nunca vendemos tu información. Tú eres dueño de tus datos."
+      },
+      "price": {
+        "q": "¿Cuánto cuesta y hay contratos de permanencia?",
+        "a": "El plan Starter es gratis. Growth y Scale son mensuales sin contratos de permanencia ni cargos ocultos. Cancela cuando quieras."
+      },
+      "mobile": {
+        "q": "¿Funciona en móvil?",
+        "a": "Sí. Rhynode es una PWA, así que puedes usarla desde el navegador de tu celular, agregarla a tu pantalla de inicio y recibir notificaciones."
+      },
+      "bank": {
+        "q": "¿Cómo conecto mi banco?",
+        "a": "Puedes registrar movimientos manualmente o conectar cuentas de Bancolombia, Davivienda, Nu, Nequi y otras entidades compatibles con PSE/Wompi."
+      }
     }
   },
   "cta": {
