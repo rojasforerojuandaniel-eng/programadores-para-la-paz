@@ -2,30 +2,17 @@
 
 import { useRef } from "react";
 import { User, Building2, Briefcase } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { UserScope } from "@/lib/scope";
 
-const modes: { id: UserScope; label: string; description: string; icon: typeof User }[] = [
-  {
-    id: "PERSONAL",
-    label: "Personal",
-    description: "Tus finanzas personales, presupuestos y metas de ahorro.",
-    icon: User,
-  },
-  {
-    id: "BUSINESS",
-    label: "Empresa",
-    description: "Facturación, impuestos y control de tu negocio.",
-    icon: Building2,
-  },
-  {
-    id: "BOTH",
-    label: "Ambas",
-    description: "Todo en un solo lugar.",
-    icon: Briefcase,
-  },
-];
+const MODE_IDS = ["PERSONAL", "BUSINESS", "BOTH"] as const satisfies readonly UserScope[];
+const MODE_ICONS: Record<UserScope, typeof User> = {
+  PERSONAL: User,
+  BUSINESS: Building2,
+  BOTH: Briefcase,
+};
 
 interface StepModeProps {
   selected: UserScope | null;
@@ -34,6 +21,7 @@ interface StepModeProps {
 }
 
 export default function StepMode({ selected, onSelect, onContinue }: StepModeProps) {
+  const t = useTranslations("onboarding.flow");
   const groupRef = useRef<HTMLDivElement>(null);
 
   function focusOption(index: number) {
@@ -43,26 +31,26 @@ export default function StepMode({ selected, onSelect, onContinue }: StepModePro
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    const currentIndex = modes.findIndex((m) => m.id === selected);
+    const currentIndex = MODE_IDS.findIndex((m) => m === selected);
     let nextIndex = currentIndex;
     if (e.key === "ArrowDown" || e.key === "ArrowRight") {
       e.preventDefault();
-      nextIndex = currentIndex < modes.length - 1 ? currentIndex + 1 : 0;
+      nextIndex = currentIndex < MODE_IDS.length - 1 ? currentIndex + 1 : 0;
     } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
       e.preventDefault();
-      nextIndex = currentIndex > 0 ? currentIndex - 1 : modes.length - 1;
+      nextIndex = currentIndex > 0 ? currentIndex - 1 : MODE_IDS.length - 1;
     } else if (e.key === "Home") {
       e.preventDefault();
       nextIndex = 0;
     } else if (e.key === "End") {
       e.preventDefault();
-      nextIndex = modes.length - 1;
+      nextIndex = MODE_IDS.length - 1;
     } else {
       return;
     }
-    const targetMode = modes[nextIndex];
-    if (targetMode && targetMode.id !== selected) {
-      onSelect(targetMode.id);
+    const targetMode = MODE_IDS[nextIndex];
+    if (targetMode && targetMode !== selected) {
+      onSelect(targetMode);
     }
     focusOption(nextIndex);
   }
@@ -77,28 +65,28 @@ export default function StepMode({ selected, onSelect, onContinue }: StepModePro
             </div>
             <span className="text-lg font-semibold tracking-tight text-foreground">Rhynode</span>
           </div>
-          <h1 className="heading-section mt-4">¿Para qué usarás Rhynode?</h1>
+          <h1 className="heading-section mt-4">{t("modeStep.title")}</h1>
         </div>
 
         <div
           ref={groupRef}
           className="space-y-4"
           role="radiogroup"
-          aria-label="Modo de uso"
+          aria-label={t("aria.modeGroup")}
           aria-required="true"
           onKeyDown={handleKeyDown}
         >
-          {modes.map((mode, idx) => {
-            const Icon = mode.icon;
-            const isSelected = selected === mode.id;
+          {MODE_IDS.map((modeId, idx) => {
+            const Icon = MODE_ICONS[modeId];
+            const isSelected = selected === modeId;
             return (
               <button
-                key={mode.id}
+                key={modeId}
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
                 tabIndex={isSelected || (selected === null && idx === 0) ? 0 : -1}
-                onClick={() => onSelect(mode.id)}
+                onClick={() => onSelect(modeId)}
                 className="group block w-full text-left rounded-xl focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Card
@@ -117,8 +105,10 @@ export default function StepMode({ selected, onSelect, onContinue }: StepModePro
                       <Icon className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold">{mode.label}</h2>
-                      <p className="body-default mt-1 text-muted-foreground">{mode.description}</p>
+                      <h2 className="text-lg font-semibold">{t(`modes.${modeId}.label` as never)}</h2>
+                      <p className="body-default mt-1 text-muted-foreground">
+                        {t(`modes.${modeId}.description` as never)}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -132,7 +122,7 @@ export default function StepMode({ selected, onSelect, onContinue }: StepModePro
           disabled={!selected}
           onClick={onContinue}
         >
-          Continuar
+          {t("actions.continue")}
         </Button>
       </div>
     </div>

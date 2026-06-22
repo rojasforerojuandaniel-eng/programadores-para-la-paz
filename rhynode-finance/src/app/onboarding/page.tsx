@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo-metadata";
 import { getOrCreateAuthOrg } from "@/lib/auth";
 import { getLocale } from "@/lib/locale-server";
@@ -12,13 +12,18 @@ import OnboardingFlow from "./onboarding-flow";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Configura tu cuenta",
-  description:
-    "Completa tu perfil en Rhynode y empieza a gestionar tus finanzas personales o empresariales en minutos. Configurado para Colombia.",
-  path: "/onboarding",
-  keywords: ["onboarding", "configurar cuenta", "finanzas Colombia", "perfil"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "onboarding.meta" });
+  return buildMetadata({
+    title: t("title"),
+    description: t("description"),
+    path: "/onboarding",
+    keywords: locale === "en"
+      ? ["onboarding", "set up account", "Colombia finance", "profile"]
+      : ["onboarding", "configurar cuenta", "finanzas Colombia", "perfil"],
+  });
+}
 
 export default async function OnboardingPage() {
   const session = await auth();
