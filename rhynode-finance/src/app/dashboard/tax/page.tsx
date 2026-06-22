@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,8 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { DataTable } from "@/components/dashboard/data-table";
 import { TableCell } from "@/components/ui/table";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   Loader2,
   ShieldCheck,
@@ -48,33 +51,13 @@ interface TaxReport {
 
 const statusConfig: Record<
   string,
-  { label: string; className: string; icon: typeof CheckCircle }
+  { labelKey: string; className: string; icon: typeof CheckCircle }
 > = {
-  PENDING: {
-    label: "Pendiente",
-    className: "bg-amber-500/10 text-amber-400",
-    icon: Clock,
-  },
-  FILED: {
-    label: "Presentado",
-    className: "bg-blue-500/10 text-blue-400",
-    icon: CheckCircle,
-  },
-  APPROVED: {
-    label: "Aprobado",
-    className: "bg-emerald-500/10 text-emerald-400",
-    icon: CheckCircle,
-  },
-  REJECTED: {
-    label: "Rechazado",
-    className: "bg-red-500/10 text-red-400",
-    icon: AlertTriangle,
-  },
-  OVERDUE: {
-    label: "Vencido",
-    className: "bg-red-500/10 text-red-400",
-    icon: AlertTriangle,
-  },
+  PENDING: { labelKey: "statuses.PENDING", className: "bg-amber-500/10 text-amber-400", icon: Clock },
+  FILED: { labelKey: "statuses.FILED", className: "bg-blue-500/10 text-blue-400", icon: CheckCircle },
+  APPROVED: { labelKey: "statuses.APPROVED", className: "bg-emerald-500/10 text-emerald-400", icon: CheckCircle },
+  REJECTED: { labelKey: "statuses.REJECTED", className: "bg-red-500/10 text-red-400", icon: AlertTriangle },
+  OVERDUE: { labelKey: "statuses.OVERDUE", className: "bg-red-500/10 text-red-400", icon: AlertTriangle },
 };
 
 const authorityLabels: Record<string, string> = {
@@ -85,13 +68,13 @@ const authorityLabels: Record<string, string> = {
   SUNAT: "SUNAT (Perú)",
 };
 
-const typeLabels: Record<string, string> = {
-  IVA: "IVA / VAT",
-  ISR: "ISR",
-  RETENTION: "Retención",
-  ICA: "ICA",
-  RENTA: "Renta",
-  DIAN_ELECTRONIC: "Factura Electrónica",
+const typeLabelKeys: Record<string, string> = {
+  IVA: "types.IVA",
+  ISR: "types.ISR",
+  RETENTION: "types.RETENTION",
+  ICA: "types.ICA",
+  RENTA: "types.RENTA",
+  DIAN_ELECTRONIC: "types.DIAN_ELECTRONIC",
 };
 
 interface TaxExample {
@@ -111,12 +94,8 @@ const taxExamples: TaxExample[] = [
   { type: "ICA", base: 2000000, rate: 13.8, tax: 276000, total: 2276000, note: "Medellín (13.8/1000)" },
 ];
 
-function formatCOP(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+function formatCOP(amount: number, locale: Locale) {
+  return formatCurrency(amount, "COP", locale);
 }
 
 function getReportUrl(
@@ -135,6 +114,8 @@ function getReportUrl(
 }
 
 export default function TaxPage() {
+  const t = useTranslations("dashboard.tax");
+  const locale = useLocale() as Locale;
   const [reports, setReports] = useState<TaxReport[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -167,7 +148,7 @@ export default function TaxPage() {
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Error al generar el reporte");
+          throw new Error(data.error || t("reportError"));
         }
         return res.json() as Promise<ColombianTaxReport>;
       })
@@ -186,30 +167,36 @@ export default function TaxPage() {
   }, [year, month, periodType]);
 
   const exampleColumns = [
-    { key: "type", header: "Tipo" },
-    { key: "base", header: "Base", className: "text-right" },
-    { key: "rate", header: "Tasa", className: "text-right" },
-    { key: "tax", header: "Impuesto", className: "text-right" },
-    { key: "total", header: "Total", className: "text-right" },
-    { key: "note", header: "Nota" },
+    { key: "type", header: t("exampleColumns.type") },
+    { key: "base", header: t("exampleColumns.base"), className: "text-right" },
+    { key: "rate", header: t("exampleColumns.rate"), className: "text-right" },
+    { key: "tax", header: t("exampleColumns.tax"), className: "text-right" },
+    { key: "total", header: t("exampleColumns.total"), className: "text-right" },
+    { key: "note", header: t("exampleColumns.note") },
   ];
 
   const reportColumns = [
-    { key: "authority", header: "Autoridad" },
-    { key: "type", header: "Tipo" },
-    { key: "period", header: "Período" },
-    { key: "status", header: "Estado" },
-    { key: "due", header: "Vencimiento" },
+    { key: "authority", header: t("reportColumns.authority") },
+    { key: "type", header: t("reportColumns.type") },
+    { key: "period", header: t("reportColumns.period") },
+    { key: "status", header: t("reportColumns.status") },
+    { key: "due", header: t("reportColumns.due") },
   ];
+
+  function periodLabel(report: TaxReport): string {
+    if (report.period === "MONTHLY" && report.month) return `${report.month}/${report.year}`;
+    if (report.period === "QUARTERLY" && report.quarter) return t("quarter", { q: report.quarter, year: report.year });
+    return `${report.year}`;
+  }
 
   function renderExampleRow(ex: TaxExample) {
     return (
       <>
         <TableCell className="font-medium">{ex.type}</TableCell>
-        <TableCell className="text-right font-mono">{formatCOP(ex.base)}</TableCell>
+        <TableCell className="text-right font-mono">{formatCOP(ex.base, locale)}</TableCell>
         <TableCell className="text-right font-mono">{ex.rate}%</TableCell>
-        <TableCell className="text-right font-mono">{formatCOP(ex.tax)}</TableCell>
-        <TableCell className="text-right font-mono">{formatCOP(ex.total)}</TableCell>
+        <TableCell className="text-right font-mono">{formatCOP(ex.tax, locale)}</TableCell>
+        <TableCell className="text-right font-mono">{formatCOP(ex.total, locale)}</TableCell>
         <TableCell className="text-sm text-muted-foreground">{ex.note}</TableCell>
       </>
     );
@@ -224,16 +211,16 @@ export default function TaxPage() {
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <div className="text-muted-foreground">Base</div>
-            <div className="font-mono font-medium">{formatCOP(ex.base)}</div>
+            <div className="text-muted-foreground">{t("exampleCard.base")}</div>
+            <div className="font-mono font-medium">{formatCOP(ex.base, locale)}</div>
           </div>
           <div className="text-right">
-            <div className="text-muted-foreground">Impuesto</div>
-            <div className="font-mono font-medium">{formatCOP(ex.tax)}</div>
+            <div className="text-muted-foreground">{t("exampleCard.tax")}</div>
+            <div className="font-mono font-medium">{formatCOP(ex.tax, locale)}</div>
           </div>
           <div>
-            <div className="text-muted-foreground">Total</div>
-            <div className="font-mono font-semibold">{formatCOP(ex.total)}</div>
+            <div className="text-muted-foreground">{t("exampleCard.total")}</div>
+            <div className="font-mono font-semibold">{formatCOP(ex.total, locale)}</div>
           </div>
         </div>
         <div className="text-xs text-muted-foreground">{ex.note}</div>
@@ -247,66 +234,42 @@ export default function TaxPage() {
     return (
       <Badge variant="outline" className={config.className}>
         <Icon className="mr-1 h-3 w-3" />
-        {config.label}
+        {t(config.labelKey as never)}
       </Badge>
     );
   }
 
   function renderReportRow(report: TaxReport) {
-    const periodLabel =
-      report.period === "MONTHLY" && report.month
-        ? `${report.month}/${report.year}`
-        : report.period === "QUARTERLY" && report.quarter
-        ? `Q${report.quarter} ${report.year}`
-        : `${report.year}`;
     return (
       <>
         <TableCell className="text-sm">{authorityLabels[report.authority] || report.authority}</TableCell>
-        <TableCell className="text-sm">{typeLabels[report.type] || report.type}</TableCell>
-        <TableCell className="font-mono text-sm">{periodLabel}</TableCell>
-        <TableCell>
-          <StatusBadge status={report.status} />
-        </TableCell>
+        <TableCell className="text-sm">{t(typeLabelKeys[report.type] as never) || report.type}</TableCell>
+        <TableCell className="font-mono text-sm">{periodLabel(report)}</TableCell>
+        <TableCell><StatusBadge status={report.status} /></TableCell>
         <TableCell className="text-sm text-muted-foreground">
-          {report.dueDate
-            ? new Date(report.dueDate).toLocaleDateString("es-CO")
-            : "—"}
+          {report.dueDate ? fmtDate(report.dueDate, locale) : "—"}
         </TableCell>
       </>
     );
   }
 
   function renderReportCard(report: TaxReport) {
-    const periodLabel =
-      report.period === "MONTHLY" && report.month
-        ? `${report.month}/${report.year}`
-        : report.period === "QUARTERLY" && report.quarter
-        ? `Q${report.quarter} ${report.year}`
-        : `${report.year}`;
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate font-medium">
-              {typeLabels[report.type] || report.type}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {authorityLabels[report.authority] || report.authority}
-            </div>
+            <div className="truncate font-medium">{t(typeLabelKeys[report.type] as never) || report.type}</div>
+            <div className="text-sm text-muted-foreground">{authorityLabels[report.authority] || report.authority}</div>
           </div>
           <StatusBadge status={report.status} />
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Período</span>
-          <span className="font-mono">{periodLabel}</span>
+          <span className="text-muted-foreground">{t("reportCard.period")}</span>
+          <span className="font-mono">{periodLabel(report)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Vencimiento</span>
-          <span>
-            {report.dueDate
-              ? new Date(report.dueDate).toLocaleDateString("es-CO")
-              : "—"}
-          </span>
+          <span className="text-muted-foreground">{t("reportCard.due")}</span>
+          <span>{report.dueDate ? fmtDate(report.dueDate, locale) : "—"}</span>
         </div>
       </div>
     );
@@ -316,21 +279,21 @@ export default function TaxPage() {
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="heading-section">Impuestos y Compliance</h1>
-          <p className="body-default mt-1">Calendario fiscal y reportes de cumplimiento</p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <CreateTaxReportDialog onCreate={() => window.location.reload()} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <KpiCard label="IVA" value="19%" icon={Percent} />
-        <KpiCard label="ReteFuente" value="2.5% – 3.5%" icon={Receipt} />
+        <KpiCard label={t("kpis.iva")} value="19%" icon={Percent} />
+        <KpiCard label={t("kpis.reteFuente")} value="2.5% – 3.5%" icon={Receipt} />
         <KpiCard
-          label="ICA"
-          value="Variable"
+          label={t("kpis.ica")}
+          value={locale === "en" ? "Variable" : "Variable"}
           icon={FileCheck}
           footer={
-            <span className="text-xs text-muted-foreground">Según tarifa del municipio (ej. Bogotá 9.66‰)</span>
+            <span className="text-xs text-muted-foreground">{t("kpis.icaFooter")}</span>
           }
         />
       </div>
@@ -340,13 +303,13 @@ export default function TaxPage() {
       <Card className="surface-elevated-2">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="heading-card">Reporte Fiscal Colombia</CardTitle>
+            <CardTitle className="heading-card">{t("reportTitle")}</CardTitle>
             <div className="flex flex-wrap items-center gap-2">
               <div className="space-y-1">
-                <Label htmlFor="tax-year" className="sr-only">Año</Label>
+                <Label htmlFor="tax-year" className="sr-only">{t("year")}</Label>
                 <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
                   <SelectTrigger id="tax-year" className="w-[100px]">
-                    <SelectValue placeholder="Año" />
+                    <SelectValue placeholder={t("year")} />
                   </SelectTrigger>
                   <SelectContent>
                     {years.map((y) => (
@@ -357,15 +320,15 @@ export default function TaxPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="tax-month" className="sr-only">Mes</Label>
+                <Label htmlFor="tax-month" className="sr-only">{t("month")}</Label>
                 <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
                   <SelectTrigger id="tax-month" className="w-[130px]">
-                    <SelectValue placeholder="Mes" />
+                    <SelectValue placeholder={t("month")} />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                       <SelectItem key={m} value={String(m)}>
-                        {new Date(2024, m - 1, 1).toLocaleDateString("es-CO", { month: "long" })}
+                        {fmtDate(new Date(2024, m - 1, 1), locale, { month: "long" })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -373,14 +336,14 @@ export default function TaxPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="tax-period" className="sr-only">Periodicidad</Label>
+                <Label htmlFor="tax-period" className="sr-only">{t("periodicity")}</Label>
                 <Select value={periodType} onValueChange={(v) => setPeriodType(v as "MONTHLY" | "BIMONTHLY")}>
                   <SelectTrigger id="tax-period" className="w-[130px]">
-                    <SelectValue placeholder="Periodicidad" />
+                    <SelectValue placeholder={t("periodicity")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MONTHLY">Mensual</SelectItem>
-                    <SelectItem value="BIMONTHLY">Bimestral</SelectItem>
+                    <SelectItem value="MONTHLY">{t("monthly")}</SelectItem>
+                    <SelectItem value="BIMONTHLY">{t("bimonthly")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -401,21 +364,21 @@ export default function TaxPage() {
             <>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-lg border p-3">
-                  <div className="text-xs text-muted-foreground">IVA generado</div>
-                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.generated.tax)}</div>
+                  <div className="text-xs text-muted-foreground">{t("report.ivaGenerated")}</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.generated.tax, locale)}</div>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <div className="text-xs text-muted-foreground">IVA descontable estimado</div>
-                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.deductible.tax)}</div>
+                  <div className="text-xs text-muted-foreground">{t("report.ivaDeductible")}</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.iva.deductible.tax, locale)}</div>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <div className="text-xs text-muted-foreground">ReteFuente estimada</div>
-                  <div className="font-mono text-lg font-semibold">{formatCOP(report.reteFuente.total)}</div>
+                  <div className="text-xs text-muted-foreground">{t("report.reteFuente")}</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.reteFuente.total, locale)}</div>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <div className="text-xs text-muted-foreground">ICA estimado</div>
-                  <div className="font-mono text-lg font-semibold">{formatCOP(report.ica.amount)}</div>
-                  <div className="text-xs text-muted-foreground">{report.ica.city || "Sin ciudad"}</div>
+                  <div className="text-xs text-muted-foreground">{t("report.ica")}</div>
+                  <div className="font-mono text-lg font-semibold">{formatCOP(report.ica.amount, locale)}</div>
+                  <div className="text-xs text-muted-foreground">{report.ica.city || t("report.noCity")}</div>
                 </div>
               </div>
 
@@ -423,54 +386,54 @@ export default function TaxPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 text-left font-medium">Concepto</th>
-                      <th className="py-2 text-right font-medium">Base</th>
-                      <th className="py-2 text-right font-medium">Tasa</th>
-                      <th className="py-2 text-right font-medium">Impuesto</th>
+                      <th className="py-2 text-left font-medium">{t("tableHeaders.concept")}</th>
+                      <th className="py-2 text-right font-medium">{t("tableHeaders.base")}</th>
+                      <th className="py-2 text-right font-medium">{t("tableHeaders.rate")}</th>
+                      <th className="py-2 text-right font-medium">{t("tableHeaders.tax")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     <tr>
-                      <td>IVA generado ({report.iva.generated.count} facturas)</td>
-                      <td className="text-right font-mono">{formatCOP(report.iva.generated.base)}</td>
+                      <td>{t("rows.ivaGenerated", { count: report.iva.generated.count })}</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.generated.base, locale)}</td>
                       <td className="text-right font-mono">{(report.iva.generated.rate * 100).toFixed(0)}%</td>
-                      <td className="text-right font-mono">{formatCOP(report.iva.generated.tax)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.generated.tax, locale)}</td>
                     </tr>
                     <tr>
-                      <td>IVA descontable estimado ({report.iva.deductible.count} gastos)</td>
-                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.base)}</td>
+                      <td>{t("rows.ivaDeductible", { count: report.iva.deductible.count })}</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.base, locale)}</td>
                       <td className="text-right font-mono">{(report.iva.deductible.rate * 100).toFixed(0)}%</td>
-                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.tax)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.deductible.tax, locale)}</td>
                     </tr>
                     <tr className="font-medium">
-                      <td>IVA neto a pagar</td>
+                      <td>{t("rows.ivaNet")}</td>
                       <td className="text-right font-mono" />
                       <td className="text-right font-mono" />
-                      <td className="text-right font-mono">{formatCOP(report.iva.netPayable)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.iva.netPayable, locale)}</td>
                     </tr>
                     <tr>
-                      <td>ReteFuente sobre ingresos ({report.reteFuente.onIncome.count} facturas)</td>
-                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.base)}</td>
+                      <td>{t("rows.reteFuenteIncome", { count: report.reteFuente.onIncome.count })}</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.base, locale)}</td>
                       <td className="text-right font-mono">{(report.reteFuente.onIncome.rate * 100).toFixed(1)}%</td>
-                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.tax)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onIncome.tax, locale)}</td>
                     </tr>
                     <tr>
-                      <td>ReteFuente practicada en pagos ({report.reteFuente.onExpenses.count} gastos)</td>
-                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.base)}</td>
+                      <td>{t("rows.reteFuentePayments", { count: report.reteFuente.onExpenses.count })}</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.base, locale)}</td>
                       <td className="text-right font-mono">{(report.reteFuente.onExpenses.rate * 100).toFixed(1)}%</td>
-                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.tax)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.onExpenses.tax, locale)}</td>
                     </tr>
                     <tr className="font-medium">
-                      <td>Total ReteFuente estimada</td>
+                      <td>{t("rows.reteFuenteTotal")}</td>
                       <td className="text-right font-mono" />
                       <td className="text-right font-mono" />
-                      <td className="text-right font-mono">{formatCOP(report.reteFuente.total)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.reteFuente.total, locale)}</td>
                     </tr>
                     <tr>
-                      <td>ICA {report.ica.city ? `(${report.ica.city})` : ""}</td>
-                      <td className="text-right font-mono">{formatCOP(report.ica.base)}</td>
+                      <td>{t("rows.ica")} {report.ica.city ? `(${report.ica.city})` : ""}</td>
+                      <td className="text-right font-mono">{formatCOP(report.ica.base, locale)}</td>
                       <td className="text-right font-mono">{(report.ica.rate * 1000).toFixed(2)}‰</td>
-                      <td className="text-right font-mono">{formatCOP(report.ica.amount)}</td>
+                      <td className="text-right font-mono">{formatCOP(report.ica.amount, locale)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -513,7 +476,7 @@ export default function TaxPage() {
                 <div className="flex items-start gap-2">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <div className="space-y-1">
-                    <p className="font-medium">Borrador orientativo</p>
+                    <p className="font-medium">{t("draft")}</p>
                     {report.disclaimers.map((d, i) => (
                       <p key={i} className="text-xs opacity-90">{d}</p>
                     ))}
@@ -527,7 +490,7 @@ export default function TaxPage() {
 
       <Card className="surface-elevated-2">
         <CardHeader>
-          <CardTitle className="heading-card">Ejemplos de Cálculo</CardTitle>
+          <CardTitle className="heading-card">{t("examplesTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -539,8 +502,8 @@ export default function TaxPage() {
               <EmptyStateCard
                 variant="md"
                 icon={Receipt}
-                title="Sin ejemplos disponibles"
-                description="Aquí verás cálculos de impuestos de referencia cuando estén disponibles."
+                title={t("noExamples")}
+                description={t("noExamplesDesc")}
               />
             }
           />
@@ -550,7 +513,7 @@ export default function TaxPage() {
       <Card className="surface-elevated-2">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="heading-card">Reportes Fiscales</CardTitle>
+            <CardTitle className="heading-card">{t("reportsTitle")}</CardTitle>
             <CreateTaxReportDialog onCreate={() => window.location.reload()} />
           </div>
         </CardHeader>
@@ -570,9 +533,9 @@ export default function TaxPage() {
                 <EmptyStateCard
                   variant="lg"
                   icon={ShieldCheck}
-                  title="Mantén el compliance al día"
-                  description="Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP."
-                  hint="Empieza creando tu primer reporte fiscal."
+                  title={t("empty.title")}
+                  description={t("empty.description")}
+                  hint={t("empty.hint")}
                   action={<CreateTaxReportDialog onCreate={() => window.location.reload()} />}
                 />
               }
