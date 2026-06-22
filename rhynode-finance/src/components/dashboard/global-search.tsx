@@ -41,13 +41,13 @@ interface SearchResponse {
 
 const typeMeta: Record<
   SearchResult["type"],
-  { label: string; icon: React.ElementType }
+  { labelKey: string; icon: React.ElementType }
 > = {
-  transaction: { label: "Transacciones", icon: ArrowLeftRight },
-  invoice: { label: "Facturas", icon: FileText },
-  client: { label: "Clientes", icon: Users },
-  project: { label: "Proyectos", icon: Briefcase },
-  account: { label: "Cuentas", icon: Landmark },
+  transaction: { labelKey: "transaction", icon: ArrowLeftRight },
+  invoice: { labelKey: "invoice", icon: FileText },
+  client: { labelKey: "client", icon: Users },
+  project: { labelKey: "project", icon: Briefcase },
+  account: { labelKey: "account", icon: Landmark },
 };
 
 function groupResults(results: SearchResult[]) {

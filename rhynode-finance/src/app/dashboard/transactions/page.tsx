@@ -40,14 +40,6 @@ const CreateTransactionButton = dynamic(
     import("@/components/dashboard/create-transaction-button").then(
       (mod) => mod.CreateTransactionButton,
     ),
-  {
-    loading: () => (
-      <Button className="gap-2" disabled>
-        <Plus className="h-4 w-4" />
-        Nueva Transacción
-      </Button>
-    ),
-  },
 );
 
 const BankImportRefreshButton = dynamic(
@@ -285,7 +277,16 @@ async function HeaderSection({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <ExportButtons />
         <BankImportRefreshButton bankAccounts={bankAccounts} />
-        <CreateTransactionButton defaultOpen={defaultOpen} />
+        <Suspense
+          fallback={
+            <Button className="gap-2" disabled>
+              <Plus className="h-4 w-4" />
+              {t("newTransaction")}
+            </Button>
+          }
+        >
+          <CreateTransactionButton defaultOpen={defaultOpen} />
+        </Suspense>
       </div>
     </div>
   );

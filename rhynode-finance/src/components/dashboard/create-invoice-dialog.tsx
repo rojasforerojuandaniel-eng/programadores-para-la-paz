@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ export function CreateInvoiceDialog({
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
+  const t = useTranslations("dashboard.invoices");
 
   function handleSuccess() {
     setOpen(false);
@@ -55,13 +57,13 @@ export function CreateInvoiceDialog({
         <DialogTrigger asChild>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            Nueva Factura
+            {t("newInvoice")}
           </Button>
         </DialogTrigger>
       )}
       <DialogContent className="w-full max-w-[calc(100%-1rem)] p-4 sm:max-w-2xl sm:p-6">
         <DialogHeader>
-          <DialogTitle className="heading-card">Nueva Factura</DialogTitle>
+          <DialogTitle className="heading-card">{t("newInvoice")}</DialogTitle>
         </DialogHeader>
         <InvoiceForm
           onSuccess={handleSuccess}
