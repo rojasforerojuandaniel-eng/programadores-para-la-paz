@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +40,10 @@ interface TransactionFiltersProps {
   className?: string;
 }
 
-const typeOptions: { value: TransactionFiltersState["type"]; label: string }[] = [
-  { value: "all", label: "Todos" },
-  { value: "INCOME", label: "Ingresos" },
-  { value: "EXPENSE", label: "Gastos" },
+const typeOptions: { value: TransactionFiltersState["type"]; labelKey: string }[] = [
+  { value: "all", labelKey: "typesPlural.all" },
+  { value: "INCOME", labelKey: "typesPlural.INCOME" },
+  { value: "EXPENSE", labelKey: "typesPlural.EXPENSE" },
 ];
 
 function countActiveFilters(filters: TransactionFiltersState): number {
@@ -65,6 +66,7 @@ export function TransactionFilters({
   onReset,
   className,
 }: TransactionFiltersProps) {
+  const t = useTranslations("dashboard.transactions");
   const update = useCallback(
     <K extends keyof TransactionFiltersState>(key: K, value: TransactionFiltersState[K]) => {
       onChange({ ...filters, [key]: value });
@@ -81,34 +83,34 @@ export function TransactionFilters({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Buscar descripción..."
+            placeholder={t("filters.searchPlaceholder")}
             value={filters.q}
             onChange={(e) => update("q", e.target.value)}
             className="pl-9"
-            aria-label="Buscar por descripción"
+            aria-label={t("filters.searchAria")}
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={filters.type} onValueChange={(value) => update("type", value as TransactionFiltersState["type"])}>
-            <SelectTrigger className="w-[140px]" aria-label="Filtrar por tipo">
-              <SelectValue placeholder="Tipo" />
+            <SelectTrigger className="w-[140px]" aria-label={t("filters.typeAria")}>
+              <SelectValue placeholder={t("filters.typePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {typeOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.labelKey as never)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <Select value={filters.category} onValueChange={(value) => update("category", value)}>
-            <SelectTrigger className="w-[180px]" aria-label="Filtrar por categoría">
-              <SelectValue placeholder="Categoría" />
+            <SelectTrigger className="w-[180px]" aria-label={t("filters.categoryAria")}>
+              <SelectValue placeholder={t("filters.categoryPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas las categorías</SelectItem>
+              <SelectItem value="">{t("filters.allCategories")}</SelectItem>
               {options.categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -118,11 +120,11 @@ export function TransactionFilters({
           </Select>
 
           <Select value={filters.account} onValueChange={(value) => update("account", value)}>
-            <SelectTrigger className="w-[180px]" aria-label="Filtrar por cuenta">
-              <SelectValue placeholder="Cuenta" />
+            <SelectTrigger className="w-[180px]" aria-label={t("filters.accountAria")}>
+              <SelectValue placeholder={t("filters.accountPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas las cuentas</SelectItem>
+              <SelectItem value="">{t("filters.allAccounts")}</SelectItem>
               {options.accounts.map((account) => (
                 <SelectItem key={account.id} value={account.id}>
                   {account.name} ({account.bankName})
@@ -136,7 +138,7 @@ export function TransactionFilters({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="filter-from" className="text-xs text-muted-foreground">
-            Fecha desde
+            {t("filters.from")}
           </Label>
           <Input
             id="filter-from"
@@ -148,7 +150,7 @@ export function TransactionFilters({
 
         <div className="space-y-1.5">
           <Label htmlFor="filter-to" className="text-xs text-muted-foreground">
-            Fecha hasta
+            {t("filters.to")}
           </Label>
           <Input
             id="filter-to"
@@ -160,7 +162,7 @@ export function TransactionFilters({
 
         <div className="space-y-1.5">
           <Label htmlFor="filter-min" className="text-xs text-muted-foreground">
-            Monto mínimo
+            {t("filters.min")}
           </Label>
           <Input
             id="filter-min"
@@ -174,7 +176,7 @@ export function TransactionFilters({
 
         <div className="space-y-1.5">
           <Label htmlFor="filter-max" className="text-xs text-muted-foreground">
-            Monto máximo
+            {t("filters.max")}
           </Label>
           <Input
             id="filter-max"
@@ -192,10 +194,10 @@ export function TransactionFilters({
           <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
           {activeCount > 0 ? (
             <Badge variant="secondary" className="gap-1">
-              {activeCount} filtro{activeCount === 1 ? "" : "s"} activo{activeCount === 1 ? "" : "s"}
+              {t("filters.activeFilters", { count: activeCount })}
             </Badge>
           ) : (
-            <span className="text-xs text-muted-foreground">Sin filtros activos</span>
+            <span className="text-xs text-muted-foreground">{t("filters.noActiveFilters")}</span>
           )}
         </div>
 
@@ -208,7 +210,7 @@ export function TransactionFilters({
           className="gap-1"
         >
           <X className="h-4 w-4" />
-          Limpiar filtros
+          {t("filters.clear")}
         </Button>
       </div>
     </div>

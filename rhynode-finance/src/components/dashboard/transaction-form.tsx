@@ -14,10 +14,13 @@ import {
 } from "@/components/ui/select";
 import { Sparkles, ScanLine, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations, useLocale } from "next-intl";
 import { type Suggestion, type Rule, applyRules } from "@/lib/rules-engine";
 import { trackEvent } from "@/lib/analytics";
 import { executeMutation } from "@/lib/offline-queue";
 import { COMMON_CATEGORIES } from "@/lib/transaction-categories";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 export { COMMON_CATEGORIES };
 
@@ -53,6 +56,8 @@ export function TransactionForm({
   defaultDescription = "",
   defaultCategory = "",
 }: TransactionFormProps) {
+  const t = useTranslations("dashboard.transactions");
+  const locale = useLocale() as Locale;
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiConfidence, setAiConfidence] = useState<number | null>(null);
@@ -174,10 +179,10 @@ export function TransactionForm({
         break;
       case "setProject":
         // Project selection is not part of this form; surface as alert only.
-        toast.info(`Sugerencia: asignar proyecto "${suggestion.action.value}"`);
+        toast.info(t("form.suggestionProject", { value: suggestion.action.value }));
         break;
       case "addTag":
-        toast.info(`Sugerencia: agregar etiqueta "${suggestion.action.value}"`);
+        toast.info(t("form.suggestionTag", { value: suggestion.action.value }));
         break;
       case "alert":
         toast.warning(suggestion.action.value);
@@ -189,11 +194,11 @@ export function TransactionForm({
   function getSuggestionLabel(suggestion: Suggestion): string {
     switch (suggestion.action.type) {
       case "setCategory":
-        return `aplicar categoría "${suggestion.action.value}"`;
+        return t("form.suggestionLabelCategory", { value: suggestion.action.value });
       case "setProject":
-        return `asignar proyecto "${suggestion.action.value}"`;
+        return t("form.suggestionLabelProject", { value: suggestion.action.value });
       case "addTag":
-        return `agregar etiqueta "${suggestion.action.value}"`;
+        return t("form.suggestionLabelTag", { value: suggestion.action.value });
       case "alert":
         return suggestion.action.value;
     }
@@ -219,12 +224,12 @@ export function TransactionForm({
               category: form.category || "none",
               hasReference: Boolean(form.reference),
             });
-            toast.success("Transacción creada correctamente");
+            toast.success(t("form.created"));
             resetForm();
             onSuccess();
           },
           onError: (err) => {
-            toast.error(err.message || "Error al crear transacción");
+            toast.error(err.message || t("form.createError"));
           },
         },
       );
@@ -235,7 +240,7 @@ export function TransactionForm({
 
   async function handleAiSuggestButton() {
     if (!form.description.trim() || !form.amount) {
-      toast.error("Ingresa descripción y monto primero");
+      toast.error(t("form.needDescriptionAmount"));
       return;
     }
     await handleAiSuggest(form.description, Number(form.amount));
@@ -256,7 +261,7 @@ export function TransactionForm({
       });
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(err.error || "Error al procesar el recibo");
+        toast.error(err.error || t("form.ocrError"));
         return;
       }
       const data = (await res.json()) as OcrResult;
@@ -292,12 +297,12 @@ export function TransactionForm({
       setOcrConfidence(data.confidence);
 
       if (data.confidence >= 0.7) {
-        toast.success("Recibo escaneado correctamente");
+        toast.success(t("form.ocrSuccess"));
       } else {
-        toast.warning("El escaneo tuvo baja confianza. Revisa los datos.");
+        toast.warning(t("form.ocrLowConfidence"));
       }
     } catch {
-      toast.error("Error al procesar el recibo");
+      toast.error(t("form.ocrError"));
     } finally {
       setOcrLoading(false);
     }
@@ -313,10 +318,10 @@ export function TransactionForm({
   }
 
   function confidenceLabel(confidence: number) {
-    if (confidence >= 0.8) return { text: "Alta", variant: "default" as const };
+    if (confidence >= 0.8) return { text: t("confidence.high"), variant: "default" as const };
     if (confidence >= 0.6)
-      return { text: "Media", variant: "secondary" as const };
-    return { text: "Baja", variant: "destructive" as const };
+      return { text: t("confidence.medium"), variant: "secondary" as const };
+    return { text: t("confidence.low"), variant: "destructive" as const };
   }
 
   return (
@@ -324,7 +329,7 @@ export function TransactionForm({
       <div className="rounded-lg border border-dashed border-muted-foreground/30 p-4">
         <div className="mb-2 flex items-center gap-2">
           <ScanLine className="h-4 w-4 text-primary" aria-hidden="true" />
-          <span className="text-sm font-medium">Escanear recibo</span>
+          <span className="text-sm font-medium">{t("form.scanReceipt")}</span>
         </div>
         <Input
           type="file"
@@ -332,17 +337,17 @@ export function TransactionForm({
           onChange={handleFileChange}
           disabled={ocrLoading}
           className="cursor-pointer text-sm"
-          aria-label="Cargar imagen del recibo"
+          aria-label={t("form.loadImage")}
         />
         {ocrLoading && (
           <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Procesando imagen...
+            {t("form.processing")}
           </div>
         )}
         {ocrConfidence !== null && !ocrLoading && (
           <div className="mt-2 flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Confianza OCR:</span>
+            <span className="text-muted-foreground">{t("form.ocrConfidence")}</span>
             <Badge variant={confidenceLabel(ocrConfidence).variant}>
               {confidenceLabel(ocrConfidence).text}
             </Badge>
@@ -353,7 +358,7 @@ export function TransactionForm({
           ocrConfidence > 0.7 && (
             <div className="mt-3 space-y-1">
               <p className="text-xs font-medium text-muted-foreground">
-                Items detectados:
+                {t("form.detectedItems")}
               </p>
               <ul className="max-h-32 overflow-auto rounded border border-muted-foreground/20 p-2" role="list">
                 {ocrItems.map((item, idx) => (
@@ -363,7 +368,7 @@ export function TransactionForm({
                   >
                     <span className="truncate">{item.description}</span>
                     <span className="tabular-nums text-muted-foreground">
-                      {item.amount.toLocaleString("es-CO")}
+                      {formatNumber(item.amount, locale)}
                     </span>
                   </li>
                 ))}
@@ -374,7 +379,7 @@ export function TransactionForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="tx-type">Tipo</Label>
+          <Label htmlFor="tx-type">{t("form.type")}</Label>
           <Select
             value={form.type}
             onValueChange={(value) =>
@@ -385,15 +390,15 @@ export function TransactionForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="INCOME">Ingreso</SelectItem>
-              <SelectItem value="EXPENSE">Gasto</SelectItem>
-              <SelectItem value="TRANSFER">Transferencia</SelectItem>
-              <SelectItem value="ADJUSTMENT">Ajuste</SelectItem>
+              <SelectItem value="INCOME">{t("types.INCOME" as never)}</SelectItem>
+              <SelectItem value="EXPENSE">{t("types.EXPENSE" as never)}</SelectItem>
+              <SelectItem value="TRANSFER">{t("types.TRANSFER" as never)}</SelectItem>
+              <SelectItem value="ADJUSTMENT">{t("types.ADJUSTMENT" as never)}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tx-currency">Moneda</Label>
+          <Label htmlFor="tx-currency">{t("form.currency")}</Label>
           <Select
             value={form.currency}
             onValueChange={(value) => setForm({ ...form, currency: value })}
@@ -412,7 +417,7 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="tx-desc">Descripción *</Label>
+        <Label htmlFor="tx-desc">{t("form.descriptionRequired")}</Label>
         <Input
           id="tx-desc"
           required
@@ -420,13 +425,13 @@ export function TransactionForm({
           onChange={(event) =>
             setForm({ ...form, description: event.target.value })
           }
-          placeholder="Ej. Pago de factura mensual"
+          placeholder={t("form.descriptionPlaceholder")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="tx-amount">Monto *</Label>
+          <Label htmlFor="tx-amount">{t("form.amountRequired")}</Label>
           <Input
             id="tx-amount"
             type="number"
@@ -441,7 +446,7 @@ export function TransactionForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tx-date">Fecha</Label>
+          <Label htmlFor="tx-date">{t("form.date")}</Label>
           <Input
             id="tx-date"
             type="date"
@@ -454,7 +459,7 @@ export function TransactionForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="tx-category">Categoría</Label>
+            <Label htmlFor="tx-category">{t("form.category")}</Label>
             <Button
               type="button"
               variant="ghost"
@@ -464,7 +469,7 @@ export function TransactionForm({
               disabled={aiLoading || !form.description.trim() || !form.amount}
             >
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              {aiLoading ? "Analizando..." : "Sugerir con IA"}
+              {aiLoading ? t("form.aiAnalyzing") : t("form.aiSuggest")}
             </Button>
           </div>
           <Select
@@ -475,7 +480,7 @@ export function TransactionForm({
             }}
           >
             <SelectTrigger id="tx-category">
-              <SelectValue placeholder="Selecciona categoría" />
+              <SelectValue placeholder={t("form.categoryPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {COMMON_CATEGORIES.map((category) => (
@@ -495,7 +500,7 @@ export function TransactionForm({
                   <div className="flex items-center gap-2 text-sm">
                     <Zap className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                     <span className="text-muted-foreground">
-                      Sugerencia de regla:
+                      {t("form.ruleSuggestion")}
                     </span>
                     <span className="font-medium">
                       {getSuggestionLabel(suggestion)}
@@ -509,7 +514,7 @@ export function TransactionForm({
                       className="h-7 px-2 text-xs text-primary"
                       onClick={() => applySuggestion(suggestion)}
                     >
-                      Aplicar
+                      {t("form.apply")}
                     </Button>
                   )}
                 </div>
@@ -519,7 +524,7 @@ export function TransactionForm({
           {aiConfidence !== null && (
             <div className="flex items-center gap-2 pt-1">
               <span className="text-xs text-muted-foreground">
-                Confianza IA:
+                {t("form.aiConfidence")}
               </span>
               <Badge variant={confidenceLabel(aiConfidence).variant}>
                 {confidenceLabel(aiConfidence).text}
@@ -528,14 +533,14 @@ export function TransactionForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tx-ref">Referencia</Label>
+          <Label htmlFor="tx-ref">{t("form.reference")}</Label>
           <Input
             id="tx-ref"
             value={form.reference}
             onChange={(event) =>
               setForm({ ...form, reference: event.target.value })
             }
-            placeholder="Número de referencia bancaria"
+            placeholder={t("form.referencePlaceholder")}
           />
         </div>
       </div>
@@ -547,14 +552,14 @@ export function TransactionForm({
           className="h-10 w-full sm:w-auto"
           onClick={() => onCancel?.()}
         >
-          Cancelar
+          {t("form.cancel")}
         </Button>
         <Button
           type="submit"
           disabled={loading}
           className="h-10 w-full sm:w-auto"
         >
-          {loading ? "Guardando..." : "Guardar"}
+          {loading ? t("form.saving") : t("form.save")}
         </Button>
       </div>
     </form>

@@ -48,7 +48,127 @@
       "allTitle": "All Transactions",
       "income": "Income",
       "expense": "Expenses",
-      "balance": "Balance"
+      "balance": "Balance",
+      "newTransaction": "New Transaction",
+      "dialogDescription": "Record an income, expense, transfer, or adjustment.",
+      "types": {
+        "INCOME": "Income",
+        "EXPENSE": "Expense",
+        "TRANSFER": "Transfer",
+        "ADJUSTMENT": "Adjustment"
+      },
+      "typesPlural": {
+        "all": "All",
+        "INCOME": "Income",
+        "EXPENSE": "Expenses"
+      },
+      "confidence": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "form": {
+        "scanReceipt": "Scan receipt",
+        "loadImage": "Upload receipt image",
+        "processing": "Processing image...",
+        "ocrConfidence": "OCR confidence:",
+        "detectedItems": "Detected items:",
+        "type": "Type",
+        "currency": "Currency",
+        "description": "Description",
+        "descriptionRequired": "Description *",
+        "descriptionPlaceholder": "e.g. Monthly bill payment",
+        "amount": "Amount",
+        "amountRequired": "Amount *",
+        "date": "Date",
+        "category": "Category",
+        "categoryPlaceholder": "Select a category",
+        "reference": "Reference",
+        "referencePlaceholder": "Bank reference number",
+        "aiSuggest": "Suggest with AI",
+        "aiAnalyzing": "Analyzing...",
+        "aiConfidence": "AI confidence:",
+        "ruleSuggestion": "Rule suggestion:",
+        "apply": "Apply",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "created": "Transaction created successfully",
+        "createError": "Error creating transaction",
+        "needDescriptionAmount": "Enter description and amount first",
+        "ocrError": "Error processing receipt",
+        "ocrSuccess": "Receipt scanned successfully",
+        "ocrLowConfidence": "Scan had low confidence. Please review the data.",
+        "suggestionProject": "Suggestion: assign project \"{value}\"",
+        "suggestionTag": "Suggestion: add tag \"{value}\"",
+        "suggestionLabelCategory": "apply category \"{value}\"",
+        "suggestionLabelProject": "assign project \"{value}\"",
+        "suggestionLabelTag": "add tag \"{value}\""
+      },
+      "list": {
+        "selected": "selected",
+        "changeCategory": "Change category",
+        "delete": "Delete",
+        "clearSelection": "Clear selection",
+        "actions": "Actions",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "editComingSoon": "Editing available soon",
+        "editTitle": "Edit Transaction",
+        "close": "Close",
+        "saveChanges": "Save changes",
+        "confirmDelete": "Permanently delete this transaction?",
+        "deleted": "Transaction deleted",
+        "deleteError": "Error deleting",
+        "networkError": "Network error",
+        "duplicated": "Transaction duplicated",
+        "duplicateError": "Error duplicating",
+        "bulkDeleteComingSoon": "Delete {count} transactions — coming soon",
+        "bulkCategoryComingSoon": "Change category of {count} transactions — coming soon",
+        "duplicateSuffix": "{description} (copy)",
+        "noCategory": "No category",
+        "recurring": "Recurring",
+        "selectVisible": "Select all visible transactions",
+        "selectOne": "Select {description}",
+        "transactionActions": "Transaction actions",
+        "count": "{count, plural, one {# transaction} other {# transactions}}",
+        "countFiltered": "{count, plural, one {# transaction filtered} other {# transactions filtered}}",
+        "noResultsTitle": "No results",
+        "noResultsDescription": "No transaction matches the selected filters.",
+        "noResultsHint": "Adjust or clear filters to see more results.",
+        "clearFilters": "Clear filters",
+        "emptyTitle": "The heart of your finances",
+        "emptyDescription": "Record income, expenses, and transfers to make decisions based on real data.",
+        "emptyHint": "Start by creating your first transaction.",
+        "columns": {
+          "date": "Date",
+          "type": "Type",
+          "category": "Category",
+          "description": "Description",
+          "amount": "Amount",
+          "account": "Account",
+          "actions": "Actions"
+        }
+      },
+      "filters": {
+        "searchPlaceholder": "Search description...",
+        "searchAria": "Search by description",
+        "typeAria": "Filter by type",
+        "typePlaceholder": "Type",
+        "categoryAria": "Filter by category",
+        "categoryPlaceholder": "Category",
+        "allCategories": "All categories",
+        "accountAria": "Filter by account",
+        "accountPlaceholder": "Account",
+        "allAccounts": "All accounts",
+        "from": "From date",
+        "to": "To date",
+        "min": "Minimum amount",
+        "max": "Maximum amount",
+        "activeFilters": "{count, plural, one {# active filter} other {# active filters}}",
+        "noActiveFilters": "No active filters",
+        "clear": "Clear filters"
+      }
     },
     "clients": {
       "title": "Clients",
@@ -1688,6 +1808,48 @@
           "saving": "Saving...",
           "save": "Save",
           "create": "Create"
+        }
+      }
+    },
+    "home": {
+      "title": "Overview",
+      "subtitle": "Your financial outlook for today",
+      "advisor": "AI Advisor",
+      "scope": {
+        "personal": "Personal",
+        "business": "Business",
+        "both": "Both"
+      },
+      "empty": {
+        "title": "Welcome! Your dashboard is empty",
+        "description": "Load sample data to explore Rhynode (accounts, transactions, budget, goal, and debt). You can delete it whenever you want."
+      },
+      "widgets": {
+        "dailyBriefing": "Daily Briefing",
+        "xpBar": "XP Bar",
+        "healthScore": "Health Score",
+        "kpis": "KPIs",
+        "aiCopilot": "AI Copilot",
+        "anomalies": "Anomalies",
+        "transactions": "Transactions / Invoices",
+        "budgets": "Budgets / Due Dates",
+        "antExpenses": "Ant Expenses",
+        "upcomingEvents": "Upcoming Events",
+        "upcomingBills": "Upcoming Bills",
+        "economicIndicators": "Colombia Indicators"
+      },
+      "upcomingEvents": {
+        "title": "Upcoming events",
+        "empty": {
+          "title": "No upcoming events",
+          "description": "Here you'll see reminders, debts, recurring payments, and goal deadlines due this month.",
+          "hint": "Create reminders, transactions, debts, or goals to fill your calendar."
+        },
+        "types": {
+          "reminder": "Reminder",
+          "debt": "Debt",
+          "recurring": "Recurring",
+          "goal": "Goal"
         }
       }
     }

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
   CalendarDays,
@@ -77,6 +78,8 @@ import {
   type TransactionFilterOptions,
 } from "@/components/dashboard/transactions-filters";
 import { cn } from "@/lib/utils";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
 
@@ -99,22 +102,14 @@ interface TransactionsListProps {
   filterOptions: TransactionFilterOptions;
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 const typeConfig: Record<
   TransactionType,
-  { label: string; className: string }
+  { labelKey: string; className: string }
 > = {
-  INCOME: { label: "Ingreso", className: "bg-success/10 text-success" },
-  EXPENSE: { label: "Gasto", className: "bg-danger/10 text-danger" },
-  TRANSFER: { label: "Transferencia", className: "bg-info/10 text-info" },
-  ADJUSTMENT: { label: "Ajuste", className: "bg-muted text-muted-foreground" },
+  INCOME: { labelKey: "types.INCOME", className: "bg-success/10 text-success" },
+  EXPENSE: { labelKey: "types.EXPENSE", className: "bg-danger/10 text-danger" },
+  TRANSFER: { labelKey: "types.TRANSFER", className: "bg-info/10 text-info" },
+  ADJUSTMENT: { labelKey: "types.ADJUSTMENT", className: "bg-muted text-muted-foreground" },
 };
 
 const categoryStyles: Record<string, { icon: LucideIcon; className: string }> = {
@@ -179,6 +174,7 @@ function Checkbox({
 }
 
 function CategoryBadge({ category }: { category?: string }) {
+  const t = useTranslations("dashboard.transactions");
   const meta = getCategoryMeta(category);
   return (
     <span
@@ -188,21 +184,23 @@ function CategoryBadge({ category }: { category?: string }) {
       )}
     >
       <meta.icon className="h-3 w-3" />
-      {category || "Sin categoría"}
+      {category || t("list.noCategory")}
     </span>
   );
 }
 
 function TypeBadge({ type }: { type: TransactionType }) {
+  const t = useTranslations("dashboard.transactions");
   const config = typeConfig[type] ?? typeConfig.ADJUSTMENT;
   return (
     <Badge variant="outline" className={cn(config.className)}>
-      {config.label}
+      {t(config.labelKey as never)}
     </Badge>
   );
 }
 
 function Amount({ tx, fallbackCurrency }: { tx: Transaction; fallbackCurrency: string }) {
+  const locale = useLocale() as Locale;
   const className =
     tx.type === "INCOME"
       ? "text-success"
@@ -211,7 +209,7 @@ function Amount({ tx, fallbackCurrency }: { tx: Transaction; fallbackCurrency: s
         : "text-foreground";
   return (
     <span className={cn("font-semibold", className)}>
-      {formatCurrency(tx.amount, tx.currency || fallbackCurrency)}
+      {formatCurrency(tx.amount, tx.currency || fallbackCurrency, locale)}
     </span>
   );
 }
@@ -227,26 +225,27 @@ function BulkActionsBar({
   onChangeCategory: () => void;
   onClear: () => void;
 }) {
+  const t = useTranslations("dashboard.transactions");
   return (
     <div className="surface-elevated-3 fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 rounded-2xl p-3 shadow-lg sm:bottom-6 sm:inset-x-6 md:static md:mb-4 md:w-full md:shadow-none">
       <div className="flex flex-1 items-center gap-2 text-sm font-medium">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
           {count}
         </span>
-        <span className="hidden sm:inline">selectionados</span>
+        <span className="hidden sm:inline">{t("list.selected")}</span>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onChangeCategory}>
-          Cambiar categoría
+          {t("list.changeCategory")}
         </Button>
         <Button variant="destructive" size="sm" onClick={onDelete}>
-          Eliminar
+          {t("list.delete")}
         </Button>
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={onClear}
-          aria-label="Limpiar selección"
+          aria-label={t("list.clearSelection")}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -270,12 +269,13 @@ function TransactionActionsSheet({
   onDuplicate: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
 }) {
+  const t = useTranslations("dashboard.transactions");
   if (!tx) return null;
   return (
     <BottomSheet open={open} onOpenChange={onOpenChange}>
       <BottomSheetContent snapPoints={["45dvh"]} className="rounded-t-2xl">
         <BottomSheetHeader>
-          <BottomSheetTitle className="heading-card">Acciones</BottomSheetTitle>
+          <BottomSheetTitle className="heading-card">{t("list.actions")}</BottomSheetTitle>
           <p className="text-sm text-muted-foreground">{tx.description}</p>
         </BottomSheetHeader>
         <div className="flex flex-col gap-1 py-4">
@@ -288,7 +288,7 @@ function TransactionActionsSheet({
             }}
           >
             <Pencil className="h-4 w-4" />
-            Editar
+            {t("list.edit")}
           </Button>
           <Button
             variant="ghost"
@@ -299,7 +299,7 @@ function TransactionActionsSheet({
             }}
           >
             <Copy className="h-4 w-4" />
-            Duplicar
+            {t("list.duplicate")}
           </Button>
           <Button
             variant="ghost"
@@ -310,7 +310,7 @@ function TransactionActionsSheet({
             }}
           >
             <Trash2 className="h-4 w-4" />
-            Eliminar
+            {t("list.delete")}
           </Button>
         </div>
       </BottomSheetContent>
@@ -327,11 +327,12 @@ function EditTransactionDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations("dashboard.transactions");
   if (!tx) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    toast.info("Edición disponible próximamente");
+    toast.info(t("list.editComingSoon"));
     onOpenChange(false);
   }
 
@@ -339,26 +340,26 @@ function EditTransactionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Editar Transacción</DialogTitle>
+          <DialogTitle className="heading-card">{t("list.editTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-type">Tipo</Label>
+              <Label htmlFor="edit-type">{t("form.type")}</Label>
               <Select defaultValue={tx.type} disabled>
                 <SelectTrigger id="edit-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="INCOME">Ingreso</SelectItem>
-                  <SelectItem value="EXPENSE">Gasto</SelectItem>
-                  <SelectItem value="TRANSFER">Transferencia</SelectItem>
-                  <SelectItem value="ADJUSTMENT">Ajuste</SelectItem>
+                  <SelectItem value="INCOME">{t("types.INCOME" as never)}</SelectItem>
+                  <SelectItem value="EXPENSE">{t("types.EXPENSE" as never)}</SelectItem>
+                  <SelectItem value="TRANSFER">{t("types.TRANSFER" as never)}</SelectItem>
+                  <SelectItem value="ADJUSTMENT">{t("types.ADJUSTMENT" as never)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-currency">Moneda</Label>
+              <Label htmlFor="edit-currency">{t("form.currency")}</Label>
               <Select defaultValue={tx.currency} disabled>
                 <SelectTrigger id="edit-currency">
                   <SelectValue />
@@ -373,24 +374,24 @@ function EditTransactionDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-description">Descripción</Label>
+            <Label htmlFor="edit-description">{t("form.description")}</Label>
             <Input id="edit-description" defaultValue={tx.description} />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-amount">Monto</Label>
+              <Label htmlFor="edit-amount">{t("form.amount")}</Label>
               <Input id="edit-amount" type="number" defaultValue={tx.amount} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-category">Categoría</Label>
+              <Label htmlFor="edit-category">{t("form.category")}</Label>
               <Input id="edit-category" defaultValue={tx.category} />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cerrar
+              {t("list.close")}
             </Button>
-            <Button type="submit">Guardar cambios</Button>
+            <Button type="submit">{t("list.saveChanges")}</Button>
           </div>
         </form>
       </DialogContent>
@@ -426,6 +427,8 @@ export function TransactionsList({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("dashboard.transactions");
+  const locale = useLocale() as Locale;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [actionTx, setActionTx] = useState<Transaction | null>(null);
@@ -504,22 +507,22 @@ export function TransactionsList({
 
   const handleDelete = useCallback(
     async (tx: Transaction) => {
-      if (!confirm("¿Eliminar esta transacción permanentemente?")) return;
+      if (!confirm(t("list.confirmDelete"))) return;
       try {
         const res = await fetch(`/api/transactions/${tx.id}`, {
           method: "DELETE",
         });
         if (res.ok) {
-          toast.success("Transacción eliminada");
+          toast.success(t("list.deleted"));
           router.refresh();
         } else {
-          toast.error("Error al eliminar");
+          toast.error(t("list.deleteError"));
         }
       } catch {
-        toast.error("Error de red");
+        toast.error(t("list.networkError"));
       }
     },
-    [router]
+    [router, t]
   );
 
   const handleDuplicate = useCallback(
@@ -531,38 +534,38 @@ export function TransactionsList({
           body: JSON.stringify({
             type: tx.type,
             category: tx.category,
-            description: `${tx.description} (copia)`,
+            description: t("list.duplicateSuffix", { description: tx.description }),
             amount: tx.amount,
             currency: tx.currency,
             date: new Date().toISOString(),
           }),
         });
         if (res.ok) {
-          toast.success("Transacción duplicada");
+          toast.success(t("list.duplicated"));
           router.refresh();
         } else {
-          toast.error("Error al duplicar");
+          toast.error(t("list.duplicateError"));
         }
       } catch {
-        toast.error("Error de red");
+        toast.error(t("list.networkError"));
       }
     },
-    [router]
+    [router, t]
   );
 
   const handleEdit = useCallback((tx: Transaction) => setEditTx(tx), []);
 
   const handleBulkDelete = useCallback(() => {
-    toast.info(`Eliminar ${selectedIds.size} transacciones — próximamente`);
+    toast.info(t("list.bulkDeleteComingSoon", { count: selectedIds.size }));
     clearSelection();
-  }, [selectedIds.size, clearSelection]);
+  }, [selectedIds.size, clearSelection, t]);
 
   const handleBulkChangeCategory = useCallback(() => {
     toast.info(
-      `Cambiar categoría de ${selectedIds.size} transacciones — próximamente`
+      t("list.bulkCategoryComingSoon", { count: selectedIds.size })
     );
     clearSelection();
-  }, [selectedIds.size, clearSelection]);
+  }, [selectedIds.size, clearSelection, t]);
 
   return (
     <CardContent className="space-y-4">
@@ -579,8 +582,9 @@ export function TransactionsList({
           aria-live="polite"
           aria-atomic="true"
         >
-          {filtered.length} transacción{filtered.length === 1 ? "" : "es"}
-          {activeFilterCount > 0 && ` filtrada${filtered.length === 1 ? "" : "s"}`}
+          {activeFilterCount > 0
+            ? t("list.countFiltered", { count: filtered.length })
+            : t("list.count", { count: filtered.length })}
         </span>
       </div>
 
@@ -589,12 +593,12 @@ export function TransactionsList({
           <EmptyStateCard
             variant="md"
             icon={FilterX}
-            title="Sin resultados"
-            description="Ninguna transacción coincide con los filtros seleccionados."
-            hint="Ajusta los filtros o límpialos para ver más resultados."
+            title={t("list.noResultsTitle")}
+            description={t("list.noResultsDescription")}
+            hint={t("list.noResultsHint")}
             action={
               <Button variant="outline" onClick={handleResetFilters}>
-                Limpiar filtros
+                {t("list.clearFilters")}
               </Button>
             }
           />
@@ -602,9 +606,9 @@ export function TransactionsList({
           <EmptyStateCard
             variant="lg"
             icon={ArrowLeftRight}
-            title="El centro de tus finanzas"
-            description="Registra ingresos, gastos y transferencias para tomar decisiones con datos reales."
-            hint="Empieza creando tu primera transacción."
+            title={t("list.emptyTitle")}
+            description={t("list.emptyDescription")}
+            hint={t("list.emptyHint")}
           />
         )
       ) : (
@@ -626,19 +630,19 @@ export function TransactionsList({
                     <Checkbox
                       checked={allFilteredSelected}
                       onCheckedChange={toggleAllFiltered}
-                      ariaLabel="Seleccionar todas las transacciones visibles"
+                      ariaLabel={t("list.selectVisible")}
                     />
                   </TableHead>
-                  <TableHead scope="col">Fecha</TableHead>
-                  <TableHead scope="col">Tipo</TableHead>
-                  <TableHead scope="col">Categoría</TableHead>
-                  <TableHead scope="col">Descripción</TableHead>
+                  <TableHead scope="col">{t("list.columns.date")}</TableHead>
+                  <TableHead scope="col">{t("list.columns.type")}</TableHead>
+                  <TableHead scope="col">{t("list.columns.category")}</TableHead>
+                  <TableHead scope="col">{t("list.columns.description")}</TableHead>
                   <TableHead scope="col" className="text-right">
-                    Monto
+                    {t("list.columns.amount")}
                   </TableHead>
-                  <TableHead scope="col">Cuenta</TableHead>
+                  <TableHead scope="col">{t("list.columns.account")}</TableHead>
                   <TableHead scope="col" className="text-right">
-                    Acciones
+                    {t("list.columns.actions")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -651,11 +655,11 @@ export function TransactionsList({
                         <Checkbox
                           checked={selectedIds.has(tx.id)}
                           onCheckedChange={() => toggleSelect(tx.id)}
-                          ariaLabel={`Seleccionar ${tx.description}`}
+                          ariaLabel={t("list.selectOne", { description: tx.description })}
                         />
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                        {new Date(tx.date).toLocaleDateString("es-CO")}
+                        {fmtDate(tx.date, locale)}
                       </TableCell>
                       <TableCell>
                         <TypeBadge type={tx.type} />
@@ -690,7 +694,7 @@ export function TransactionsList({
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setActionTx(tx)}
-                            aria-label="Acciones de transacción"
+                            aria-label={t("list.transactionActions")}
                             className="md:hidden"
                           >
                             <MoreVertical className="h-4 w-4" />
@@ -701,7 +705,7 @@ export function TransactionsList({
                                 <Button
                                   variant="ghost"
                                   size="icon-sm"
-                                  aria-label="Acciones de transacción"
+                                  aria-label={t("list.transactionActions")}
                                 >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
@@ -709,20 +713,20 @@ export function TransactionsList({
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => handleEdit(tx)}>
                                   <Pencil className="h-4 w-4" />
-                                  Editar
+                                  {t("list.edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleDuplicate(tx)}
                                 >
                                   <Copy className="h-4 w-4" />
-                                  Duplicar
+                                  {t("list.duplicate")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
                                   onClick={() => handleDelete(tx)}
                                 >
                                   <Trash2 className="h-4 w-4" />
-                                  Eliminar
+                                  {t("list.delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -749,7 +753,7 @@ export function TransactionsList({
                       <Checkbox
                         checked={selectedIds.has(tx.id)}
                         onCheckedChange={() => toggleSelect(tx.id)}
-                        ariaLabel={`Seleccionar ${tx.description}`}
+                        ariaLabel={t("list.selectOne", { description: tx.description })}
                       />
                     </div>
                     <div
@@ -769,7 +773,7 @@ export function TransactionsList({
                           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
                               <CalendarDays className="h-3 w-3" />
-                              {new Date(tx.date).toLocaleDateString("es-CO")}
+                              {fmtDate(tx.date, locale)}
                             </span>
                             {tx.bankAccountName && (
                               <span className="inline-flex items-center gap-1 truncate">
@@ -792,7 +796,7 @@ export function TransactionsList({
                           {tx.isRecurring && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info">
                               <Repeat className="h-3 w-3" />
-                              Recurrente
+                              {t("list.recurring")}
                             </span>
                           )}
                         </div>
@@ -800,7 +804,7 @@ export function TransactionsList({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => setActionTx(tx)}
-                          aria-label="Acciones de transacción"
+                          aria-label={t("list.transactionActions")}
                           className="shrink-0"
                         >
                           <MoreVertical className="h-4 w-4" />

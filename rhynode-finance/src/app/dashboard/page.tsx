@@ -3,6 +3,9 @@ import { toReminder } from "@/lib/reminders";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { SeedDemoButton } from "@/components/dashboard/seed-demo-button";
@@ -57,13 +60,14 @@ export const metadata = dashboardMetadata(
   "Visualiza tu salud financiera, KPIs, gastos hormiga, anomalías y progreso de gamificación en Rhynode.",
 );
 
-function ScopeBadge({ scope }: { scope: UserScope }) {
+async function ScopeBadge({ scope, locale }: { scope: UserScope; locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const label =
     scope === "PERSONAL"
-      ? "Personal"
+      ? t("scope.personal")
       : scope === "BUSINESS"
-        ? "Empresa"
-        : "Ambas";
+        ? t("scope.business")
+        : t("scope.both");
   return (
     <Badge variant="outline" className="h-10 px-3 text-xs sm:text-sm">
       {label}
@@ -177,11 +181,14 @@ async function getHealthScores(
 async function UpcomingEvents({
   userId,
   currency,
+  locale,
 }: {
   userId: string | undefined;
   currency: string;
+  locale: Locale;
 }) {
   if (!userId) return null;
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
   const now = new Date();
   const monthEnd = new Date(
@@ -240,7 +247,7 @@ async function UpcomingEvents({
       date: r.scheduledAt,
       amount: undefined,
       currency,
-      type: "Recordatorio",
+      type: t("upcomingEvents.types.reminder"),
     }))
     .filter((r) => r.date.getTime() <= monthEnd.getTime());
 
@@ -252,7 +259,7 @@ async function UpcomingEvents({
       date: d.dueDate as Date,
       amount: d.remainingAmount,
       currency: d.currency,
-      type: "Deuda",
+      type: t("upcomingEvents.types.debt"),
     })),
     ...recurring.map((r) => ({
       id: `rec-${r.id}`,
@@ -260,7 +267,7 @@ async function UpcomingEvents({
       date: r.nextDueDate as Date,
       amount: r.amount,
       currency,
-      type: "Recurrente",
+      type: t("upcomingEvents.types.recurring"),
     })),
     ...goals.map((g) => ({
       id: `goal-${g.id}`,
@@ -268,7 +275,7 @@ async function UpcomingEvents({
       date: g.deadline as Date,
       amount: g.targetAmount,
       currency: g.currency,
-      type: "Meta",
+      type: t("upcomingEvents.types.goal"),
     })),
   ]
     .sort((a, b) => a.date.getTime() - b.date.getTime())
@@ -277,13 +284,13 @@ async function UpcomingEvents({
   if (events.length === 0) {
     return (
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Próximos eventos</h2>
+        <h2 className="text-lg font-semibold">{t("upcomingEvents.title")}</h2>
         <EmptyStateCard
           variant="sm"
           icon={Calendar}
-          title="Sin eventos próximos"
-          description="Aquí verás recordatorios, deudas, pagos recurrentes y deadlines de metas que vencen este mes."
-          hint="Crea recordatorios, transacciones, deudas o metas para llenar tu calendario."
+          title={t("upcomingEvents.empty.title")}
+          description={t("upcomingEvents.empty.description")}
+          hint={t("upcomingEvents.empty.hint")}
           className="border-dashed"
         />
       </div>
@@ -292,7 +299,7 @@ async function UpcomingEvents({
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold">Próximos eventos</h2>
+      <h2 className="text-lg font-semibold">{t("upcomingEvents.title")}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {events.map((ev) => (
           <div
@@ -306,12 +313,9 @@ async function UpcomingEvents({
               <p className="truncate text-sm font-medium">{ev.title}</p>
               <p className="text-xs text-muted-foreground">
                 {ev.type} ·{" "}
-                {new Intl.DateTimeFormat("es-CO", {
-                  month: "short",
-                  day: "numeric",
-                }).format(new Date(ev.date))}
+                {fmtDate(ev.date, locale, { month: "short", day: "numeric" })}
                 {ev.amount !== undefined &&
-                  ` · ${new Intl.NumberFormat("es-CO", { style: "currency", currency: ev.currency || currency, maximumFractionDigits: 0 }).format(decimalToNumber(ev.amount))}`}
+                  ` · ${formatCurrency(decimalToNumber(ev.amount), ev.currency || currency, locale)}`}
               </p>
             </div>
           </div>
@@ -326,6 +330,10 @@ export default async function DashboardPage() {
   if (!org) {
     redirect("/sign-in");
   }
+
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
 
   const profile = await getUserProfile();
   const scope = (profile?.scope ?? "PERSONAL") as UserScope;
@@ -348,7 +356,7 @@ export default async function DashboardPage() {
   const widgets: DashboardWidget[] = [
     {
       id: "daily-briefing",
-      label: "Briefing diario",
+      label: t("widgets.dailyBriefing"),
       content:
         scope === "PERSONAL" || scope === "BOTH" ? (
           <DailyBriefing
@@ -361,12 +369,12 @@ export default async function DashboardPage() {
     },
     {
       id: "xp-bar",
-      label: "Barra de XP",
+      label: t("widgets.xpBar"),
       content: <XPBar level={level} xp={xp} streakDays={streakDays} />,
     },
     {
       id: "health-score",
-      label: "Health Score",
+      label: t("widgets.healthScore"),
       content:
         scope === "PERSONAL" || scope === "BOTH" ? (
           <HealthScore result={healthScores} />
@@ -374,7 +382,7 @@ export default async function DashboardPage() {
     },
     {
       id: "kpi-grid",
-      label: "KPIs",
+      label: t("widgets.kpis"),
       content: (
         <Suspense fallback={<KpiGridLoading />}>
           <KpiGrid
@@ -388,7 +396,7 @@ export default async function DashboardPage() {
     },
     {
       id: "ai-copilot",
-      label: "Copiloto AI",
+      label: t("widgets.aiCopilot"),
       content:
         scope === "PERSONAL" || scope === "BOTH" ? (
           <Suspense fallback={<WidgetLoading />}>
@@ -398,12 +406,12 @@ export default async function DashboardPage() {
     },
     {
       id: "anomalies",
-      label: "Anomalías",
+      label: t("widgets.anomalies"),
       content: <Anomalies />,
     },
     {
       id: "left-widget",
-      label: "Transacciones / Facturas",
+      label: t("widgets.transactions"),
       content: (
         <Suspense fallback={<WidgetLoading />}>
           <LeftWidget
@@ -417,7 +425,7 @@ export default async function DashboardPage() {
     },
     {
       id: "right-widget",
-      label: "Presupuestos / Vencimientos",
+      label: t("widgets.budgets"),
       content: (
         <Suspense fallback={<WidgetLoading />}>
           <RightWidget
@@ -431,21 +439,21 @@ export default async function DashboardPage() {
     },
     {
       id: "ant-expenses",
-      label: "Gastos Hormiga",
+      label: t("widgets.antExpenses"),
       content: <AntExpenses />,
     },
     {
       id: "recent-events",
-      label: "Próximos Eventos",
+      label: t("widgets.upcomingEvents"),
       content: (
         <Suspense fallback={<WidgetLoading />}>
-          <UpcomingEvents userId={profile?.id} currency={org.currency} />
+          <UpcomingEvents userId={profile?.id} currency={org.currency} locale={locale} />
         </Suspense>
       ),
     },
     {
       id: "upcoming-bills",
-      label: "Próximos Pagos",
+      label: t("widgets.upcomingBills"),
       content: (
         <Suspense fallback={<WidgetLoading />}>
           <UpcomingBillsCard userId={profile?.id ?? ""} orgId={org?.id ?? null} />
@@ -454,7 +462,7 @@ export default async function DashboardPage() {
     },
     {
       id: "economic-indicators",
-      label: "Indicadores Colombia",
+      label: t("widgets.economicIndicators"),
       content: (
         <EconomicIndicatorsWidget
           indicators={indicatorsData.indicators}
@@ -470,9 +478,9 @@ export default async function DashboardPage() {
       {txCount === 0 && (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-6 text-center sm:flex-row sm:text-left">
           <div className="flex-1">
-            <h2 className="text-base font-semibold">¡Bienvenido! Tu panel está vacío</h2>
+            <h2 className="text-base font-semibold">{t("empty.title")}</h2>
             <p className="text-sm text-muted-foreground">
-              Carga datos de ejemplo para explorar Rhynode (cuentas, transacciones, presupuesto, meta y deuda). Los puedes borrar cuando quieras.
+              {t("empty.description")}
             </p>
           </div>
           <SeedDemoButton />
@@ -481,18 +489,18 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-            Resumen
+            {t("title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tu panorama financiero de hoy
+            {t("subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ScopeBadge scope={scope} />
+          <ScopeBadge scope={scope} locale={locale} />
           <Link href="/dashboard/advisor">
             <Button variant="outline" className="h-10 gap-2">
               <Brain className="h-4 w-4" aria-hidden="true" />
-              AI Advisor
+              {t("advisor")}
             </Button>
           </Link>
         </div>

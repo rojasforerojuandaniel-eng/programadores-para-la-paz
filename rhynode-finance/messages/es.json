@@ -48,7 +48,127 @@
       "allTitle": "Todas las Transacciones",
       "income": "Ingresos",
       "expense": "Gastos",
-      "balance": "Balance"
+      "balance": "Balance",
+      "newTransaction": "Nueva Transacción",
+      "dialogDescription": "Registra un ingreso, gasto, transferencia o ajuste.",
+      "types": {
+        "INCOME": "Ingreso",
+        "EXPENSE": "Gasto",
+        "TRANSFER": "Transferencia",
+        "ADJUSTMENT": "Ajuste"
+      },
+      "typesPlural": {
+        "all": "Todos",
+        "INCOME": "Ingresos",
+        "EXPENSE": "Gastos"
+      },
+      "confidence": {
+        "high": "Alta",
+        "medium": "Media",
+        "low": "Baja"
+      },
+      "form": {
+        "scanReceipt": "Escanear recibo",
+        "loadImage": "Cargar imagen del recibo",
+        "processing": "Procesando imagen...",
+        "ocrConfidence": "Confianza OCR:",
+        "detectedItems": "Items detectados:",
+        "type": "Tipo",
+        "currency": "Moneda",
+        "description": "Descripción",
+        "descriptionRequired": "Descripción *",
+        "descriptionPlaceholder": "Ej. Pago de factura mensual",
+        "amount": "Monto",
+        "amountRequired": "Monto *",
+        "date": "Fecha",
+        "category": "Categoría",
+        "categoryPlaceholder": "Selecciona categoría",
+        "reference": "Referencia",
+        "referencePlaceholder": "Número de referencia bancaria",
+        "aiSuggest": "Sugerir con IA",
+        "aiAnalyzing": "Analizando...",
+        "aiConfidence": "Confianza IA:",
+        "ruleSuggestion": "Sugerencia de regla:",
+        "apply": "Aplicar",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "created": "Transacción creada correctamente",
+        "createError": "Error al crear transacción",
+        "needDescriptionAmount": "Ingresa descripción y monto primero",
+        "ocrError": "Error al procesar el recibo",
+        "ocrSuccess": "Recibo escaneado correctamente",
+        "ocrLowConfidence": "El escaneo tuvo baja confianza. Revisa los datos.",
+        "suggestionProject": "Sugerencia: asignar proyecto \"{value}\"",
+        "suggestionTag": "Sugerencia: agregar etiqueta \"{value}\"",
+        "suggestionLabelCategory": "aplicar categoría \"{value}\"",
+        "suggestionLabelProject": "asignar proyecto \"{value}\"",
+        "suggestionLabelTag": "agregar etiqueta \"{value}\""
+      },
+      "list": {
+        "selected": "selectionados",
+        "changeCategory": "Cambiar categoría",
+        "delete": "Eliminar",
+        "clearSelection": "Limpiar selección",
+        "actions": "Acciones",
+        "edit": "Editar",
+        "duplicate": "Duplicar",
+        "editComingSoon": "Edición disponible próximamente",
+        "editTitle": "Editar Transacción",
+        "close": "Cerrar",
+        "saveChanges": "Guardar cambios",
+        "confirmDelete": "¿Eliminar esta transacción permanentemente?",
+        "deleted": "Transacción eliminada",
+        "deleteError": "Error al eliminar",
+        "networkError": "Error de red",
+        "duplicated": "Transacción duplicada",
+        "duplicateError": "Error al duplicar",
+        "bulkDeleteComingSoon": "Eliminar {count} transacciones — próximamente",
+        "bulkCategoryComingSoon": "Cambiar categoría de {count} transacciones — próximamente",
+        "duplicateSuffix": "{description} (copia)",
+        "noCategory": "Sin categoría",
+        "recurring": "Recurrente",
+        "selectVisible": "Seleccionar todas las transacciones visibles",
+        "selectOne": "Seleccionar {description}",
+        "transactionActions": "Acciones de transacción",
+        "count": "{count, plural, one {# transacción} other {# transacciones}}",
+        "countFiltered": "{count, plural, one {# transacción filtrada} other {# transacciones filtradas}}",
+        "noResultsTitle": "Sin resultados",
+        "noResultsDescription": "Ninguna transacción coincide con los filtros seleccionados.",
+        "noResultsHint": "Ajusta los filtros o límpialos para ver más resultados.",
+        "clearFilters": "Limpiar filtros",
+        "emptyTitle": "El centro de tus finanzas",
+        "emptyDescription": "Registra ingresos, gastos y transferencias para tomar decisiones con datos reales.",
+        "emptyHint": "Empieza creando tu primera transacción.",
+        "columns": {
+          "date": "Fecha",
+          "type": "Tipo",
+          "category": "Categoría",
+          "description": "Descripción",
+          "amount": "Monto",
+          "account": "Cuenta",
+          "actions": "Acciones"
+        }
+      },
+      "filters": {
+        "searchPlaceholder": "Buscar descripción...",
+        "searchAria": "Buscar por descripción",
+        "typeAria": "Filtrar por tipo",
+        "typePlaceholder": "Tipo",
+        "categoryAria": "Filtrar por categoría",
+        "categoryPlaceholder": "Categoría",
+        "allCategories": "Todas las categorías",
+        "accountAria": "Filtrar por cuenta",
+        "accountPlaceholder": "Cuenta",
+        "allAccounts": "Todas las cuentas",
+        "from": "Fecha desde",
+        "to": "Fecha hasta",
+        "min": "Monto mínimo",
+        "max": "Monto máximo",
+        "activeFilters": "{count, plural, one {# filtro activo} other {# filtros activos}}",
+        "noActiveFilters": "Sin filtros activos",
+        "clear": "Limpiar filtros"
+      }
     },
     "clients": {
       "title": "Clientes",
@@ -1688,6 +1808,48 @@
           "saving": "Guardando...",
           "save": "Guardar",
           "create": "Crear"
+        }
+      }
+    },
+    "home": {
+      "title": "Resumen",
+      "subtitle": "Tu panorama financiero de hoy",
+      "advisor": "AI Advisor",
+      "scope": {
+        "personal": "Personal",
+        "business": "Empresa",
+        "both": "Ambas"
+      },
+      "empty": {
+        "title": "¡Bienvenido! Tu panel está vacío",
+        "description": "Carga datos de ejemplo para explorar Rhynode (cuentas, transacciones, presupuesto, meta y deuda). Los puedes borrar cuando quieras."
+      },
+      "widgets": {
+        "dailyBriefing": "Briefing diario",
+        "xpBar": "Barra de XP",
+        "healthScore": "Health Score",
+        "kpis": "KPIs",
+        "aiCopilot": "Copiloto AI",
+        "anomalies": "Anomalías",
+        "transactions": "Transacciones / Facturas",
+        "budgets": "Presupuestos / Vencimientos",
+        "antExpenses": "Gastos Hormiga",
+        "upcomingEvents": "Próximos Eventos",
+        "upcomingBills": "Próximos Pagos",
+        "economicIndicators": "Indicadores Colombia"
+      },
+      "upcomingEvents": {
+        "title": "Próximos eventos",
+        "empty": {
+          "title": "Sin eventos próximos",
+          "description": "Aquí verás recordatorios, deudas, pagos recurrentes y deadlines de metas que vencen este mes.",
+          "hint": "Crea recordatorios, transacciones, deudas o metas para llenar tu calendario."
+        },
+        "types": {
+          "reminder": "Recordatorio",
+          "debt": "Deuda",
+          "recurring": "Recurrente",
+          "goal": "Meta"
         }
       }
     }

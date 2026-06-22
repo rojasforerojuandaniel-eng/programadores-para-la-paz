@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-media-query";
@@ -39,6 +40,7 @@ export function CreateTransactionSheet({
   defaultDescription,
   defaultCategory,
 }: CreateTransactionSheetProps) {
+  const t = useTranslations("dashboard.transactions");
   const { canEdit } = useOrganizationRole();
   const isMobile = useIsMobile();
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -67,13 +69,13 @@ export function CreateTransactionSheet({
         {trigger || (
           <Button className="gap-2">
             <Plus className="h-4 w-4" aria-hidden="true" />
-            Nueva Transacción
+            {t("newTransaction")}
           </Button>
         )}
       </BottomSheetTrigger>
       <BottomSheetContent snapPoints={["85dvh"]} aria-labelledby="tx-sheet-title">
         <BottomSheetHeader>
-          <BottomSheetTitle id="tx-sheet-title">Nueva Transacción</BottomSheetTitle>
+          <BottomSheetTitle id="tx-sheet-title">{t("newTransaction")}</BottomSheetTitle>
         </BottomSheetHeader>
         <TransactionForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} defaultType={defaultType} defaultAmount={defaultAmount} defaultDescription={defaultDescription} defaultCategory={defaultCategory} />
       </BottomSheetContent>
