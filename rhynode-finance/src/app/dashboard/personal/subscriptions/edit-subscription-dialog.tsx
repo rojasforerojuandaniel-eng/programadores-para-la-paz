@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { SubscriptionItem } from "./subscription-utils";
-import { frequencyLabel } from "./subscription-utils";
 import { updateSubscription } from "./actions";
 
 const FREQUENCIES = [
@@ -45,6 +45,7 @@ export function EditSubscriptionDialog({
   onOpenChange,
   onSaved,
 }: EditSubscriptionDialogProps) {
+  const t = useTranslations("dashboard.subscriptions");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -75,7 +76,7 @@ export function EditSubscriptionDialog({
       });
 
       if (result.success) {
-        toast.success("Suscripción actualizada");
+        toast.success(t("updatedToast"));
         onSaved?.({
           ...item,
           name: form.name.trim(),
@@ -87,10 +88,10 @@ export function EditSubscriptionDialog({
         });
         router.refresh();
       } else {
-        toast.error(result.error || "No se pudo actualizar");
+        toast.error(result.error || t("actions.updateErrorToast"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("actions.networkErrorToast"));
     } finally {
       setLoading(false);
     }
@@ -100,11 +101,11 @@ export function EditSubscriptionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Editar suscripción</DialogTitle>
+          <DialogTitle className="heading-card">{t("editDialogTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="sub-name">Nombre</Label>
+            <Label htmlFor="sub-name">{t("fieldName")}</Label>
             <Input
               id="sub-name"
               required
@@ -113,7 +114,7 @@ export function EditSubscriptionDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-desc">Descripción</Label>
+            <Label htmlFor="sub-desc">{t("fieldDescription")}</Label>
             <Input
               id="sub-desc"
               value={form.description}
@@ -122,7 +123,7 @@ export function EditSubscriptionDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="sub-amount">Monto</Label>
+              <Label htmlFor="sub-amount">{t("columns.amount")}</Label>
               <Input
                 id="sub-amount"
                 type="number"
@@ -134,7 +135,7 @@ export function EditSubscriptionDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sub-frequency">Frecuencia</Label>
+              <Label htmlFor="sub-frequency">{t("columns.frequency")}</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => setForm({ ...form, frequency: v })}
@@ -145,7 +146,7 @@ export function EditSubscriptionDialog({
                 <SelectContent>
                   {FREQUENCIES.map((f) => (
                     <SelectItem key={f} value={f}>
-                      {frequencyLabel(f)}
+                      {t(`frequencies.${f}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -153,12 +154,12 @@ export function EditSubscriptionDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-provider">Proveedor</Label>
+            <Label htmlFor="sub-provider">{t("fieldProvider")}</Label>
             <Input
               id="sub-provider"
               value={form.provider}
               onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              placeholder="Ej. Netflix, Spotify"
+              placeholder={t("providerPlaceholder")}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -168,10 +169,10 @@ export function EditSubscriptionDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancelar
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? t("saving") : t("actions.save")}
             </Button>
           </div>
         </form>

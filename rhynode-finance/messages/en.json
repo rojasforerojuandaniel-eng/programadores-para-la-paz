@@ -405,6 +405,26 @@
           "deleted": "Invoice deleted",
           "deleteError": "Error deleting invoice"
         }
+      },
+      "preview": {
+        "title": "Invoice {number}",
+        "dueLabel": "Due",
+        "from": "From",
+        "yourOrganization": "Your organization",
+        "to": "To",
+        "project": "Project",
+        "itemHeader": "Item",
+        "noItems": "No items",
+        "subtotal": "Subtotal",
+        "tax": "Tax ({rate}%)"
+      },
+      "editDialog": {
+        "title": "Edit invoice",
+        "saveChanges": "Save changes",
+        "toasts": {
+          "updated": "Invoice updated",
+          "updateError": "Error updating invoice"
+        }
       }
     },
     "debts": {
@@ -552,12 +572,16 @@
       "statuses": {
         "ACTIVE": "Active",
         "PENDING_CANCELLATION": "Pending cancellation",
-        "CANCELED": "Canceled"
+        "CANCELED": "Canceled",
+        "CANCELLED": "Canceled"
       },
       "frequencies": {
         "MONTHLY": "Monthly",
         "QUARTERLY": "Quarterly",
-        "YEARLY": "Yearly"
+        "YEARLY": "Yearly",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "BIWEEKLY": "Biweekly"
       },
       "kpis": {
         "monthlySpend": "Monthly spend",
@@ -605,7 +629,19 @@
         "networkErrorToast": "Network error",
         "updateErrorToast": "Could not update",
         "canceledToast": "Subscription canceled"
-      }
+      },
+      "expiresToday": "Expires today",
+      "expiredDaysAgo": "Expired {count} days ago",
+      "inDays": "In {count} days",
+      "matchedPayment": "Payment match",
+      "lastPaid": "Last paid",
+      "editDialogTitle": "Edit subscription",
+      "fieldName": "Name",
+      "fieldDescription": "Description",
+      "fieldProvider": "Provider",
+      "providerPlaceholder": "e.g. Netflix, Spotify",
+      "saving": "Saving...",
+      "updatedToast": "Subscription updated"
     },
     "calendar": {
       "title": "Payment Calendar",

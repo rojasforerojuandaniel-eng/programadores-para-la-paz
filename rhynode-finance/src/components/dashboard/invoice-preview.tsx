@@ -1,7 +1,10 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency as fmtCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface PreviewInvoiceItem {
   description: string;
@@ -49,34 +52,28 @@ function toNumber(value: unknown): number {
   return 0;
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "—";
-  const date = typeof value === "string" ? new Date(value) : value;
-  return date.toLocaleDateString("es-CO");
-}
-
-const statusLabels: Record<string, string> = {
-  DRAFT: "Borrador",
-  SENT: "Enviada",
-  PAID: "Pagada",
-  OVERDUE: "Vencida",
-  CANCELLED: "Anulada",
-  PARTIAL: "Parcial",
-};
+const statusKeys: string[] = [
+  "DRAFT",
+  "SENT",
+  "PAID",
+  "OVERDUE",
+  "CANCELLED",
+  "PARTIAL",
+];
 
 export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
+  const t = useTranslations("dashboard.invoices");
+  const locale = useLocale() as Locale;
   const items = invoice.items || [];
   const subtotal = toNumber(invoice.subtotal);
   const taxAmount = toNumber(invoice.taxAmount);
   const total = toNumber(invoice.total);
+
+  const currency = (amount: number) => fmtCurrency(amount, invoice.currency, locale);
+  const dateLabel = (value: string | Date | null | undefined) => {
+    if (!value) return "—";
+    return fmtDate(value, locale);
+  };
 
   return (
     <Card className={`surface-elevated-2 overflow-hidden rounded-xl border-border ${className ?? ""}`}>
@@ -84,19 +81,23 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
         <div className="border-b border-border bg-muted/30 p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h3 className="text-lg font-semibold tracking-tight">Factura {invoice.number}</h3>
+              <h3 className="text-lg font-semibold tracking-tight">{t("preview.title", { number: invoice.number })}</h3>
               <p className="text-sm text-muted-foreground">
-                Fecha de emisión: {formatDate(invoice.issueDate)}
+                {t("form.fields.issueDate")}: {dateLabel(invoice.issueDate)}
               </p>
               {invoice.dueDate && (
                 <p className="text-sm text-muted-foreground">
-                  Vence: {formatDate(invoice.dueDate)}
+                  {t("preview.dueLabel")}: {dateLabel(invoice.dueDate)}
                 </p>
               )}
             </div>
             <div className="flex flex-col items-start gap-1 sm:items-end">
               {invoice.status && (
-                <Badge variant="outline">{statusLabels[invoice.status] || invoice.status}</Badge>
+                <Badge variant="outline">
+                  {statusKeys.includes(invoice.status)
+                    ? t(`statuses.${invoice.status}` as never)
+                    : invoice.status}
+                </Badge>
               )}
               <span className="font-mono text-sm text-muted-foreground">{invoice.currency}</span>
             </div>
@@ -105,12 +106,12 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
 
         <div className="grid grid-cols-1 gap-5 border-b border-border p-5 sm:grid-cols-2 sm:p-6">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">De</p>
-            <p className="mt-1 font-medium">Tu organización</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("preview.from")}</p>
+            <p className="mt-1 font-medium">{t("preview.yourOrganization")}</p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Para</p>
-            <p className="mt-1 font-medium">{invoice.client?.name || "Sin cliente"}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("preview.to")}</p>
+            <p className="mt-1 font-medium">{invoice.client?.name || t("noClient")}</p>
             {invoice.client?.email && (
               <p className="text-sm text-muted-foreground">{invoice.client.email}</p>
             )}
@@ -118,7 +119,7 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
               <p className="text-sm text-muted-foreground">{invoice.client.address}</p>
             )}
             {invoice.project?.name && (
-              <p className="mt-1 text-sm text-muted-foreground">Proyecto: {invoice.project.name}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("preview.project")}: {invoice.project.name}</p>
             )}
           </div>
         </div>
@@ -128,10 +129,10 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ítem</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Cant.</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Precio</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Total</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t("preview.itemHeader")}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t("form.placeholders.quantity")}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t("form.placeholders.unitPrice")}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t("columns.total")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -141,13 +142,12 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
                       <td className="px-4 py-3">{item.description || "—"}</td>
                       <td className="px-4 py-3 text-right">{toNumber(item.quantity)}</td>
                       <td className="px-4 py-3 text-right">
-                        {formatCurrency(toNumber(item.unitPrice), invoice.currency)}
+                        {currency(toNumber(item.unitPrice))}
                       </td>
                       <td className="px-4 py-3 text-right font-medium">
-                        {formatCurrency(
+                        {currency(
                           toNumber(item.total) ||
-                            toNumber(item.quantity) * toNumber(item.unitPrice),
-                          invoice.currency
+                            toNumber(item.quantity) * toNumber(item.unitPrice)
                         )}
                       </td>
                     </tr>
@@ -155,7 +155,7 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
                 ) : (
                   <tr>
                     <td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">
-                      Sin ítems
+                      {t("preview.noItems")}
                     </td>
                   </tr>
                 )}
@@ -170,38 +170,37 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
                   <p className="font-medium">{item.description || "—"}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {toNumber(item.quantity)} x{" "}
-                    {formatCurrency(toNumber(item.unitPrice), invoice.currency)}
+                    {currency(toNumber(item.unitPrice))}
                   </p>
                   <p className="mt-1 font-medium">
-                    {formatCurrency(
+                    {currency(
                       toNumber(item.total) ||
-                        toNumber(item.quantity) * toNumber(item.unitPrice),
-                      invoice.currency
+                        toNumber(item.quantity) * toNumber(item.unitPrice)
                     )}
                   </p>
                 </li>
               ))
             ) : (
-              <li className="p-4 text-center text-muted-foreground">Sin ítems</li>
+              <li className="p-4 text-center text-muted-foreground">{t("preview.noItems")}</li>
             )}
           </ul>
 
           <div className="mt-6 flex flex-col gap-1 sm:items-end">
             <div className="flex justify-between gap-4 text-sm sm:justify-start">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">{formatCurrency(subtotal, invoice.currency)}</span>
+              <span className="text-muted-foreground">{t("preview.subtotal")}</span>
+              <span className="font-medium">{currency(subtotal)}</span>
             </div>
             {taxAmount > 0 && (
               <div className="flex justify-between gap-4 text-sm sm:justify-start">
                 <span className="text-muted-foreground">
-                  Impuesto ({toNumber(invoice.taxRate)}%)
+                  {t("preview.tax", { rate: toNumber(invoice.taxRate) })}
                 </span>
-                <span className="font-medium">{formatCurrency(taxAmount, invoice.currency)}</span>
+                <span className="font-medium">{currency(taxAmount)}</span>
               </div>
             )}
             <div className="flex justify-between gap-4 text-base font-semibold sm:justify-start">
-              <span>Total</span>
-              <span>{formatCurrency(total, invoice.currency)}</span>
+              <span>{t("columns.total")}</span>
+              <span>{currency(total)}</span>
             </div>
           </div>
 
@@ -209,12 +208,12 @@ export function InvoicePreview({ invoice, className }: InvoicePreviewProps) {
             <div className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
               {invoice.notes && (
                 <p>
-                  <span className="font-medium">Notas:</span> {invoice.notes}
+                  <span className="font-medium">{t("form.fields.notes")}:</span> {invoice.notes}
                 </p>
               )}
               {invoice.terms && (
                 <p>
-                  <span className="font-medium">Términos:</span> {invoice.terms}
+                  <span className="font-medium">{t("form.fields.terms")}:</span> {invoice.terms}
                 </p>
               )}
             </div>

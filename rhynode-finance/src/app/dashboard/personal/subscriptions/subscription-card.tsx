@@ -1,16 +1,14 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, ArrowUp, AlertTriangle, Ban, Clock, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Locale } from "@/lib/locale";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import type { SubscriptionItem } from "./subscription-utils";
-import {
-  formatCurrency,
-  formatDate,
-  frequencyLabel,
-  monthlyEquivalent,
-} from "./subscription-utils";
+import { monthlyEquivalent } from "./subscription-utils";
 import { SubscriptionActions } from "./subscription-actions";
 
 interface SubscriptionCardProps {
@@ -24,6 +22,8 @@ export function SubscriptionCard({
   onUpdate,
   onDelete,
 }: SubscriptionCardProps) {
+  const t = useTranslations("dashboard.subscriptions");
+  const locale = useLocale() as Locale;
   const isMarkedForCancel = item.status === "PENDING_CANCELLATION";
 
   return (
@@ -42,18 +42,18 @@ export function SubscriptionCard({
               </span>
               {item.unused && (
                 <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-500">
-                  <AlertTriangle className="h-3 w-3" /> Sin usar
+                  <AlertTriangle className="h-3 w-3" /> {t("unused")}
                 </Badge>
               )}
               {item.increased && (
                 <Badge variant="outline" className="gap-1 border-rose-500/30 text-rose-500">
-                  <ArrowUp className="h-3 w-3" /> Subió
+                  <ArrowUp className="h-3 w-3" /> {t("increased")}
                 </Badge>
               )}
               {isMarkedForCancel && (
                 <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-500">
                   <Ban className="h-3 w-3" />
-                  Para cancelar
+                  {t("filters.PENDING_CANCELLATION")}
                 </Badge>
               )}
               {item.daysRemaining !== null && (
@@ -70,20 +70,22 @@ export function SubscriptionCard({
                 >
                   <Clock className="h-3 w-3" />
                   {item.daysRemaining <= 0
-                    ? `Vence ${item.daysRemaining === 0 ? "hoy" : `hace ${Math.abs(item.daysRemaining)} días`}`
-                    : `En ${item.daysRemaining} días`}
+                    ? item.daysRemaining === 0
+                      ? t("expiresToday")
+                      : t("expiredDaysAgo", { count: Math.abs(item.daysRemaining) })
+                    : t("inDays", { count: item.daysRemaining })}
                 </Badge>
               )}
               {item.matched && (
                 <Badge variant="outline" className="gap-1 border-blue-500/30 text-blue-500">
                   <Receipt className="h-3 w-3" />
-                  Coincide pago
+                  {t("matchedPayment")}
                 </Badge>
               )}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="capitalize">
-                {frequencyLabel(item.frequency)}
+                {t(`frequencies.${item.frequency}` as never)}
               </Badge>
               {item.provider && (
                 <span className="text-xs text-muted-foreground">{item.provider}</span>
@@ -95,23 +97,25 @@ export function SubscriptionCard({
 
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">Monto</p>
+            <p className="text-xs text-muted-foreground">{t("columns.amount")}</p>
             <p className="text-lg font-bold tracking-tight">
-              {formatCurrency(item.amount, item.currency)}
+              {formatCurrency(item.amount, item.currency, locale)}
             </p>
             <p className="text-xs text-muted-foreground">
-              {formatCurrency(monthlyEquivalent(item.amount, item.frequency), item.currency)} / mes
+              {formatCurrency(monthlyEquivalent(item.amount, item.frequency), item.currency, locale)} {t("perMonth")}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Próxima renovación</p>
+            <p className="text-xs text-muted-foreground">{t("kpis.nextRenewal")}</p>
             <div className="flex items-center justify-end gap-1.5 text-sm font-medium">
               <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-              {formatDate(item.nextRenewal)}
+              {item.nextRenewal
+                ? fmtDate(item.nextRenewal, locale, { day: "numeric", month: "short", year: "numeric" })
+                : "—"}
             </div>
             {item.lastPaidAt && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Último pago: {formatDate(item.lastPaidAt)}
+                {t("lastPaid")}: {fmtDate(item.lastPaidAt, locale, { day: "numeric", month: "short", year: "numeric" })}
               </p>
             )}
           </div>
