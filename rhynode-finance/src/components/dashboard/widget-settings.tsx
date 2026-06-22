@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   closestCenter,
@@ -55,6 +56,7 @@ function SortableSettingsItem({
   visible,
   onToggle,
 }: SortableSettingsItemProps) {
+  const t = useTranslations("dashboard.common");
   const {
     attributes,
     listeners,
@@ -84,7 +86,7 @@ function SortableSettingsItem({
         {...attributes}
         {...listeners}
         className="touch-none rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Arrastrar para reordenar"
+        aria-label={t("dragReorder")}
       >
         <GripVertical className="h-4 w-4" />
       </button>

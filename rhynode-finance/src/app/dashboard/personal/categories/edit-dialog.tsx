@@ -152,7 +152,7 @@ export function EditCategoryDialog({
                 id="edit-cat-icon"
                 value={form.icon}
                 onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="Tags"
+                placeholder={t("dialogs.edit.iconPlaceholder")}
               />
             </div>
           </div>

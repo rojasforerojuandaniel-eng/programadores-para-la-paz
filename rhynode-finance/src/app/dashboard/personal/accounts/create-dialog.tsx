@@ -169,7 +169,7 @@ export function CreateAccountDialog() {
               id="acc-icon"
               value={form.icon}
               onChange={(e) => setForm({ ...form, icon: e.target.value })}
-              placeholder="Wallet"
+              placeholder={t("dialog.labels.iconPlaceholder")}
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { ArrowDown, Loader2 } from "lucide-react";
@@ -46,6 +47,7 @@ function getScrollTop(): number {
 }
 
 export function PullToRefresh({ children, onRefresh, className }: PullToRefreshProps) {
+  const t = useTranslations("dashboard.common.pullToRefresh");
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef(0);
@@ -203,7 +205,7 @@ export function PullToRefresh({ children, onRefresh, className }: PullToRefreshP
         >
           <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card/95 shadow-sm backdrop-blur-sm">
             {refreshing ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label="Actualizando" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label={t("updating")} />
             ) : (
               <ArrowDown
                 className={cn(
