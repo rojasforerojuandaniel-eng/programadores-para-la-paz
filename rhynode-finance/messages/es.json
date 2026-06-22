@@ -1282,6 +1282,68 @@
         "tooltipValue": "XP ganado",
         "tooltipLabel": "Semana: {label}",
         "barName": "XP ganado"
+      },
+      "achievements": {
+        "FIRST_TRANSACTION": {
+          "name": "Primer Paso",
+          "description": "Crear tu primera transacción"
+        },
+        "FIRST_BUDGET": {
+          "name": "Planificador",
+          "description": "Crear tu primer presupuesto"
+        },
+        "FIRST_GOAL": {
+          "name": "Soñador",
+          "description": "Crear tu primera meta de ahorro"
+        },
+        "FIRST_INVOICE": {
+          "name": "Facturador",
+          "description": "Crear tu primera factura"
+        },
+        "FIRST_RECEIPT": {
+          "name": "Organizado",
+          "description": "Subir tu primer recibo"
+        },
+        "STREAK_7": {
+          "name": "Semana Perfecta",
+          "description": "7 días consecutivos"
+        },
+        "STREAK_30": {
+          "name": "Mes Intacto",
+          "description": "30 días consecutivos"
+        },
+        "BUDGET_MASTER": {
+          "name": "Dentro del Presupuesto",
+          "description": "3 meses sin exceder presupuesto"
+        },
+        "GOAL_COMPLETED": {
+          "name": "Cumplidor",
+          "description": "Completar primera meta"
+        },
+        "SAVINGS_1M": {
+          "name": "Millonario",
+          "description": "Ahorrar 1 millón COP"
+        },
+        "TRANSACTIONS_100": {
+          "name": "Veterano",
+          "description": "100 transacciones registradas"
+        },
+        "INVOICES_50": {
+          "name": "Empresario",
+          "description": "50 facturas emitidas"
+        },
+        "NET_WORTH_POSITIVE": {
+          "name": "En Positivo",
+          "description": "Patrimonio neto mayor a 0"
+        },
+        "NO_DEBT": {
+          "name": "Libre",
+          "description": "Pagar todas las deudas"
+        },
+        "LEVEL_50": {
+          "name": "Maestro",
+          "description": "Alcanzar nivel 50"
+        }
       }
     },
     "projects": {
@@ -1406,7 +1468,8 @@
         "iva": "IVA",
         "reteFuente": "ReteFuente",
         "ica": "ICA",
-        "icaFooter": "Según tarifa del municipio (ej. Bogotá 9.66‰)"
+        "icaFooter": "Según tarifa del municipio (ej. Bogotá 9.66‰)",
+        "icaValue": "Variable"
       },
       "exampleColumns": {
         "type": "Tipo",
@@ -1601,6 +1664,15 @@
         "toast": {
           "createError": "Error al crear reporte fiscal",
           "networkError": "Error de red"
+        }
+      },
+      "examples": {
+        "notes": {
+          "ivaGeneral": "Bienes y servicios gravados",
+          "reteFuenteGeneral": "Servicios generales",
+          "reteFuenteHigh": "Servicios de alta valor",
+          "icaBogota": "Bogotá (9.66/1000)",
+          "icaMedellin": "Medellín (13.8/1000)"
         }
       }
     },

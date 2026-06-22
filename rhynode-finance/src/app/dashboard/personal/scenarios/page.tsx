@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { getUserProfile } from "@/lib/auth";
 import { decimalToNumber } from "@/lib/decimal";
+import { getLocale } from "@/lib/locale-server";
 import { ScenariosClient } from "@/components/dashboard/scenarios/scenarios-client";
 import type { Scenario, ScenarioSummary } from "@/lib/scenarios";
 
@@ -29,6 +31,9 @@ function getScenariosFromProfile(metadata: unknown): Scenario[] {
 }
 
 export default async function ScenariosPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+
   const profile = await getUserProfile();
   if (!profile) {
     redirect("/sign-in");

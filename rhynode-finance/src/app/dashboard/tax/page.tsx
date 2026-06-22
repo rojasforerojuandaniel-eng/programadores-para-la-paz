@@ -60,12 +60,26 @@ const statusConfig: Record<
   OVERDUE: { labelKey: "statuses.OVERDUE", className: "bg-red-500/10 text-red-400", icon: AlertTriangle },
 };
 
-const authorityLabels: Record<string, string> = {
-  DIAN: "DIAN (Colombia)",
-  SAT: "SAT (México)",
-  AFIP: "AFIP (Argentina)",
-  SII: "SII (Chile)",
-  SUNAT: "SUNAT (Perú)",
+const authorityLabelKeys: Record<string, string> = {
+  DIAN: "createReportDialog.authorities.DIAN",
+  SAT: "createReportDialog.authorities.SAT",
+  AFIP: "createReportDialog.authorities.AFIP",
+  SII: "createReportDialog.authorities.SII",
+  SUNAT: "createReportDialog.authorities.SUNAT",
+};
+
+const exampleTypeLabelKeys: Record<string, string> = {
+  IVA: "calculator.regime.taxTypes.IVA",
+  ReteFuente: "calculator.regime.taxTypes.ReteFuente",
+  ICA: "calculator.regime.taxTypes.ICA",
+};
+
+const exampleNoteKeys: Record<string, string> = {
+  ivaGeneral: "examples.notes.ivaGeneral",
+  reteFuenteGeneral: "examples.notes.reteFuenteGeneral",
+  reteFuenteHigh: "examples.notes.reteFuenteHigh",
+  icaBogota: "examples.notes.icaBogota",
+  icaMedellin: "examples.notes.icaMedellin",
 };
 
 const typeLabelKeys: Record<string, string> = {
@@ -83,15 +97,15 @@ interface TaxExample {
   rate: number;
   tax: number;
   total: number;
-  note: string;
+  noteKey: string;
 }
 
 const taxExamples: TaxExample[] = [
-  { type: "IVA", base: 1000000, rate: 19, tax: 190000, total: 1190000, note: "Bienes y servicios gravados" },
-  { type: "ReteFuente", base: 5000000, rate: 2.5, tax: 125000, total: 4875000, note: "Servicios generales" },
-  { type: "ReteFuente", base: 10000000, rate: 3.5, tax: 350000, total: 9650000, note: "Servicios de alta valor" },
-  { type: "ICA", base: 2000000, rate: 9.66, tax: 193200, total: 2193200, note: "Bogotá (9.66/1000)" },
-  { type: "ICA", base: 2000000, rate: 13.8, tax: 276000, total: 2276000, note: "Medellín (13.8/1000)" },
+  { type: "IVA", base: 1000000, rate: 19, tax: 190000, total: 1190000, noteKey: "ivaGeneral" },
+  { type: "ReteFuente", base: 5000000, rate: 2.5, tax: 125000, total: 4875000, noteKey: "reteFuenteGeneral" },
+  { type: "ReteFuente", base: 10000000, rate: 3.5, tax: 350000, total: 9650000, noteKey: "reteFuenteHigh" },
+  { type: "ICA", base: 2000000, rate: 9.66, tax: 193200, total: 2193200, noteKey: "icaBogota" },
+  { type: "ICA", base: 2000000, rate: 13.8, tax: 276000, total: 2276000, noteKey: "icaMedellin" },
 ];
 
 function formatCOP(amount: number, locale: Locale) {
@@ -192,12 +206,12 @@ export default function TaxPage() {
   function renderExampleRow(ex: TaxExample) {
     return (
       <>
-        <TableCell className="font-medium">{ex.type}</TableCell>
+        <TableCell className="font-medium">{t(exampleTypeLabelKeys[ex.type] as never) || ex.type}</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.base, locale)}</TableCell>
         <TableCell className="text-right font-mono">{ex.rate}%</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.tax, locale)}</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.total, locale)}</TableCell>
-        <TableCell className="text-sm text-muted-foreground">{ex.note}</TableCell>
+        <TableCell className="text-sm text-muted-foreground">{t(exampleNoteKeys[ex.noteKey] as never)}</TableCell>
       </>
     );
   }
@@ -206,7 +220,7 @@ export default function TaxPage() {
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="font-medium">{ex.type}</span>
+          <span className="font-medium">{t(exampleTypeLabelKeys[ex.type] as never) || ex.type}</span>
           <span className="font-mono text-sm">{ex.rate}%</span>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -223,7 +237,7 @@ export default function TaxPage() {
             <div className="font-mono font-semibold">{formatCOP(ex.total, locale)}</div>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">{ex.note}</div>
+        <div className="text-xs text-muted-foreground">{t(exampleNoteKeys[ex.noteKey] as never)}</div>
       </div>
     );
   }
@@ -242,7 +256,7 @@ export default function TaxPage() {
   function renderReportRow(report: TaxReport) {
     return (
       <>
-        <TableCell className="text-sm">{authorityLabels[report.authority] || report.authority}</TableCell>
+        <TableCell className="text-sm">{t(authorityLabelKeys[report.authority] as never) || report.authority}</TableCell>
         <TableCell className="text-sm">{t(typeLabelKeys[report.type] as never) || report.type}</TableCell>
         <TableCell className="font-mono text-sm">{periodLabel(report)}</TableCell>
         <TableCell><StatusBadge status={report.status} /></TableCell>
@@ -259,7 +273,7 @@ export default function TaxPage() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate font-medium">{t(typeLabelKeys[report.type] as never) || report.type}</div>
-            <div className="text-sm text-muted-foreground">{authorityLabels[report.authority] || report.authority}</div>
+            <div className="text-sm text-muted-foreground">{t(authorityLabelKeys[report.authority] as never) || report.authority}</div>
           </div>
           <StatusBadge status={report.status} />
         </div>
@@ -290,7 +304,7 @@ export default function TaxPage() {
         <KpiCard label={t("kpis.reteFuente")} value="2.5% – 3.5%" icon={Receipt} />
         <KpiCard
           label={t("kpis.ica")}
-          value={locale === "en" ? "Variable" : "Variable"}
+          value={t("kpis.icaValue")}
           icon={FileCheck}
           footer={
             <span className="text-xs text-muted-foreground">{t("kpis.icaFooter")}</span>
