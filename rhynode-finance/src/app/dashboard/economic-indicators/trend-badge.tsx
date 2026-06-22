@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function TrendBadge({ trend }: { trend: "up" | "down" | "flat" }) {
-  const t = useTranslations("dashboard.indicators");
+  const t = useTranslations("dashboard.economicIndicators");
   if (trend === "up") {
     return (
       <Badge variant="outline" className="gap-1 text-emerald-600">

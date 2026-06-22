@@ -163,12 +163,13 @@ export default function AdvisorPage() {
                 },
               ]);
             } else if (event.type === "error" && typeof event.message === "string") {
+              const errorMessage = event.message;
               setMessages((prev) => [
                 ...prev,
                 {
                   id: generateId(),
                   role: "assistant",
-                  content: `Error: ${event.message}`,
+                  content: t("serverError", { message: errorMessage }),
                 },
               ]);
             }

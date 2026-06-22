@@ -1,10 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import { getCurrentOrganization } from "@/lib/organization.server";
 import { prisma } from "@/lib/prisma";
+import { getLocale, setRequestLocale } from "next-intl/server";
 import { PaymentLinksClient } from "@/components/dashboard/payment-links-client";
 import type { PaymentLink } from "@/components/dashboard/payment-link-actions";
 
 export default async function PaymentLinksPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+
   const { userId } = await auth();
   if (!userId) return null;
 

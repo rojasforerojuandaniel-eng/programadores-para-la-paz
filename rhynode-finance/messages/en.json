@@ -1639,7 +1639,8 @@
       "subtitle": "Intelligent financial advisor",
       "chatAria": "Chat messages",
       "greeting": "Hi, I'm your financial advisor. How can I help you today?",
-      "error": "Sorry, an error occurred while processing your message. Please try again."
+      "error": "Sorry, an error occurred while processing your message. Please try again.",
+      "serverError": "Error: {message}"
     },
     "leaderboard": {
       "title": "Leaderboard",
@@ -1753,6 +1754,17 @@
         "configure": "Opening {name} configuration...",
         "invalidForm": "Please enter a valid name and email",
         "waitlistSuccess": "We'll notify you when it's available"
+      },
+      "descriptions": {
+        "bancolombia": "Sync checking, savings, and credit cards automatically.",
+        "davivienda": "Import Davivienda transactions and balances in real time.",
+        "nequi": "Connect your digital bank and track everyday spending.",
+        "siigo": "Send invoices and reconcile payments with your cloud accounting.",
+        "alegra": "Integrate electronic invoicing and financial statements.",
+        "wompi": "Accept card, PSE, Nequi, and Daviplata payments in Colombia.",
+        "stripe": "Process international payments with cards and global methods.",
+        "zapier": "Automate workflows between Rhynode and 5,000+ apps.",
+        "make": "Build visual scenarios to sync data without code."
       }
     },
     "rules": {
@@ -2274,7 +2286,11 @@
           "portalError": "Error opening portal",
           "cancelSuccess": "Subscription cancelled",
           "cancelError": "Error cancelling"
-        }
+        },
+        "metaCancelTitle": "Subscription cancelled",
+        "metaCancelDescription": "The payment process was cancelled. No charge was made.",
+        "metaSuccessTitle": "Subscription activated",
+        "metaSuccessDescription": "Your Rhynode Finance subscription has been successfully activated."
       },
       "notifications": {
         "title": "Notifications",
@@ -3133,6 +3149,23 @@
           "users_singular": "user",
           "users_plural": "users"
         }
+      }
+    },
+    "economicIndicators": {
+      "title": "Economic Indicators",
+      "subtitle": "Colombia reference data, updated daily",
+      "refresh": "Refresh",
+      "fallback": {
+        "title": "Showing backup data",
+        "description": "We couldn't connect to the official source. The values shown are for reference only and may not reflect the current market."
+      },
+      "baseValue": "Base value / target: {value}",
+      "source": "Source:",
+      "lastUpdate": "Last updated:",
+      "trend": {
+        "up": "Up",
+        "down": "Down",
+        "flat": "Stable"
       }
     }
   },

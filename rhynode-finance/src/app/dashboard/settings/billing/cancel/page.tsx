@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import { XCircle, ArrowLeft, HelpCircle } from "lucide-react";
 import { buildMetadata } from "@/lib/seo-metadata";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Suscripción cancelada",
-  description: "El proceso de pago fue cancelado. No se realizó ningún cargo.",
-  path: "/dashboard/settings/billing/cancel",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.settings.billing" });
+
+  return buildMetadata({
+    title: t("metaCancelTitle"),
+    description: t("metaCancelDescription"),
+    path: "/dashboard/settings/billing/cancel",
+  });
+}
 
 export default async function BillingCancelPage() {
   const locale = await getLocale();

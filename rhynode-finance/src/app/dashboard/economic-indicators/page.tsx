@@ -37,7 +37,7 @@ async function refreshIndicators() {
 export default async function EconomicIndicatorsPage() {
   const locale = await getLocale();
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "dashboard.indicators" });
+  const t = await getTranslations({ locale, namespace: "dashboard.economicIndicators" });
 
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
