@@ -390,7 +390,8 @@
         "save": "Guardar",
         "saving": "Guardando...",
         "created": "Meta creada",
-        "createError": "Error al crear meta"
+        "createError": "Error al crear meta",
+        "iconPlaceholder": "Emoji o nombre"
       },
       "addSavings": {
         "trigger": "Añadir ahorro",
@@ -2124,7 +2125,8 @@
           "saving": "Guardando...",
           "save": "Guardar cambios",
           "updated": "Categoría actualizada",
-          "error": "Error al actualizar la categoría"
+          "error": "Error al actualizar la categoría",
+          "iconPlaceholder": "Emoji o nombre"
         },
         "create": {
           "trigger": "Nueva Categoría",
@@ -2141,7 +2143,8 @@
           "saving": "Guardando...",
           "save": "Guardar",
           "created": "Categoría creada",
-          "error": "Error al crear categoría"
+          "error": "Error al crear categoría",
+          "iconPlaceholder": "Emoji o nombre"
         },
         "delete": {
           "title": "Eliminar categoría",
@@ -2639,7 +2642,8 @@
           "initialBalance": "Saldo inicial",
           "currency": "Moneda",
           "color": "Color",
-          "icon": "Icono (nombre Lucide)"
+          "icon": "Icono (nombre Lucide)",
+          "iconPlaceholder": "Emoji o nombre"
         },
         "placeholders": {
           "name": "Ej. Cuenta de Ahorros"
@@ -3197,7 +3201,10 @@
         "thinking": "pensando",
         "toolResult": "Resultado de",
         "yes": "Sí",
-        "no": "No"
+        "no": "No",
+        "inputPlaceholder": "Escribe tu mensaje...",
+        "messageAriaLabel": "Mensaje",
+        "sendAriaLabel": "Enviar mensaje"
       },
       "anomalies": {
         "loadError": "Error al cargar anomalías",
@@ -3229,7 +3236,11 @@
           "users_singular": "usuario",
           "users_plural": "usuarios"
         }
-      }
+      },
+      "pullToRefresh": {
+        "updating": "Actualizando"
+      },
+      "dragReorder": "Arrastrar para reordenar"
     },
     "economicIndicators": {
       "title": "Indicadores Económicos",
@@ -3247,6 +3258,10 @@
         "down": "Bajó",
         "flat": "Estable"
       }
+    },
+    "error": {
+      "title": "Algo salió mal en el dashboard",
+      "description": "No pudimos cargar esta sección. Intenta de nuevo o selecciona otra opción en el menú."
     }
   },
   "nav": {

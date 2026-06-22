@@ -167,7 +167,7 @@ export function CreateGoalDialog({
                 id="goal-icon"
                 value={form.icon}
                 onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="Target"
+                placeholder={t("createDialog.iconPlaceholder")}
               />
             </div>
           </div>

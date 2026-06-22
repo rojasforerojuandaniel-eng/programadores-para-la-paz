@@ -153,7 +153,7 @@ export function CreateCategoryDialog({ categories }: { categories: Category[] })
                 id="cat-icon"
                 value={form.icon}
                 onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="Tags"
+                placeholder={t("dialogs.create.iconPlaceholder")}
               />
             </div>
           </div>

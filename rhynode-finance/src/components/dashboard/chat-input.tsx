@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ interface ChatInputProps {
 
 export const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
   function ChatInput({ onSend, isLoading }, ref) {
+    const t = useTranslations("dashboard.ai.chat");
     const [input, setInput] = useState("");
 
     function handleSubmit(e: FormEvent) {
@@ -32,19 +34,19 @@ export const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
       <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-border p-4">
         <Input
           ref={ref}
-          placeholder="Escribe tu mensaje..."
+          placeholder={t("inputPlaceholder")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={isLoading}
           className="flex-1"
-          aria-label="Mensaje"
+          aria-label={t("messageAriaLabel")}
         />
         <Button
           type="submit"
           size="icon"
           disabled={isLoading || !input.trim()}
-          aria-label="Enviar mensaje"
+          aria-label={t("sendAriaLabel")}
         >
           <Send className="h-4 w-4" />
         </Button>

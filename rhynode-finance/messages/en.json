@@ -390,7 +390,8 @@
         "save": "Save",
         "saving": "Saving...",
         "created": "Goal created",
-        "createError": "Error creating goal"
+        "createError": "Error creating goal",
+        "iconPlaceholder": "Emoji or name"
       },
       "addSavings": {
         "trigger": "Add savings",
@@ -2124,7 +2125,8 @@
           "saving": "Saving...",
           "save": "Save changes",
           "updated": "Category updated",
-          "error": "Error updating category"
+          "error": "Error updating category",
+          "iconPlaceholder": "Emoji or name"
         },
         "create": {
           "trigger": "New Category",
@@ -2141,7 +2143,8 @@
           "saving": "Saving...",
           "save": "Save",
           "created": "Category created",
-          "error": "Error creating category"
+          "error": "Error creating category",
+          "iconPlaceholder": "Emoji or name"
         },
         "delete": {
           "title": "Delete category",
@@ -2639,7 +2642,8 @@
           "initialBalance": "Initial balance",
           "currency": "Currency",
           "color": "Color",
-          "icon": "Icon (Lucide name)"
+          "icon": "Icon (Lucide name)",
+          "iconPlaceholder": "Emoji or name"
         },
         "placeholders": {
           "name": "e.g. Savings Account"
@@ -3197,7 +3201,10 @@
         "thinking": "thinking",
         "toolResult": "Result of",
         "yes": "Yes",
-        "no": "No"
+        "no": "No",
+        "inputPlaceholder": "Type your message...",
+        "messageAriaLabel": "Message",
+        "sendAriaLabel": "Send message"
       },
       "anomalies": {
         "loadError": "Failed to load anomalies",
@@ -3229,7 +3236,11 @@
           "users_singular": "user",
           "users_plural": "users"
         }
-      }
+      },
+      "pullToRefresh": {
+        "updating": "Updating"
+      },
+      "dragReorder": "Drag to reorder"
     },
     "economicIndicators": {
       "title": "Economic Indicators",
@@ -3247,6 +3258,10 @@
         "down": "Down",
         "flat": "Stable"
       }
+    },
+    "error": {
+      "title": "Something went wrong in the dashboard",
+      "description": "We couldn't load this section. Try again or pick another option from the menu."
     }
   },
   "nav": {
