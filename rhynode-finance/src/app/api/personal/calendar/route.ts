@@ -7,6 +7,9 @@ import { logger } from "@/lib/logger";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { getOccurrencesInRange } from "@/app/dashboard/personal/subscriptions/subscription-utils";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency as fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 const querySchema = z.object({
   from: z.coerce.date().optional(),
@@ -35,6 +38,10 @@ export const GET = withRateLimit(async function GET(request: Request) {
     if (!org || !profile) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const locale = await getLocale();
+    const fmt = (amount: number, currency: string) => fmtCurrency(amount, currency, locale);
+    const isEn = locale === "en";
 
     const { searchParams } = new URL(request.url);
     const parsed = querySchema.safeParse({
@@ -163,8 +170,12 @@ export const GET = withRateLimit(async function GET(request: Request) {
           amount: decimalToNumber(d.remainingAmount),
           currency: d.currency,
           description: d.counterparty
-            ? `Deuda con ${d.counterparty}`
-            : "Vencimiento de deuda",
+            ? isEn
+              ? `Debt with ${d.counterparty}`
+              : `Deuda con ${d.counterparty}`
+            : isEn
+              ? "Debt due"
+              : "Vencimiento de deuda",
         };
       }),
       ...recurring.map((r) => ({
@@ -176,7 +187,13 @@ export const GET = withRateLimit(async function GET(request: Request) {
         status: r.status,
         amount: decimalToNumber(r.amount),
         currency: org.currency,
-        description: r.type === "INCOME" ? "Ingreso recurrente" : "Pago recurrente",
+        description: r.type === "INCOME"
+          ? isEn
+            ? "Recurring income"
+            : "Ingreso recurrente"
+          : isEn
+            ? "Recurring payment"
+            : "Pago recurrente",
       })),
       ...goals.flatMap((g) => {
         if (!g.deadline) return [];
@@ -189,10 +206,15 @@ export const GET = withRateLimit(async function GET(request: Request) {
           status: g.status,
           amount: decimalToNumber(g.targetAmount),
           currency: g.currency,
-          description: `Meta: ${formatCurrency(
-            decimalToNumber(g.currentAmount),
-            g.currency
-          )} de ${formatCurrency(decimalToNumber(g.targetAmount), g.currency)}`,
+          description: isEn
+            ? `Goal: ${fmt(decimalToNumber(g.currentAmount), g.currency)} of ${fmt(
+                decimalToNumber(g.targetAmount),
+                g.currency,
+              )}`
+            : `Meta: ${fmt(decimalToNumber(g.currentAmount), g.currency)} de ${fmt(
+                decimalToNumber(g.targetAmount),
+                g.currency,
+              )}`,
         };
       }),
       ...invoices.flatMap((inv) => {
@@ -201,12 +223,14 @@ export const GET = withRateLimit(async function GET(request: Request) {
           id: `invoice-${inv.id}`,
           referenceId: inv.id,
           type: "invoice" as const,
-          title: `Factura ${inv.number}`,
+          title: isEn ? `Invoice ${inv.number}` : `Factura ${inv.number}`,
           date: inv.dueDate.toISOString(),
           status: inv.status,
           amount: decimalToNumber(inv.total),
           currency: inv.currency,
-          description: `Cliente: ${inv.client?.name ?? "—"}`,
+          description: isEn
+            ? `Client: ${inv.client?.name ?? "—"}`
+            : `Cliente: ${inv.client?.name ?? "—"}`,
         };
       }),
       ...taxReports.flatMap((t) => {
@@ -220,7 +244,9 @@ export const GET = withRateLimit(async function GET(request: Request) {
           status: t.status,
           amount: decimalToNumber(t.amount),
           currency: org.currency,
-          description: `Periodo ${t.period} ${t.year}`,
+          description: isEn
+            ? `Period ${t.period} ${t.year}`
+            : `Periodo ${t.period} ${t.year}`,
         };
       }),
       ...subscriptions.flatMap((s) => {
@@ -235,7 +261,13 @@ export const GET = withRateLimit(async function GET(request: Request) {
           status: s.status,
           amount: decimalToNumber(s.amount),
           currency: s.currency,
-          description: s.provider ? `Suscripción: ${s.provider}` : "Suscripción recurrente",
+          description: s.provider
+            ? isEn
+              ? `Subscription: ${s.provider}`
+              : `Suscripción: ${s.provider}`
+            : isEn
+              ? "Recurring subscription"
+              : "Suscripción recurrente",
         }));
       }),
     ];
@@ -253,11 +285,3 @@ export const GET = withRateLimit(async function GET(request: Request) {
     );
   }
 }, {"maxRequests": 60,"windowMs": 60000});
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
