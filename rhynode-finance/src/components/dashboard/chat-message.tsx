@@ -1,7 +1,10 @@
 "use client";
 
 import { Brain, User, Loader2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatNumber, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface ChatMessageProps {
   role: "user" | "assistant" | "tool";
@@ -18,6 +21,8 @@ export function ChatMessage({
   toolName,
   toolResult,
 }: ChatMessageProps) {
+  const t = useTranslations("dashboard.ai");
+  const locale = useLocale() as Locale;
   const isUser = role === "user";
 
   if (role === "tool") {
@@ -31,12 +36,12 @@ export function ChatMessage({
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               <span>
-                Usando{" "}
+                {t("chat.usingTool")}{" "}
                 <span className="font-medium text-foreground">{toolName}</span>…
               </span>
             </div>
           ) : (
-            <ToolResultView toolName={toolName} result={toolResult} />
+            <ToolResultView toolName={toolName} result={toolResult} t={t} locale={locale} />
           )}
         </div>
       </div>
@@ -76,7 +81,7 @@ export function ChatMessage({
       >
         {isLoading ? (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">pensando</span>
+            <span className="text-muted-foreground">{t("chat.thinking")}</span>
             <span className="flex gap-1">
               <span
                 className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary"
@@ -130,9 +135,13 @@ export function ChatMessageSkeleton({ isUser = false }: { isUser?: boolean }) {
 function ToolResultView({
   toolName,
   result,
+  t,
+  locale,
 }: {
   toolName?: string;
   result: unknown;
+  t: ReturnType<typeof useTranslations>;
+  locale: Locale;
 }) {
   if (!isObject(result)) {
     return (
@@ -153,7 +162,7 @@ function ToolResultView({
     <div className="space-y-2">
       {toolName ? (
         <p className="font-medium text-foreground">
-          Resultado de <span className="text-primary">{toolName}</span>
+          {t("chat.toolResult")} <span className="text-primary">{toolName}</span>
         </p>
       ) : null}
       <div className="space-y-1.5">
@@ -162,7 +171,7 @@ function ToolResultView({
             <p className="text-xs font-medium text-muted-foreground capitalize">
               {formatKey(key)}
             </p>
-            <ValueView value={value} />
+            <ValueView value={value} t={t} locale={locale} />
           </div>
         ))}
       </div>
@@ -170,7 +179,15 @@ function ToolResultView({
   );
 }
 
-function ValueView({ value }: { value: unknown }) {
+function ValueView({
+  value,
+  t,
+  locale,
+}: {
+  value: unknown;
+  t: ReturnType<typeof useTranslations>;
+  locale: Locale;
+}) {
   if (Array.isArray(value) && value.length > 0 && isObject(value[0])) {
     return (
       <ul className="mt-1 space-y-1 text-xs">
@@ -185,12 +202,12 @@ function ValueView({ value }: { value: unknown }) {
                       <span className="text-muted-foreground">
                         {formatKey(k)}:{" "}
                       </span>
-                      <span className="font-medium">{formatValue(v)}</span>
+                      <span className="font-medium">{formatValue(v, t, locale)}</span>
                     </div>
                   ))}
               </div>
             ) : (
-              <span>{formatValue(item)}</span>
+              <span>{formatValue(item, t, locale)}</span>
             )}
           </li>
         ))}
@@ -198,7 +215,7 @@ function ValueView({ value }: { value: unknown }) {
     );
   }
 
-  return <p className="text-sm font-medium">{formatValue(value)}</p>;
+  return <p className="text-sm font-medium">{formatValue(value, t, locale)}</p>;
 }
 
 function formatKey(key: string): string {
@@ -209,12 +226,16 @@ function formatKey(key: string): string {
     .toLowerCase();
 }
 
-function formatValue(value: unknown): string {
+function formatValue(
+  value: unknown,
+  t: ReturnType<typeof useTranslations>,
+  locale: Locale,
+): string {
   if (value === null || value === undefined) return "—";
-  if (typeof value === "boolean") return value ? "Sí" : "No";
-  if (typeof value === "number") return value.toLocaleString("es-CO");
+  if (typeof value === "boolean") return value ? t("chat.yes") : t("chat.no");
+  if (typeof value === "number") return formatNumber(value, locale);
   if (typeof value === "string" && value.match(/^\d{4}-\d{2}-\d{2}T/)) {
-    return new Date(value).toLocaleDateString("es-CO", {
+    return fmtDate(value, locale, {
       year: "numeric",
       month: "short",
       day: "numeric",

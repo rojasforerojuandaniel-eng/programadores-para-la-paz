@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   FinancialInsightsSchema,
   type FinancialInsights,
@@ -29,53 +32,45 @@ interface AiInsightsCardClientProps {
 
 const healthConfig = {
   saludable: {
-    label: "Saludable",
+    labelKey: "insightsCard.health.saludable",
     color: "text-emerald-700",
     bg: "bg-emerald-500/10",
     ring: "ring-emerald-500/20",
   },
   alerta: {
-    label: "Alerta",
+    labelKey: "insightsCard.health.alerta",
     color: "text-amber-800",
     bg: "bg-amber-500/10",
     ring: "ring-amber-500/20",
   },
   crítica: {
-    label: "Crítica",
+    labelKey: "insightsCard.health.crítica",
     color: "text-red-700",
     bg: "bg-red-500/10",
     ring: "ring-red-500/20",
   },
-};
+} as const;
 
 const trendConfig = {
   up: {
     icon: TrendingUp,
-    label: "Mejorando",
+    labelKey: "insightsCard.trend.up",
     color: "text-emerald-700",
     bg: "bg-emerald-500/10",
   },
   down: {
     icon: TrendingDown,
-    label: "Bajando",
+    labelKey: "insightsCard.trend.down",
     color: "text-red-700",
     bg: "bg-red-500/10",
   },
   stable: {
     icon: Minus,
-    label: "Estable",
+    labelKey: "insightsCard.trend.stable",
     color: "text-slate-700",
     bg: "bg-muted",
   },
-};
-
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+} as const;
 
 function isEmptyState(insights: FinancialInsights): boolean {
   return (
@@ -90,6 +85,8 @@ export function AiInsightsCardClient({
   initialInsights,
   currency,
 }: AiInsightsCardClientProps) {
+  const t = useTranslations("dashboard.ai");
+  const locale = useLocale() as Locale;
   const [insights, setInsights] = useState<FinancialInsights | null>(initialInsights);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,12 +107,12 @@ export function AiInsightsCardClient({
       setInsights(validated);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "No se pudieron actualizar los insights";
+        err instanceof Error ? err.message : t("insightsCard.errorFallback");
       setError(message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   if (error || insights === null) {
     return (
@@ -124,18 +121,18 @@ export function AiInsightsCardClient({
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 shrink-0 text-red-700" aria-hidden="true" />
             <div className="flex-1">
-              <p className="font-medium">No pudimos cargar los insights</p>
+              <p className="font-medium">{t("insightsCard.errorTitle")}</p>
               <p className="text-sm text-slate-700">
-                {error ?? "Ocurrió un problema al analizar tus finanzas."}
+                {error ?? t("insightsCard.errorDefault")}
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 className="mt-3"
                 onClick={() => void fetchInsights()}
-                aria-label="Reintentar cargar insights"
+                aria-label={t("insightsCard.retryAria")}
               >
-                Reintentar
+                {t("insightsCard.retry")}
               </Button>
             </div>
           </div>
@@ -149,8 +146,8 @@ export function AiInsightsCardClient({
       <EmptyStateCard
         variant="sm"
         icon={PiggyBank}
-        title="Aún no hay insights de IA"
-        description="Registra ingresos y gastos para que Rhynode genere recomendaciones personalizadas."
+        title={t("insightsCard.emptyTitle")}
+        description={t("insightsCard.emptyDescription")}
         className="surface-elevated-2 rounded-xl border-border"
         action={
           <Button
@@ -162,12 +159,12 @@ export function AiInsightsCardClient({
             {loading ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                Analizando…
+                {t("insightsCard.analyzing")}
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-                Actualizar
+                {t("insightsCard.refresh")}
               </>
             )}
           </Button>
@@ -191,7 +188,7 @@ export function AiInsightsCardClient({
               className="heading-card flex items-center gap-2 text-base"
             >
               <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-              Insights de IA
+              {t("insightsCard.title")}
             </CardTitle>
             <Button
               variant="ghost"
@@ -199,7 +196,7 @@ export function AiInsightsCardClient({
               className="h-8 w-8"
               disabled={loading}
               onClick={() => void fetchInsights()}
-              aria-label={loading ? "Analizando insights" : "Actualizar insights"}
+              aria-label={loading ? t("insightsCard.analyzingAria") : t("insightsCard.refreshAria")}
             >
               <RefreshCw
                 className={cn("h-4 w-4", loading && "animate-spin")}
@@ -210,7 +207,7 @@ export function AiInsightsCardClient({
         </CardHeader>
         <CardContent className="space-y-4">
           <div aria-live="polite" className="sr-only">
-            {loading ? "Analizando tus finanzas…" : null}
+            {loading ? t("insightsCard.analyzingLive") : null}
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
@@ -233,12 +230,12 @@ export function AiInsightsCardClient({
                 />
               </div>
               <div>
-                <p className="text-xs text-slate-700">Salud financiera</p>
+                <p className="text-xs text-slate-700">{t("insightsCard.financialHealthLabel")}</p>
                 <Badge
                   variant="outline"
                   className={cn("font-semibold", health.color)}
                 >
-                  {health.label}
+                  {t(health.labelKey as never)}
                 </Badge>
               </div>
             </div>
@@ -250,7 +247,7 @@ export function AiInsightsCardClient({
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="text-sm font-medium">Recomendación top</p>
+                  <p className="text-sm font-medium">{t("insightsCard.topRecommendationLabel")}</p>
                   <p className="text-xs leading-relaxed text-slate-700">
                     {topRecommendation}
                   </p>
@@ -273,18 +270,18 @@ export function AiInsightsCardClient({
                 />
               </div>
               <dl className="min-w-0">
-                <dt className="text-xs text-slate-700">Mayor gasto del mes</dt>
+                <dt className="text-xs text-slate-700">{t("insightsCard.topCategoryLabel")}</dt>
                 {insights.topCategory ? (
                   <>
                     <dd className="truncate font-semibold text-foreground">
                       {insights.topCategory.name}
                     </dd>
                     <dd className="text-sm text-slate-700">
-                      {formatCurrency(insights.topCategory.amount, currency)}
+                      {formatCurrency(insights.topCategory.amount, currency, locale)}
                     </dd>
                   </>
                 ) : (
-                  <dd className="text-sm text-slate-700">Sin gastos registrados</dd>
+                  <dd className="text-sm text-slate-700">{t("insightsCard.noExpenses")}</dd>
                 )}
               </dl>
             </div>
@@ -294,11 +291,11 @@ export function AiInsightsCardClient({
                 <PiggyBank className="h-4 w-4 text-primary" aria-hidden="true" />
               </div>
               <dl>
-                <dt className="text-xs text-slate-700">Ahorro sugerido</dt>
+                <dt className="text-xs text-slate-700">{t("insightsCard.savingsRateLabel")}</dt>
                 <dd className="font-semibold text-foreground">
                   {insights.savingsRate.toFixed(0)}%
                 </dd>
-                <dd className="text-xs text-slate-700">de tus ingresos</dd>
+                <dd className="text-xs text-slate-700">{t("insightsCard.savingsRateSuffix")}</dd>
               </dl>
             </div>
           </div>

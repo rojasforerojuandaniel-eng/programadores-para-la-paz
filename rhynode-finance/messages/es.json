@@ -2672,6 +2672,77 @@
         "bankBalance": "Saldo Bancario",
         "invoices": "Facturas",
         "noData": "Sin datos"
+      },
+      "draggable": {
+        "dragHandleAria": "Arrastrar widget",
+        "empty": {
+          "title": "Todos los widgets están ocultos",
+          "description": "Abre la configuración para mostrar widgets en tu dashboard.",
+          "action": "Personalizar widgets"
+        },
+        "saving": "Guardando..."
+      },
+      "leftWidget": {
+        "latestTransactions": "Últimas Transacciones",
+        "invoiceStatus": "Estado de Facturas",
+        "mixedSummary": "Resumen Mixto",
+        "uncategorized": "Sin categoría",
+        "client": "Cliente",
+        "invoice": "Factura",
+        "personal": "Personal",
+        "business": "Empresa",
+        "emptyTransactions": {
+          "title": "Sin transacciones",
+          "description": "Registra tu primera transacción para empezar a controlar tus finanzas.",
+          "hint": "Empieza creando tu primera transacción.",
+          "action": "Crear primera transacción"
+        },
+        "emptyInvoices": {
+          "title": "Sin facturas",
+          "description": "Crea facturas electrónicas y da seguimiento a sus pagos.",
+          "hint": "Empieza creando tu primera factura.",
+          "action": "Crear primera factura"
+        },
+        "emptyMixed": {
+          "title": "Sin actividad reciente",
+          "description": "Registra transacciones o facturas para ver tu actividad mixta aquí.",
+          "hint": "Empieza creando tu primera transacción.",
+          "action": "Crear primera transacción"
+        },
+        "invoiceStatusLabels": {
+          "draft": "Borradores",
+          "sent": "Enviadas",
+          "paid": "Pagadas",
+          "overdue": "Vencidas"
+        }
+      },
+      "rightWidget": {
+        "monthlyBudgets": "Presupuestos del Mes",
+        "upcomingDueDates": "Próximos Vencimientos",
+        "recentActivity": "Actividad Reciente",
+        "uncategorized": "Sin categoría",
+        "client": "Cliente",
+        "invoice": "Factura",
+        "pending": "Pendiente",
+        "due": "Vence {date}",
+        "emptyBudgets": {
+          "title": "Sin presupuestos",
+          "description": "Establece límites por categoría y recibe alertas antes de excederte.",
+          "hint": "Empieza creando tu primer presupuesto.",
+          "action": "Crear primer presupuesto"
+        },
+        "emptyTaxes": {
+          "title": "No hay vencimientos próximos",
+          "description": "Crea reportes fiscales para mantener el compliance al día.",
+          "hint": "Empieza creando tu primer reporte fiscal.",
+          "action": "Crear reporte fiscal"
+        },
+        "emptyMixed": {
+          "title": "Sin actividad reciente",
+          "description": "Registra transacciones o facturas para ver tu actividad mixta aquí.",
+          "hint": "Empieza creando tu primera transacción.",
+          "action": "Crear primera transacción"
+        }
       }
     },
     "commandPalette": {
@@ -2853,6 +2924,51 @@
           "description": "Registra tus transacciones diarias para descubrir gastos hormiga y tomar mejores decisiones.",
           "action": "Agregar movimiento"
         }
+      },
+      "insightsCard": {
+        "title": "Insights de IA",
+        "financialHealthLabel": "Salud financiera",
+        "health": {
+          "saludable": "Saludable",
+          "alerta": "Alerta",
+          "crítica": "Crítica"
+        },
+        "trend": {
+          "up": "Mejorando",
+          "down": "Bajando",
+          "stable": "Estable"
+        },
+        "topRecommendationLabel": "Recomendación top",
+        "topCategoryLabel": "Mayor gasto del mes",
+        "noExpenses": "Sin gastos registrados",
+        "savingsRateLabel": "Ahorro sugerido",
+        "savingsRateSuffix": "de tus ingresos",
+        "errorTitle": "No pudimos cargar los insights",
+        "errorDefault": "Ocurrió un problema al analizar tus finanzas.",
+        "errorFallback": "No se pudieron actualizar los insights",
+        "retry": "Reintentar",
+        "retryAria": "Reintentar cargar insights",
+        "emptyTitle": "Aún no hay insights de IA",
+        "emptyDescription": "Registra ingresos y gastos para que Rhynode genere recomendaciones personalizadas.",
+        "analyzing": "Analizando…",
+        "refresh": "Actualizar",
+        "refreshAria": "Actualizar insights",
+        "analyzingAria": "Analizando insights",
+        "analyzingLive": "Analizando tus finanzas…"
+      },
+      "copilot": {
+        "title": "Copiloto financiero",
+        "refreshAria": "Refrescar insights",
+        "emptyTitle": "Todo en orden",
+        "emptyDescription": "No hay alertas importantes ahora. Sigue registrando movimientos para recibir insights proactivos.",
+        "dismissAria": "Ocultar {title}"
+      },
+      "chat": {
+        "usingTool": "Usando",
+        "thinking": "pensando",
+        "toolResult": "Resultado de",
+        "yes": "Sí",
+        "no": "No"
       }
     }
   },
