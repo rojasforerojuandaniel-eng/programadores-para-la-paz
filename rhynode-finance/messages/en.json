@@ -819,6 +819,227 @@
         "invalidForm": "Please enter a valid name and email",
         "waitlistSuccess": "We'll notify you when it's available"
       }
+    },
+    "rules": {
+      "title": "Automatic rules",
+      "subtitle": "Create rules to categorize, tag, and get alerts about your transactions.",
+      "actions": {
+        "loadExamples": "Load examples",
+        "cancel": "Cancel",
+        "saveChanges": "Save changes",
+        "create": "Create rule",
+        "use": "Use",
+        "preview": "Preview"
+      },
+      "form": {
+        "editTitle": "Edit rule",
+        "newTitle": "New rule",
+        "description": "Define a condition (when) and an action (then). They apply to uncategorized transactions.",
+        "nameLabel": "Rule name",
+        "namePlaceholder": "E.g. Transport: Uber",
+        "whenLabel": "When...",
+        "valueLabel": "Value",
+        "valueTextPlaceholder": "E.g. Uber",
+        "thenLabel": "Then...",
+        "alertValuePlaceholder": "Alert message",
+        "actionValuePlaceholder": "E.g. Transport",
+        "enabledLabel": "Rule active"
+      },
+      "conditions": {
+        "contains": "description contains",
+        "amountGreaterThan": "amount is greater than",
+        "typeIs": "type is",
+        "categoryIs": "category is"
+      },
+      "conditionsShort": {
+        "contains": "contains",
+        "amountGreaterThan": "amount greater than",
+        "typeIs": "type is",
+        "categoryIs": "category is"
+      },
+      "actionsLong": {
+        "setCategory": "assign category",
+        "setProject": "assign project",
+        "addTag": "add tag",
+        "alert": "show alert"
+      },
+      "actionsShort": {
+        "setCategory": "category",
+        "setProject": "project",
+        "addTag": "tag",
+        "alert": "alert"
+      },
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "preview": {
+        "title": "Match preview",
+        "searching": "Searching transactions...",
+        "empty": "Press Preview to see uncategorized transactions that match."
+      },
+      "suggestions": {
+        "title": "Suggested rules",
+        "description": "We detected frequent uncategorized transactions. Use a suggestion to create an automatic rule.",
+        "frequency": "{count} transactions",
+        "suggested": " · suggested: {category}",
+        "average": " · average {amount}"
+      },
+      "list": {
+        "title": "Your rules",
+        "whenPrefix": "When",
+        "thenPrefix": "then"
+      },
+      "empty": {
+        "title": "You have no rules yet",
+        "description": "Create categorization rules to automate how Rhynode classifies your transactions.",
+        "hint": "You can also load examples or use a suggestion."
+      },
+      "toasts": {
+        "reloadError": "Could not reload rules",
+        "previewError": "Could not load preview",
+        "saveError": "Error saving rule",
+        "updated": "Rule updated",
+        "created": "Rule created",
+        "deleteError": "Error deleting rule",
+        "deleted": "Rule deleted",
+        "toggleError": "Error changing rule status",
+        "examplesAllLoaded": "All examples are already loaded",
+        "examplesLoaded": "Examples loaded",
+        "examplesError": "Error loading examples"
+      },
+      "aria": {
+        "editRule": "Edit rule {name}",
+        "toggleRule": "{action} rule {name}",
+        "deleteRule": "Delete rule {name}",
+        "activate": "Activate",
+        "deactivate": "Deactivate"
+      }
+    },
+    "scenarios": {
+      "title": "Financial Scenarios",
+      "subtitle": "Create, compare, and save personalized cash flow projections.",
+      "newScenario": "New scenario",
+      "empty": {
+        "title": "You have no saved scenarios",
+        "description": "Create scenarios to compare income, expense, and growth hypotheses against your baseline.",
+        "action": "Create scenario"
+      },
+      "dialog": {
+        "projectionTitle": "Scenario projection",
+        "projectionWithName": "Projection: {name}"
+      },
+      "card": {
+        "finalBalance": "Final balance",
+        "accumulatedSavings": "Accumulated savings",
+        "breakEvenPoint": "Break-even point",
+        "noBreakEven": "Not projected",
+        "noBreakEvenLong": "No break-even projected",
+        "vsBase": "Vs. base",
+        "vsBaseline": "Vs. baseline",
+        "monthPrefix": "Month {month}",
+        "breakEvenMonth": "Break-even at month {month}",
+        "months": "{count} months",
+        "income": "income",
+        "expenses": "expenses",
+        "simulate": "Simulate",
+        "deleteAria": "Delete scenario {name}",
+        "evolutionTitle": "Projected evolution"
+      },
+      "simulator": {
+        "title": "Scenario Simulator",
+        "subtitle": "Cash flow projection with seasonality, recurring items, and Colombian events.",
+        "reset": "Reset"
+      },
+      "summary": {
+        "optimistic": "Optimistic scenario",
+        "base": "Base scenario",
+        "pessimistic": "Pessimistic scenario",
+        "vsToday": "vs today"
+      },
+      "config": {
+        "title": "Configuration",
+        "horizon": "Projection horizon",
+        "selectMonths": "Select months",
+        "months": "{count} months",
+        "colombianEvents": "Colombian events"
+      },
+      "events": {
+        "aguinaldo": {
+          "title": "Aguinaldo",
+          "description": "+1 mid-year income in December"
+        },
+        "prima": {
+          "title": "Vacation bonus",
+          "description": "+1 mid-year income in June"
+        },
+        "iva": {
+          "title": "Bi-monthly VAT",
+          "description": "Only if you have issued invoices"
+        }
+      },
+      "balanceEvolution": {
+        "title": "Balance evolution"
+      },
+      "monthlyProjection": {
+        "title": "Monthly projection"
+      },
+      "table": {
+        "month": "Month",
+        "net": "Net",
+        "base": "Base",
+        "optimistic": "Optimistic",
+        "pessimistic": "Pessimistic",
+        "events": "Events"
+      },
+      "mobileHorizon": {
+        "ariaLabel": "Select projection horizon",
+        "title": "Projection horizon",
+        "description": "Choose how many months you want to project",
+        "months": "{count} months"
+      },
+      "emptyState": {
+        "title": "Could not load the projection",
+        "description": "Check your connection and try again.",
+        "retry": "Retry"
+      },
+      "toast": {
+        "loadError": "Could not load the projection. Try again.",
+        "saved": "Scenario saved",
+        "saveError": "Could not save the scenario",
+        "deleted": "Scenario deleted",
+        "deleteError": "Could not delete the scenario"
+      },
+      "types": {
+        "optimistic": "Optimistic",
+        "base": "Base",
+        "pessimistic": "Pessimistic"
+      },
+      "form": {
+        "title": "Create scenario",
+        "description": "Define income and expense adjustments to simulate a financial scenario.",
+        "name": "Scenario name",
+        "namePlaceholder": "e.g. Year-end promotion",
+        "type": "Type",
+        "typePlaceholder": "Select a type",
+        "incomeAdjustment": "Income adjustment",
+        "incomeAdjustmentAria": "Percentage income adjustment",
+        "expenseAdjustment": "Expense adjustment",
+        "expenseAdjustmentAria": "Percentage expense adjustment",
+        "duration": "Projection duration",
+        "durationAria": "Projection duration in months",
+        "months": "{count} months",
+        "cancel": "Cancel",
+        "save": "Save scenario",
+        "saving": "Saving..."
+      },
+      "chart": {
+        "title": "Scenario projection",
+        "ariaLabel": "Scenario projection chart versus baseline",
+        "breakEvenLabel": "Break-even: {month}",
+        "scenarioSeries": "Scenario",
+        "baseSeries": "Baseline"
+      }
     }
   },
   "nav": {

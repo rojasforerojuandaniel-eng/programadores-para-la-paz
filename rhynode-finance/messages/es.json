@@ -819,6 +819,227 @@
         "invalidForm": "Ingresa un nombre y un email válido",
         "waitlistSuccess": "Te notificaremos cuando esté disponible"
       }
+    },
+    "rules": {
+      "title": "Reglas automáticas",
+      "subtitle": "Crea reglas para categorizar, etiquetar y alertar sobre tus transacciones.",
+      "actions": {
+        "loadExamples": "Cargar ejemplos",
+        "cancel": "Cancelar",
+        "saveChanges": "Guardar cambios",
+        "create": "Crear regla",
+        "use": "Usar",
+        "preview": "Previsualizar"
+      },
+      "form": {
+        "editTitle": "Editar regla",
+        "newTitle": "Nueva regla",
+        "description": "Define una condición (cuándo) y una acción (entonces). Se aplican a transacciones sin categoría.",
+        "nameLabel": "Nombre de la regla",
+        "namePlaceholder": "Ej. Transporte: Uber",
+        "whenLabel": "Cuando...",
+        "valueLabel": "Valor",
+        "valueTextPlaceholder": "Ej. Uber",
+        "thenLabel": "Entonces...",
+        "alertValuePlaceholder": "Mensaje de alerta",
+        "actionValuePlaceholder": "Ej. Transporte",
+        "enabledLabel": "Regla activa"
+      },
+      "conditions": {
+        "contains": "descripción contiene",
+        "amountGreaterThan": "monto es mayor a",
+        "typeIs": "tipo es",
+        "categoryIs": "categoría es"
+      },
+      "conditionsShort": {
+        "contains": "contiene",
+        "amountGreaterThan": "monto mayor a",
+        "typeIs": "tipo es",
+        "categoryIs": "categoría es"
+      },
+      "actionsLong": {
+        "setCategory": "asignar categoría",
+        "setProject": "asignar proyecto",
+        "addTag": "agregar etiqueta",
+        "alert": "mostrar alerta"
+      },
+      "actionsShort": {
+        "setCategory": "categoría",
+        "setProject": "proyecto",
+        "addTag": "etiqueta",
+        "alert": "alerta"
+      },
+      "statuses": {
+        "active": "Activa",
+        "inactive": "Inactiva"
+      },
+      "preview": {
+        "title": "Vista previa de coincidencias",
+        "searching": "Buscando transacciones...",
+        "empty": "Pulsa Previsualizar para ver transacciones sin categoría que coincidan."
+      },
+      "suggestions": {
+        "title": "Reglas sugeridas",
+        "description": "Detectamos transacciones frecuentes sin categoría. Usa una sugerencia para crear una regla automática.",
+        "frequency": "{count} transacciones",
+        "suggested": " · sugerido: {category}",
+        "average": " · promedio {amount}"
+      },
+      "list": {
+        "title": "Tus reglas",
+        "whenPrefix": "Cuando",
+        "thenPrefix": "entonces"
+      },
+      "empty": {
+        "title": "No tienes reglas creadas",
+        "description": "Crea reglas de categorización para automatizar cómo Rhynode clasifica tus transacciones.",
+        "hint": "También puedes cargar ejemplos o usar una sugerencia."
+      },
+      "toasts": {
+        "reloadError": "No se pudieron recargar las reglas",
+        "previewError": "No se pudo cargar la vista previa",
+        "saveError": "Error guardando regla",
+        "updated": "Regla actualizada",
+        "created": "Regla creada",
+        "deleteError": "Error eliminando regla",
+        "deleted": "Regla eliminada",
+        "toggleError": "Error cambiando estado de la regla",
+        "examplesAllLoaded": "Ya tienes todos los ejemplos cargados",
+        "examplesLoaded": "Ejemplos cargados",
+        "examplesError": "Error cargando ejemplos"
+      },
+      "aria": {
+        "editRule": "Editar regla {name}",
+        "toggleRule": "{action} regla {name}",
+        "deleteRule": "Eliminar regla {name}",
+        "activate": "Activar",
+        "deactivate": "Desactivar"
+      }
+    },
+    "scenarios": {
+      "title": "Escenarios financieros",
+      "subtitle": "Crea, compara y guarda proyecciones personalizadas de tu flujo de caja.",
+      "newScenario": "Nuevo escenario",
+      "empty": {
+        "title": "No tienes escenarios guardados",
+        "description": "Crea escenarios para comparar hipótesis de ingresos, gastos y crecimiento contra tu línea base.",
+        "action": "Crear escenario"
+      },
+      "dialog": {
+        "projectionTitle": "Proyección del escenario",
+        "projectionWithName": "Proyección: {name}"
+      },
+      "card": {
+        "finalBalance": "Balance final",
+        "accumulatedSavings": "Ahorro acumulado",
+        "breakEvenPoint": "Punto de quiebre",
+        "noBreakEven": "No se proyecta",
+        "noBreakEvenLong": "No se proyecta quiebre",
+        "vsBase": "Vs. base",
+        "vsBaseline": "Vs. línea base",
+        "monthPrefix": "Mes {month}",
+        "breakEvenMonth": "Quiebre en mes {month}",
+        "months": "{count} meses",
+        "income": "ingresos",
+        "expenses": "gastos",
+        "simulate": "Simular",
+        "deleteAria": "Eliminar escenario {name}",
+        "evolutionTitle": "Evolución proyectada"
+      },
+      "simulator": {
+        "title": "Simulador de Escenarios",
+        "subtitle": "Proyección de flujo de caja con estacionalidad, recurrentes y eventos Colombianos.",
+        "reset": "Reiniciar"
+      },
+      "summary": {
+        "optimistic": "Escenario optimista",
+        "base": "Escenario base",
+        "pessimistic": "Escenario pesimista",
+        "vsToday": "vs hoy"
+      },
+      "config": {
+        "title": "Configuración",
+        "horizon": "Horizonte de proyección",
+        "selectMonths": "Selecciona meses",
+        "months": "{count} meses",
+        "colombianEvents": "Eventos Colombianos"
+      },
+      "events": {
+        "aguinaldo": {
+          "title": "Aguinaldo",
+          "description": "+1 ingreso medio en diciembre"
+        },
+        "prima": {
+          "title": "Prima de vacaciones",
+          "description": "+1 ingreso medio en junio"
+        },
+        "iva": {
+          "title": "IVA bimestral",
+          "description": "Solo si tienes facturas emitidas"
+        }
+      },
+      "balanceEvolution": {
+        "title": "Evolución del saldo"
+      },
+      "monthlyProjection": {
+        "title": "Proyección mensual"
+      },
+      "table": {
+        "month": "Mes",
+        "net": "Neto",
+        "base": "Base",
+        "optimistic": "Optimista",
+        "pessimistic": "Pesimista",
+        "events": "Eventos"
+      },
+      "mobileHorizon": {
+        "ariaLabel": "Seleccionar horizonte de proyección",
+        "title": "Horizonte de proyección",
+        "description": "Selecciona cuántos meses quieres proyectar",
+        "months": "{count} meses"
+      },
+      "emptyState": {
+        "title": "No se pudo cargar la proyección",
+        "description": "Verifica tu conexión e intenta de nuevo.",
+        "retry": "Reintentar"
+      },
+      "toast": {
+        "loadError": "No se pudo cargar la proyección. Intenta de nuevo.",
+        "saved": "Escenario guardado",
+        "saveError": "No se pudo guardar el escenario",
+        "deleted": "Escenario eliminado",
+        "deleteError": "No se pudo eliminar el escenario"
+      },
+      "types": {
+        "optimistic": "Optimista",
+        "base": "Base",
+        "pessimistic": "Pesimista"
+      },
+      "form": {
+        "title": "Crear escenario",
+        "description": "Define ajustes de ingresos y gastos para simular un escenario financiero.",
+        "name": "Nombre del escenario",
+        "namePlaceholder": "Ej. Promoción de fin de año",
+        "type": "Tipo",
+        "typePlaceholder": "Selecciona un tipo",
+        "incomeAdjustment": "Ajuste de ingresos",
+        "incomeAdjustmentAria": "Ajuste porcentual de ingresos",
+        "expenseAdjustment": "Ajuste de gastos",
+        "expenseAdjustmentAria": "Ajuste porcentual de gastos",
+        "duration": "Duración de la proyección",
+        "durationAria": "Duración de la proyección en meses",
+        "months": "{count} meses",
+        "cancel": "Cancelar",
+        "save": "Guardar escenario",
+        "saving": "Guardando..."
+      },
+      "chart": {
+        "title": "Proyección del escenario",
+        "ariaLabel": "Gráfico de proyección del escenario versus la línea base",
+        "breakEvenLabel": "Quiebre: {month}",
+        "scenarioSeries": "Escenario",
+        "baseSeries": "Línea base"
+      }
     }
   },
   "nav": {

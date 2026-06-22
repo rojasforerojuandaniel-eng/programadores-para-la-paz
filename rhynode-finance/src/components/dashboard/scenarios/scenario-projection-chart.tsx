@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import {
   AreaChart,
   Area,
@@ -12,7 +13,9 @@ import {
   ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, type ScenarioProjectionMonth } from "@/lib/scenarios";
+import { formatCurrency as formatCurrencyLocale, formatDate as fmtDate } from "@/lib/format";
+import { type ScenarioProjectionMonth } from "@/lib/scenarios";
+import type { Locale } from "@/lib/locale";
 
 interface ScenarioProjectionChartProps {
   projection: ScenarioProjectionMonth[];
@@ -20,17 +23,21 @@ interface ScenarioProjectionChartProps {
   title?: string;
 }
 
-function monthLabel(isoMonth: string) {
-  const [year, month] = isoMonth.split("-");
-  const date = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
-  return date.toLocaleDateString("es-CO", { month: "short", year: "numeric" });
-}
-
 export function ScenarioProjectionChart({
   projection,
   currency = "COP",
-  title = "Proyección del escenario",
+  title,
 }: ScenarioProjectionChartProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
+
+  function monthLabel(isoMonth: string) {
+    const [year, month] = isoMonth.split("-");
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+    return fmtDate(date, locale, { month: "short", year: "numeric" });
+  }
+
+  const resolvedTitle = title ?? t("chart.title");
   const data = projection.map((p) => ({
     month: monthLabel(p.month),
     escenario: p.balance,
@@ -39,18 +46,20 @@ export function ScenarioProjectionChart({
 
   const breakEvenIndex = projection.findIndex((p) => p.balance < 0);
   const breakEvenLabel =
-    breakEvenIndex >= 0 ? `Quiebre: ${monthLabel(projection[breakEvenIndex].month)}` : undefined;
+    breakEvenIndex >= 0
+      ? t("chart.breakEvenLabel", { month: monthLabel(projection[breakEvenIndex].month) })
+      : undefined;
 
   return (
     <Card className="surface-elevated-2 rounded-xl border-border">
       <CardHeader className="pb-3">
-        <CardTitle className="heading-card text-base">{title}</CardTitle>
+        <CardTitle className="heading-card text-base">{resolvedTitle}</CardTitle>
       </CardHeader>
       <CardContent>
         <div
           className="h-[300px] w-full sm:h-[400px]"
           role="img"
-          aria-label="Gráfico de proyección del escenario versus la línea base"
+          aria-label={t("chart.ariaLabel")}
         >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -89,7 +98,7 @@ export function ScenarioProjectionChart({
                 tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               />
               <Tooltip
-                formatter={(value) => formatCurrency(Number(value), currency)}
+                formatter={(value) => formatCurrencyLocale(Number(value), currency, locale)}
                 contentStyle={{
                   backgroundColor: "var(--card)",
                   border: "1px solid var(--border)",
@@ -115,7 +124,7 @@ export function ScenarioProjectionChart({
               <Area
                 type="monotone"
                 dataKey="base"
-                name="Línea base"
+                name={t("chart.baseSeries")}
                 stroke="var(--muted-foreground)"
                 strokeWidth={2}
                 strokeDasharray="4 4"
@@ -126,7 +135,7 @@ export function ScenarioProjectionChart({
               <Area
                 type="monotone"
                 dataKey="escenario"
-                name="Escenario"
+                name={t("chart.scenarioSeries")}
                 stroke="var(--primary)"
                 strokeWidth={2}
                 fillOpacity={1}

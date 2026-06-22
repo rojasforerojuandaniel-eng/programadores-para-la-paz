@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -46,7 +47,6 @@ import {
   GitBranch,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { parseISO, format } from "date-fns";
 import {
   type ScenarioData,
   ScenarioChartSkeleton,
@@ -54,6 +54,8 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
+import { formatCurrency as formatCurrencyLocale, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   ScenarioCard,
 } from "./scenario-card";
@@ -65,7 +67,6 @@ import {
 } from "./scenario-projection-chart";
 import {
   calculateScenarioProjection,
-  formatCurrency,
   sortScenarios,
   type Scenario,
   type ScenarioSummary,
@@ -123,8 +124,8 @@ function formatDelta(delta: number) {
   return `${sign}${Math.abs(delta).toFixed(1)}%`;
 }
 
-function monthLabel(month: string) {
-  return format(parseISO(`${month}-01`), "MMM yyyy");
+function monthLabel(month: string, locale: Locale) {
+  return fmtDate(`${month}-01`, locale, { month: "short", year: "numeric" });
 }
 
 interface ScenarioSummaryCardProps {
@@ -144,6 +145,8 @@ function ScenarioSummaryCard({
   currency,
   loading,
 }: ScenarioSummaryCardProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
   const delta =
     currentBalance > 0 ? ((balance - currentBalance) / currentBalance) * 100 : 0;
   const positive = delta >= 0;
@@ -198,7 +201,7 @@ function ScenarioSummaryCard({
                   styles.text
                 )}
               >
-                {formatCurrency(balance, currency)}
+                {formatCurrencyLocale(balance, currency, locale)}
               </p>
             )}
             {loading ? (
@@ -213,7 +216,7 @@ function ScenarioSummaryCard({
                     : "border-rose-500/20 bg-rose-500/10 text-rose-600"
                 )}
               >
-                {formatDelta(delta)} vs hoy
+                {formatDelta(delta)} {t("summary.vsToday")}
               </Badge>
             )}
           </div>
@@ -298,28 +301,30 @@ function CompactScenarioTable({
   projection,
   currency,
 }: CompactScenarioTableProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
   return (
     <div className="relative overflow-auto rounded-xl border max-h-[45vh] sm:max-h-[55vh] lg:max-h-[65vh]">
       <table className="w-full caption-bottom text-sm">
         <thead className="sticky top-0 z-10 bg-card [&_tr]:border-b">
           <tr className="border-b">
             <th scope="col" className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
-              Mes
+              {t("table.month")}
             </th>
             <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
-              Neto
+              {t("table.net")}
             </th>
             <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
-              Base
+              {t("table.base")}
             </th>
             <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
-              Optimista
+              {t("table.optimistic")}
             </th>
             <th scope="col" className="h-10 px-2 text-right align-middle font-medium whitespace-nowrap text-foreground">
-              Pesimista
+              {t("table.pessimistic")}
             </th>
             <th scope="col" className="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground">
-              Eventos
+              {t("table.events")}
             </th>
           </tr>
         </thead>
@@ -329,7 +334,7 @@ function CompactScenarioTable({
               key={p.month}
               className="border-b transition-colors hover:bg-muted/50"
             >
-              <td className="p-2 align-middle font-medium">{monthLabel(p.month)}</td>
+              <td className="p-2 align-middle font-medium">{monthLabel(p.month, locale)}</td>
               <td
                 className={cn(
                   "p-2 text-right align-middle",
@@ -337,16 +342,16 @@ function CompactScenarioTable({
                 )}
               >
                 {p.net >= 0 ? "+" : ""}
-                {formatCurrency(p.net, currency)}
+                {formatCurrencyLocale(p.net, currency, locale)}
               </td>
               <td className="p-2 text-right align-middle font-medium">
-                {formatCurrency(p.baseBalance, currency)}
+                {formatCurrencyLocale(p.baseBalance, currency, locale)}
               </td>
               <td className="p-2 text-right align-middle text-emerald-500">
-                {formatCurrency(p.optimisticBalance, currency)}
+                {formatCurrencyLocale(p.optimisticBalance, currency, locale)}
               </td>
               <td className="p-2 text-right align-middle text-rose-500">
-                {formatCurrency(p.pessimisticBalance, currency)}
+                {formatCurrencyLocale(p.pessimisticBalance, currency, locale)}
               </td>
               <td className="p-2 align-middle">
                 <div className="flex flex-wrap gap-1">
@@ -400,6 +405,7 @@ interface MobileHorizonSelectorProps {
 }
 
 function MobileHorizonSelector({ value, onChange }: MobileHorizonSelectorProps) {
+  const t = useTranslations("dashboard.scenarios");
   const [open, setOpen] = useState(false);
 
   return (
@@ -408,20 +414,20 @@ function MobileHorizonSelector({ value, onChange }: MobileHorizonSelectorProps) 
         <Button
           variant="outline"
           className="h-12 w-full justify-between gap-2 text-base"
-          aria-label="Seleccionar horizonte de proyección"
+          aria-label={t("mobileHorizon.ariaLabel")}
         >
           <span className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            {value} meses
+            {t("mobileHorizon.months", { count: value })}
           </span>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </Button>
       </BottomSheetTrigger>
       <BottomSheetContent>
         <BottomSheetHeader>
-          <BottomSheetTitle>Horizonte de proyección</BottomSheetTitle>
+          <BottomSheetTitle>{t("mobileHorizon.title")}</BottomSheetTitle>
           <BottomSheetDescription>
-            Selecciona cuántos meses quieres proyectar
+            {t("mobileHorizon.description")}
           </BottomSheetDescription>
         </BottomSheetHeader>
         <div className="space-y-2 py-4">
@@ -432,7 +438,7 @@ function MobileHorizonSelector({ value, onChange }: MobileHorizonSelectorProps) 
                 className="h-12 w-full justify-start text-base"
                 onClick={() => onChange(m)}
               >
-                {m} meses
+                {t("mobileHorizon.months", { count: m })}
               </Button>
             </BottomSheetClose>
           ))}
@@ -447,20 +453,21 @@ interface ForecastEmptyStateProps {
 }
 
 function ForecastEmptyState({ onRetry }: ForecastEmptyStateProps) {
+  const t = useTranslations("dashboard.scenarios");
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
         <AlertTriangle className="h-6 w-6 text-muted-foreground" />
       </div>
       <div className="space-y-1">
-        <p className="font-medium">No se pudo cargar la proyección</p>
+        <p className="font-medium">{t("emptyState.title")}</p>
         <p className="text-sm text-muted-foreground">
-          Verifica tu conexión e intenta de nuevo.
+          {t("emptyState.description")}
         </p>
       </div>
       <Button variant="outline" onClick={onRetry} className="gap-2">
         <RefreshCw className="h-4 w-4" />
-        Reintentar
+        {t("emptyState.retry")}
       </Button>
     </div>
   );
@@ -475,6 +482,8 @@ export function ScenariosClient({
   initialSummary,
   initialScenarios,
 }: ScenariosClientProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
   const [summary] = useState<ScenarioSummary>(initialSummary);
   const [scenarios, setScenarios] = useState<Scenario[]>(
     sortScenarios(initialScenarios)
@@ -521,7 +530,7 @@ export function ScenariosClient({
         const data = (await response.json()) as ForecastResponse;
         setForecast(data);
       } catch {
-        toast.error("No se pudo cargar la proyección. Intenta de nuevo.");
+        toast.error(t("toast.loadError"));
         setForecast(null);
       } finally {
         setLoading(false);
@@ -533,12 +542,12 @@ export function ScenariosClient({
   const chartData: ScenarioData[] = useMemo(() => {
     if (!forecast) return [];
     return forecast.projection.map((p) => ({
-      month: monthLabel(p.month),
+      month: monthLabel(p.month, locale),
       base: p.baseBalance,
       optimistic: p.optimisticBalance,
       pessimistic: p.pessimisticBalance,
     }));
-  }, [forecast]);
+  }, [forecast, locale]);
 
   async function handleCreate(data: {
     name: string;
@@ -558,9 +567,9 @@ export function ScenariosClient({
       const result = (await response.json()) as { scenario: Scenario };
       setScenarios((prev) => sortScenarios([result.scenario, ...prev]));
       setIsFormOpen(false);
-      toast.success("Escenario guardado");
+      toast.success(t("toast.saved"));
     } catch {
-      toast.error("No se pudo guardar el escenario");
+      toast.error(t("toast.saveError"));
     } finally {
       setIsCreating(false);
     }
@@ -574,9 +583,9 @@ export function ScenariosClient({
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       setScenarios((prev) => prev.filter((s) => s.id !== id));
-      toast.success("Escenario eliminado");
+      toast.success(t("toast.deleted"));
     } catch {
-      toast.error("No se pudo eliminar el escenario");
+      toast.error(t("toast.deleteError"));
     } finally {
       setDeletingId(null);
     }
@@ -600,15 +609,14 @@ export function ScenariosClient({
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="heading-section">Escenarios financieros</h1>
+            <h1 className="heading-section">{t("title")}</h1>
             <p className="body-default mt-1">
-              Crea, compara y guarda proyecciones personalizadas de tu flujo de
-              caja.
+              {t("subtitle")}
             </p>
           </div>
           <Button onClick={() => setIsFormOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
-            Nuevo escenario
+            {t("newScenario")}
           </Button>
         </div>
 
@@ -616,12 +624,12 @@ export function ScenariosClient({
           <EmptyStateCard
             variant="md"
             icon={GitBranch}
-            title="No tienes escenarios guardados"
-            description="Crea escenarios para comparar hipótesis de ingresos, gastos y crecimiento contra tu línea base."
+            title={t("empty.title")}
+            description={t("empty.description")}
             action={
               <Button onClick={() => setIsFormOpen(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Crear escenario
+                {t("empty.action")}
               </Button>
             }
           />
@@ -658,8 +666,8 @@ export function ScenariosClient({
           <DialogHeader>
             <DialogTitle>
               {selectedScenario?.name
-                ? `Proyección: ${selectedScenario.name}`
-                : "Proyección del escenario"}
+                ? t("dialog.projectionWithName", { name: selectedScenario.name })
+                : t("dialog.projectionTitle")}
             </DialogTitle>
           </DialogHeader>
           {selectedResult && (
@@ -667,33 +675,33 @@ export function ScenariosClient({
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Card className="surface-elevated-2 rounded-xl border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">Balance final</p>
+                    <p className="text-xs text-muted-foreground">{t("card.finalBalance")}</p>
                     <p className="text-sm font-semibold sm:text-base">
-                      {formatCurrency(selectedResult.finalBalance, currency)}
+                      {formatCurrencyLocale(selectedResult.finalBalance, currency, locale)}
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="surface-elevated-2 rounded-xl border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">Ahorro acumulado</p>
+                    <p className="text-xs text-muted-foreground">{t("card.accumulatedSavings")}</p>
                     <p className="text-sm font-semibold sm:text-base">
-                      {formatCurrency(selectedResult.totalSavings, currency)}
+                      {formatCurrencyLocale(selectedResult.totalSavings, currency, locale)}
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="surface-elevated-2 rounded-xl border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">Punto de quiebre</p>
+                    <p className="text-xs text-muted-foreground">{t("card.breakEvenPoint")}</p>
                     <p className="text-sm font-semibold sm:text-base">
                       {selectedResult.breakEvenMonth
-                        ? `Mes ${selectedResult.breakEvenMonth}`
-                        : "No se proyecta"}
+                        ? t("card.monthPrefix", { month: selectedResult.breakEvenMonth })
+                        : t("card.noBreakEven")}
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="surface-elevated-2 rounded-xl border-border">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">Vs. base</p>
+                    <p className="text-xs text-muted-foreground">{t("card.vsBase")}</p>
                     <p
                       className={cn(
                         "text-sm font-semibold sm:text-base",
@@ -703,7 +711,7 @@ export function ScenariosClient({
                       )}
                     >
                       {selectedResult.deltaVsBaseline >= 0 ? "+" : ""}
-                      {formatCurrency(selectedResult.deltaVsBaseline, currency)}
+                      {formatCurrencyLocale(selectedResult.deltaVsBaseline, currency, locale)}
                     </p>
                   </CardContent>
                 </Card>
@@ -711,7 +719,7 @@ export function ScenariosClient({
               <ScenarioProjectionChart
                 projection={selectedResult.projection}
                 currency={currency}
-                title="Evolución proyectada"
+                title={t("card.evolutionTitle")}
               />
             </div>
           )}
@@ -721,22 +729,21 @@ export function ScenariosClient({
       <section className="space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="heading-section text-xl">Simulador de Escenarios</h2>
+            <h2 className="heading-section text-xl">{t("simulator.title")}</h2>
             <p className="body-default mt-1">
-              Proyección de flujo de caja con estacionalidad, recurrentes y
-              eventos Colombianos.
+              {t("simulator.subtitle")}
             </p>
           </div>
           <Button variant="outline" onClick={reset} className="gap-2">
             <RotateCcw className="h-4 w-4" />
-            Reiniciar
+            {t("simulator.reset")}
           </Button>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <ScenarioSummaryCard
             variant="optimistic"
-            title="Escenario optimista"
+            title={t("summary.optimistic")}
             balance={forecast?.summary.finalOptimisticBalance ?? currentBalance}
             currentBalance={currentBalance}
             currency={currency}
@@ -744,7 +751,7 @@ export function ScenariosClient({
           />
           <ScenarioSummaryCard
             variant="base"
-            title="Escenario base"
+            title={t("summary.base")}
             balance={forecast?.summary.finalBaseBalance ?? currentBalance}
             currentBalance={currentBalance}
             currency={currency}
@@ -752,7 +759,7 @@ export function ScenariosClient({
           />
           <ScenarioSummaryCard
             variant="pessimistic"
-            title="Escenario pesimista"
+            title={t("summary.pessimistic")}
             balance={forecast?.summary.finalPessimisticBalance ?? currentBalance}
             currentBalance={currentBalance}
             currency={currency}
@@ -766,13 +773,13 @@ export function ScenariosClient({
               <CardHeader className="pb-3">
                 <CardTitle className="heading-card flex items-center gap-2 text-base">
                   <SlidersHorizontal className="h-4 w-4 text-primary" />
-                  Configuración
+                  {t("config.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">
-                    Horizonte de proyección
+                    {t("config.horizon")}
                   </Label>
                   <div className="block sm:hidden">
                     <MobileHorizonSelector
@@ -786,12 +793,12 @@ export function ScenariosClient({
                       onValueChange={(v) => setMonthsToProject(Number(v))}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona meses" />
+                        <SelectValue placeholder={t("config.selectMonths")} />
                       </SelectTrigger>
                       <SelectContent>
                         {HORIZON_OPTIONS.map((m) => (
                           <SelectItem key={m} value={String(m)}>
-                            {m} meses
+                            {t("config.months", { count: m })}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -800,29 +807,29 @@ export function ScenariosClient({
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Eventos Colombianos</Label>
+                  <Label className="text-sm font-medium">{t("config.colombianEvents")}</Label>
                   <div className="space-y-3">
                     <EventToggle
                       id="aguinaldo-toggle"
                       icon={Gift}
-                      title="Aguinaldo"
-                      description="+1 ingreso medio en diciembre"
+                      title={t("events.aguinaldo.title")}
+                      description={t("events.aguinaldo.description")}
                       checked={includeAguinaldo}
                       onCheckedChange={setIncludeAguinaldo}
                     />
                     <EventToggle
                       id="prima-toggle"
                       icon={Sun}
-                      title="Prima de vacaciones"
-                      description="+1 ingreso medio en junio"
+                      title={t("events.prima.title")}
+                      description={t("events.prima.description")}
                       checked={includePrima}
                       onCheckedChange={setIncludePrima}
                     />
                     <EventToggle
                       id="iva-toggle"
                       icon={Receipt}
-                      title="IVA bimestral"
-                      description="Solo si tienes facturas emitidas"
+                      title={t("events.iva.title")}
+                      description={t("events.iva.description")}
                       checked={includeIva}
                       onCheckedChange={setIncludeIva}
                       disabled={!forecast?.hasInvoices}
@@ -836,7 +843,7 @@ export function ScenariosClient({
               <CardHeader className="pb-3">
                 <CardTitle className="heading-card flex items-center gap-2 text-base">
                   <BarChart3 className="h-4 w-4 text-primary" />
-                  Evolución del saldo
+                  {t("balanceEvolution.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -854,7 +861,7 @@ export function ScenariosClient({
               <CardHeader className="pb-3">
                 <CardTitle className="heading-card flex items-center gap-2 text-base">
                   <Table2 className="h-4 w-4 text-primary" />
-                  Proyección mensual
+                  {t("monthlyProjection.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 p-0 sm:p-0">

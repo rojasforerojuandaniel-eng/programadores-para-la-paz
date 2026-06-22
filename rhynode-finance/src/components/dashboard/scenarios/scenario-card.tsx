@@ -1,18 +1,19 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, PiggyBank, AlertTriangle, Trash2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency as formatCurrencyLocale } from "@/lib/format";
 import {
-  formatCurrency,
   formatPercentage,
-  getScenarioTypeLabel,
   calculateScenarioProjection,
   type Scenario,
   type ScenarioSummary,
 } from "@/lib/scenarios";
+import type { Locale } from "@/lib/locale";
 
 interface ScenarioCardProps {
   scenario: Scenario;
@@ -29,6 +30,10 @@ export function ScenarioCard({
   onSimulate,
   isDeleting = false,
 }: ScenarioCardProps) {
+  const t = useTranslations("dashboard.scenarios");
+  const locale = useLocale() as Locale;
+  const formatCurrency = (amount: number, currency: string) =>
+    formatCurrencyLocale(amount, currency, locale);
   const result = calculateScenarioProjection(scenario, summary);
   const variantStyles = {
     optimistic: {
@@ -62,8 +67,8 @@ export function ScenarioCard({
         : PiggyBank;
 
   const breakEvenText = result.breakEvenMonth
-    ? `Mes ${result.breakEvenMonth}`
-    : "No se proyecta quiebre";
+    ? t("card.monthPrefix", { month: result.breakEvenMonth })
+    : t("card.noBreakEvenLong");
 
   const deltaPositive = result.deltaVsBaseline >= 0;
 
@@ -81,8 +86,8 @@ export function ScenarioCard({
               {scenario.name}
             </CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              {scenario.durationMonths} meses · ingresos{" "}
-              {formatPercentage(scenario.incomeAdjustment)} · gastos{" "}
+              {t("card.months", { count: scenario.durationMonths })} · {t("card.income")}{" "}
+              {formatPercentage(scenario.incomeAdjustment)} · {t("card.expenses")}{" "}
               {formatPercentage(scenario.expenseAdjustment)}
             </p>
           </div>
@@ -101,21 +106,21 @@ export function ScenarioCard({
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={variantStyles.badge}>
-            {getScenarioTypeLabel(scenario.type)}
+            {t(`types.${scenario.type}` as never)}
           </Badge>
           {result.breakEvenMonth && (
             <Badge
               variant="outline"
               className="border-rose-500/20 bg-rose-500/10 text-rose-600"
             >
-              Quiebre en mes {result.breakEvenMonth}
+              {t("card.breakEvenMonth", { month: result.breakEvenMonth })}
             </Badge>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground">Balance final</p>
+            <p className="text-xs text-muted-foreground">{t("card.finalBalance")}</p>
             <p
               className={cn(
                 "text-sm font-semibold sm:text-base",
@@ -126,17 +131,17 @@ export function ScenarioCard({
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Ahorro acumulado</p>
+            <p className="text-xs text-muted-foreground">{t("card.accumulatedSavings")}</p>
             <p className="text-sm font-semibold sm:text-base">
               {formatCurrency(result.totalSavings, summary.currency)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Punto de quiebre</p>
+            <p className="text-xs text-muted-foreground">{t("card.breakEvenPoint")}</p>
             <p className="text-sm font-medium">{breakEvenText}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Vs. línea base</p>
+            <p className="text-xs text-muted-foreground">{t("card.vsBaseline")}</p>
             <p
               className={cn(
                 "text-sm font-semibold sm:text-base",
@@ -157,7 +162,7 @@ export function ScenarioCard({
             onClick={() => onSimulate(scenario)}
           >
             <BarChart3 className="h-4 w-4" />
-            Simular
+            {t("card.simulate")}
           </Button>
           <Button
             variant="outline"
@@ -165,7 +170,7 @@ export function ScenarioCard({
             className="gap-2 text-rose-600 hover:text-rose-700"
             onClick={() => onDelete(scenario.id)}
             disabled={isDeleting}
-            aria-label={`Eliminar escenario ${scenario.name}`}
+            aria-label={t("card.deleteAria", { name: scenario.name })}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
