@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import { useIsClient } from "@/hooks/use-is-client";
 
 interface XpBarChartProps {
@@ -26,6 +27,7 @@ export function XpBarChartSkeleton() {
 }
 
 export function XpBarChart({ data }: XpBarChartProps) {
+  const t = useTranslations("dashboard.achievements.xpChart");
   const isClient = useIsClient();
   if (!isClient) return <XpBarChartSkeleton />;
 
@@ -35,10 +37,10 @@ export function XpBarChart({ data }: XpBarChartProps) {
     <div
       className="h-[220px] w-full sm:h-[280px]"
       role="img"
-      aria-label="Gráfico de barras de XP ganado por semana"
+      aria-label={t("ariaLabel")}
     >
       <span className="sr-only">
-        XP ganado semana a semana:{" "}
+        {t("srPrefix")}{" "}
         {data.map((d) => `${d.label}: ${d.xp} XP`).join(", ")}
       </span>
       <ResponsiveContainer width="100%" height="100%">
@@ -67,8 +69,8 @@ export function XpBarChart({ data }: XpBarChartProps) {
             tickLine={false}
           />
           <Tooltip
-            formatter={(value) => [`${value} XP`, "XP ganado"]}
-            labelFormatter={(label) => `Semana: ${label}`}
+            formatter={(value) => [`${value} XP`, t("tooltipValue")]}
+            labelFormatter={(label) => t("tooltipLabel", { label })}
             contentStyle={{
               backgroundColor: "var(--card)",
               border: "1px solid var(--border)",
@@ -78,7 +80,7 @@ export function XpBarChart({ data }: XpBarChartProps) {
           />
           <Bar
             dataKey="xp"
-            name="XP ganado"
+            name={t("barName")}
             radius={[6, 6, 0, 0]}
             animationDuration={800}
           >

@@ -23,7 +23,15 @@
       "integrations": "Integraciones",
       "leaderboard": "Leaderboard",
       "stats": "Mis stats",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "mobileNav": {
+        "menuTitle": "Menú de navegación",
+        "closeMenu": "Cerrar menú de navegación",
+        "openMenu": "Abrir menú de navegación",
+        "navAriaLabel": "Navegación principal móvil",
+        "more": "Más",
+        "personal": "Personal"
+      }
     },
     "skipToContent": "Saltar al contenido principal",
     "sectionsAria": "Secciones del dashboard",
@@ -33,7 +41,16 @@
       "spent": "Gasté",
       "received": "Recibí",
       "spentHint": "Registrar un gasto",
-      "receivedHint": "Registrar un ingreso"
+      "receivedHint": "Registrar un ingreso",
+      "fab": {
+        "newTransaction": "Nueva transacción",
+        "newInvoice": "Nueva factura",
+        "newGoal": "Nueva meta",
+        "newBudget": "Nuevo presupuesto",
+        "menuAriaLabel": "Acciones rápidas",
+        "openActions": "Abrir acciones rápidas",
+        "closeActions": "Cerrar acciones rápidas"
+      }
     },
     "voice": {
       "label": "Dictar",
@@ -168,6 +185,14 @@
         "activeFilters": "{count, plural, one {# filtro activo} other {# filtros activos}}",
         "noActiveFilters": "Sin filtros activos",
         "clear": "Limpiar filtros"
+      },
+      "export": {
+        "label": "Exportar",
+        "csv": "Exportar CSV",
+        "excel": "Exportar Excel",
+        "pdf": "Exportar PDF",
+        "errorGenerate": "Error al generar el archivo",
+        "networkError": "Error de red al descargar"
       }
     },
     "clients": {
@@ -1221,6 +1246,28 @@
         "title": "¡Todos los logros completados!",
         "description": "Has desbloqueado cada reconocimiento disponible.",
         "hint": "Sigue usando Rhynode para mantener tu racha y subir de nivel."
+      },
+      "xpBar": {
+        "tier": {
+          "leyenda": "Leyenda",
+          "experto": "Experto",
+          "avanzado": "Avanzado",
+          "intermedio": "Intermedio",
+          "principiante": "Principiante"
+        },
+        "level": "Nivel {level}",
+        "tierSeparator": "— {tier}",
+        "streak": "Streak {days} días",
+        "xpProgress": "{current} / {total} XP",
+        "tooltipLevel": "Nivel {level} — {tier}",
+        "tooltipRemaining": "Faltan {xp} XP para alcanzar el nivel {nextLevel}."
+      },
+      "xpChart": {
+        "ariaLabel": "Gráfico de barras de XP ganado por semana",
+        "srPrefix": "XP ganado semana a semana:",
+        "tooltipValue": "XP ganado",
+        "tooltipLabel": "Semana: {label}",
+        "barName": "XP ganado"
       }
     },
     "projects": {
@@ -2969,6 +3016,37 @@
         "toolResult": "Resultado de",
         "yes": "Sí",
         "no": "No"
+      },
+      "anomalies": {
+        "loadError": "Error al cargar anomalías",
+        "unknownError": "Error desconocido",
+        "errorState": "No pudimos cargar las anomalías.",
+        "title": "Anomalías detectadas",
+        "severity": {
+          "high": "Alta",
+          "medium": "Media",
+          "low": "Baja"
+        },
+        "emptyTitle": "Todo en orden",
+        "emptyDescription": "No detectamos anomalías este mes."
+      }
+    },
+    "common": {
+      "delete": "Eliminar",
+      "deleteError": "Error al eliminar",
+      "networkError": "Error de red",
+      "planLimit": {
+        "ariaLabel": "Límite de {resource} alcanzado en plan {plan}",
+        "title": "Límite de {resource} alcanzado",
+        "body": "Has usado {current} de {limit} {resource} en tu plan actual. Sube de plan para continuar creando {resource} sin restricciones.",
+        "usage": "Consumo",
+        "viewPlans": "Ver planes",
+        "resources": {
+          "invoices_singular": "factura",
+          "invoices_plural": "facturas",
+          "users_singular": "usuario",
+          "users_plural": "usuarios"
+        }
       }
     }
   },

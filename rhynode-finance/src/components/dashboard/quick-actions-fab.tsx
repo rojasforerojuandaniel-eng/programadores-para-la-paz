@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ElementType, ReactNode } from "react";
 import { forwardRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Plus, ArrowLeftRight, FileText, Target, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CreateTransactionSheet } from "@/components/dashboard/create-transaction-sheet";
@@ -21,6 +22,7 @@ interface QuickActionItem {
 const MENU_ID = "quick-actions-menu";
 
 export function QuickActionsFab() {
+  const t = useTranslations("dashboard.quickAdd");
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const fabRef = useRef<HTMLButtonElement>(null);
@@ -106,7 +108,7 @@ export function QuickActionsFab() {
   const actions: QuickActionItem[] = [
     {
       id: "transaction",
-      label: "Nueva transacci\u00f3n",
+      label: t("fab.newTransaction"),
       icon: ArrowLeftRight,
       dialog: (
         <CreateTransactionSheet
@@ -115,7 +117,7 @@ export function QuickActionsFab() {
             <QuickActionButton
               ref={setItemRef(0)}
               icon={ArrowLeftRight}
-              label="Nueva transacci\u00f3n"
+              label={t("fab.newTransaction")}
               labelledBy={labelId("transaction")}
               onClick={handleCloseMenu}
             />
@@ -125,7 +127,7 @@ export function QuickActionsFab() {
     },
     {
       id: "invoice",
-      label: "Nueva factura",
+      label: t("fab.newInvoice"),
       icon: FileText,
       dialog: (
         <CreateInvoiceSheet
@@ -134,7 +136,7 @@ export function QuickActionsFab() {
             <QuickActionButton
               ref={setItemRef(1)}
               icon={FileText}
-              label="Nueva factura"
+              label={t("fab.newInvoice")}
               labelledBy={labelId("invoice")}
               onClick={handleCloseMenu}
             />
@@ -144,7 +146,7 @@ export function QuickActionsFab() {
     },
     {
       id: "goal",
-      label: "Nueva meta",
+      label: t("fab.newGoal"),
       icon: Target,
       dialog: (
         <CreateGoalDialog
@@ -152,7 +154,7 @@ export function QuickActionsFab() {
             <QuickActionButton
               ref={setItemRef(2)}
               icon={Target}
-              label="Nueva meta"
+              label={t("fab.newGoal")}
               labelledBy={labelId("goal")}
               onClick={handleCloseMenu}
             />
@@ -162,7 +164,7 @@ export function QuickActionsFab() {
     },
     {
       id: "budget",
-      label: "Nuevo presupuesto",
+      label: t("fab.newBudget"),
       icon: Wallet,
       dialog: (
         <CreateBudgetDialog
@@ -170,7 +172,7 @@ export function QuickActionsFab() {
             <QuickActionButton
               ref={setItemRef(3)}
               icon={Wallet}
-              label="Nuevo presupuesto"
+              label={t("fab.newBudget")}
               labelledBy={labelId("budget")}
               onClick={handleCloseMenu}
             />
@@ -196,7 +198,7 @@ export function QuickActionsFab() {
         <div
           id={MENU_ID}
           role="menu"
-          aria-label="Acciones r\u00e1pidas"
+          aria-label={t("fab.menuAriaLabel")}
           aria-orientation="vertical"
           aria-hidden={!open}
           onKeyDown={handleMenuKeyDown}
@@ -231,7 +233,7 @@ export function QuickActionsFab() {
           ref={fabRef}
           type="button"
           onClick={handleToggle}
-          aria-label={open ? "Cerrar acciones r\u00e1pidas" : "Abrir acciones r\u00e1pidas"}
+          aria-label={open ? t("fab.closeActions") : t("fab.openActions")}
           aria-expanded={open}
           aria-haspopup="menu"
           aria-controls={MENU_ID}

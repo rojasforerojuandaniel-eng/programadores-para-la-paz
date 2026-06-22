@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   FileText,
@@ -39,6 +40,7 @@ interface MobileNavItem {
 }
 
 function MobileMoreSheet({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("dashboard.nav");
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,7 +51,7 @@ function MobileMoreSheet({ children }: { children: React.ReactNode }) {
         id={MORE_MENU_ID}
         className="h-[85dvh] max-h-[85dvh] rounded-t-2xl border-border bg-background p-0"
       >
-        <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+        <SheetTitle className="sr-only">{t("mobileNav.menuTitle")}</SheetTitle>
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-border p-4">
             <Logo href="/dashboard" />
@@ -57,7 +59,7 @@ function MobileMoreSheet({ children }: { children: React.ReactNode }) {
               variant="ghost"
               size="icon"
               onClick={() => setOpen(false)}
-              aria-label="Cerrar menú de navegación"
+              aria-label={t("mobileNav.closeMenu")}
               className="h-10 w-10"
             >
               <X className="h-5 w-5" aria-hidden="true" />
@@ -86,6 +88,7 @@ function MobileMoreSheet({ children }: { children: React.ReactNode }) {
 }
 
 export function MobileNav() {
+  const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
   const { scope } = useScope();
 
@@ -93,20 +96,20 @@ export function MobileNav() {
   const isBusiness = scope === "BUSINESS" || scope === "BOTH";
 
   const tabs: MobileNavItem[] = [
-    { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
+    { href: "/dashboard", label: t("home" as never), icon: LayoutDashboard },
     isPersonal
-      ? { href: "/dashboard/personal", label: "Personal", icon: Wallet }
-      : { href: "/dashboard/accounts", label: "Cuentas", icon: Landmark },
-    { href: "/dashboard/transactions", label: "Transacciones", icon: ArrowLeftRight },
+      ? { href: "/dashboard/personal", label: t("mobileNav.personal" as never), icon: Wallet }
+      : { href: "/dashboard/accounts", label: t("accounts" as never), icon: Landmark },
+    { href: "/dashboard/transactions", label: t("transactions" as never), icon: ArrowLeftRight },
     isBusiness
-      ? { href: "/dashboard/invoices", label: "Facturas", icon: FileText }
-      : { href: "/dashboard/personal/investments", label: "Inversiones", icon: TrendingUp },
+      ? { href: "/dashboard/invoices", label: t("invoices" as never), icon: FileText }
+      : { href: "/dashboard/personal/investments", label: t("investments" as never), icon: TrendingUp },
   ];
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] pt-1 backdrop-blur-md lg:hidden"
-      aria-label="Navegación principal móvil"
+      aria-label={t("mobileNav.navAriaLabel")}
     >
       <div className="grid h-14 min-h-14 grid-cols-5 items-center">
         <ul className="contents">
@@ -142,10 +145,10 @@ export function MobileNav() {
                 )}
                 aria-haspopup="dialog"
                 aria-controls={MORE_MENU_ID}
-                aria-label="Abrir menú de navegación"
+                aria-label={t("mobileNav.openMenu")}
               >
                 <Menu className="h-6 w-6" aria-hidden="true" />
-                <span>Más</span>
+                <span>{t("mobileNav.more")}</span>
               </button>
             </MobileMoreSheet>
           </li>

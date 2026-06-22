@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Flame, Zap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -13,12 +14,16 @@ import {
   totalXpForLevel,
   levelProgressPercent,
 } from "@/lib/levels";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface XPBarProps {
   level: number;
   xp: number;
   streakDays: number;
 }
+
+type TierKey = "leyenda" | "experto" | "avanzado" | "intermedio" | "principiante";
 
 function getTierColor(level: number) {
   if (level >= 50) return "from-violet-500 to-fuchsia-600";
@@ -28,22 +33,25 @@ function getTierColor(level: number) {
   return "from-slate-400 to-slate-500";
 }
 
-function getTierLabel(level: number) {
-  if (level >= 50) return "Leyenda";
-  if (level >= 25) return "Experto";
-  if (level >= 10) return "Avanzado";
-  if (level >= 5) return "Intermedio";
-  return "Principiante";
+function getTierKey(level: number): TierKey {
+  if (level >= 50) return "leyenda";
+  if (level >= 25) return "experto";
+  if (level >= 10) return "avanzado";
+  if (level >= 5) return "intermedio";
+  return "principiante";
 }
 
 const SEGMENTS = 10;
 
 export function XPBar({ level, xp, streakDays }: XPBarProps) {
+  const t = useTranslations("dashboard.achievements.xpBar");
+  const locale = useLocale() as Locale;
   const xpForNext = xpToNextLevel(level, xp);
   const nextLevelTotal = totalXpForLevel(level + 1);
   const progress = levelProgressPercent(level, xp);
   const tierGradient = getTierColor(level);
-  const tierLabel = getTierLabel(level);
+  const tierKey = getTierKey(level);
+  const tierLabel = t(`tier.${tierKey}` as never);
   const filledSegments = Math.floor((progress / 100) * SEGMENTS);
 
   const [celebrating, setCelebrating] = useState(false);
@@ -82,13 +90,13 @@ export function XPBar({ level, xp, streakDays }: XPBarProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">Nivel {level}</span>
-              <span className="body-small text-muted-foreground">— {tierLabel}</span>
+              <span className="text-sm font-semibold">{t("level", { level })}</span>
+              <span className="body-small text-muted-foreground">{t("tierSeparator", { tier: tierLabel })}</span>
             </div>
             {streakDays > 0 && (
               <div className="flex items-center gap-1 text-sm font-medium text-orange-500">
                 <Flame className="h-4 w-4 animate-flame-flicker" />
-                <span>Streak {streakDays} días</span>
+                <span>{t("streak", { days: streakDays })}</span>
               </div>
             )}
           </div>
@@ -123,7 +131,10 @@ export function XPBar({ level, xp, streakDays }: XPBarProps) {
                 })}
               </div>
               <p className="body-small mt-1 text-right text-muted-foreground">
-                {xp.toLocaleString("es-CO")} / {nextLevelTotal.toLocaleString("es-CO")} XP
+                {t("xpProgress", {
+                  current: formatNumber(xp, locale),
+                  total: formatNumber(nextLevelTotal, locale),
+                })}
               </p>
             </div>
           </TooltipTrigger>
@@ -131,11 +142,12 @@ export function XPBar({ level, xp, streakDays }: XPBarProps) {
       </div>
       <TooltipContent side="bottom" sideOffset={8}>
         <div className="space-y-1">
-          <p className="font-medium">Nivel {level} — {tierLabel}</p>
+          <p className="font-medium">{t("tooltipLevel", { level, tier: tierLabel })}</p>
           <p className="text-muted-foreground">
-            Faltan {<span className="font-semibold text-foreground">
-              {xpForNext.toLocaleString("es-CO")} XP
-            </span>} para alcanzar el nivel {level + 1}.
+            {t("tooltipRemaining", {
+              xp: formatNumber(xpForNext, locale),
+              nextLevel: level + 1,
+            })}
           </p>
         </div>
       </TooltipContent>

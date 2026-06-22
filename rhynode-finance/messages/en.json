@@ -23,7 +23,15 @@
       "integrations": "Integrations",
       "leaderboard": "Leaderboard",
       "stats": "My stats",
-      "settings": "Settings"
+      "settings": "Settings",
+      "mobileNav": {
+        "menuTitle": "Navigation menu",
+        "closeMenu": "Close navigation menu",
+        "openMenu": "Open navigation menu",
+        "navAriaLabel": "Mobile main navigation",
+        "more": "More",
+        "personal": "Personal"
+      }
     },
     "skipToContent": "Skip to main content",
     "sectionsAria": "Dashboard sections",
@@ -33,7 +41,16 @@
       "spent": "Spent",
       "received": "Received",
       "spentHint": "Log an expense",
-      "receivedHint": "Log income"
+      "receivedHint": "Log income",
+      "fab": {
+        "newTransaction": "New transaction",
+        "newInvoice": "New invoice",
+        "newGoal": "New goal",
+        "newBudget": "New budget",
+        "menuAriaLabel": "Quick actions",
+        "openActions": "Open quick actions",
+        "closeActions": "Close quick actions"
+      }
     },
     "voice": {
       "label": "Dictate",
@@ -168,6 +185,14 @@
         "activeFilters": "{count, plural, one {# active filter} other {# active filters}}",
         "noActiveFilters": "No active filters",
         "clear": "Clear filters"
+      },
+      "export": {
+        "label": "Export",
+        "csv": "Export CSV",
+        "excel": "Export Excel",
+        "pdf": "Export PDF",
+        "errorGenerate": "Error generating file",
+        "networkError": "Network error downloading"
       }
     },
     "clients": {
@@ -1221,6 +1246,28 @@
         "title": "All achievements completed!",
         "description": "You've unlocked every available badge.",
         "hint": "Keep using Rhynode to maintain your streak and level up."
+      },
+      "xpBar": {
+        "tier": {
+          "leyenda": "Legend",
+          "experto": "Expert",
+          "avanzado": "Advanced",
+          "intermedio": "Intermediate",
+          "principiante": "Beginner"
+        },
+        "level": "Level {level}",
+        "tierSeparator": "— {tier}",
+        "streak": "Streak {days} days",
+        "xpProgress": "{current} / {total} XP",
+        "tooltipLevel": "Level {level} — {tier}",
+        "tooltipRemaining": "{xp} XP to reach level {nextLevel}."
+      },
+      "xpChart": {
+        "ariaLabel": "Bar chart of XP earned per week",
+        "srPrefix": "XP earned week by week:",
+        "tooltipValue": "XP earned",
+        "tooltipLabel": "Week: {label}",
+        "barName": "XP earned"
       }
     },
     "projects": {
@@ -2969,6 +3016,37 @@
         "toolResult": "Result of",
         "yes": "Yes",
         "no": "No"
+      },
+      "anomalies": {
+        "loadError": "Failed to load anomalies",
+        "unknownError": "Unknown error",
+        "errorState": "We couldn't load the anomalies.",
+        "title": "Anomalies detected",
+        "severity": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        },
+        "emptyTitle": "All in order",
+        "emptyDescription": "We didn't detect anomalies this month."
+      }
+    },
+    "common": {
+      "delete": "Delete",
+      "deleteError": "Error deleting",
+      "networkError": "Network error",
+      "planLimit": {
+        "ariaLabel": "{resource} limit reached on plan {plan}",
+        "title": "{resource} limit reached",
+        "body": "You've used {current} of {limit} {resource} on your current plan. Upgrade to keep creating {resource} without restrictions.",
+        "usage": "Usage",
+        "viewPlans": "View plans",
+        "resources": {
+          "invoices_singular": "invoice",
+          "invoices_plural": "invoices",
+          "users_singular": "user",
+          "users_plural": "users"
+        }
       }
     }
   },

@@ -9,12 +9,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileText, Sheet, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
-async function downloadFile(url: string, filename: string) {
+async function downloadFile(
+  url: string,
+  filename: string,
+  errorGenerate: string,
+  networkError: string
+) {
   try {
     const res = await fetch(url);
     if (!res.ok) {
-      toast.error("Error al generar el archivo");
+      toast.error(errorGenerate);
       return;
     }
     const blob = await res.blob();
@@ -26,40 +32,61 @@ async function downloadFile(url: string, filename: string) {
     link.remove();
     URL.revokeObjectURL(link.href);
   } catch {
-    toast.error("Error de red al descargar");
+    toast.error(networkError);
   }
 }
 
 export function ExportButtons() {
+  const t = useTranslations("dashboard.transactions");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className="gap-2">
           <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Exportar</span>
-          <span className="sm:hidden">Exportar</span>
+          <span className="hidden sm:inline">{t("export.label")}</span>
+          <span className="sm:hidden">{t("export.label")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => downloadFile("/api/reports/csv", "transacciones.csv")}
+          onClick={() =>
+            downloadFile(
+              "/api/reports/csv",
+              "transacciones.csv",
+              t("export.errorGenerate"),
+              t("export.networkError")
+            )
+          }
         >
           <FileSpreadsheet className="h-4 w-4" />
-          Exportar CSV
+          {t("export.csv")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() =>
-            downloadFile("/api/reports/excel", "transacciones.xlsx")
+            downloadFile(
+              "/api/reports/excel",
+              "transacciones.xlsx",
+              t("export.errorGenerate"),
+              t("export.networkError")
+            )
           }
         >
           <Sheet className="h-4 w-4" />
-          Exportar Excel
+          {t("export.excel")}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => downloadFile("/api/reports/pdf", "transacciones.pdf")}
+          onClick={() =>
+            downloadFile(
+              "/api/reports/pdf",
+              "transacciones.pdf",
+              t("export.errorGenerate"),
+              t("export.networkError")
+            )
+          }
         >
           <FileText className="h-4 w-4" />
-          Exportar PDF
+          {t("export.pdf")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
