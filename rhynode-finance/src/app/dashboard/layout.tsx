@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
 import { buildMetadata } from "@/lib/seo-metadata";
 import { getLocale } from "@/lib/locale-server";
@@ -50,6 +51,8 @@ export default async function DashboardLayout({
   const hasBusiness = profile?.hasBusiness ?? false;
 
   const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard" });
   const messages = locale === "en" ? enMessages : esMessages;
 
   return (
@@ -61,7 +64,7 @@ export default async function DashboardLayout({
             href="#main-content"
             className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none"
           >
-            Saltar al contenido principal
+            {t("skipToContent")}
           </a>
           <Sidebar />
           <MobileNav />

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getOrCreateAuthOrg, getUserProfile } from "@/lib/auth";
+import { getLocale } from "@/lib/locale-server";
 import { ChecklistCard } from "@/components/onboarding/checklist-card";
 import { buildMetadata } from "@/lib/seo-metadata";
 
@@ -41,16 +43,20 @@ export default async function PersonalDashboardPage() {
   const total = 5;
   const progress = Math.round((done / total) * 100);
 
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.personalHome" });
+
   return (
     <div className="space-y-6">
       {progress < 100 && <ChecklistCard initialItems={checklist} />}
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Finanzas personales
+          {t("title")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Gestiona tus metas, cuentas, presupuestos y movimientos.
+          {t("subtitle")}
         </p>
       </div>
     </div>
