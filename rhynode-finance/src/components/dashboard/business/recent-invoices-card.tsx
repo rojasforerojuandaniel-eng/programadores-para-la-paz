@@ -7,29 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
 import { FileText, Plus, Receipt } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-const statusConfig: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Borrador", className: "bg-slate-100 text-slate-700" },
-  SENT: { label: "Enviada", className: "bg-amber-50 text-amber-800" },
-  PAID: { label: "Pagada", className: "bg-emerald-50 text-emerald-800" },
-  OVERDUE: { label: "Vencida", className: "bg-rose-50 text-rose-700" },
-  CANCELLED: { label: "Anulada", className: "bg-slate-100 text-slate-700" },
-  PARTIAL: { label: "Parcial", className: "bg-blue-50 text-blue-700" },
+const statusConfig: Record<string, { labelKey: string; className: string }> = {
+  DRAFT: { labelKey: "business.recentInvoices.statuses.DRAFT", className: "bg-slate-100 text-slate-700" },
+  SENT: { labelKey: "business.recentInvoices.statuses.SENT", className: "bg-amber-50 text-amber-800" },
+  PAID: { labelKey: "business.recentInvoices.statuses.PAID", className: "bg-emerald-50 text-emerald-800" },
+  OVERDUE: { labelKey: "business.recentInvoices.statuses.OVERDUE", className: "bg-rose-50 text-rose-700" },
+  CANCELLED: { labelKey: "business.recentInvoices.statuses.CANCELLED", className: "bg-slate-100 text-slate-700" },
+  PARTIAL: { labelKey: "business.recentInvoices.statuses.PARTIAL", className: "bg-blue-50 text-blue-700" },
 };
 
-function StatusBadge({ status }: { status: string }) {
+async function StatusBadge({ status }: { status: string }) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const config = statusConfig[status] || statusConfig.DRAFT;
   return (
     <Badge variant="outline" className={config.className}>
-      {config.label}
+      {t(config.labelKey as never)}
     </Badge>
   );
 }
@@ -45,6 +43,9 @@ export async function RecentInvoicesCard({
   currency,
   className,
 }: RecentInvoicesCardProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
   const invoices = await prisma.invoice.findMany({
     where: { organizationId: orgId },
@@ -60,10 +61,10 @@ export async function RecentInvoicesCard({
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="heading-card flex items-center gap-2">
           <FileText className="h-4 w-4" aria-hidden="true" />
-          Facturas Recientes
+          {t("business.recentInvoices.title")}
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/invoices">Ver todas</Link>
+          <Link href="/dashboard/invoices">{t("business.recentInvoices.viewAll")}</Link>
         </Button>
       </CardHeader>
       <CardContent>
@@ -72,13 +73,13 @@ export async function RecentInvoicesCard({
             variant="sm"
             className="border-0 bg-transparent shadow-none"
             icon={Receipt}
-            title="Sin facturas"
-            description="Crea tu primera factura para empezar a cobrar."
+            title={t("business.recentInvoices.empty.title")}
+            description={t("business.recentInvoices.empty.description")}
             action={
               <Button size="sm" className="gap-1" asChild>
                 <Link href="/dashboard/invoices">
                   <Plus className="h-4 w-4" aria-hidden="true" />
-                  Crear primera factura
+                  {t("business.recentInvoices.empty.action")}
                 </Link>
               </Button>
             }
@@ -92,11 +93,11 @@ export async function RecentInvoicesCard({
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {invoice.client?.name || "Cliente"}
+                    {invoice.client?.name || t("business.recentInvoices.defaultClient")}
                   </p>
                   <p className="body-small text-muted-foreground">
                     {invoice.number} ·{" "}
-                    {new Date(invoice.issueDate).toLocaleDateString("es-CO")}
+                    {fmtDate(new Date(invoice.issueDate), locale)}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
@@ -105,6 +106,7 @@ export async function RecentInvoicesCard({
                     {formatCurrency(
                       decimalToNumber(invoice.total),
                       invoice.currency || currency,
+                      locale,
                     )}
                   </span>
                 </div>

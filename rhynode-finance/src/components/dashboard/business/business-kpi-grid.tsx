@@ -2,14 +2,9 @@ import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { FileText, TrendingUp, Users, Link2 } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 
 function getMonthRange() {
   const now = new Date();
@@ -30,6 +25,9 @@ export async function BusinessKpiGrid({
   orgId,
   currency,
 }: BusinessKpiGridProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
   const { start, end } = getMonthRange();
 
@@ -62,22 +60,22 @@ export async function BusinessKpiGrid({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard
-        label="Facturas Pendientes"
+        label={t("business.kpis.pendingInvoices")}
         value={pendingInvoices.toString()}
         icon={FileText}
       />
       <KpiCard
-        label="Ingresos del Mes"
-        value={formatCurrency(monthRevenue, currency)}
+        label={t("business.kpis.monthRevenue")}
+        value={formatCurrency(monthRevenue, currency, locale)}
         icon={TrendingUp}
       />
       <KpiCard
-        label="Clientes Activos"
+        label={t("business.kpis.activeClients")}
         value={activeClients.toString()}
         icon={Users}
       />
       <KpiCard
-        label="Links de Pago Creados"
+        label={t("business.kpis.paymentLinks")}
         value={paymentLinks.toString()}
         icon={Link2}
       />
