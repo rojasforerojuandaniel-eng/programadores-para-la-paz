@@ -8,7 +8,10 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useLocale } from "next-intl";
 import { useIsClient } from "@/hooks/use-is-client";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface AllocationItem {
   type: string;
@@ -20,14 +23,6 @@ interface AllocationItem {
 interface InvestmentAllocationChartProps {
   data: AllocationItem[];
   currency: string;
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 const COLORS = [
@@ -50,6 +45,7 @@ export function InvestmentAllocationChart({
   currency,
 }: InvestmentAllocationChartProps) {
   const isClient = useIsClient();
+  const locale = useLocale() as Locale;
   if (!isClient || data.length === 0) return null;
 
   return (
@@ -83,7 +79,7 @@ export function InvestmentAllocationChart({
             ) => {
               const entry = item?.payload;
               return [
-                `${formatCurrency(entry?.amount ?? 0, currency)} (${Number(entry?.value ?? 0).toFixed(1)}%)`,
+                `${formatCurrency(entry?.amount ?? 0, currency, locale)} (${Number(entry?.value ?? 0).toFixed(1)}%)`,
                 entry?.label ?? name,
               ];
             }}

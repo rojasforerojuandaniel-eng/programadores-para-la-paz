@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getUserProfile } from "@/lib/auth";
+import { getLocale } from "@/lib/locale-server";
 import { getPrisma } from "@/lib/prisma";
 import type { CategoryType } from "./types";
 
@@ -16,6 +18,11 @@ const updateCategorySchema = z.object({
 
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 
+async function errorsT() {
+  const locale = await getLocale();
+  return getTranslations({ locale, namespace: "dashboard.categories.actions.errors" });
+}
+
 export async function updateCategory(
   id: string,
   input: UpdateCategoryInput,
@@ -23,12 +30,12 @@ export async function updateCategory(
   try {
     const profile = await getUserProfile();
     if (!profile) {
-      return { success: false, error: "No autorizado" };
+      return { success: false, error: (await errorsT())("unauthorized") };
     }
 
     const parsed = updateCategorySchema.safeParse(input);
     if (!parsed.success) {
-      return { success: false, error: "Datos inválidos" };
+      return { success: false, error: (await errorsT())("invalidData") };
     }
 
     const prisma = getPrisma();
@@ -37,22 +44,22 @@ export async function updateCategory(
     });
 
     if (!existing) {
-      return { success: false, error: "Categoría no encontrada" };
+      return { success: false, error: (await errorsT())("notFound") };
     }
 
     if (existing.isDefault) {
-      return { success: false, error: "No se puede editar una categoría por defecto" };
+      return { success: false, error: (await errorsT())("isDefaultEdit") };
     }
 
     if (parsed.data.parentId) {
       if (parsed.data.parentId === id) {
-        return { success: false, error: "Una categoría no puede ser su propio padre" };
+        return { success: false, error: (await errorsT())("selfParent") };
       }
       const parent = await prisma.category.findUnique({
         where: { id: parsed.data.parentId, userId: profile.id },
       });
       if (!parent) {
-        return { success: false, error: "Categoría padre no válida" };
+        return { success: false, error: (await errorsT())("invalidParent") };
       }
     }
 
@@ -70,7 +77,7 @@ export async function updateCategory(
     revalidatePath("/dashboard/personal/categories");
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudo actualizar la categoría" };
+    return { success: false, error: (await errorsT())("updateFailed") };
   }
 }
 
@@ -80,7 +87,7 @@ export async function deleteCategory(
   try {
     const profile = await getUserProfile();
     if (!profile) {
-      return { success: false, error: "No autorizado" };
+      return { success: false, error: (await errorsT())("unauthorized") };
     }
 
     const prisma = getPrisma();
@@ -89,17 +96,17 @@ export async function deleteCategory(
     });
 
     if (!existing) {
-      return { success: false, error: "Categoría no encontrada" };
+      return { success: false, error: (await errorsT())("notFound") };
     }
 
     if (existing.isDefault) {
-      return { success: false, error: "No se puede eliminar una categoría por defecto" };
+      return { success: false, error: (await errorsT())("isDefaultDelete") };
     }
 
     await prisma.category.delete({ where: { id } });
     revalidatePath("/dashboard/personal/categories");
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudo eliminar la categoría" };
+    return { success: false, error: (await errorsT())("deleteFailed") };
   }
 }

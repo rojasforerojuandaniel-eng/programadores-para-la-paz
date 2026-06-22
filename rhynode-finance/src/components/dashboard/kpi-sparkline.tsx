@@ -1,6 +1,9 @@
 "use client";
 
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { useTranslations, useLocale } from "next-intl";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface KpiSparklineProps {
   data: number[];
@@ -9,6 +12,8 @@ interface KpiSparklineProps {
 }
 
 export function KpiSparkline({ data, positive, label }: KpiSparklineProps) {
+  const t = useTranslations("charts.kpiSparkline");
+  const locale = useLocale() as Locale;
   if (data.length === 0) return null;
 
   const chartData = data.map((value, index) => ({ index, value }));
@@ -16,15 +21,15 @@ export function KpiSparkline({ data, positive, label }: KpiSparklineProps) {
     ? "var(--emerald-500, #10b981)"
     : "var(--rose-500, #f43f5e)";
   const fillId = `sparkline-gradient-${positive ? "pos" : "neg"}`;
-  const trendDescription = data.map((v) => v.toLocaleString("es-CO")).join(", ");
+  const trendDescription = data.map((v) => formatNumber(v, locale)).join(", ");
 
   return (
     <figure
       className="w-full"
-      aria-label={`Tendencia de ${label} (últimos 6 meses): ${trendDescription}`}
+      aria-label={t("trendAriaLabel", { label, values: trendDescription })}
     >
       <figcaption className="sr-only">
-        Tendencia de {label}: {trendDescription}
+        {t("trendCaption", { label, values: trendDescription })}
       </figcaption>
       <div className="h-10 w-full" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">

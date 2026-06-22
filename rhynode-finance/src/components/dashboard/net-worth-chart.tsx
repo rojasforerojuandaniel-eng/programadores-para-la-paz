@@ -9,7 +9,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslations, useLocale } from "next-intl";
 import { useIsClient } from "@/hooks/use-is-client";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface NetWorthChartData {
   date: string;
@@ -24,14 +27,6 @@ interface NetWorthChartProps {
   currency: string;
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 export function NetWorthChartSkeleton() {
   return (
     <div className="h-[260px] w-full animate-pulse rounded-xl bg-muted sm:h-[320px]" />
@@ -40,7 +35,16 @@ export function NetWorthChartSkeleton() {
 
 export function NetWorthChart({ data, currency }: NetWorthChartProps) {
   const isClient = useIsClient();
+  const t = useTranslations("charts.netWorth.series");
+  const locale = useLocale() as Locale;
   if (!isClient || data.length === 0) return null;
+
+  const seriesName = (key: string) =>
+    key === "netWorth"
+      ? t("netWorth")
+      : key === "assets"
+        ? t("assets")
+        : t("liabilities");
 
   return (
     <div className="h-[260px] w-full sm:h-[320px]">
@@ -65,8 +69,8 @@ export function NetWorthChart({ data, currency }: NetWorthChartProps) {
           />
           <Tooltip
             formatter={(value, name) => [
-              formatCurrency(Number(value), currency),
-              name === "netWorth" ? "Patrimonio" : name === "assets" ? "Activos" : "Deudas",
+              formatCurrency(Number(value), currency, locale),
+              seriesName(String(name)),
             ]}
             labelFormatter={(label) => label}
             contentStyle={{
@@ -79,7 +83,7 @@ export function NetWorthChart({ data, currency }: NetWorthChartProps) {
           <Area
             type="monotone"
             dataKey="netWorth"
-            name="Patrimonio"
+            name={t("netWorth")}
             stroke="var(--primary)"
             strokeWidth={2}
             fillOpacity={1}
@@ -88,7 +92,7 @@ export function NetWorthChart({ data, currency }: NetWorthChartProps) {
           <Area
             type="monotone"
             dataKey="assets"
-            name="Activos"
+            name={t("assets")}
             stroke="var(--chart-2)"
             strokeWidth={2}
             fillOpacity={1}

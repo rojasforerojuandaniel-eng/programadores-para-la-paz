@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Bug, AlertTriangle, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface AntPattern {
   name: string;
@@ -19,6 +22,8 @@ interface AntExpensesResponse {
 }
 
 export function AntExpenses() {
+  const t = useTranslations("charts.antExpenses");
+  const locale = useLocale() as Locale;
   const [data, setData] = useState<AntExpensesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,17 +32,17 @@ export function AntExpenses() {
     async function fetchAntExpenses() {
       try {
         const res = await fetch("/api/ai/ant-expenses");
-        if (!res.ok) throw new Error("Error al cargar gastos hormiga");
+        if (!res.ok) throw new Error(t("apiError"));
         const json = await res.json();
         setData(json);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError(err instanceof Error ? err.message : t("unknownError"));
       } finally {
         setLoading(false);
       }
     }
     fetchAntExpenses();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -55,7 +60,7 @@ export function AntExpenses() {
   if (error || !data) {
     return (
       <div className="surface-elevated-2 rounded-xl border border-border p-6">
-        <p className="text-sm text-muted-foreground">No pudimos cargar los gastos hormiga.</p>
+        <p className="text-sm text-muted-foreground">{t("loadError")}</p>
       </div>
     );
   }
@@ -64,11 +69,11 @@ export function AntExpenses() {
     <div className="surface-elevated-2 rounded-xl border border-border p-6">
       <div className="mb-4 flex items-center gap-2">
         <Bug className="h-5 w-5 text-primary" />
-        <h3 className="heading-card text-base">Gastos Hormiga</h3>
+        <h3 className="heading-card text-base">{t("title")}</h3>
       </div>
 
       {data.patterns.length === 0 ? (
-        <p className="body-small text-muted-foreground">No detectamos patrones de gastos hormiga este mes.</p>
+        <p className="body-small text-muted-foreground">{t("noPatterns")}</p>
       ) : (
         <div className="space-y-3">
           {data.patterns.map((pattern) => {
@@ -88,7 +93,10 @@ export function AntExpenses() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
-                    {pattern.count} x ${pattern.total.toLocaleString("es-CO")}
+                    {t("countTimes", {
+                      count: pattern.count,
+                      amount: formatCurrency(pattern.total, "COP", locale),
+                    })}
                   </span>
                   <Badge
                     variant={isVeryHigh ? "destructive" : isHigh ? "secondary" : "outline"}
@@ -101,9 +109,9 @@ export function AntExpenses() {
             );
           })}
           <div className="flex items-center justify-between border-t border-border pt-3">
-            <span className="text-sm font-medium">Total gastos hormiga</span>
+            <span className="text-sm font-medium">{t("totalLabel")}</span>
             <span className="text-sm font-semibold text-primary">
-              ${(data.totalAnt ?? 0).toLocaleString("es-CO")}
+              {formatCurrency(data.totalAnt ?? 0, "COP", locale)}
             </span>
           </div>
         </div>

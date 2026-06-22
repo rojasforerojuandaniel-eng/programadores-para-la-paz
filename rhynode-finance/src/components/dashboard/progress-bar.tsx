@@ -1,4 +1,9 @@
+"use client";
+
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface ProgressBarProps {
   value: number;
@@ -17,13 +22,20 @@ export function ProgressBar({
   label,
   className,
 }: ProgressBarProps) {
+  const t = useTranslations("charts.progressBar");
+  const locale = useLocale() as Locale;
   const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
     <div className={cn("w-full space-y-1", className)}>
       {showLabel && (
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{label ?? `${percentage.toFixed(0)}%`}</span>
-          <span>{`${value.toLocaleString("es-CO")} / ${max.toLocaleString("es-CO")}`}</span>
+          <span>
+            {t("valueOfMax", {
+              value: formatNumber(value, locale),
+              max: formatNumber(max, locale),
+            })}
+          </span>
         </div>
       )}
       <div
@@ -31,7 +43,7 @@ export function ProgressBar({
         aria-valuenow={Math.round(percentage)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={typeof label === "string" ? label : "Progreso"}
+        aria-label={typeof label === "string" ? label : t("progressLabel")}
         className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
       >
         <div

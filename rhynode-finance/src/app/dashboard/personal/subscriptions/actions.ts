@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getUserProfile } from "@/lib/auth";
+import { getLocale } from "@/lib/locale-server";
 import { getPrisma } from "@/lib/prisma";
 
 const updateSchema = z.object({
@@ -17,6 +19,11 @@ const updateSchema = z.object({
 
 export type UpdateSubscriptionInput = z.infer<typeof updateSchema>;
 
+async function errorsT() {
+  const locale = await getLocale();
+  return getTranslations({ locale, namespace: "dashboard.subscriptions.actions.errors" });
+}
+
 export async function updateSubscription(
   id: string,
   input: UpdateSubscriptionInput
@@ -24,12 +31,12 @@ export async function updateSubscription(
   try {
     const profile = await getUserProfile();
     if (!profile) {
-      return { success: false, error: "No autorizado" };
+      return { success: false, error: (await errorsT())("unauthorized") };
     }
 
     const parsed = updateSchema.safeParse(input);
     if (!parsed.success) {
-      return { success: false, error: "Datos inválidos" };
+      return { success: false, error: (await errorsT())("invalidData") };
     }
 
     const prisma = getPrisma();
@@ -38,7 +45,7 @@ export async function updateSubscription(
     });
 
     if (!existing) {
-      return { success: false, error: "Suscripción no encontrada" };
+      return { success: false, error: (await errorsT())("notFound") };
     }
 
     await prisma.detectedSubscription.update({
@@ -57,7 +64,7 @@ export async function updateSubscription(
     revalidatePath("/dashboard/personal/subscriptions");
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudo actualizar la suscripción" };
+    return { success: false, error: (await errorsT())("updateFailed") };
   }
 }
 
@@ -68,7 +75,7 @@ export async function markSubscriptionForCancel(
   try {
     const profile = await getUserProfile();
     if (!profile) {
-      return { success: false, error: "No autorizado" };
+      return { success: false, error: (await errorsT())("unauthorized") };
     }
 
     const prisma = getPrisma();
@@ -77,7 +84,7 @@ export async function markSubscriptionForCancel(
     });
 
     if (!existing) {
-      return { success: false, error: "Suscripción no encontrada" };
+      return { success: false, error: (await errorsT())("notFound") };
     }
 
     const nextStatus = mark ? "PENDING_CANCELLATION" : "ACTIVE";
@@ -90,7 +97,7 @@ export async function markSubscriptionForCancel(
     revalidatePath("/dashboard/personal/subscriptions");
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudo cambiar el estado" };
+    return { success: false, error: (await errorsT())("statusFailed") };
   }
 }
 
@@ -100,7 +107,7 @@ export async function deleteSubscription(
   try {
     const profile = await getUserProfile();
     if (!profile) {
-      return { success: false, error: "No autorizado" };
+      return { success: false, error: (await errorsT())("unauthorized") };
     }
 
     const prisma = getPrisma();
@@ -109,13 +116,13 @@ export async function deleteSubscription(
     });
 
     if (!existing) {
-      return { success: false, error: "Suscripción no encontrada" };
+      return { success: false, error: (await errorsT())("notFound") };
     }
 
     await prisma.detectedSubscription.delete({ where: { id } });
     revalidatePath("/dashboard/personal/subscriptions");
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudo eliminar la suscripción" };
+    return { success: false, error: (await errorsT())("deleteFailed") };
   }
 }

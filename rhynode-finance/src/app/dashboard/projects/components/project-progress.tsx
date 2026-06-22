@@ -1,19 +1,18 @@
+"use client";
+
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface ProjectProgressProps {
   spent: number;
   budget: number;
 }
 
-function formatCOP(amount: number) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 export function ProjectProgress({ spent, budget }: ProjectProgressProps) {
+  const t = useTranslations("dashboard.projects");
+  const locale = useLocale() as Locale;
   const progress = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
   const overBudget = budget > 0 && spent > budget;
   const noBudget = budget === 0;
@@ -22,7 +21,7 @@ export function ProjectProgress({ spent, budget }: ProjectProgressProps) {
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className={cn("font-medium", noBudget ? "text-muted-foreground" : "text-foreground")}>
-          {noBudget ? "Sin presupuesto" : formatCOP(spent)}
+          {noBudget ? t("progress.noBudget") : formatCurrency(spent, "COP", locale)}
         </span>
         <span
           className={cn(
@@ -44,12 +43,12 @@ export function ProjectProgress({ spent, budget }: ProjectProgressProps) {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progress}
-          aria-label={`Progreso de gasto: ${progress}%`}
+          aria-label={t("progress.ariaLabel", { percent: progress })}
         />
       </div>
       {!noBudget && (
         <p className="text-xs text-muted-foreground">
-          Presupuesto {formatCOP(budget)}
+          {t("progress.budgetLine", { budget: formatCurrency(budget, "COP", locale) })}
         </p>
       )}
     </div>

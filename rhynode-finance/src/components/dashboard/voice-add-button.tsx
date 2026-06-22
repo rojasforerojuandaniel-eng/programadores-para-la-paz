@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Mic, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateTransactionSheet } from "./create-transaction-sheet";
@@ -22,6 +22,7 @@ interface ParsedDefaults {
  */
 export function VoiceAddButton() {
   const t = useTranslations("dashboard.voice");
+  const locale = useLocale();
   const router = useRouter();
   const [listening, setListening] = useState(false);
   const [open, setOpen] = useState(false);
@@ -46,7 +47,7 @@ export function VoiceAddButton() {
       return;
     }
     const rec = new Ctor();
-    rec.lang = "es-CO";
+    rec.lang = locale === "en" ? "en-US" : "es-CO";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     rec.onresult = (event) => {

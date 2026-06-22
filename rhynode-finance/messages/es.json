@@ -919,7 +919,15 @@
         "statusErrorToast": "No se pudo cambiar el estado",
         "networkErrorToast": "Error de red",
         "updateErrorToast": "No se pudo actualizar",
-        "canceledToast": "Suscripción cancelada"
+        "canceledToast": "Suscripción cancelada",
+        "errors": {
+          "unauthorized": "No autorizado.",
+          "invalidData": "Datos inválidos.",
+          "notFound": "Suscripción no encontrada.",
+          "updateFailed": "No se pudo actualizar la suscripción.",
+          "deleteFailed": "No se pudo eliminar la suscripción.",
+          "statusFailed": "No se pudo cambiar el estado."
+        }
       },
       "expiresToday": "Vence hoy",
       "expiredDaysAgo": "Vence hace {count} días",
@@ -1121,6 +1129,12 @@
         "title": "Tu patrimonio empieza aquí",
         "description": "Guarda snapshots periódicos para ver cómo evolucionan tus activos y deudas.",
         "hint": "Empieza creando tu primer registro de patrimonio."
+      },
+      "updateButton": {
+        "label": "Actualizar",
+        "saving": "Guardando…",
+        "errorSave": "No se pudo guardar. Intenta de nuevo.",
+        "errorUnknown": "Error inesperado al guardar."
       }
     },
     "investments": {
@@ -1324,6 +1338,29 @@
         "edit": "Editar",
         "archive": "Archivar",
         "delete": "Eliminar"
+      },
+      "kpis": {
+        "projects": {
+          "label": "Proyectos",
+          "sub": "{active} activos · {completed} completados"
+        },
+        "budget": {
+          "label": "Presupuesto",
+          "sub": "Total asignado"
+        },
+        "spent": {
+          "label": "Gastado",
+          "sub": "{percent}% utilizado"
+        },
+        "completed": {
+          "label": "Completados",
+          "sub": "{percent}% del total"
+        }
+      },
+      "progress": {
+        "ariaLabel": "Progreso del proyecto: {percent}%",
+        "budgetLine": "Presupuesto: {budget}",
+        "noBudget": "Sin presupuesto asignado"
       }
     },
     "stats": {
@@ -1967,7 +2004,18 @@
         "optionsLabel": "Opciones de {name}",
         "title": "Acciones",
         "edit": "Editar",
-        "delete": "Eliminar"
+        "delete": "Eliminar",
+        "errors": {
+          "unauthorized": "No autorizado.",
+          "invalidData": "Datos inválidos.",
+          "notFound": "Categoría no encontrada.",
+          "isDefaultEdit": "No se puede editar la categoría por defecto.",
+          "isDefaultDelete": "No se puede eliminar la categoría por defecto.",
+          "selfParent": "Una categoría no puede ser su propia padre.",
+          "invalidParent": "Categoría padre inválida.",
+          "updateFailed": "No se pudo actualizar la categoría.",
+          "deleteFailed": "No se pudo eliminar la categoría."
+        }
       },
       "dialogs": {
         "edit": {
@@ -3505,6 +3553,38 @@
       "kw2": "crear cuenta",
       "kw3": "fintech Colombia",
       "kw4": "finanzas gratis"
+    }
+  },
+  "charts": {
+    "kpiSparkline": {
+      "trendAriaLabel": "Tendencia de {label} (últimos 6 meses): {values}",
+      "trendCaption": "Tendencia de {label}: {values}"
+    },
+    "progressBar": {
+      "valueOfMax": "{value} / {max}",
+      "progressLabel": "Progreso"
+    },
+    "antExpenses": {
+      "title": "Patrones de gasto recurrente",
+      "loadError": "No pudimos cargar tus patrones de gasto.",
+      "noPatterns": "Aún no detectamos patrones. Sigue registrando transacciones.",
+      "countTimes": "{count} veces · {amount}",
+      "totalLabel": "Total detectado",
+      "apiError": "Error al conectar con el servicio.",
+      "unknownError": "Error inesperado."
+    },
+    "revenue": {
+      "series": "Ingresos",
+      "srCaption": "Ingresos mensuales del negocio",
+      "srMonthHeader": "Mes",
+      "srIncomeHeader": "Ingresos"
+    },
+    "netWorth": {
+      "series": {
+        "netWorth": "Patrimonio neto",
+        "assets": "Activos",
+        "liabilities": "Pasivos"
+      }
     }
   }
 }

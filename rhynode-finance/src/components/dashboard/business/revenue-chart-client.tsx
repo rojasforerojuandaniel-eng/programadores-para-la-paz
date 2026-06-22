@@ -9,7 +9,10 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 interface RevenueChartClientProps {
   data: { month: string; amount: number }[];
@@ -18,22 +21,21 @@ interface RevenueChartClientProps {
   className?: string;
 }
 
-function formatCurrencyCompact(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(amount);
-}
-
 export function RevenueChartClient({
   data,
   currency,
   summary,
   className,
 }: RevenueChartClientProps) {
+  const t = useTranslations("charts.revenue");
+  const locale = useLocale() as Locale;
   const maxAmount = Math.max(...data.map((d) => d.amount), 1);
+
+  const formatCompact = (amount: number) =>
+    formatCurrency(amount, currency, locale, {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    });
 
   return (
     <div className={cn("h-48 w-full", className)}>
@@ -54,14 +56,12 @@ export function RevenueChartClient({
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value: number) =>
-                formatCurrencyCompact(value, currency)
-              }
+              tickFormatter={(value: number) => formatCompact(value)}
             />
             <Tooltip
               formatter={(value) => {
                 const amount = typeof value === "number" ? value : 0;
-                return [formatCurrencyCompact(amount, currency), "Ingresos"];
+                return [formatCompact(amount), t("series")];
               }}
               labelStyle={{ color: "hsl(var(--foreground))" }}
               contentStyle={{
@@ -86,18 +86,18 @@ export function RevenueChartClient({
         </ResponsiveContainer>
       </div>
       <table className="sr-only">
-        <caption>Ingresos mensuales por mes</caption>
+        <caption>{t("srCaption")}</caption>
         <thead>
           <tr>
-            <th>Mes</th>
-            <th>Ingresos</th>
+            <th>{t("srMonthHeader")}</th>
+            <th>{t("srIncomeHeader")}</th>
           </tr>
         </thead>
         <tbody>
           {data.map((d) => (
             <tr key={d.month}>
               <td>{d.month}</td>
-              <td>{formatCurrencyCompact(d.amount, currency)}</td>
+              <td>{formatCompact(d.amount)}</td>
             </tr>
           ))}
         </tbody>
