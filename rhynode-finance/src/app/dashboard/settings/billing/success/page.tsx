@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowLeft, Receipt } from "lucide-react";
 import { buildMetadata } from "@/lib/seo-metadata";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Suscripción activada",
-  description: "Tu suscripción a Rhynode Finance ha sido activada correctamente.",
-  path: "/dashboard/settings/billing/success",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "dashboard.settings.billing" });
+
+  return buildMetadata({
+    title: t("metaSuccessTitle"),
+    description: t("metaSuccessDescription"),
+    path: "/dashboard/settings/billing/success",
+  });
+}
 
 export default async function BillingSuccessPage() {
   const locale = await getLocale();

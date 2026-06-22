@@ -28,7 +28,6 @@ type IntegrationCategory = "banks" | "accounting" | "payments" | "automation";
 interface Integration {
   id: string;
   name: string;
-  description: string;
   category: IntegrationCategory;
   status: IntegrationStatus;
   initials: string;
@@ -67,8 +66,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "bancolombia",
     name: "Bancolombia",
-    description:
-      "Sincroniza corrientes, ahorros y tarjetas de crédito automáticamente.",
     category: "banks",
     status: "coming-soon",
     initials: "BA",
@@ -77,8 +74,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "davivienda",
     name: "Davivienda",
-    description:
-      "Importa movimientos y saldos de Davivienda en tiempo real.",
     category: "banks",
     status: "coming-soon",
     initials: "DA",
@@ -87,7 +82,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "nequi",
     name: "Nequi",
-    description: "Conecta tu banco digital y rastrea gastos del día a día.",
     category: "banks",
     status: "coming-soon",
     initials: "NQ",
@@ -96,8 +90,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "siigo",
     name: "SIIGO",
-    description:
-      "Envía facturas y concilia pagos con tu contabilidad en la nube.",
     category: "accounting",
     status: "coming-soon",
     initials: "SI",
@@ -106,7 +98,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "alegra",
     name: "Alegra",
-    description: "Integra facturación electrónica y estados financieros.",
     category: "accounting",
     status: "coming-soon",
     initials: "AL",
@@ -115,8 +106,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "wompi",
     name: "Wompi",
-    description:
-      "Recibe pagos con tarjeta, PSE, Nequi y Daviplata en Colombia.",
     category: "payments",
     status: "connected",
     initials: "WO",
@@ -125,8 +114,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "stripe",
     name: "Stripe",
-    description:
-      "Procesa pagos internacionales con tarjetas y métodos globales.",
     category: "payments",
     status: "available",
     initials: "ST",
@@ -135,7 +122,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "zapier",
     name: "Zapier",
-    description: "Automatiza flujos entre Rhynode y 5,000+ aplicaciones.",
     category: "automation",
     status: "coming-soon",
     initials: "ZA",
@@ -144,7 +130,6 @@ const integrationsSeed: Integration[] = [
   {
     id: "make",
     name: "Make",
-    description: "Crea escenarios visuales para sincronizar datos sin código.",
     category: "automation",
     status: "coming-soon",
     initials: "MA",
@@ -404,7 +389,9 @@ function IntegrationCard({
               </h3>
               {statusBadge()}
             </div>
-            <p className="body-small mt-1">{integration.description}</p>
+            <p className="body-small mt-1">
+              {t(`descriptions.${integration.id}` as never)}
+            </p>
           </div>
         </div>
 

@@ -1639,7 +1639,8 @@
       "subtitle": "Asesor financiero inteligente",
       "chatAria": "Mensajes del chat",
       "greeting": "Hola, soy tu asesor financiero. ¿En qué puedo ayudarte hoy?",
-      "error": "Lo siento, ocurrió un error al procesar tu mensaje. Inténtalo de nuevo."
+      "error": "Lo siento, ocurrió un error al procesar tu mensaje. Inténtalo de nuevo.",
+      "serverError": "Error: {message}"
     },
     "leaderboard": {
       "title": "Leaderboard",
@@ -1753,6 +1754,17 @@
         "configure": "Abriendo configuración de {name}...",
         "invalidForm": "Ingresa un nombre y un email válido",
         "waitlistSuccess": "Te notificaremos cuando esté disponible"
+      },
+      "descriptions": {
+        "bancolombia": "Sincroniza corrientes, ahorros y tarjetas de crédito automáticamente.",
+        "davivienda": "Importa movimientos y saldos de Davivienda en tiempo real.",
+        "nequi": "Conecta tu banco digital y rastrea gastos del día a día.",
+        "siigo": "Envía facturas y concilia pagos con tu contabilidad en la nube.",
+        "alegra": "Integra facturación electrónica y estados financieros.",
+        "wompi": "Recibe pagos con tarjeta, PSE, Nequi y Daviplata en Colombia.",
+        "stripe": "Procesa pagos internacionales con tarjetas y métodos globales.",
+        "zapier": "Automatiza flujos entre Rhynode y 5,000+ aplicaciones.",
+        "make": "Crea escenarios visuales para sincronizar datos sin código."
       }
     },
     "rules": {
@@ -2274,7 +2286,11 @@
           "portalError": "Error al abrir portal",
           "cancelSuccess": "Suscripción cancelada",
           "cancelError": "Error al cancelar"
-        }
+        },
+        "metaCancelTitle": "Suscripción cancelada",
+        "metaCancelDescription": "El proceso de pago fue cancelado. No se realizó ningún cargo.",
+        "metaSuccessTitle": "Suscripción activada",
+        "metaSuccessDescription": "Tu suscripción a Rhynode Finance ha sido activada correctamente."
       },
       "notifications": {
         "title": "Notificaciones",
@@ -3133,6 +3149,23 @@
           "users_singular": "usuario",
           "users_plural": "usuarios"
         }
+      }
+    },
+    "economicIndicators": {
+      "title": "Indicadores Económicos",
+      "subtitle": "Datos de referencia de Colombia actualizados diariamente",
+      "refresh": "Actualizar",
+      "fallback": {
+        "title": "Mostrando datos de respaldo",
+        "description": "No pudimos conectarnos con la fuente oficial. Los valores mostrados son de referencia y pueden no reflejar el mercado actual."
+      },
+      "baseValue": "Valor base / meta: {value}",
+      "source": "Fuente:",
+      "lastUpdate": "Última actualización:",
+      "trend": {
+        "up": "Subió",
+        "down": "Bajó",
+        "flat": "Estable"
       }
     }
   },
