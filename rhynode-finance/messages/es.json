@@ -403,6 +403,55 @@
         "title": "Conecta tus cuentas bancarias",
         "description": "Visualiza saldos y movimientos de corriente, ahorros, crédito y cuentas virtuales en un solo lugar.",
         "hint": "Empieza conectando tu primera cuenta bancaria."
+      },
+      "bankImport": {
+        "importButton": "Importar",
+        "dialogTitle": "Importar movimientos bancarios",
+        "dialogDescription": "Sube un extracto CSV o Excel. Detectaremos columnas, duplicados y te permitiremos revisar antes de importar.",
+        "fileLabel": "Archivo bancario",
+        "fileAriaLabel": "Arrastra o selecciona un archivo bancario",
+        "fileReplaceHint": "Haz clic o arrastra otro archivo para reemplazar",
+        "removeFileAria": "Quitar archivo",
+        "dropHint": "Arrastra tu archivo aquí o haz clic para seleccionar",
+        "formatsHint": "Formatos: CSV, Excel (.xlsx, .xls) u ODS. Máximo 2MB.",
+        "downloadTemplate": "Descargar plantilla",
+        "reading": "Leyendo...",
+        "preview": "Vista previa",
+        "validRows": "{count} filas válidas",
+        "possibleDuplicates": "{count} posibles duplicados",
+        "columnsSuffix": "({count} columnas)",
+        "mappingPreviewTitle": "Vista previa de mapeo (primeras 10 filas)",
+        "showing": "Mostrando 10 de {total}",
+        "table": {
+          "date": "Fecha",
+          "description": "Descripción",
+          "amount": "Monto",
+          "category": "Categoría",
+          "suggestedCategory": "Categoría sugerida",
+          "status": "Estado"
+        },
+        "income": "Ingreso",
+        "expense": "Gasto",
+        "duplicate": "Duplicado",
+        "new": "Nuevo",
+        "catPrefix": "Cat: {value}",
+        "defaultAccount": "Cuenta por defecto",
+        "selectAccountPlaceholder": "Selecciona cuenta...",
+        "noAccounts": "No hay cuentas",
+        "defaultCategory": "Categoría por defecto",
+        "selectCategoryPlaceholder": "Selecciona categoría...",
+        "applyToSelected": "Aplicar a seleccionadas",
+        "cancel": "Cancelar",
+        "importSelected": "Importar {count} seleccionadas",
+        "selectRowAria": "Seleccionar fila {index}",
+        "selectAllAria": "Seleccionar todas",
+        "toastFileTooLarge": "El archivo excede el límite de 2MB",
+        "toastUnsupportedFormat": "Formato no soportado. Usa CSV, XLSX, XLS u ODS.",
+        "toastReadError": "Error al leer el archivo",
+        "toastNetworkError": "Error de red al procesar el archivo",
+        "toastImportError": "Error al importar transacciones",
+        "toastImported": "{count} transacciones importadas",
+        "toastImportNetworkError": "Error de red al importar"
       }
     },
     "invoices": {
@@ -1208,6 +1257,111 @@
         "title": "Mantén el compliance al día",
         "description": "Crea reportes de IVA, ISR, retenciones y presentación ante DIAN, SAT o AFIP.",
         "hint": "Empieza creando tu primer reporte fiscal."
+      },
+      "calculator": {
+        "cardTitle": "Calculadora de Impuestos Colombianos",
+        "stepsNavAria": "Pasos del cálculo",
+        "stepAria": "Paso {id}: {label}",
+        "steps": {
+          "income": {
+            "label": "Ingresos",
+            "desc": "Monto base gravable"
+          },
+          "deductions": {
+            "label": "Deducciones",
+            "desc": "Descuentos aplicables"
+          },
+          "regime": {
+            "label": "Régimen",
+            "desc": "Tipo de impuesto"
+          },
+          "results": {
+            "label": "Resultados",
+            "desc": "Cálculo estimado"
+          }
+        },
+        "toast": {
+          "baseInvalid": "Ingresa un monto base válido mayor a 0",
+          "pdfError": "Error al generar PDF",
+          "excelError": "Error al generar Excel"
+        },
+        "income": {
+          "tooltip": "Ingresa el monto gravable antes de impuestos. Será la base para calcular IVA, ReteFuente o ICA.",
+          "baseLabel": "Monto base (COP)",
+          "sliderAria": "Ajustar monto base",
+          "hint": "Desliza o escribe el valor. Máximo sugerido: {max}."
+        },
+        "deductions": {
+          "tooltip": "Solo aplica para IVA. Ingresa compras o gastos con IVA descontable estimado para calcular el neto a pagar.",
+          "label": "Gastos con IVA descontable (COP)",
+          "sliderAria": "Ajustar deducciones",
+          "notApplicable": "Las deducciones no aplican para ReteFuente o ICA. Se omiten del cálculo."
+        },
+        "regime": {
+          "tooltip": "Selecciona el impuesto. ICA usa la tarifa por mil del municipio.",
+          "taxTypeLabel": "Tipo de impuesto",
+          "taxTypePlaceholder": "Selecciona un impuesto",
+          "taxTypes": {
+            "IVA": "IVA (19%)",
+            "ReteFuente": "ReteFuente (0%–4%)",
+            "ICA": "ICA (por ciudad)"
+          },
+          "cityLabel": "Ciudad",
+          "cityPlaceholder": "Selecciona una ciudad",
+          "summaryLabel": "Resumen: ",
+          "summaryIVA": "El IVA se calcula sobre el monto base y se descuenta el IVA estimado de tus gastos.",
+          "summaryReteFuente": "La tarifa varía según el monto base: 0%, 1%, 2%, 3% o 4%.",
+          "summaryICA": "Tarifa aproximada para {city}: {rate}‰."
+        },
+        "results": {
+          "estimated": "Cálculo estimado",
+          "generated": "· {date}",
+          "baseLabel": "Base gravable",
+          "baseTooltip": "Monto sobre el que se aplica la tarifa.",
+          "ivaRateLabel": "Tasa IVA",
+          "ivaRateTooltip": "Tarifa general del IVA en Colombia.",
+          "ivaGeneratedTooltip": "Impuesto que cargarías a tu cliente.",
+          "ivaDeductibleTooltip": "IVA estimado de tus gastos descontables.",
+          "ivaNetTooltip": "IVA generado menos el descontable estimado.",
+          "totalWithIvaLabel": "Total con IVA",
+          "totalWithIvaTooltip": "Monto base más el IVA generado.",
+          "retentionRateLabel": "Tarifa de retención",
+          "retentionRateTooltip": "Tarifa según el monto base (umbral simplificado).",
+          "retentionLabel": "Retención estimada",
+          "retentionTooltip": "Monto que se retendría sobre el ingreso.",
+          "totalReceiveLabel": "Total a recibir",
+          "totalReceiveTooltip": "Ingreso menos la retención practicada.",
+          "icaRateLabel": "Tarifa ICA",
+          "icaRateTooltip": "Tarifa por mil del municipio seleccionado.",
+          "icaEstimatedTooltip": "Impuesto de industria y comercio estimado.",
+          "icaTotalLabel": "Total gravado",
+          "icaTotalTooltip": "Base más el ICA estimado."
+        },
+        "disclaimer": "Estos valores son orientativos. Consulta con un contador o revisor fiscal antes de presentar declaraciones ante la DIAN o municipios.",
+        "nav": {
+          "previous": "Anterior",
+          "calculate": "Calcular",
+          "next": "Siguiente",
+          "newCalculation": "Nuevo cálculo"
+        },
+        "tooltipInfoAria": "Más información",
+        "resultCardInfoAria": "Información sobre {label}",
+        "pdf": {
+          "title": "Resumen de cálculo de impuestos - Rhynode Finance",
+          "generated": "Generado: {date}",
+          "disclaimerHeading": "Descargo",
+          "disclaimerBody": "Estos valores son orientativos. Consulta con un contador o revisor fiscal antes de presentar declaraciones.",
+          "rows": {
+            "rate": "Tarifa",
+            "estimatedTax": "Impuesto estimado",
+            "icaCity": "Ciudad ICA"
+          }
+        },
+        "excel": {
+          "sheetName": "Cálculo",
+          "generated": "Generado",
+          "disclaimerBody": "Estos valores son orientativos. Consulta con un contador antes de declarar."
+        }
       }
     },
     "scope": {

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   Dialog,
   DialogContent,
@@ -101,6 +104,8 @@ export function BankImportDialog({
   onImport,
   children,
 }: BankImportDialogProps) {
+  const t = useTranslations("dashboard.accounts");
+  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewResponse["preview"] | null>(null);
@@ -136,11 +141,11 @@ export function BankImportDialog({
       return;
     }
     if (selected.size > MAX_FILE_SIZE) {
-      toast.error("El archivo excede el límite de 2MB");
+      toast.error(t("bankImport.toastFileTooLarge"));
       return;
     }
     if (!isValidImportFile(selected)) {
-      toast.error("Formato no soportado. Usa CSV, XLSX, XLS u ODS.");
+      toast.error(t("bankImport.toastUnsupportedFormat"));
       return;
     }
     setFile(selected);
@@ -188,7 +193,7 @@ export function BankImportDialog({
       const data = (await res.json()) as PreviewResponse & { error?: string };
 
       if (!res.ok) {
-        toast.error(data.error || "Error al leer el archivo");
+        toast.error(data.error || t("bankImport.toastReadError"));
         setPreview(null);
         return;
       }
@@ -208,7 +213,7 @@ export function BankImportDialog({
       setRowState(initialState);
       if (bankAccounts.length === 1) setDefaultAccountId(accountId);
     } catch {
-      toast.error("Error de red al procesar el archivo");
+      toast.error(t("bankImport.toastNetworkError"));
     } finally {
       setPreviewLoading(false);
     }
@@ -276,19 +281,19 @@ export function BankImportDialog({
       const data = (await res.json()) as { success?: boolean; imported?: number; error?: string };
 
       if (!res.ok) {
-        toast.error(data.error || "Error al importar transacciones");
+        toast.error(data.error || t("bankImport.toastImportError"));
         return;
       }
 
       trackEvent("bank_import_confirmed", {
         count: data.imported ?? selectedRows.length,
       });
-      toast.success(`${data.imported ?? selectedRows.length} transacciones importadas`);
+      toast.success(t("bankImport.toastImported", { count: data.imported ?? selectedRows.length }));
       setOpen(false);
       reset();
       onImport();
     } catch {
-      toast.error("Error de red al importar");
+      toast.error(t("bankImport.toastImportNetworkError"));
     } finally {
       setImportLoading(false);
     }
@@ -300,23 +305,22 @@ export function BankImportDialog({
         {children || (
           <Button variant="outline" className="gap-2">
             <Upload className="h-4 w-4" />
-            Importar
+            {t("bankImport.importButton")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Importar movimientos bancarios</DialogTitle>
+          <DialogTitle>{t("bankImport.dialogTitle")}</DialogTitle>
           <DialogDescription>
-            Sube un extracto CSV o Excel. Detectaremos columnas, duplicados y te permitiremos
-            revisar antes de importar.
+            {t("bankImport.dialogDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="bank-file">Archivo bancario</Label>
+              <Label htmlFor="bank-file">{t("bankImport.fileLabel")}</Label>
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -338,7 +342,7 @@ export function BankImportDialog({
                     "absolute inset-0 h-full w-full cursor-pointer opacity-0",
                     file && "pointer-events-none"
                   )}
-                  aria-label="Arrastra o selecciona un archivo bancario"
+                  aria-label={t("bankImport.fileAriaLabel")}
                 />
                 {file ? (
                   <div className="flex items-center gap-3">
@@ -346,7 +350,7 @@ export function BankImportDialog({
                     <div className="text-center">
                       <p className="text-sm font-medium">{file.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        Haz clic o arrastra otro archivo para reemplazar
+                        {t("bankImport.fileReplaceHint")}
                       </p>
                     </div>
                     <Button
@@ -357,7 +361,7 @@ export function BankImportDialog({
                         e.stopPropagation();
                         handleFile(null);
                       }}
-                      aria-label="Quitar archivo"
+                      aria-label={t("bankImport.removeFileAria")}
                     >
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
@@ -367,10 +371,10 @@ export function BankImportDialog({
                     <FileUp className={cn("h-8 w-8", isDragging ? "text-primary" : "text-muted-foreground")} />
                     <div className="text-center">
                       <p className="text-sm font-medium">
-                        Arrastra tu archivo aquí o haz clic para seleccionar
+                        {t("bankImport.dropHint")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Formatos: CSV, Excel (.xlsx, .xls) u ODS. Máximo 2MB.
+                        {t("bankImport.formatsHint")}
                       </p>
                     </div>
                   </>
@@ -387,7 +391,7 @@ export function BankImportDialog({
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />
-                Descargar plantilla
+                {t("bankImport.downloadTemplate")}
               </Button>
               <Button
                 onClick={handlePreview}
@@ -399,7 +403,7 @@ export function BankImportDialog({
                 ) : (
                   <FileSpreadsheet className="h-4 w-4" />
                 )}
-                {previewLoading ? "Leyendo..." : "Vista previa"}
+                {previewLoading ? t("bankImport.reading") : t("bankImport.preview")}
               </Button>
             </div>
           </div>
@@ -407,23 +411,23 @@ export function BankImportDialog({
           {preview && (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3 text-sm">
-                <Badge variant="secondary">{preview.parsedRows} filas válidas</Badge>
+                <Badge variant="secondary">{t("bankImport.validRows", { count: preview.parsedRows })}</Badge>
                 {preview.duplicateCount > 0 && (
                   <Badge variant="destructive">
-                    {preview.duplicateCount} posibles duplicados
+                    {t("bankImport.possibleDuplicates", { count: preview.duplicateCount })}
                   </Badge>
                 )}
                 <span className="text-muted-foreground">
-                  {file?.name} ({preview.headers.length} columnas)
+                  {file?.name} {t("bankImport.columnsSuffix", { count: preview.headers.length })}
                 </span>
               </div>
 
               <div className="rounded-lg border bg-muted/30 p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <h4 className="text-sm font-medium">Vista previa de mapeo (primeras 10 filas)</h4>
+                  <h4 className="text-sm font-medium">{t("bankImport.mappingPreviewTitle")}</h4>
                   {preview.rows.length > 10 && (
                     <Badge variant="outline" className="text-xs">
-                      Mostrando 10 de {preview.rows.length}
+                      {t("bankImport.showing", { total: preview.rows.length })}
                     </Badge>
                   )}
                 </div>
@@ -431,12 +435,12 @@ export function BankImportDialog({
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead>Monto</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Categoría sugerida</TableHead>
-                        <TableHead className="text-right">Estado</TableHead>
+                        <TableHead>{t("bankImport.table.date")}</TableHead>
+                        <TableHead>{t("bankImport.table.description")}</TableHead>
+                        <TableHead>{t("bankImport.table.amount")}</TableHead>
+                        <TableHead>{t("table.type")}</TableHead>
+                        <TableHead>{t("bankImport.table.suggestedCategory")}</TableHead>
+                        <TableHead className="text-right">{t("bankImport.table.status")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -446,15 +450,11 @@ export function BankImportDialog({
                           className={cn(row.duplicate && "bg-destructive/5")}
                         >
                           <TableCell className="whitespace-nowrap text-sm">
-                            {new Date(row.date).toLocaleDateString("es-CO")}
+                            {fmtDate(row.date, locale)}
                           </TableCell>
                           <TableCell className="max-w-xs truncate text-sm">{row.description}</TableCell>
                           <TableCell className="whitespace-nowrap text-sm font-medium">
-                            {row.amount.toLocaleString("es-CO", {
-                              style: "currency",
-                              currency: "COP",
-                              maximumFractionDigits: 0,
-                            })}
+                            {formatCurrency(row.amount, "COP", locale)}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -465,7 +465,7 @@ export function BankImportDialog({
                                   : "bg-danger/10 text-danger"
                               )}
                             >
-                              {row.type === "INCOME" ? "Ingreso" : "Gasto"}
+                              {row.type === "INCOME" ? t("bankImport.income") : t("bankImport.expense")}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm">
@@ -475,12 +475,12 @@ export function BankImportDialog({
                             {row.duplicate ? (
                               <Badge variant="destructive" className="gap-1">
                                 <AlertCircle className="h-3 w-3" />
-                                Duplicado
+                                {t("bankImport.duplicate")}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="gap-1 text-success">
                                 <Check className="h-3 w-3" />
-                                Nuevo
+                                {t("bankImport.new")}
                               </Badge>
                             )}
                           </TableCell>
@@ -503,7 +503,7 @@ export function BankImportDialog({
                         <div className="min-w-0">
                           <p className="font-medium">{row.description}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(row.date).toLocaleDateString("es-CO")}
+                            {fmtDate(row.date, locale)}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
@@ -513,11 +513,7 @@ export function BankImportDialog({
                               row.type === "INCOME" ? "text-success" : "text-danger"
                             )}
                           >
-                            {row.amount.toLocaleString("es-CO", {
-                              style: "currency",
-                              currency: "COP",
-                              maximumFractionDigits: 0,
-                            })}
+                            {formatCurrency(row.amount, "COP", locale)}
                           </p>
                           <Badge
                             variant="outline"
@@ -527,23 +523,23 @@ export function BankImportDialog({
                                 : "bg-danger/10 text-danger"
                             )}
                           >
-                            {row.type === "INCOME" ? "Ingreso" : "Gasto"}
+                            {row.type === "INCOME" ? t("bankImport.income") : t("bankImport.expense")}
                           </Badge>
                         </div>
                       </div>
                       <div className="mt-2 flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">
-                          Cat: {row.suggestedCategory || "—"}
+                          {t("bankImport.catPrefix", { value: row.suggestedCategory || "—" })}
                         </span>
                         {row.duplicate ? (
                           <Badge variant="destructive" className="gap-1 text-xs">
                             <AlertCircle className="h-3 w-3" />
-                            Duplicado
+                            {t("bankImport.duplicate")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="gap-1 text-xs text-success">
                             <Check className="h-3 w-3" />
-                            Nuevo
+                            {t("bankImport.new")}
                           </Badge>
                         )}
                       </div>
@@ -554,14 +550,14 @@ export function BankImportDialog({
 
               <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-3 sm:flex-row sm:items-end">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="default-account" className="text-xs">Cuenta por defecto</Label>
+                  <Label htmlFor="default-account" className="text-xs">{t("bankImport.defaultAccount")}</Label>
                   <Select value={defaultAccountId} onValueChange={setDefaultAccountId}>
                     <SelectTrigger id="default-account" className="w-full">
-                      <SelectValue placeholder="Selecciona cuenta..." />
+                      <SelectValue placeholder={t("bankImport.selectAccountPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {bankAccounts.length === 0 && (
-                        <SelectItem value="_none" disabled>No hay cuentas</SelectItem>
+                        <SelectItem value="_none" disabled>{t("bankImport.noAccounts")}</SelectItem>
                       )}
                       {bankAccounts.map((account) => (
                         <SelectItem key={account.id} value={account.id}>
@@ -572,10 +568,10 @@ export function BankImportDialog({
                   </Select>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="default-category" className="text-xs">Categoría por defecto</Label>
+                  <Label htmlFor="default-category" className="text-xs">{t("bankImport.defaultCategory")}</Label>
                   <Select value={defaultCategory} onValueChange={setDefaultCategory}>
                     <SelectTrigger id="default-category" className="w-full">
-                      <SelectValue placeholder="Selecciona categoría..." />
+                      <SelectValue placeholder={t("bankImport.selectCategoryPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {COMMON_CATEGORIES.map((cat: string) => (
@@ -593,7 +589,7 @@ export function BankImportDialog({
                   onClick={handleApplyDefaults}
                   disabled={!defaultAccountId && !defaultCategory}
                 >
-                  Aplicar a seleccionadas
+                  {t("bankImport.applyToSelected")}
                 </Button>
               </div>
 
@@ -611,7 +607,7 @@ export function BankImportDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Cancelar
+            {t("bankImport.cancel")}
           </Button>
           {preview && (
             <Button
@@ -620,7 +616,7 @@ export function BankImportDialog({
               className="gap-2"
             >
               {importLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Importar {selectedRows.length} seleccionadas
+              {t("bankImport.importSelected", { count: selectedRows.length })}
             </Button>
           )}
         </DialogFooter>
@@ -636,11 +632,12 @@ export function BankImportButton({
   bankAccounts: BankAccount[];
   onImport: () => void;
 }) {
+  const t = useTranslations("dashboard.accounts");
   return (
     <BankImportDialog bankAccounts={bankAccounts} onImport={onImport}>
       <Button variant="outline" className="gap-2">
         <Upload className="h-4 w-4" />
-        Importar
+        {t("bankImport.importButton")}
       </Button>
     </BankImportDialog>
   );

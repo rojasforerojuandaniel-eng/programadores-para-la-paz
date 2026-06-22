@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
 import type { ParsedBankRow } from "@/lib/bank-import";
 
@@ -55,6 +58,8 @@ export function BankImportPreview({
   selectedRows,
   toggleAll,
 }: BankImportPreviewProps) {
+  const t = useTranslations("dashboard.accounts");
+  const locale = useLocale() as Locale;
   return (
     <>
               <div className="hidden overflow-x-auto rounded-xl border md:block">
@@ -67,16 +72,16 @@ export function BankImportPreview({
                           className="size-4"
                           checked={selectedRows.length > 0 && selectedRows.length === rows.length}
                           onChange={(e) => toggleAll(e.target.checked)}
-                          aria-label="Seleccionar todas"
+                          aria-label={t("bankImport.selectAllAria")}
                         />
                       </TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Cuenta</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead className="text-right">Estado</TableHead>
+                      <TableHead>{t("bankImport.table.date")}</TableHead>
+                      <TableHead>{t("bankImport.table.description")}</TableHead>
+                      <TableHead>{t("bankImport.table.amount")}</TableHead>
+                      <TableHead>{t("table.type")}</TableHead>
+                      <TableHead>{t("table.account")}</TableHead>
+                      <TableHead>{t("bankImport.table.category")}</TableHead>
+                      <TableHead className="text-right">{t("bankImport.table.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -105,21 +110,17 @@ export function BankImportPreview({
                                   [row.id]: { ...state, selected: e.target.checked },
                                 }))
                               }
-                              aria-label={`Seleccionar fila ${row.rowIndex + 1}`}
+                              aria-label={t("bankImport.selectRowAria", { index: row.rowIndex + 1 })}
                             />
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-sm">
-                            {new Date(row.date).toLocaleDateString("es-CO")}
+                            {fmtDate(row.date, locale)}
                           </TableCell>
                           <TableCell className="max-w-xs truncate text-sm">
                             {row.description}
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-sm font-medium">
-                            {row.amount.toLocaleString("es-CO", {
-                              style: "currency",
-                              currency: "COP",
-                              maximumFractionDigits: 0,
-                            })}
+                            {formatCurrency(row.amount, "COP", locale)}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -130,7 +131,7 @@ export function BankImportPreview({
                                   : "bg-danger/10 text-danger"
                               )}
                             >
-                              {row.type === "INCOME" ? "Ingreso" : "Gasto"}
+                              {row.type === "INCOME" ? t("bankImport.income") : t("bankImport.expense")}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -144,7 +145,7 @@ export function BankImportPreview({
                               }
                             >
                               <SelectTrigger className="h-8 w-44 text-xs">
-                                <SelectValue placeholder="Cuenta" />
+                                <SelectValue placeholder={t("table.account")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {bankAccounts.map((account) => (
@@ -166,7 +167,7 @@ export function BankImportPreview({
                               }
                             >
                               <SelectTrigger className="h-8 w-44 text-xs">
-                                <SelectValue placeholder="Categoría" />
+                                <SelectValue placeholder={t("bankImport.table.category")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {COMMON_CATEGORIES.map((cat: string) => (
@@ -181,12 +182,12 @@ export function BankImportPreview({
                             {row.duplicate ? (
                               <Badge variant="destructive" className="gap-1">
                                 <AlertCircle className="h-3 w-3" />
-                                Duplicado
+                                {t("bankImport.duplicate")}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="gap-1 text-success">
                                 <Check className="h-3 w-3" />
-                                Nuevo
+                                {t("bankImport.new")}
                               </Badge>
                             )}
                           </TableCell>
@@ -204,9 +205,9 @@ export function BankImportPreview({
                     className="size-4"
                     checked={selectedRows.length > 0 && selectedRows.length === rows.length}
                     onChange={(e) => toggleAll(e.target.checked)}
-                    aria-label="Seleccionar todas"
+                    aria-label={t("bankImport.selectAllAria")}
                   />
-                  <span className="text-sm font-medium">Seleccionar todas</span>
+                  <span className="text-sm font-medium">{t("bankImport.selectAllAria")}</span>
                 </div>
                 {rows.map((row) => {
                   const state = rowState[row.id] ?? {
@@ -238,17 +239,17 @@ export function BankImportPreview({
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm text-muted-foreground">
-                              {new Date(row.date).toLocaleDateString("es-CO")}
+                              {fmtDate(row.date, locale)}
                             </span>
                             {row.duplicate ? (
                               <Badge variant="destructive" className="gap-1 text-xs">
                                 <AlertCircle className="h-3 w-3" />
-                                Duplicado
+                                {t("bankImport.duplicate")}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="gap-1 text-xs text-success">
                                 <Check className="h-3 w-3" />
-                                Nuevo
+                                {t("bankImport.new")}
                               </Badge>
                             )}
                           </div>
@@ -259,11 +260,7 @@ export function BankImportPreview({
                               row.type === "INCOME" ? "text-success" : "text-danger"
                             )}
                           >
-                            {row.amount.toLocaleString("es-CO", {
-                              style: "currency",
-                              currency: "COP",
-                              maximumFractionDigits: 0,
-                            })}
+                            {formatCurrency(row.amount, "COP", locale)}
                           </p>
                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <Select
@@ -276,7 +273,7 @@ export function BankImportPreview({
                               }
                             >
                               <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder="Cuenta" />
+                                <SelectValue placeholder={t("table.account")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {bankAccounts.map((account) => (
@@ -296,7 +293,7 @@ export function BankImportPreview({
                               }
                             >
                               <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder="Categoría" />
+                                <SelectValue placeholder={t("bankImport.table.category")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {COMMON_CATEGORIES.map((cat: string) => (

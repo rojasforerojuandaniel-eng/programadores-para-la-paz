@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 import {
   Calculator,
   Info,
@@ -37,6 +40,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+type TFn = (key: string, values?: Record<string, string | number>) => string;
+
 const icaRates: Record<string, { label: string; perThousand: number }> = {
   bogota: { label: "Bogotá", perThousand: 9.66 },
   medellin: { label: "Medellín", perThousand: 13.8 },
@@ -49,12 +54,8 @@ const icaRates: Record<string, { label: string; perThousand: number }> = {
 const MAX_SLIDER_AMOUNT = 50_000_000;
 const SLIDER_STEP = 100_000;
 
-function formatCOP(amount: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+function formatCOP(amount: number, locale: Locale): string {
+  return formatCurrency(amount, "COP", locale);
 }
 
 function getReteFuenteRate(amount: number): number {
@@ -90,10 +91,26 @@ function clampAmount(value: string): number {
 }
 
 const steps = [
-  { id: 1, label: "Ingresos", description: "Monto base gravable" },
-  { id: 2, label: "Deducciones", description: "Descuentos aplicables" },
-  { id: 3, label: "Régimen", description: "Tipo de impuesto" },
-  { id: 4, label: "Resultados", description: "Cálculo estimado" },
+  {
+    id: 1,
+    labelKey: "calculator.steps.income.label",
+    descKey: "calculator.steps.income.desc",
+  },
+  {
+    id: 2,
+    labelKey: "calculator.steps.deductions.label",
+    descKey: "calculator.steps.deductions.desc",
+  },
+  {
+    id: 3,
+    labelKey: "calculator.steps.regime.label",
+    descKey: "calculator.steps.regime.desc",
+  },
+  {
+    id: 4,
+    labelKey: "calculator.steps.results.label",
+    descKey: "calculator.steps.results.desc",
+  },
 ] as const;
 
 type TaxType = "IVA" | "ReteFuente" | "ICA";
@@ -176,6 +193,8 @@ function calculate(
 }
 
 export function TaxCalculator() {
+  const t = useTranslations("dashboard.tax");
+  const locale = useLocale() as Locale;
   const [step, setStep] = useState(1);
   const [taxType, setTaxType] = useState<TaxType>("IVA");
   const [baseAmount, setBaseAmount] = useState("");
@@ -202,7 +221,7 @@ export function TaxCalculator() {
 
   function goToResults() {
     if (baseNumeric <= 0) {
-      toast.error("Ingresa un monto base válido mayor a 0");
+      toast.error(t("calculator.toast.baseInvalid"));
       return;
     }
     const nextResult = calculate(
@@ -217,13 +236,15 @@ export function TaxCalculator() {
 
   function handleExportPdf() {
     if (!result) return;
-    exportCalculationPdf(result).catch(() => toast.error("Error al generar PDF"));
+    exportCalculationPdf(result, t, locale).catch(() =>
+      toast.error(t("calculator.toast.pdfError"))
+    );
   }
 
   function handleExportExcel() {
     if (!result) return;
-    exportCalculationExcel(result).catch(() =>
-      toast.error("Error al generar Excel")
+    exportCalculationExcel(result, t, locale).catch(() =>
+      toast.error(t("calculator.toast.excelError"))
     );
   }
 
@@ -234,13 +255,13 @@ export function TaxCalculator() {
       <CardHeader>
         <CardTitle className="heading-card flex items-center gap-2">
           <Calculator className="h-5 w-5 text-primary" aria-hidden={true} />
-          Calculadora de Impuestos Colombianos
+          {t("calculator.cardTitle")}
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {/* Stepper */}
-        <nav aria-label="Pasos del cálculo">
+        <nav aria-label={t("calculator.stepsNavAria")}>
           <div className="relative">
             <div className="absolute top-[1.125rem] left-0 right-0 h-1 rounded-full bg-muted" />
             <div
@@ -251,6 +272,7 @@ export function TaxCalculator() {
               {steps.map((s) => {
                 const active = s.id === step;
                 const completed = s.id < step;
+                const stepLabel = t(s.labelKey as never);
                 return (
                   <li key={s.id} className="flex flex-1 flex-col items-center">
                     <button
@@ -260,7 +282,10 @@ export function TaxCalculator() {
                       }}
                       disabled={s.id > step && !result}
                       aria-current={active ? "step" : undefined}
-                      aria-label={`Paso ${s.id}: ${s.label}`}
+                      aria-label={t("calculator.stepAria", {
+                        id: s.id,
+                        label: stepLabel,
+                      })}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         active
@@ -294,7 +319,7 @@ export function TaxCalculator() {
                         active ? "text-foreground" : "text-muted-foreground"
                       )}
                     >
-                      {s.label}
+                      {stepLabel}
                     </span>
                   </li>
                 );
@@ -310,19 +335,20 @@ export function TaxCalculator() {
               <div className="flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-primary" aria-hidden={true} />
                 <h2 id="step-1-title" className="text-lg font-semibold">
-                  Ingresos
+                  {t("calculator.steps.income.label")}
                 </h2>
                 <TooltipInfo>
-                  Ingresa el monto gravable antes de impuestos. Será la base
-                  para calcular IVA, ReteFuente o ICA.
+                  {t("calculator.income.tooltip")}
                 </TooltipInfo>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="tax-base">Monto base (COP)</Label>
+                  <Label htmlFor="tax-base">
+                    {t("calculator.income.baseLabel")}
+                  </Label>
                   <Badge variant="outline" className="font-mono">
-                    {formatCOP(baseNumeric)}
+                    {formatCOP(baseNumeric, locale)}
                   </Badge>
                 </div>
                 <Input
@@ -337,15 +363,16 @@ export function TaxCalculator() {
                 />
                 <Slider
                   id="tax-base-slider"
-                  aria-label="Ajustar monto base"
+                  aria-label={t("calculator.income.sliderAria")}
                   value={[baseNumeric]}
                   max={maxSlider}
                   step={SLIDER_STEP}
                   onValueChange={([value]) => setBaseAmount(String(value ?? 0))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Desliza o escribe el valor. Máximo sugerido:{" "}
-                  {formatCOP(MAX_SLIDER_AMOUNT)}.
+                  {t("calculator.income.hint", {
+                    max: formatCOP(MAX_SLIDER_AMOUNT, locale),
+                  })}
                 </p>
               </div>
             </section>
@@ -356,11 +383,10 @@ export function TaxCalculator() {
               <div className="flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-primary" aria-hidden={true} />
                 <h2 id="step-2-title" className="text-lg font-semibold">
-                  Deducciones
+                  {t("calculator.steps.deductions.label")}
                 </h2>
                 <TooltipInfo>
-                  Solo aplica para IVA. Ingresa compras o gastos con IVA
-                  descontable estimado para calcular el neto a pagar.
+                  {t("calculator.deductions.tooltip")}
                 </TooltipInfo>
               </div>
 
@@ -372,10 +398,10 @@ export function TaxCalculator() {
               >
                 <div className="flex items-center justify-between">
                   <Label htmlFor="tax-deductions">
-                    Gastos con IVA descontable (COP)
+                    {t("calculator.deductions.label")}
                   </Label>
                   <Badge variant="outline" className="font-mono">
-                    {formatCOP(deductionsNumeric)}
+                    {formatCOP(deductionsNumeric, locale)}
                   </Badge>
                 </div>
                 <Input
@@ -391,7 +417,7 @@ export function TaxCalculator() {
                 />
                 <Slider
                   id="tax-deductions-slider"
-                  aria-label="Ajustar deducciones"
+                  aria-label={t("calculator.deductions.sliderAria")}
                   value={[deductionsNumeric]}
                   max={Math.max(maxSlider, baseNumeric)}
                   step={SLIDER_STEP}
@@ -404,8 +430,7 @@ export function TaxCalculator() {
 
               {!isIva && (
                 <p className="rounded-md border border-muted bg-muted/40 p-3 text-sm text-muted-foreground">
-                  Las deducciones no aplican para ReteFuente o ICA. Se omiten
-                  del cálculo.
+                  {t("calculator.deductions.notApplicable")}
                 </p>
               )}
             </section>
@@ -419,39 +444,51 @@ export function TaxCalculator() {
                   aria-hidden={true}
                 />
                 <h2 id="step-3-title" className="text-lg font-semibold">
-                  Régimen
+                  {t("calculator.steps.regime.label")}
                 </h2>
                 <TooltipInfo>
-                  Selecciona el impuesto. ICA usa la tarifa por mil del municipio.
+                  {t("calculator.regime.tooltip")}
                 </TooltipInfo>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="tax-type">Tipo de impuesto</Label>
+                  <Label htmlFor="tax-type">
+                    {t("calculator.regime.taxTypeLabel")}
+                  </Label>
                   <Select
                     value={taxType}
                     onValueChange={(value) => setTaxType(value as TaxType)}
                   >
                     <SelectTrigger id="tax-type">
-                      <SelectValue placeholder="Selecciona un impuesto" />
+                      <SelectValue
+                        placeholder={t("calculator.regime.taxTypePlaceholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="IVA">IVA (19%)</SelectItem>
-                      <SelectItem value="ReteFuente">
-                        ReteFuente (0%–4%)
+                      <SelectItem value="IVA">
+                        {t("calculator.regime.taxTypes.IVA")}
                       </SelectItem>
-                      <SelectItem value="ICA">ICA (por ciudad)</SelectItem>
+                      <SelectItem value="ReteFuente">
+                        {t("calculator.regime.taxTypes.ReteFuente")}
+                      </SelectItem>
+                      <SelectItem value="ICA">
+                        {t("calculator.regime.taxTypes.ICA")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {taxType === "ICA" && (
                   <div className="space-y-2">
-                    <Label htmlFor="tax-city">Ciudad</Label>
+                    <Label htmlFor="tax-city">
+                      {t("calculator.regime.cityLabel")}
+                    </Label>
                     <Select value={city} onValueChange={setCity}>
                       <SelectTrigger id="tax-city">
-                        <SelectValue placeholder="Selecciona una ciudad" />
+                        <SelectValue
+                          placeholder={t("calculator.regime.cityPlaceholder")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(icaRates).map(([key, { label }]) => (
@@ -465,13 +502,18 @@ export function TaxCalculator() {
                 )}
 
                 <div className="rounded-md border border-muted bg-muted/40 p-3 text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">Resumen: </span>
+                  <span className="font-medium text-foreground">
+                    {t("calculator.regime.summaryLabel")}
+                  </span>
                   {taxType === "IVA" &&
-                    "El IVA se calcula sobre el monto base y se descuenta el IVA estimado de tus gastos."}
+                    t("calculator.regime.summaryIVA")}
                   {taxType === "ReteFuente" &&
-                    "La tarifa varía según el monto base: 0%, 1%, 2%, 3% o 4%."}
+                    t("calculator.regime.summaryReteFuente")}
                   {taxType === "ICA" &&
-                    `Tarifa aproximada para ${icaRates[city].label}: ${icaRates[city].perThousand}‰.`}
+                    t("calculator.regime.summaryICA", {
+                      city: icaRates[city].label,
+                      rate: icaRates[city].perThousand,
+                    })}
                 </div>
               </div>
             </section>
@@ -489,20 +531,26 @@ export function TaxCalculator() {
                   aria-hidden={true}
                 />
                 <h2 id="step-4-title" className="text-lg font-semibold">
-                  Resultados
+                  {t("calculator.steps.results.label")}
                 </h2>
                 <span className="text-xs text-muted-foreground">
-                  Cálculo estimado ·{" "}
-                  {new Date(result.generatedAt).toLocaleString("es-CO")}
+                  {t("calculator.results.estimated")}{" "}
+                  {t("calculator.results.generated", {
+                    date: fmtDate(
+                      new Date(result.generatedAt),
+                      locale,
+                      { dateStyle: "medium", timeStyle: "short" }
+                    ),
+                  })}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <ResultCard
                   icon={Coins}
-                  label="Base gravable"
-                  value={formatCOP(result.base)}
-                  tooltip="Monto sobre el que se aplica la tarifa."
+                  label={t("calculator.results.baseLabel")}
+                  value={formatCOP(result.base, locale)}
+                  tooltip={t("calculator.results.baseTooltip")}
                   variant="muted"
                 />
 
@@ -510,37 +558,37 @@ export function TaxCalculator() {
                   <>
                     <ResultCard
                       icon={Percent}
-                      label="Tasa IVA"
+                      label={t("calculator.results.ivaRateLabel")}
                       value={result.rateLabel}
-                      tooltip="Tarifa general del IVA en Colombia."
+                      tooltip={t("calculator.results.ivaRateTooltip")}
                       variant="muted"
                     />
                     <ResultCard
                       icon={Receipt}
-                      label="IVA generado"
-                      value={formatCOP(result.tax)}
-                      tooltip="Impuesto que cargarías a tu cliente."
+                      label={t("report.ivaGenerated")}
+                      value={formatCOP(result.tax, locale)}
+                      tooltip={t("calculator.results.ivaGeneratedTooltip")}
                       variant="muted"
                     />
                     <ResultCard
                       icon={Receipt}
-                      label="IVA descontable estimado"
-                      value={formatCOP(result.deductions * result.rate)}
-                      tooltip="IVA estimado de tus gastos descontables."
+                      label={t("report.ivaDeductible")}
+                      value={formatCOP(result.deductions * result.rate, locale)}
+                      tooltip={t("calculator.results.ivaDeductibleTooltip")}
                       variant="muted"
                     />
                     <ResultCard
                       icon={CircleDollarSign}
-                      label="IVA neto a pagar"
-                      value={formatCOP(result.netPayable ?? 0)}
-                      tooltip="IVA generado menos el descontable estimado."
+                      label={t("rows.ivaNet")}
+                      value={formatCOP(result.netPayable ?? 0, locale)}
+                      tooltip={t("calculator.results.ivaNetTooltip")}
                       variant="highlight"
                     />
                     <ResultCard
                       icon={Wallet}
-                      label="Total con IVA"
-                      value={formatCOP(result.total)}
-                      tooltip="Monto base más el IVA generado."
+                      label={t("calculator.results.totalWithIvaLabel")}
+                      value={formatCOP(result.total, locale)}
+                      tooltip={t("calculator.results.totalWithIvaTooltip")}
                       variant="muted"
                     />
                   </>
@@ -550,23 +598,23 @@ export function TaxCalculator() {
                   <>
                     <ResultCard
                       icon={Percent}
-                      label="Tarifa de retención"
+                      label={t("calculator.results.retentionRateLabel")}
                       value={result.rateLabel}
-                      tooltip="Tarifa según el monto base (umbral simplificado)."
+                      tooltip={t("calculator.results.retentionRateTooltip")}
                       variant="muted"
                     />
                     <ResultCard
                       icon={CircleDollarSign}
-                      label="Retención estimada"
-                      value={formatCOP(result.tax)}
-                      tooltip="Monto que se retendría sobre el ingreso."
+                      label={t("calculator.results.retentionLabel")}
+                      value={formatCOP(result.tax, locale)}
+                      tooltip={t("calculator.results.retentionTooltip")}
                       variant="highlight"
                     />
                     <ResultCard
                       icon={Wallet}
-                      label="Total a recibir"
-                      value={formatCOP(result.total)}
-                      tooltip="Ingreso menos la retención practicada."
+                      label={t("calculator.results.totalReceiveLabel")}
+                      value={formatCOP(result.total, locale)}
+                      tooltip={t("calculator.results.totalReceiveTooltip")}
                       variant="muted"
                     />
                   </>
@@ -576,23 +624,23 @@ export function TaxCalculator() {
                   <>
                     <ResultCard
                       icon={Percent}
-                      label="Tarifa ICA"
+                      label={t("calculator.results.icaRateLabel")}
                       value={result.rateLabel}
-                      tooltip="Tarifa por mil del municipio seleccionado."
+                      tooltip={t("calculator.results.icaRateTooltip")}
                       variant="muted"
                     />
                     <ResultCard
                       icon={CircleDollarSign}
-                      label="ICA estimado"
-                      value={formatCOP(result.tax)}
-                      tooltip="Impuesto de industria y comercio estimado."
+                      label={t("report.ica")}
+                      value={formatCOP(result.tax, locale)}
+                      tooltip={t("calculator.results.icaEstimatedTooltip")}
                       variant="highlight"
                     />
                     <ResultCard
                       icon={Wallet}
-                      label="Total gravado"
-                      value={formatCOP(result.total)}
-                      tooltip="Base más el ICA estimado."
+                      label={t("calculator.results.icaTotalLabel")}
+                      value={formatCOP(result.total, locale)}
+                      tooltip={t("calculator.results.icaTotalTooltip")}
                       variant="muted"
                     />
                   </>
@@ -626,11 +674,7 @@ export function TaxCalculator() {
                     className="mt-0.5 h-4 w-4 shrink-0"
                     aria-hidden={true}
                   />
-                  <p>
-                    Estos valores son orientativos. Consulta con un contador o
-                    revisor fiscal antes de presentar declaraciones ante la DIAN
-                    o municipios.
-                  </p>
+                  <p>{t("calculator.disclaimer")}</p>
                 </div>
               </div>
             </section>
@@ -646,7 +690,7 @@ export function TaxCalculator() {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden={true} />
-            Anterior
+            {t("calculator.nav.previous")}
           </Button>
 
           {step < 4 ? (
@@ -660,7 +704,9 @@ export function TaxCalculator() {
               }}
               className="gap-2"
             >
-              {step === 3 ? "Calcular" : "Siguiente"}
+              {step === 3
+                ? t("calculator.nav.calculate")
+                : t("calculator.nav.next")}
               {step === 3 ? (
                 <Calculator className="h-4 w-4" aria-hidden={true} />
               ) : (
@@ -670,7 +716,7 @@ export function TaxCalculator() {
           ) : (
             <Button onClick={reset} variant="outline" className="gap-2">
               <RotateCcw className="h-4 w-4" aria-hidden={true} />
-              Nuevo cálculo
+              {t("calculator.nav.newCalculation")}
             </Button>
           )}
         </div>
@@ -680,6 +726,7 @@ export function TaxCalculator() {
 }
 
 function TooltipInfo({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("dashboard.tax");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -687,7 +734,7 @@ function TooltipInfo({ children }: { children: React.ReactNode }) {
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Más información"
+          aria-label={t("calculator.tooltipInfoAria")}
           className="shrink-0"
         >
           <Info className="h-4 w-4" aria-hidden={true} />
@@ -718,6 +765,7 @@ function ResultCard({
   tooltip,
   variant = "muted",
 }: ResultCardProps) {
+  const t = useTranslations("dashboard.tax");
   return (
     <div
       className={cn(
@@ -746,7 +794,7 @@ function ResultCard({
               type="button"
               variant="ghost"
               size="icon-xs"
-              aria-label={`Información sobre ${label}`}
+              aria-label={t("calculator.resultCardInfoAria", { label })}
               className="shrink-0"
             >
               <Info className="h-3.5 w-3.5" aria-hidden={true} />
@@ -769,7 +817,11 @@ function ResultCard({
   );
 }
 
-async function exportCalculationPdf(result: CalculationResult) {
+async function exportCalculationPdf(
+  result: CalculationResult,
+  t: TFn,
+  locale: Locale
+) {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const doc = await PDFDocument.create();
   const page = doc.addPage();
@@ -800,31 +852,42 @@ async function exportCalculationPdf(result: CalculationResult) {
     });
   }
 
-  drawText("Resumen de cálculo de impuestos - Rhynode Finance", {
+  drawText(t("calculator.pdf.title"), {
     size: 16,
     bold: true,
     color: rgb(0.1, 0.1, 0.1),
   });
   y -= 24;
-  drawText(`Generado: ${new Date(result.generatedAt).toLocaleString("es-CO")}`, {
-    size: 9,
-    color: rgb(0.4, 0.4, 0.4),
-  });
+  drawText(
+    t("calculator.pdf.generated", {
+      date: fmtDate(new Date(result.generatedAt), locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    }),
+    {
+      size: 9,
+      color: rgb(0.4, 0.4, 0.4),
+    }
+  );
   y -= 28;
 
   const lines: [string, string][] = [
-    ["Tipo de impuesto", result.taxType],
-    ["Base gravable", formatCOP(result.base)],
-    ["Tarifa", result.rateLabel],
-    ["Impuesto estimado", formatCOP(result.tax)],
-    ["Total", formatCOP(result.total)],
+    [t("calculator.regime.taxTypeLabel"), result.taxType],
+    [t("calculator.results.baseLabel"), formatCOP(result.base, locale)],
+    [t("calculator.pdf.rows.rate"), result.rateLabel],
+    [t("calculator.pdf.rows.estimatedTax"), formatCOP(result.tax, locale)],
+    [t("exampleColumns.total"), formatCOP(result.total, locale)],
   ];
 
   if (result.taxType === "IVA" && result.netPayable !== undefined) {
-    lines.push(["IVA neto a pagar", formatCOP(result.netPayable)]);
+    lines.push([t("rows.ivaNet"), formatCOP(result.netPayable, locale)]);
   }
   if (result.city) {
-    lines.push(["Ciudad ICA", icaRates[result.city]?.label ?? result.city]);
+    lines.push([
+      t("calculator.pdf.rows.icaCity"),
+      icaRates[result.city]?.label ?? result.city,
+    ]);
   }
 
   for (const [label, value] of lines) {
@@ -834,10 +897,9 @@ async function exportCalculationPdf(result: CalculationResult) {
   }
 
   y -= 16;
-  drawText("Descargo", { y, size: 12, bold: true });
+  drawText(t("calculator.pdf.disclaimerHeading"), { y, size: 12, bold: true });
   y -= 16;
-  const disclaimer =
-    "Estos valores son orientativos. Consulta con un contador o revisor fiscal antes de presentar declaraciones.";
+  const disclaimer = t("calculator.pdf.disclaimerBody");
   for (const line of wrapText(disclaimer, 75)) {
     drawText(line, { y, size: 9, color: rgb(0.4, 0.4, 0.4) });
     y -= 12;
@@ -850,39 +912,59 @@ async function exportCalculationPdf(result: CalculationResult) {
   );
 }
 
-async function exportCalculationExcel(result: CalculationResult) {
+async function exportCalculationExcel(
+  result: CalculationResult,
+  t: TFn,
+  locale: Locale
+) {
   const XLSX = await import("xlsx");
   const rows = [
-    { Concepto: "Tipo de impuesto", Valor: result.taxType },
-    { Concepto: "Base gravable", Valor: formatCOP(result.base) },
-    { Concepto: "Tarifa", Valor: result.rateLabel },
-    { Concepto: "Impuesto estimado", Valor: formatCOP(result.tax) },
-    { Concepto: "Total", Valor: formatCOP(result.total) },
+    { Concepto: t("calculator.regime.taxTypeLabel"), Valor: result.taxType },
+    {
+      Concepto: t("calculator.results.baseLabel"),
+      Valor: formatCOP(result.base, locale),
+    },
+    { Concepto: t("calculator.pdf.rows.rate"), Valor: result.rateLabel },
+    {
+      Concepto: t("calculator.pdf.rows.estimatedTax"),
+      Valor: formatCOP(result.tax, locale),
+    },
+    {
+      Concepto: t("exampleColumns.total"),
+      Valor: formatCOP(result.total, locale),
+    },
     ...(result.netPayable !== undefined
-      ? [{ Concepto: "IVA neto a pagar", Valor: formatCOP(result.netPayable) }]
+      ? [
+          {
+            Concepto: t("rows.ivaNet"),
+            Valor: formatCOP(result.netPayable, locale),
+          },
+        ]
       : []),
     ...(result.city
       ? [
           {
-            Concepto: "Ciudad ICA",
+            Concepto: t("calculator.pdf.rows.icaCity"),
             Valor: icaRates[result.city]?.label ?? result.city,
           },
         ]
       : []),
     {
-      Concepto: "Generado",
-      Valor: new Date(result.generatedAt).toLocaleString("es-CO"),
+      Concepto: t("calculator.excel.generated"),
+      Valor: fmtDate(new Date(result.generatedAt), locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
     },
     {
-      Concepto: "Descargo",
-      Valor:
-        "Estos valores son orientativos. Consulta con un contador antes de declarar.",
+      Concepto: t("calculator.pdf.disclaimerHeading"),
+      Valor: t("calculator.excel.disclaimerBody"),
     },
   ];
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Cálculo");
+  XLSX.utils.book_append_sheet(workbook, worksheet, t("calculator.excel.sheetName"));
   const buffer = new Uint8Array(XLSX.write(workbook, { type: "array", bookType: "xlsx" }));
   downloadBlob(
     new Blob([buffer], {
