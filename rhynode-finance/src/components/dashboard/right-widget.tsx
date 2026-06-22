@@ -14,14 +14,9 @@ import {
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 
 interface RightWidgetProps {
   scope: UserScope;
@@ -31,6 +26,9 @@ interface RightWidgetProps {
 }
 
 export async function RightWidget({ scope, orgId, userId, currency }: RightWidgetProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
 
   if (scope === "PERSONAL") {
@@ -50,7 +48,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Presupuestos del Mes
+            {t("rightWidget.monthlyBudgets")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -59,14 +57,14 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
               variant="sm"
               className="border-0 bg-transparent shadow-none"
               icon={TrendingUp}
-              title="Sin presupuestos"
-              description="Establece límites por categoría y recibe alertas antes de excederte."
-              hint="Empieza creando tu primer presupuesto."
+              title={t("rightWidget.emptyBudgets.title")}
+              description={t("rightWidget.emptyBudgets.description")}
+              hint={t("rightWidget.emptyBudgets.hint")}
               action={
                 <Link href="/dashboard/personal/budgets">
                   <Button size="sm" className="gap-1">
                     <Plus className="h-4 w-4" />
-                    Crear primer presupuesto
+                    {t("rightWidget.emptyBudgets.action")}
                   </Button>
                 </Link>
               }
@@ -82,7 +80,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
                         {b.category?.name || b.name}
                       </span>
                       <span className="body-small text-muted-foreground">
-                        {formatCurrency(decimalToNumber(b.spent), currency)} / {formatCurrency(decimalToNumber(b.amount), currency)}
+                        {formatCurrency(decimalToNumber(b.spent), currency, locale)} / {formatCurrency(decimalToNumber(b.amount), currency, locale)}
                       </span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -115,7 +113,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <ShieldCheck className="h-4 w-4" />
-            Próximos Vencimientos
+            {t("rightWidget.upcomingDueDates")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -124,33 +122,33 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
               variant="sm"
               className="border-0 bg-transparent shadow-none"
               icon={ShieldCheck}
-              title="No hay vencimientos próximos"
-              description="Crea reportes fiscales para mantener el compliance al día."
-              hint="Empieza creando tu primer reporte fiscal."
+              title={t("rightWidget.emptyTaxes.title")}
+              description={t("rightWidget.emptyTaxes.description")}
+              hint={t("rightWidget.emptyTaxes.hint")}
               action={
                 <Link href="/dashboard/tax">
                   <Button size="sm" className="gap-1">
                     <Plus className="h-4 w-4" />
-                    Crear reporte fiscal
+                    {t("rightWidget.emptyTaxes.action")}
                   </Button>
                 </Link>
               }
             />
           ) : (
             <div className="space-y-2">
-              {taxes.map((t) => (
+              {taxes.map((tax) => (
                 <div
-                  key={t.id}
+                  key={tax.id}
                   className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
                   <span className="text-sm">
-                    {t.type} — {t.period} {t.year}
-                    {t.month ? ` / ${t.month}` : ""}
+                    {tax.type} — {tax.period} {tax.year}
+                    {tax.month ? ` / ${tax.month}` : ""}
                   </span>
                   <Badge variant="outline">
-                    {t.dueDate
-                      ? `Vence ${new Date(t.dueDate).toLocaleDateString("es-CO")}`
-                      : "Pendiente"}
+                    {tax.dueDate
+                      ? t("rightWidget.due", { date: fmtDate(tax.dueDate, locale) })
+                      : t("rightWidget.pending")}
                   </Badge>
                 </div>
               ))}
@@ -181,24 +179,24 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
   ]);
 
   const mixed = [
-    ...transactions.map((t) => ({
-      id: t.id,
+    ...transactions.map((txn) => ({
+      id: txn.id,
       type: "transaction" as const,
-      title: t.description,
-      subtitle: t.categoryRef?.name || "Sin categoría",
-      date: t.date,
-      amount: t.amount,
-      currency: t.currency || currency,
-      income: t.type === "INCOME",
+      title: txn.description,
+      subtitle: txn.categoryRef?.name || t("rightWidget.uncategorized"),
+      date: txn.date,
+      amount: txn.amount,
+      currency: txn.currency || currency,
+      income: txn.type === "INCOME",
     })),
-    ...invoices.map((i) => ({
-      id: i.id,
+    ...invoices.map((inv) => ({
+      id: inv.id,
       type: "invoice" as const,
-      title: i.client?.name || "Cliente",
-      subtitle: "Factura",
-      date: i.createdAt,
-      amount: i.total,
-      currency: i.currency || currency,
+      title: inv.client?.name || t("rightWidget.client"),
+      subtitle: t("rightWidget.invoice"),
+      date: inv.createdAt,
+      amount: inv.total,
+      currency: inv.currency || currency,
       income: true,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
@@ -210,7 +208,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
       <CardHeader>
         <CardTitle className="heading-card flex items-center gap-2">
           <ArrowLeftRight className="h-4 w-4" />
-          Actividad Reciente
+          {t("rightWidget.recentActivity")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -219,14 +217,14 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
             variant="sm"
             className="border-0 bg-transparent shadow-none"
             icon={Receipt}
-            title="Sin actividad reciente"
-            description="Registra transacciones o facturas para ver tu actividad mixta aquí."
-            hint="Empieza creando tu primera transacción."
+            title={t("rightWidget.emptyMixed.title")}
+            description={t("rightWidget.emptyMixed.description")}
+            hint={t("rightWidget.emptyMixed.hint")}
             action={
               <Link href="/dashboard/transactions">
                 <Button size="sm" className="gap-1">
                   <Plus className="h-4 w-4" />
-                  Crear primera transacción
+                  {t("rightWidget.emptyMixed.action")}
                 </Button>
               </Link>
             }
@@ -241,7 +239,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{item.title}</p>
                   <p className="body-small text-muted-foreground">
-                    {item.subtitle} — {new Date(item.date).toLocaleDateString("es-CO")}
+                    {item.subtitle} — {fmtDate(item.date, locale)}
                   </p>
                 </div>
                 <span
@@ -250,7 +248,7 @@ export async function RightWidget({ scope, orgId, userId, currency }: RightWidge
                   }`}
                 >
                   {item.income ? "+" : "-"}
-                  {formatCurrency(decimalToNumber(item.amount), item.currency)}
+                  {formatCurrency(decimalToNumber(item.amount), item.currency, locale)}
                 </span>
               </div>
             ))}

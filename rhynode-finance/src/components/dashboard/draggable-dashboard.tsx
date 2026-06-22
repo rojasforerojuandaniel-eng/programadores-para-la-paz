@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   closestCenter,
@@ -46,6 +47,7 @@ interface SortableWidgetProps {
 }
 
 function SortableWidget({ id, children }: SortableWidgetProps) {
+  const t = useTranslations("dashboard.home");
   const {
     attributes,
     listeners,
@@ -75,7 +77,7 @@ function SortableWidget({ id, children }: SortableWidgetProps) {
         {...attributes}
         {...listeners}
         className="touch-none rounded-md p-1.5 text-muted-foreground opacity-100 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring md:opacity-0 md:group-hover:opacity-100"
-        aria-label="Arrastrar widget"
+        aria-label={t("draggable.dragHandleAria")}
       >
         <GripVertical className="h-5 w-5" />
       </button>
@@ -95,19 +97,20 @@ function DashboardSkeleton() {
 }
 
 function DashboardEmptyState({ onOpenSettings }: { onOpenSettings: () => void }) {
+  const t = useTranslations("dashboard.home");
   return (
     <EmptyStateCard
       variant="lg"
       icon={LayoutDashboard}
-      title="Todos los widgets están ocultos"
-      description="Abre la configuración para mostrar widgets en tu dashboard."
+      title={t("draggable.empty.title")}
+      description={t("draggable.empty.description")}
       action={
         <button
           type="button"
           onClick={onOpenSettings}
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          Personalizar widgets
+          {t("draggable.empty.action")}
         </button>
       }
     />
@@ -131,6 +134,7 @@ export function DraggableDashboard({
   initialLayout,
   widgets,
 }: DraggableDashboardProps) {
+  const t = useTranslations("dashboard.home");
   const [layout, setLayout] = useState(initialLayout);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -250,7 +254,7 @@ export function DraggableDashboard({
         {isSyncing && (
           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Guardando...
+            {t("draggable.saving")}
           </span>
         )}
         <WidgetSettings

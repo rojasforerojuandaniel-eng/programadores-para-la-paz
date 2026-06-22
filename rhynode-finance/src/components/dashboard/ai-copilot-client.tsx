@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
@@ -56,6 +57,7 @@ export function AiCopilotClient({
 }: {
   initialInsights: Nudge[];
 }) {
+  const t = useTranslations("dashboard.ai");
   const [nudges, setNudges] = useState<Nudge[]>(initialInsights);
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState<string[]>([]);
@@ -111,13 +113,13 @@ export function AiCopilotClient({
         <div className="flex items-center justify-between">
           <CardTitle className="heading-card flex items-center gap-2 text-base">
             <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-            Copiloto financiero
+            {t("copilot.title")}
           </CardTitle>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            aria-label="Refrescar insights"
+            aria-label={t("copilot.refreshAria")}
             onClick={refresh}
             disabled={loading}
           >
@@ -140,8 +142,8 @@ export function AiCopilotClient({
             variant="sm"
             className="border-0 bg-transparent shadow-none"
             icon={PiggyBank}
-            title="Todo en orden"
-            description="No hay alertas importantes ahora. Sigue registrando movimientos para recibir insights proactivos."
+            title={t("copilot.emptyTitle")}
+            description={t("copilot.emptyDescription")}
           />
         ) : (
           <ul className="space-y-3">
@@ -166,6 +168,7 @@ function NudgeItem({
   nudge: Nudge;
   onDismiss: (id: string) => void;
 }) {
+  const t = useTranslations("dashboard.ai");
   const iconClass = cn(
     "h-5 w-5",
     nudge.type === "warning" && "text-amber-500",
@@ -203,7 +206,7 @@ function NudgeItem({
         variant="ghost"
         size="icon"
         className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
-        aria-label={`Ocultar ${nudge.title}`}
+        aria-label={t("copilot.dismissAria", { title: nudge.title })}
         onClick={() => onDismiss(nudge.id)}
       >
         <X className="h-4 w-4" aria-hidden="true" />

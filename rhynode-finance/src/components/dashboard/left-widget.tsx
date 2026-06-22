@@ -13,14 +13,9 @@ import {
   Plus,
   Receipt,
 } from "lucide-react";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 
 interface LeftWidgetProps {
   scope: UserScope;
@@ -30,6 +25,9 @@ interface LeftWidgetProps {
 }
 
 export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
   const prisma = getPrisma();
 
   if (scope === "PERSONAL") {
@@ -50,7 +48,7 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <ArrowLeftRight className="h-4 w-4" />
-            Últimas Transacciones
+            {t("leftWidget.latestTransactions")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -59,39 +57,39 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
               variant="sm"
               className="border-0 bg-transparent shadow-none"
               icon={Receipt}
-              title="Sin transacciones"
-              description="Registra tu primera transacción para empezar a controlar tus finanzas."
-              hint="Empieza creando tu primera transacción."
+              title={t("leftWidget.emptyTransactions.title")}
+              description={t("leftWidget.emptyTransactions.description")}
+              hint={t("leftWidget.emptyTransactions.hint")}
               action={
                 <Link href="/dashboard/transactions">
                   <Button size="sm" className="gap-1">
                     <Plus className="h-4 w-4" />
-                    Crear primera transacción
+                    {t("leftWidget.emptyTransactions.action")}
                   </Button>
                 </Link>
               }
             />
           ) : (
             <div className="space-y-3">
-              {transactions.map((t) => (
+              {transactions.map((txn) => (
                 <div
-                  key={t.id}
+                  key={txn.id}
                   className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{t.description}</p>
+                    <p className="truncate text-sm font-medium">{txn.description}</p>
                     <p className="body-small text-muted-foreground">
-                      {t.categoryRef?.name || "Sin categoría"} —{" "}
-                      {new Date(t.date).toLocaleDateString("es-CO")}
+                      {txn.categoryRef?.name || t("leftWidget.uncategorized")} —{" "}
+                      {fmtDate(txn.date, locale)}
                     </p>
                   </div>
                   <span
                     className={`shrink-0 text-sm font-semibold ${
-                      t.type === "INCOME" ? "text-emerald-400" : "text-red-400"
+                      txn.type === "INCOME" ? "text-emerald-400" : "text-red-400"
                     }`}
                   >
-                    {t.type === "INCOME" ? "+" : "-"}
-                    {formatCurrency(decimalToNumber(t.amount), t.currency || currency)}
+                    {txn.type === "INCOME" ? "+" : "-"}
+                    {formatCurrency(decimalToNumber(txn.amount), txn.currency || currency, locale)}
                   </span>
                 </div>
               ))}
@@ -119,7 +117,7 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Estado de Facturas
+            {t("leftWidget.invoiceStatus")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -128,14 +126,14 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
               variant="sm"
               className="border-0 bg-transparent shadow-none"
               icon={FileText}
-              title="Sin facturas"
-              description="Crea facturas electrónicas y da seguimiento a sus pagos."
-              hint="Empieza creando tu primera factura."
+              title={t("leftWidget.emptyInvoices.title")}
+              description={t("leftWidget.emptyInvoices.description")}
+              hint={t("leftWidget.emptyInvoices.hint")}
               action={
                 <Link href="/dashboard/invoices">
                   <Button size="sm" className="gap-1">
                     <Plus className="h-4 w-4" />
-                    Crear primera factura
+                    {t("leftWidget.emptyInvoices.action")}
                   </Button>
                 </Link>
               }
@@ -143,23 +141,23 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <span className="body-default">Borradores</span>
+                <span className="body-default">{t("leftWidget.invoiceStatusLabels.draft")}</span>
                 <Badge variant="outline">{draft}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="body-default">Enviadas</span>
+                <span className="body-default">{t("leftWidget.invoiceStatusLabels.sent")}</span>
                 <Badge variant="outline" className="bg-amber-500/10 text-amber-400">
                   {sent}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="body-default">Pagadas</span>
+                <span className="body-default">{t("leftWidget.invoiceStatusLabels.paid")}</span>
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400">
                   {paid}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="body-default">Vencidas</span>
+                <span className="body-default">{t("leftWidget.invoiceStatusLabels.overdue")}</span>
                 <Badge variant="outline" className="bg-red-500/10 text-red-400">
                   {overdue}
                 </Badge>
@@ -194,7 +192,7 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
       <CardHeader>
         <CardTitle className="heading-card flex items-center gap-2">
           <ArrowLeftRight className="h-4 w-4" />
-          Resumen Mixto
+          {t("leftWidget.mixedSummary")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -203,14 +201,14 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
             variant="sm"
             className="border-0 bg-transparent shadow-none"
             icon={Receipt}
-            title="Sin actividad reciente"
-            description="Registra transacciones o facturas para ver tu actividad mixta aquí."
-            hint="Empieza creando tu primera transacción."
+            title={t("leftWidget.emptyMixed.title")}
+            description={t("leftWidget.emptyMixed.description")}
+            hint={t("leftWidget.emptyMixed.hint")}
             action={
               <Link href="/dashboard/transactions">
                 <Button size="sm" className="gap-1">
                   <Plus className="h-4 w-4" />
-                  Crear primera transacción
+                  {t("leftWidget.emptyMixed.action")}
                 </Button>
               </Link>
             }
@@ -220,27 +218,27 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
             {personalTxns.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Personal
+                  {t("leftWidget.personal")}
                 </p>
-                {personalTxns.map((t) => (
+                {personalTxns.map((txn) => (
                   <div
-                    key={t.id}
+                    key={txn.id}
                     className="flex items-center justify-between rounded-lg border border-border p-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{t.description}</p>
+                      <p className="truncate text-sm font-medium">{txn.description}</p>
                       <p className="body-small text-muted-foreground">
-                        {t.categoryRef?.name || "Sin categoría"} —{" "}
-                        {new Date(t.date).toLocaleDateString("es-CO")}
+                        {txn.categoryRef?.name || t("leftWidget.uncategorized")} —{" "}
+                        {fmtDate(txn.date, locale)}
                       </p>
                     </div>
                     <span
                       className={`shrink-0 text-sm font-semibold ${
-                        t.type === "INCOME" ? "text-emerald-400" : "text-red-400"
+                        txn.type === "INCOME" ? "text-emerald-400" : "text-red-400"
                       }`}
                     >
-                      {t.type === "INCOME" ? "+" : "-"}
-                      {formatCurrency(decimalToNumber(t.amount), t.currency || currency)}
+                      {txn.type === "INCOME" ? "+" : "-"}
+                      {formatCurrency(decimalToNumber(txn.amount), txn.currency || currency, locale)}
                     </span>
                   </div>
                 ))}
@@ -249,7 +247,7 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
             {businessInvoices.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Empresa
+                  {t("leftWidget.business")}
                 </p>
                 {businessInvoices.map((inv) => (
                   <div
@@ -258,14 +256,14 @@ export async function LeftWidget({ scope, orgId, userId, currency }: LeftWidgetP
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
-                        {inv.client?.name || "Cliente"}
+                        {inv.client?.name || t("leftWidget.client")}
                       </p>
                       <p className="body-small text-muted-foreground">
-                        Factura — {new Date(inv.createdAt).toLocaleDateString("es-CO")}
+                        {t("leftWidget.invoice")} — {fmtDate(inv.createdAt, locale)}
                       </p>
                     </div>
                     <span className="shrink-0 text-sm font-semibold">
-                      {formatCurrency(decimalToNumber(inv.total), inv.currency || currency)}
+                      {formatCurrency(decimalToNumber(inv.total), inv.currency || currency, locale)}
                     </span>
                   </div>
                 ))}

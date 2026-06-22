@@ -2672,6 +2672,77 @@
         "bankBalance": "Bank Balance",
         "invoices": "Invoices",
         "noData": "No data"
+      },
+      "draggable": {
+        "dragHandleAria": "Drag widget",
+        "empty": {
+          "title": "All widgets are hidden",
+          "description": "Open settings to show widgets on your dashboard.",
+          "action": "Customize widgets"
+        },
+        "saving": "Saving..."
+      },
+      "leftWidget": {
+        "latestTransactions": "Latest Transactions",
+        "invoiceStatus": "Invoice Status",
+        "mixedSummary": "Mixed Summary",
+        "uncategorized": "Uncategorized",
+        "client": "Client",
+        "invoice": "Invoice",
+        "personal": "Personal",
+        "business": "Business",
+        "emptyTransactions": {
+          "title": "No transactions",
+          "description": "Record your first transaction to start controlling your finances.",
+          "hint": "Start by creating your first transaction.",
+          "action": "Create first transaction"
+        },
+        "emptyInvoices": {
+          "title": "No invoices",
+          "description": "Create electronic invoices and track their payments.",
+          "hint": "Start by creating your first invoice.",
+          "action": "Create first invoice"
+        },
+        "emptyMixed": {
+          "title": "No recent activity",
+          "description": "Record transactions or invoices to see your mixed activity here.",
+          "hint": "Start by creating your first transaction.",
+          "action": "Create first transaction"
+        },
+        "invoiceStatusLabels": {
+          "draft": "Drafts",
+          "sent": "Sent",
+          "paid": "Paid",
+          "overdue": "Overdue"
+        }
+      },
+      "rightWidget": {
+        "monthlyBudgets": "Monthly Budgets",
+        "upcomingDueDates": "Upcoming Due Dates",
+        "recentActivity": "Recent Activity",
+        "uncategorized": "Uncategorized",
+        "client": "Client",
+        "invoice": "Invoice",
+        "pending": "Pending",
+        "due": "Due {date}",
+        "emptyBudgets": {
+          "title": "No budgets",
+          "description": "Set limits per category and receive alerts before exceeding them.",
+          "hint": "Start by creating your first budget.",
+          "action": "Create first budget"
+        },
+        "emptyTaxes": {
+          "title": "No upcoming due dates",
+          "description": "Create tax reports to keep compliance up to date.",
+          "hint": "Start by creating your first tax report.",
+          "action": "Create tax report"
+        },
+        "emptyMixed": {
+          "title": "No recent activity",
+          "description": "Record transactions or invoices to see your mixed activity here.",
+          "hint": "Start by creating your first transaction.",
+          "action": "Create first transaction"
+        }
       }
     },
     "commandPalette": {
@@ -2853,6 +2924,51 @@
           "description": "Log your daily transactions to find small leaks and make better decisions.",
           "action": "Add movement"
         }
+      },
+      "insightsCard": {
+        "title": "AI Insights",
+        "financialHealthLabel": "Financial health",
+        "health": {
+          "saludable": "Healthy",
+          "alerta": "Warning",
+          "crítica": "Critical"
+        },
+        "trend": {
+          "up": "Improving",
+          "down": "Declining",
+          "stable": "Stable"
+        },
+        "topRecommendationLabel": "Top recommendation",
+        "topCategoryLabel": "Top spending this month",
+        "noExpenses": "No expenses recorded",
+        "savingsRateLabel": "Suggested savings",
+        "savingsRateSuffix": "of your income",
+        "errorTitle": "We couldn't load the insights",
+        "errorDefault": "Something went wrong analyzing your finances.",
+        "errorFallback": "Couldn't update the insights",
+        "retry": "Retry",
+        "retryAria": "Retry loading insights",
+        "emptyTitle": "No AI insights yet",
+        "emptyDescription": "Log income and expenses so Rhynode can generate personalized recommendations.",
+        "analyzing": "Analyzing…",
+        "refresh": "Refresh",
+        "refreshAria": "Refresh insights",
+        "analyzingAria": "Analyzing insights",
+        "analyzingLive": "Analyzing your finances…"
+      },
+      "copilot": {
+        "title": "Financial copilot",
+        "refreshAria": "Refresh insights",
+        "emptyTitle": "All in order",
+        "emptyDescription": "No important alerts right now. Keep logging transactions to receive proactive insights.",
+        "dismissAria": "Dismiss {title}"
+      },
+      "chat": {
+        "usingTool": "Using",
+        "thinking": "thinking",
+        "toolResult": "Result of",
+        "yes": "Yes",
+        "no": "No"
       }
     }
   },
