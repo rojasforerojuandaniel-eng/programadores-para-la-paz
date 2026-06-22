@@ -20,12 +20,14 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type ExportFormat = "json" | "xlsx";
 
 export function SecuritySection() {
   const [format, setFormat] = useState<ExportFormat>("json");
   const [isExporting, setIsExporting] = useState(false);
+  const t = useTranslations("dashboard.settings");
 
   async function handleExport() {
     setIsExporting(true);
@@ -50,7 +52,7 @@ export function SecuritySection() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error("Error al exportar datos");
+      toast.error(t("security.data.exportError"));
     } finally {
       setIsExporting(false);
     }
@@ -62,40 +64,38 @@ export function SecuritySection() {
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            Seguridad de la Cuenta
+            {t("security.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="body-default">
-            La autenticación y gestión de credenciales están protegidas por Clerk.
-            Para actualizar tu contraseña, activar autenticación de dos factores o
-            revisar sesiones activas, usa el menú de usuario en la barra lateral.
+            {t("security.description")}
           </p>
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
               <Lock className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
-                <div className="font-medium">Contraseña segura</div>
+                <div className="font-medium">{t("security.password.title")}</div>
                 <div className="text-sm text-muted-foreground">
-                  Usa una contraseña única y guardada en un gestor de contraseñas.
+                  {t("security.password.description")}
                 </div>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <KeyRound className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
-                <div className="font-medium">Autenticación de dos factores</div>
+                <div className="font-medium">{t("security.twoFactor.title")}</div>
                 <div className="text-sm text-muted-foreground">
-                  Activa 2FA desde el portal de usuario para proteger el acceso.
+                  {t("security.twoFactor.description")}
                 </div>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
-                <div className="font-medium">Sesiones y dispositivos</div>
+                <div className="font-medium">{t("security.sessions.title")}</div>
                 <div className="text-sm text-muted-foreground">
-                  Revisa y cierra sesiones sospechosas desde tu proveedor de identidad.
+                  {t("security.sessions.description")}
                 </div>
               </div>
             </li>
@@ -107,26 +107,25 @@ export function SecuritySection() {
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <Database className="h-5 w-5 text-primary" />
-            Tus datos
+            {t("security.data.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="body-default">
-            Descarga una copia de tus datos personales y empresariales. El
-            archivo puede tardar unos segundos en generarse.
+            {t("security.data.description")}
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="space-y-2">
               <label htmlFor="export-format" className="text-sm font-medium">
-                Formato
+                {t("security.data.format")}
               </label>
               <Select
                 value={format}
                 onValueChange={(value) => setFormat(value as ExportFormat)}
               >
                 <SelectTrigger id="export-format" className="w-40">
-                  <SelectValue placeholder="Selecciona un formato" />
+                  <SelectValue placeholder={t("security.data.formatPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="json">JSON</SelectItem>
@@ -146,13 +145,12 @@ export function SecuritySection() {
               ) : (
                 <Download className="h-4 w-4" />
               )}
-              {isExporting ? "Generando..." : "Exportar mis datos"}
+              {isExporting ? t("security.data.generating") : t("security.data.export")}
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Tu exportación no incluye contraseñas, tokens, hashes ni datos
-            sensibles de terceros.
+            {t("security.data.disclaimer")}
           </p>
         </CardContent>
       </Card>

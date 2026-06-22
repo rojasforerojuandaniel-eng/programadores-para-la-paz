@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -29,10 +30,10 @@ interface EditCategoryDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const typeOptions: { value: CategoryType; label: string }[] = [
-  { value: "INCOME", label: "Ingreso" },
-  { value: "EXPENSE", label: "Gasto" },
-  { value: "TRANSFER", label: "Transferencia" },
+const typeOptions: { value: CategoryType; labelKey: string }[] = [
+  { value: "INCOME", labelKey: "types.INCOME" },
+  { value: "EXPENSE", labelKey: "types.EXPENSE" },
+  { value: "TRANSFER", labelKey: "types.TRANSFER" },
 ];
 
 export function EditCategoryDialog({
@@ -41,6 +42,7 @@ export function EditCategoryDialog({
   open,
   onOpenChange,
 }: EditCategoryDialogProps) {
+  const t = useTranslations("dashboard.categories");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: category.name,
@@ -65,10 +67,10 @@ export function EditCategoryDialog({
     setLoading(false);
 
     if (result.success) {
-      toast.success("Categoría actualizada");
+      toast.success(t("dialogs.edit.updated"));
       onOpenChange(false);
     } else {
-      toast.error(result.error || "Error al actualizar la categoría");
+      toast.error(result.error || t("dialogs.edit.error"));
     }
   }
 
@@ -78,26 +80,26 @@ export function EditCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="heading-card">Editar Categoría</DialogTitle>
+          <DialogTitle className="heading-card">{t("dialogs.edit.title")}</DialogTitle>
           <DialogDescription className="body-default">
-            Modifica los datos de la categoría seleccionada.
+            {t("dialogs.edit.description")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="edit-cat-name">Nombre *</Label>
+            <Label htmlFor="edit-cat-name">{t("dialogs.edit.nameLabel")}</Label>
             <Input
               id="edit-cat-name"
               required
               aria-required="true"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ej. Alimentación"
+              placeholder={t("dialogs.edit.namePlaceholder")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-cat-type">Tipo</Label>
+              <Label htmlFor="edit-cat-type">{t("dialogs.edit.typeLabel")}</Label>
               <Select
                 value={form.type}
                 onValueChange={(v) => setForm({ ...form, type: v as CategoryType })}
@@ -108,23 +110,23 @@ export function EditCategoryDialog({
                 <SelectContent>
                   {typeOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(opt.labelKey as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-cat-parent">Categoría padre</Label>
+              <Label htmlFor="edit-cat-parent">{t("dialogs.edit.parentLabel")}</Label>
               <Select
                 value={form.parentId}
                 onValueChange={(v) => setForm({ ...form, parentId: v })}
               >
                 <SelectTrigger id="edit-cat-parent">
-                  <SelectValue placeholder="Ninguna" />
+                  <SelectValue placeholder={t("dialogs.edit.parentNone")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Ninguna</SelectItem>
+                  <SelectItem value="none">{t("dialogs.edit.parentNone")}</SelectItem>
                   {parentCandidates.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}
@@ -136,7 +138,7 @@ export function EditCategoryDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-cat-color">Color</Label>
+              <Label htmlFor="edit-cat-color">{t("dialogs.edit.colorLabel")}</Label>
               <Input
                 id="edit-cat-color"
                 value={form.color}
@@ -145,7 +147,7 @@ export function EditCategoryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-cat-icon">Icono (nombre Lucide)</Label>
+              <Label htmlFor="edit-cat-icon">{t("dialogs.edit.iconLabel")}</Label>
               <Input
                 id="edit-cat-icon"
                 value={form.icon}
@@ -161,10 +163,10 @@ export function EditCategoryDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancelar
+              {t("dialogs.edit.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar cambios"}
+              {loading ? t("dialogs.edit.saving") : t("dialogs.edit.save")}
             </Button>
           </div>
         </form>

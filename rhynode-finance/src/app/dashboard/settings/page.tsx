@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { useIsClient } from "@/hooks/use-is-client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,20 +63,28 @@ interface NotificationPreferences {
   weeklySummary: boolean;
 }
 
-const tabs = [
-  { id: "profile", label: "Perfil", icon: User },
-  { id: "company", label: "Empresa", icon: Building2 },
-  { id: "localization", label: "Localización", icon: Globe },
-  { id: "billing", label: "Facturación", icon: CreditCard },
-  { id: "members", label: "Miembros", icon: Users },
-  { id: "notifications", label: "Notificaciones", icon: Bell },
-  { id: "security", label: "Seguridad", icon: Shield },
-  { id: "webhooks", label: "Webhooks", icon: Webhook, href: "/dashboard/settings/webhook-logs" },
+interface TabItem {
+  id: string;
+  labelKey: string;
+  icon: typeof User;
+  href?: string;
+}
+
+const tabConfig: TabItem[] = [
+  { id: "profile", labelKey: "tabs.profile", icon: User },
+  { id: "company", labelKey: "tabs.company", icon: Building2 },
+  { id: "localization", labelKey: "tabs.localization", icon: Globe },
+  { id: "billing", labelKey: "tabs.billing", icon: CreditCard },
+  { id: "members", labelKey: "tabs.members", icon: Users },
+  { id: "notifications", labelKey: "tabs.notifications", icon: Bell },
+  { id: "security", labelKey: "tabs.security", icon: Shield },
+  { id: "webhooks", labelKey: "tabs.webhooks", icon: Webhook, href: "/dashboard/settings/webhook-logs" },
 ];
 
 export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("dashboard.settings");
 
   const [org, setOrg] = useState<Organization>({
     name: "",
@@ -228,10 +237,10 @@ export default function SettingsPage() {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } else {
-        toast.error("Error al guardar cambios");
+        toast.error(t("toast.saveError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("toast.networkError"));
     } finally {
       setSaving(false);
     }
@@ -248,9 +257,9 @@ export default function SettingsPage() {
         body: JSON.stringify(updated),
       });
       if (!res.ok) throw new Error("Failed");
-      toast.success("Preferencias guardadas");
+      toast.success(t("toast.prefsSaved"));
     } catch {
-      toast.error("Error al guardar preferencias");
+      toast.error(t("toast.prefsError"));
       setNotifPrefs(notifPrefs);
     } finally {
       setNotifSaving(false);
@@ -265,15 +274,15 @@ export default function SettingsPage() {
         const ok = await sendSubscriptionToServer(sub);
         if (ok) {
           setPushEnabled(true);
-          toast.success("Notificaciones push activadas");
+          toast.success(t("toast.pushEnabled"));
         } else {
-          toast.error("Error al registrar suscripción");
+          toast.error(t("toast.pushRegisterError"));
         }
       } else {
-        toast.error("Tu navegador no soporta notificaciones push");
+        toast.error(t("toast.pushUnsupported"));
       }
     } catch {
-      toast.error("Error al activar notificaciones");
+      toast.error(t("toast.pushEnableError"));
     } finally {
       setPushLoading(false);
     }
@@ -291,10 +300,10 @@ export default function SettingsPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error("Error al iniciar checkout. Verifica tu configuración de Stripe.");
+        toast.error(t("toast.checkoutError"));
       }
     } catch {
-      toast.error("Error de red");
+      toast.error(t("toast.networkError"));
     } finally {
       setUpgrading(false);
     }
@@ -317,7 +326,7 @@ export default function SettingsPage() {
     <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <h1 className="heading-section">Configuración</h1>
+          <h1 className="heading-section">{t("title")}</h1>
           {saved && (
             <span
               role="status"
@@ -325,11 +334,11 @@ export default function SettingsPage() {
               className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-medium text-success"
             >
               <CheckCircle className="h-3 w-3" />
-              Guardado
+              {t("saved")}
             </span>
           )}
         </div>
-        <p className="body-default mt-1">Gestiona tu organización y preferencias</p>
+        <p className="body-default mt-1">{t("subtitle")}</p>
       </div>
 
       <Tabs
@@ -338,12 +347,12 @@ export default function SettingsPage() {
         className="flex flex-col gap-4 lg:flex-row"
       >
         <TabsList className="w-full shrink-0 flex-row overflow-x-auto lg:w-64 lg:flex-col lg:overflow-visible">
-          {tabs.map((tab) => {
+          {tabConfig.map((tab) => {
             const Icon = tab.icon;
             const trigger = (
               <>
                 <Icon className="h-4 w-4" />
-                {tab.label}
+                {t(tab.labelKey as never)}
               </>
             );
             return (
@@ -422,10 +431,10 @@ export default function SettingsPage() {
           {saving ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Guardando...
+              {t("saving")}
             </>
           ) : (
-            "Guardar Cambios"
+            t("saveChanges")
           )}
         </Button>
       </div>

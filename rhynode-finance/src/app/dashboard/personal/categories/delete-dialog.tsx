@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ export function DeleteCategoryDialog({
   open,
   onOpenChange,
 }: DeleteCategoryDialogProps) {
+  const t = useTranslations("dashboard.categories");
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
@@ -32,10 +34,10 @@ export function DeleteCategoryDialog({
     setLoading(false);
 
     if (result.success) {
-      toast.success("Categoría eliminada");
+      toast.success(t("dialogs.delete.deleted"));
       onOpenChange(false);
     } else {
-      toast.error(result.error || "Error al eliminar la categoría");
+      toast.error(result.error || t("dialogs.delete.error"));
     }
   }
 
@@ -43,9 +45,12 @@ export function DeleteCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="heading-card">Eliminar categoría</DialogTitle>
+          <DialogTitle className="heading-card">{t("dialogs.delete.title")}</DialogTitle>
           <DialogDescription className="body-default">
-            Estás a punto de eliminar <strong>{category.name}</strong>. Esta acción no se puede deshacer.
+            {t.rich("dialogs.delete.confirm", {
+              name: category.name,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
@@ -56,7 +61,7 @@ export function DeleteCategoryDialog({
             disabled={loading}
             className="h-11"
           >
-            Cancelar
+            {t("dialogs.delete.cancel")}
           </Button>
           <Button
             type="button"
@@ -65,7 +70,7 @@ export function DeleteCategoryDialog({
             disabled={loading}
             className="h-11"
           >
-            {loading ? "Eliminando..." : "Eliminar categoría"}
+            {loading ? t("dialogs.delete.deleting") : t("dialogs.delete.confirmButton")}
           </Button>
         </div>
       </DialogContent>

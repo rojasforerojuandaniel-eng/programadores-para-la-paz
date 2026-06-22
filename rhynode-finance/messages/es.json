@@ -1040,6 +1040,178 @@
         "scenarioSeries": "Escenario",
         "baseSeries": "Línea base"
       }
+    },
+    "categories": {
+      "title": "Categorías",
+      "subtitle": "Administra tus categorías, visualiza tus movimientos del mes y su presupuesto asociado.",
+      "empty": {
+        "title": "Organiza tus movimientos",
+        "description": "Crea categorías personalizadas para clasificar ingresos y gastos con precisión.",
+        "hint": "Empieza creando tu primera categoría y visualiza cuánto gastas e ingresas en cada una."
+      },
+      "types": {
+        "INCOME": "Ingreso",
+        "EXPENSE": "Gasto",
+        "TRANSFER": "Transferencia"
+      },
+      "budget": {
+        "label": "Presupuesto",
+        "over": "Sobre presupuesto"
+      },
+      "card": {
+        "spentMonth": "Gastado mes",
+        "earnedMonth": "Ingresado mes",
+        "monthProportion": "Proporción del mes"
+      },
+      "actions": {
+        "optionsLabel": "Opciones de {name}",
+        "title": "Acciones",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      },
+      "dialogs": {
+        "edit": {
+          "title": "Editar Categoría",
+          "description": "Modifica los datos de la categoría seleccionada.",
+          "nameLabel": "Nombre *",
+          "namePlaceholder": "Ej. Alimentación",
+          "typeLabel": "Tipo",
+          "parentLabel": "Categoría padre",
+          "parentNone": "Ninguna",
+          "colorLabel": "Color",
+          "iconLabel": "Icono (nombre Lucide)",
+          "cancel": "Cancelar",
+          "saving": "Guardando...",
+          "save": "Guardar cambios",
+          "updated": "Categoría actualizada",
+          "error": "Error al actualizar la categoría"
+        },
+        "create": {
+          "trigger": "Nueva Categoría",
+          "title": "Nueva Categoría",
+          "description": "Crea una categoría para clasificar ingresos y gastos.",
+          "nameLabel": "Nombre *",
+          "namePlaceholder": "Ej. Alimentación",
+          "typeLabel": "Tipo",
+          "parentLabel": "Categoría padre",
+          "parentNone": "Ninguna",
+          "colorLabel": "Color",
+          "iconLabel": "Icono (nombre Lucide)",
+          "cancel": "Cancelar",
+          "saving": "Guardando...",
+          "save": "Guardar",
+          "created": "Categoría creada",
+          "error": "Error al crear categoría"
+        },
+        "delete": {
+          "title": "Eliminar categoría",
+          "confirm": "Estás a punto de eliminar <strong>{name}</strong>. Esta acción no se puede deshacer.",
+          "cancel": "Cancelar",
+          "deleting": "Eliminando...",
+          "confirmButton": "Eliminar categoría",
+          "deleted": "Categoría eliminada",
+          "error": "Error al eliminar la categoría"
+        }
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "subtitle": "Gestiona tu organización y preferencias",
+      "saved": "Guardado",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar Cambios",
+      "toast": {
+        "saveError": "Error al guardar cambios",
+        "networkError": "Error de red",
+        "prefsSaved": "Preferencias guardadas",
+        "prefsError": "Error al guardar preferencias",
+        "pushEnabled": "Notificaciones push activadas",
+        "pushRegisterError": "Error al registrar suscripción",
+        "pushUnsupported": "Tu navegador no soporta notificaciones push",
+        "pushEnableError": "Error al activar notificaciones",
+        "checkoutError": "Error al iniciar checkout. Verifica tu configuración de Stripe."
+      },
+      "tabs": {
+        "profile": "Perfil",
+        "company": "Empresa",
+        "localization": "Localización",
+        "billing": "Facturación",
+        "members": "Miembros",
+        "notifications": "Notificaciones",
+        "security": "Seguridad",
+        "webhooks": "Webhooks"
+      },
+      "company": {
+        "title": "Datos de la Empresa",
+        "name": "Nombre",
+        "namePlaceholder": "Mi Empresa SAS",
+        "taxId": "NIT / RFC / CNPJ",
+        "taxIdPlaceholder": "900.123.456-7"
+      },
+      "profile": {
+        "title": "Perfil y Apariencia",
+        "theme": "Tema",
+        "themeLight": "Claro",
+        "themeDark": "Oscuro",
+        "themeSystem": "Sistema"
+      },
+      "security": {
+        "title": "Seguridad de la Cuenta",
+        "description": "La autenticación y gestión de credenciales están protegidas por Clerk. Para actualizar tu contraseña, activar autenticación de dos factores o revisar sesiones activas, usa el menú de usuario en la barra lateral.",
+        "password": {
+          "title": "Contraseña segura",
+          "description": "Usa una contraseña única y guardada en un gestor de contraseñas."
+        },
+        "twoFactor": {
+          "title": "Autenticación de dos factores",
+          "description": "Activa 2FA desde el portal de usuario para proteger el acceso."
+        },
+        "sessions": {
+          "title": "Sesiones y dispositivos",
+          "description": "Revisa y cierra sesiones sospechosas desde tu proveedor de identidad."
+        },
+        "data": {
+          "title": "Tus datos",
+          "description": "Descarga una copia de tus datos personales y empresariales. El archivo puede tardar unos segundos en generarse.",
+          "format": "Formato",
+          "formatPlaceholder": "Selecciona un formato",
+          "export": "Exportar mis datos",
+          "generating": "Generando...",
+          "disclaimer": "Tu exportación no incluye contraseñas, tokens, hashes ni datos sensibles de terceros.",
+          "exportError": "Error al exportar datos"
+        }
+      },
+      "localization": {
+        "title": "Regional",
+        "country": "País",
+        "currency": "Moneda",
+        "timezone": "Zona Horaria",
+        "countries": {
+          "CO": "Colombia",
+          "MX": "México",
+          "BR": "Brasil",
+          "AR": "Argentina",
+          "CL": "Chile",
+          "PE": "Perú"
+        },
+        "currencies": {
+          "COP": "COP — Peso Colombiano",
+          "MXN": "MXN — Peso Mexicano",
+          "BRL": "BRL — Real Brasileño",
+          "ARS": "ARS — Peso Argentino",
+          "CLP": "CLP — Peso Chileno",
+          "PEN": "PEN — Sol Peruano",
+          "USD": "USD — Dólar"
+        },
+        "timezones": {
+          "America/Bogota": "Bogotá",
+          "America/Mexico_City": "Ciudad de México",
+          "America/Sao_Paulo": "São Paulo",
+          "America/Argentina/Buenos_Aires": "Buenos Aires",
+          "America/Santiago": "Santiago",
+          "America/Lima": "Lima"
+        }
+      }
     }
   },
   "nav": {

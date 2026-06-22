@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Globe } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Organization {
   name: string;
@@ -27,26 +28,39 @@ interface LocalizationSectionProps {
   saving: boolean;
 }
 
+const countryCodes = ["CO", "MX", "BR", "AR", "CL", "PE"] as const;
+const currencyCodes = ["COP", "MXN", "BRL", "ARS", "CLP", "PEN", "USD"] as const;
+const timezoneValues = [
+  "America/Bogota",
+  "America/Mexico_City",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "America/Santiago",
+  "America/Lima",
+] as const;
+
 export function LocalizationSection({
   org,
   onChange,
   saving,
 }: LocalizationSectionProps) {
+  const t = useTranslations("dashboard.settings");
+
   return (
     <Card className="surface-elevated-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="heading-card flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          Regional
+          {t("localization.title")}
         </CardTitle>
         <Button type="submit" disabled={saving} size="sm" className="hidden sm:inline-flex">
-          Guardar Cambios
+          {t("saveChanges")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="settings-country">País</Label>
+            <Label htmlFor="settings-country">{t("localization.country")}</Label>
             <Select
               value={org.country}
               onValueChange={(v) => onChange({ ...org, country: v })}
@@ -55,17 +69,16 @@ export function LocalizationSection({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="CO">Colombia</SelectItem>
-                <SelectItem value="MX">México</SelectItem>
-                <SelectItem value="BR">Brasil</SelectItem>
-                <SelectItem value="AR">Argentina</SelectItem>
-                <SelectItem value="CL">Chile</SelectItem>
-                <SelectItem value="PE">Perú</SelectItem>
+                {countryCodes.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {t(`localization.countries.${code}` as never)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-currency">Moneda</Label>
+            <Label htmlFor="settings-currency">{t("localization.currency")}</Label>
             <Select
               value={org.currency}
               onValueChange={(v) => onChange({ ...org, currency: v })}
@@ -74,18 +87,16 @@ export function LocalizationSection({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="COP">COP — Peso Colombiano</SelectItem>
-                <SelectItem value="MXN">MXN — Peso Mexicano</SelectItem>
-                <SelectItem value="BRL">BRL — Real Brasileño</SelectItem>
-                <SelectItem value="ARS">ARS — Peso Argentino</SelectItem>
-                <SelectItem value="CLP">CLP — Peso Chileno</SelectItem>
-                <SelectItem value="PEN">PEN — Sol Peruano</SelectItem>
-                <SelectItem value="USD">USD — Dólar</SelectItem>
+                {currencyCodes.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {t(`localization.currencies.${code}` as never)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-timezone">Zona Horaria</Label>
+            <Label htmlFor="settings-timezone">{t("localization.timezone")}</Label>
             <Select
               value={org.timezone}
               onValueChange={(v) => onChange({ ...org, timezone: v })}
@@ -94,18 +105,17 @@ export function LocalizationSection({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="America/Bogota">Bogotá</SelectItem>
-                <SelectItem value="America/Mexico_City">Ciudad de México</SelectItem>
-                <SelectItem value="America/Sao_Paulo">São Paulo</SelectItem>
-                <SelectItem value="America/Argentina/Buenos_Aires">Buenos Aires</SelectItem>
-                <SelectItem value="America/Santiago">Santiago</SelectItem>
-                <SelectItem value="America/Lima">Lima</SelectItem>
+                {timezoneValues.map((tz) => (
+                  <SelectItem key={tz} value={tz}>
+                    {t(`localization.timezones.${tz}` as never)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         <Button type="submit" disabled={saving} className="w-full sm:hidden">
-          Guardar Cambios
+          {t("saveChanges")}
         </Button>
       </CardContent>
     </Card>
