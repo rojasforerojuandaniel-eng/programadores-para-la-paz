@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo-metadata";
 import { getLocale } from "@/lib/locale-server";
 import esMessages from "../../../../messages/es.json";
@@ -12,13 +12,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "pay.meta" });
 
   return buildMetadata({
-    title: "Pago seguro",
-    description:
-      "Realiza tu pago de forma segura con Rhynode. Aceptamos tarjeta vía Stripe y Wompi para Colombia.",
+    title: t("title"),
+    description: t("description"),
     path: `/pay/${slug}`,
-    keywords: ["pago seguro", "Wompi", "Stripe", "pasarela de pagos Colombia"],
+    keywords: [t("kw1"), t("kw2"), t("kw3"), t("kw4")],
     noIndex: true,
   });
 }

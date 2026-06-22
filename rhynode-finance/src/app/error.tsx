@@ -1,6 +1,31 @@
 "use client";
 
+import { NextIntlClientProvider, useTranslations } from "next-intl";
 import { ErrorFallback } from "@/components/error-fallback";
+import { getLocaleClient } from "@/lib/locale";
+import { useIsClient } from "@/hooks/use-is-client";
+import esMessages from "../../messages/es.json";
+import enMessages from "../../messages/en.json";
+
+function RootErrorInner({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  const t = useTranslations("error");
+  return (
+    <ErrorFallback
+      error={error}
+      reset={reset}
+      title={t("title")}
+      description={t("rootDescription")}
+      fullScreen
+      context="root-error-boundary"
+    />
+  );
+}
 
 export default function RootError({
   error,
@@ -9,14 +34,14 @@ export default function RootError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const mounted = useIsClient();
+  if (!mounted) return null;
+  const locale = getLocaleClient();
+  const messages = locale === "en" ? enMessages : esMessages;
+
   return (
-    <ErrorFallback
-      error={error}
-      reset={reset}
-      title="Algo salió mal"
-      description="Ocurrió un error inesperado en la aplicación. Intenta de nuevo o vuelve más tarde."
-      fullScreen
-      context="root-error-boundary"
-    />
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <RootErrorInner error={error} reset={reset} />
+    </NextIntlClientProvider>
   );
 }
