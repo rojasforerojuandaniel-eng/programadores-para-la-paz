@@ -5,6 +5,9 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { getLocale } from "@/lib/locale-server";
+import { formatDate, formatNumber } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 export const GET = withRateLimit(async function GET() {
   try {
@@ -12,6 +15,8 @@ export const GET = withRateLimit(async function GET() {
     if (!org) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const locale: Locale = await getLocale();
 
     const transactions = await prisma.transaction.findMany({
       where: { organizationId: org.id },
@@ -28,16 +33,20 @@ export const GET = withRateLimit(async function GET() {
     let y = height - margin;
 
     // Header
-    page.drawText("Reporte de Transacciones", {
-      x: margin,
-      y,
-      size: 20,
-      font: fontBold,
-      color: rgb(0.1, 0.1, 0.1),
-    });
+    page.drawText(
+      locale === "en" ? "Transactions Report" : "Reporte de Transacciones",
+      {
+        x: margin,
+        y,
+        size: 20,
+        font: fontBold,
+        color: rgb(0.1, 0.1, 0.1),
+      },
+    );
     y -= 24;
 
-    page.drawText(`Generado: ${new Date().toLocaleDateString("es-CO")}`, {
+    const generatedLabel = locale === "en" ? "Generated" : "Generado";
+    page.drawText(`${generatedLabel}: ${formatDate(new Date(), locale)}`, {
       x: margin,
       y,
       size: 10,
@@ -47,13 +56,18 @@ export const GET = withRateLimit(async function GET() {
     y -= 30;
 
     if (transactions.length === 0) {
-      page.drawText("No hay transacciones registradas.", {
-        x: margin,
-        y,
-        size: 12,
-        font,
-        color: rgb(0.3, 0.3, 0.3),
-      });
+      page.drawText(
+        locale === "en"
+          ? "No transactions recorded."
+          : "No hay transacciones registradas.",
+        {
+          x: margin,
+          y,
+          size: 12,
+          font,
+          color: rgb(0.3, 0.3, 0.3),
+        },
+      );
     } else {
       // Table header
       const colX = {
@@ -74,11 +88,17 @@ export const GET = withRateLimit(async function GET() {
         color: rgb(0.95, 0.95, 0.95),
       });
 
-      page.drawText("Fecha", { x: colX.date, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-      page.drawText("Descripción", { x: colX.desc, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-      page.drawText("Categoría", { x: colX.category, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-      page.drawText("Monto", { x: colX.amount, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
-      page.drawText("Balance", { x: colX.balance, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+      const dateLabel = locale === "en" ? "Date" : "Fecha";
+      const descLabel = locale === "en" ? "Description" : "Descripción";
+      const categoryLabel = locale === "en" ? "Category" : "Categoría";
+      const amountLabel = locale === "en" ? "Amount" : "Monto";
+      const balanceLabel = "Balance";
+
+      page.drawText(dateLabel, { x: colX.date, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+      page.drawText(descLabel, { x: colX.desc, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+      page.drawText(categoryLabel, { x: colX.category, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+      page.drawText(amountLabel, { x: colX.amount, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
+      page.drawText(balanceLabel, { x: colX.balance, y, size: 10, font: fontBold, color: rgb(0.2, 0.2, 0.2) });
 
       y -= rowHeight;
 
@@ -95,9 +115,9 @@ export const GET = withRateLimit(async function GET() {
         const delta = tx.type === "INCOME" || tx.type === "ADJUSTMENT" ? amountNum : -amountNum;
         runningBalance += delta;
 
-        const dateStr = new Date(tx.date).toLocaleDateString("es-CO");
-        const amountStr = `${tx.type === "INCOME" ? "+" : tx.type === "EXPENSE" ? "-" : ""}${amountNum.toLocaleString("es-CO")}`;
-        const balanceStr = runningBalance.toLocaleString("es-CO");
+        const dateStr = formatDate(tx.date, locale);
+        const amountStr = `${tx.type === "INCOME" ? "+" : tx.type === "EXPENSE" ? "-" : ""}${formatNumber(amountNum, locale)}`;
+        const balanceStr = formatNumber(runningBalance, locale);
 
         page.drawText(dateStr, { x: colX.date, y, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
         page.drawText(tx.description.slice(0, 30), { x: colX.desc, y, size: 9, font, color: rgb(0.2, 0.2, 0.2) });
@@ -110,12 +130,13 @@ export const GET = withRateLimit(async function GET() {
     }
 
     const pdfBytes = await pdfDoc.save();
+    const filename = locale === "en" ? "transactions.pdf" : "transacciones.pdf";
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="transacciones.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
   } catch (error) {

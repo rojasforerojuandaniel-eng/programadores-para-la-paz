@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
+import { getLocale } from "@/lib/locale-server";
+import { formatCurrency, formatDate } from "@/lib/format";
+import type { Locale } from "@/lib/locale";
 
 const MAX_PER_TYPE = 5;
 const MAX_TOTAL = 15;
@@ -25,23 +28,6 @@ interface SearchResult {
   href: string;
 }
 
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return "";
-  return date.toLocaleDateString("es-CO", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function buildSearchFilter(query: string) {
   const trimmed = query.trim();
   if (!trimmed) return null;
@@ -52,7 +38,8 @@ function buildSearchFilter(query: string) {
 
 async function searchTransactions(
   orgId: string,
-  filter: { contains: string; mode: "insensitive" }
+  filter: { contains: string; mode: "insensitive" },
+  locale: Locale,
 ): Promise<SearchResult[]> {
   const rows = await prisma.transaction.findMany({
     where: {
@@ -72,14 +59,15 @@ async function searchTransactions(
     id: t.id,
     type: "transaction" as const,
     title: t.description,
-    subtitle: `${t.type} · ${formatCurrency(Number(t.amount), t.currency)} · ${formatDate(t.date)}`,
+    subtitle: `${t.type} · ${formatCurrency(Number(t.amount), t.currency, locale)} · ${formatDate(t.date, locale)}`,
     href: "/dashboard/transactions",
   }));
 }
 
 async function searchInvoices(
   orgId: string,
-  filter: { contains: string; mode: "insensitive" }
+  filter: { contains: string; mode: "insensitive" },
+  locale: Locale,
 ): Promise<SearchResult[]> {
   const rows = await prisma.invoice.findMany({
     where: {
@@ -101,14 +89,14 @@ async function searchInvoices(
     id: inv.id,
     type: "invoice" as const,
     title: inv.number,
-    subtitle: `${inv.client.name} · ${formatCurrency(Number(inv.total), inv.currency)} · ${formatDate(inv.issueDate)}`,
+    subtitle: `${inv.client.name} · ${formatCurrency(Number(inv.total), inv.currency, locale)} · ${formatDate(inv.issueDate, locale)}`,
     href: "/dashboard/invoices",
   }));
 }
 
 async function searchClients(
   orgId: string,
-  filter: { contains: string; mode: "insensitive" }
+  filter: { contains: string; mode: "insensitive" },
 ): Promise<SearchResult[]> {
   const rows = await prisma.client.findMany({
     where: {
@@ -137,7 +125,8 @@ async function searchClients(
 
 async function searchProjects(
   orgId: string,
-  filter: { contains: string; mode: "insensitive" }
+  filter: { contains: string; mode: "insensitive" },
+  locale: Locale,
 ): Promise<SearchResult[]> {
   const rows = await prisma.project.findMany({
     where: {
@@ -152,7 +141,11 @@ async function searchProjects(
     id: p.id,
     type: "project" as const,
     title: p.name,
-    subtitle: [p.status, p.description, formatDate(p.startDate)]
+    subtitle: [
+        p.status,
+        p.description,
+        p.startDate ? formatDate(p.startDate, locale) : "",
+      ]
       .filter(Boolean)
       .join(" · ")
       .slice(0, 80),
@@ -162,7 +155,8 @@ async function searchProjects(
 
 async function searchAccounts(
   orgId: string,
-  filter: { contains: string; mode: "insensitive" }
+  filter: { contains: string; mode: "insensitive" },
+  locale: Locale,
 ): Promise<SearchResult[]> {
   const rows = await prisma.bankAccount.findMany({
     where: {
@@ -182,7 +176,7 @@ async function searchAccounts(
     id: a.id,
     type: "account" as const,
     title: a.name,
-    subtitle: `${a.bankName} · ${a.type} · ${formatCurrency(Number(a.balance), a.currency)}`,
+    subtitle: `${a.bankName} · ${a.type} · ${formatCurrency(Number(a.balance), a.currency, locale)}`,
     href: "/dashboard/accounts",
   }));
 }
@@ -194,6 +188,8 @@ export const GET = withRateLimit(
       if (!org) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+
+      const locale = await getLocale();
 
       const { searchParams } = new URL(request.url);
       const rawQuery = searchParams.get("q") ?? "";
@@ -215,11 +211,11 @@ export const GET = withRateLimit(
       }
 
       const grouped = await Promise.all([
-        searchTransactions(org.id, filter),
-        searchInvoices(org.id, filter),
+        searchTransactions(org.id, filter, locale),
+        searchInvoices(org.id, filter, locale),
         searchClients(org.id, filter),
-        searchProjects(org.id, filter),
-        searchAccounts(org.id, filter),
+        searchProjects(org.id, filter, locale),
+        searchAccounts(org.id, filter, locale),
       ]);
 
       const groupedMap = new Map<SearchResultType, SearchResult[]>();
