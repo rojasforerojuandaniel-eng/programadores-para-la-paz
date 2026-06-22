@@ -1,3 +1,6 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Wallet,
@@ -15,14 +18,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { UserScope } from "@/lib/scope";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 interface KpiItem {
   title: string;
@@ -53,7 +48,7 @@ interface KpiGridProps {
   invoiceCount?: number;
 }
 
-export function KpiGrid({
+export async function KpiGrid({
   scope,
   currency,
   personalBalance = 0,
@@ -71,26 +66,30 @@ export function KpiGrid({
   bankBalance = 0,
   invoiceCount = 0,
 }: KpiGridProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.home" });
+
   const personalKpis: KpiItem[] = [
-    { title: "Balance Total", value: formatCurrency(personalBalance, currency), icon: Wallet, color: "text-primary", empty: personalBalance === 0 },
-    { title: "Ingresos", value: formatCurrency(personalIncome, currency), icon: TrendingUp, color: "text-emerald-400", empty: personalIncome === 0 },
-    { title: "Gastos", value: formatCurrency(personalExpenses, currency), icon: TrendingDown, color: "text-red-400", empty: personalExpenses === 0 },
-    { title: "Metas Activas", value: String(activeGoals), icon: Target, color: "text-primary", empty: activeGoals === 0 },
-    { title: "Deudas", value: String(pendingDebts), icon: AlertTriangle, color: "text-amber-400", empty: pendingDebts === 0 },
-    { title: "Transacciones", value: String(monthlyTransactions), icon: Activity, color: "text-primary", empty: monthlyTransactions === 0 },
-    { title: "Disponible", value: formatCurrency(Math.max(0, personalIncome - personalExpenses), currency), icon: CreditCard, color: "text-emerald-400", empty: personalIncome === 0 && personalExpenses === 0 },
-    { title: "Ahorro", value: formatCurrency(personalIncome - personalExpenses, currency), icon: PiggyBank, color: "text-primary", empty: personalIncome === 0 },
+    { title: t("widgetsKpi.balanceTotal"), value: formatCurrency(personalBalance, currency, locale), icon: Wallet, color: "text-primary", empty: personalBalance === 0 },
+    { title: t("widgetsKpi.income"), value: formatCurrency(personalIncome, currency, locale), icon: TrendingUp, color: "text-emerald-400", empty: personalIncome === 0 },
+    { title: t("widgetsKpi.expenses"), value: formatCurrency(personalExpenses, currency, locale), icon: TrendingDown, color: "text-red-400", empty: personalExpenses === 0 },
+    { title: t("widgetsKpi.activeGoals"), value: String(activeGoals), icon: Target, color: "text-primary", empty: activeGoals === 0 },
+    { title: t("widgetsKpi.debts"), value: String(pendingDebts), icon: AlertTriangle, color: "text-amber-400", empty: pendingDebts === 0 },
+    { title: t("widgetsKpi.transactions"), value: String(monthlyTransactions), icon: Activity, color: "text-primary", empty: monthlyTransactions === 0 },
+    { title: t("widgetsKpi.available"), value: formatCurrency(Math.max(0, personalIncome - personalExpenses), currency, locale), icon: CreditCard, color: "text-emerald-400", empty: personalIncome === 0 && personalExpenses === 0 },
+    { title: t("widgetsKpi.savings"), value: formatCurrency(personalIncome - personalExpenses, currency, locale), icon: PiggyBank, color: "text-primary", empty: personalIncome === 0 },
   ];
 
   const businessKpis: KpiItem[] = [
-    { title: "Facturado", value: formatCurrency(totalInvoiced, currency), icon: FileText, color: "text-primary", empty: totalInvoiced === 0 },
-    { title: "Cobrado", value: formatCurrency(totalPaid, currency), icon: TrendingUp, color: "text-emerald-400", empty: totalPaid === 0 },
-    { title: "Pendiente", value: formatCurrency(totalPending, currency), icon: TrendingDown, color: "text-amber-400", empty: totalPending === 0 },
-    { title: "Vencido", value: formatCurrency(totalOverdue, currency), icon: AlertTriangle, color: "text-red-400", empty: totalOverdue === 0 },
-    { title: "Clientes", value: String(clientCount), icon: Users, color: "text-primary", empty: clientCount === 0 },
-    { title: "Impuestos Pend.", value: String(taxPending), icon: ShieldCheck, color: "text-amber-400", empty: taxPending === 0 },
-    { title: "Saldo Bancario", value: formatCurrency(bankBalance, currency), icon: Landmark, color: "text-primary", empty: bankBalance === 0 },
-    { title: "Facturas", value: String(invoiceCount), icon: FileText, color: "text-primary", empty: invoiceCount === 0 },
+    { title: t("widgetsKpi.invoiced"), value: formatCurrency(totalInvoiced, currency, locale), icon: FileText, color: "text-primary", empty: totalInvoiced === 0 },
+    { title: t("widgetsKpi.collected"), value: formatCurrency(totalPaid, currency, locale), icon: TrendingUp, color: "text-emerald-400", empty: totalPaid === 0 },
+    { title: t("widgetsKpi.pending"), value: formatCurrency(totalPending, currency, locale), icon: TrendingDown, color: "text-amber-400", empty: totalPending === 0 },
+    { title: t("widgetsKpi.overdue"), value: formatCurrency(totalOverdue, currency, locale), icon: AlertTriangle, color: "text-red-400", empty: totalOverdue === 0 },
+    { title: t("widgetsKpi.clients"), value: String(clientCount), icon: Users, color: "text-primary", empty: clientCount === 0 },
+    { title: t("widgetsKpi.taxesPending"), value: String(taxPending), icon: ShieldCheck, color: "text-amber-400", empty: taxPending === 0 },
+    { title: t("widgetsKpi.bankBalance"), value: formatCurrency(bankBalance, currency, locale), icon: Landmark, color: "text-primary", empty: bankBalance === 0 },
+    { title: t("widgetsKpi.invoices"), value: String(invoiceCount), icon: FileText, color: "text-primary", empty: invoiceCount === 0 },
   ];
 
   const bothKpis: KpiItem[] = [
@@ -124,7 +123,7 @@ export function KpiGrid({
             <CardContent>
               <div className="text-2xl font-semibold">{kpi.value}</div>
               {kpi.empty && (
-                <p className="body-small mt-1 text-muted-foreground">Sin datos</p>
+                <p className="body-small mt-1 text-muted-foreground">{t("widgetsKpi.noData")}</p>
               )}
             </CardContent>
           </Card>

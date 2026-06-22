@@ -4,6 +4,9 @@ import { generatePersonalInsights, type Nudge } from "@/lib/ai-insights";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import {
   Wallet,
   ArrowDownRight,
@@ -44,11 +47,14 @@ function getLocalHour(timezone: string): number {
   return Number.parseInt(hourStr, 10) || 0;
 }
 
-function getGreetingParts(hour: number) {
-  if (hour < 6) return { text: "Buenas noches", Icon: Moon };
-  if (hour < 12) return { text: "Buenos días", Icon: Sunrise };
-  if (hour < 18) return { text: "Buenas tardes", Icon: Sun };
-  return { text: "Buenas noches", Icon: Sunset };
+function getGreetingParts(
+  hour: number,
+  t: (key: string) => string,
+): { text: string; Icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }> } {
+  if (hour < 6) return { text: t("briefing.greeting.night"), Icon: Moon };
+  if (hour < 12) return { text: t("briefing.greeting.morning"), Icon: Sunrise };
+  if (hour < 18) return { text: t("briefing.greeting.afternoon"), Icon: Sun };
+  return { text: t("briefing.greeting.night"), Icon: Sunset };
 }
 
 function getDayBounds(offsetDays: number, now: Date) {
@@ -70,22 +76,6 @@ function getMonthRange(now: Date) {
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999),
     ),
   };
-}
-
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatShortDate(date: Date): string {
-  return new Intl.DateTimeFormat("es-CO", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  }).format(date);
 }
 
 async function fetchBriefingData(userId: string, currency: string, now: Date) {
@@ -211,55 +201,76 @@ function buildBriefingItems(
   nearestGoal: Awaited<ReturnType<typeof fetchBriefingData>>["nearestGoal"],
   topInsight: Nudge | null,
   currency: string,
+  locale: Locale,
+  t: (key: string, vars?: Record<string, string | number>) => string,
 ): BriefingItem[] {
   return [
     {
       id: "balance",
       icon: Wallet,
-      label: "Balance total",
-      value: formatCurrency(balanceTotal, currency),
+      label: t("briefing.items.balance.label"),
+      value: formatCurrency(balanceTotal, currency, locale),
       href: "/dashboard/personal/accounts",
     },
     {
       id: "yesterday",
       icon: ArrowDownRight,
-      label: avgDaily > 0 ? `Gastos de ayer vs ${formatCurrency(avgDaily, currency)} promedio` : "Gastos de ayer",
-      value: formatCurrency(yesterdayTotal, currency),
+      label:
+        avgDaily > 0
+          ? t("briefing.items.yesterday.labelWithAvg", {
+              avg: formatCurrency(avgDaily, currency, locale),
+            })
+          : t("briefing.items.yesterday.label"),
+      value: formatCurrency(yesterdayTotal, currency, locale),
       href: "/dashboard/transactions",
     },
     {
       id: "income",
       icon: ArrowUpRight,
-      label: "Ingresos del mes",
-      value: formatCurrency(incomeMonth, currency),
+      label: t("briefing.items.income.label"),
+      value: formatCurrency(incomeMonth, currency, locale),
       href: "/dashboard/transactions",
     },
     {
       id: "due",
       icon: Calendar,
-      label: "Vencimientos hoy",
+      label: t("briefing.items.due.label"),
       value:
         dueToday === 0
-          ? "Ninguno"
-          : `${dueToday} pendiente${dueToday === 1 ? "" : "s"}`,
+          ? t("briefing.items.due.none")
+          : dueToday === 1
+            ? t("briefing.items.due.singular", { n: dueToday })
+            : t("briefing.items.due.plural", { n: dueToday }),
       href: "/dashboard/personal/calendar",
     },
     {
       id: "goal",
       icon: Target,
-      label: "Meta más cercana",
-      value: nearestGoal?.name ?? "Sin metas activas",
+      label: t("briefing.items.goal.label"),
+      value: nearestGoal?.name ?? t("briefing.items.goal.none"),
       subvalue: nearestGoal
-        ? `${formatCurrency(decimalToNumber(nearestGoal.currentAmount), nearestGoal.currency || currency)} de ${formatCurrency(decimalToNumber(nearestGoal.targetAmount), nearestGoal.currency || currency)}`
+        ? t("briefing.items.goal.subvalue", {
+            current: formatCurrency(
+              decimalToNumber(nearestGoal.currentAmount),
+              nearestGoal.currency || currency,
+              locale,
+            ),
+            target: formatCurrency(
+              decimalToNumber(nearestGoal.targetAmount),
+              nearestGoal.currency || currency,
+              locale,
+            ),
+          })
         : undefined,
       href: "/dashboard/personal/goals",
     },
     {
       id: "insight",
       icon: Lightbulb,
-      label: "Insight del día",
-      value: topInsight?.title ?? "Consejo del día",
-      subvalue: topInsight?.description ?? "Registra tus transacciones diarias para descubrir patrones y tomar mejores decisiones.",
+      label: t("briefing.items.insight.label"),
+      value: topInsight?.title ?? t("briefing.items.insight.defaultTitle"),
+      subvalue:
+        topInsight?.description ?? t("briefing.items.insight.defaultDesc"),
       href: topInsight?.actionHref ?? "/dashboard/advisor",
     },
   ];
@@ -273,9 +284,13 @@ export async function DailyBriefing({
 }: DailyBriefingProps) {
   if (!userId) return null;
 
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.ai" });
+
   const now = new Date();
   const hour = getLocalHour(timezone ?? DEFAULT_TIMEZONE);
-  const { text: greeting, Icon: GreetingIcon } = getGreetingParts(hour);
+  const { text: greeting, Icon: GreetingIcon } = getGreetingParts(hour, t);
   const displayName = name?.trim() || "";
 
   const { balanceTotal, yesterdayTotal, avgDaily, incomeMonth, dueToday, nearestGoal, topInsight } =
@@ -290,12 +305,14 @@ export async function DailyBriefing({
     nearestGoal,
     topInsight,
     currency,
+    locale,
+    t,
   );
 
   return (
     <Card
       role="region"
-      aria-label="Briefing diario"
+      aria-label={t("briefing.ariaLabel")}
       className="surface-elevated-2 rounded-xl border-border"
     >
       <CardHeader className="pb-3">
@@ -306,7 +323,9 @@ export async function DailyBriefing({
               {greeting}
               {displayName ? `, ${displayName}` : null}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">{formatShortDate(now)}</p>
+            <p className="text-sm text-muted-foreground">
+              {fmtDate(now, locale, { weekday: "long", month: "short", day: "numeric" })}
+            </p>
           </div>
           <Button
             variant="outline"
@@ -314,7 +333,7 @@ export async function DailyBriefing({
             asChild
             className="self-start sm:self-auto"
           >
-            <Link href="/dashboard/advisor">Ver advisor</Link>
+            <Link href="/dashboard/advisor">{t("briefing.advisorButton")}</Link>
           </Button>
         </div>
       </CardHeader>

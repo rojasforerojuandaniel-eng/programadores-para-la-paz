@@ -4,6 +4,9 @@ import { decimalToNumber } from "@/lib/decimal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatCurrency } from "@/lib/format";
 import { Lightbulb, ArrowRight, TrendingUp, AlertTriangle, PiggyBank } from "lucide-react";
 
 interface Insight {
@@ -22,15 +25,11 @@ function getMonthRange() {
   };
 }
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 export async function SmartInsights({ currency }: { currency: string }) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.ai" });
+
   const profile = await getUserProfile();
   const userId = profile?.id;
 
@@ -70,30 +69,35 @@ export async function SmartInsights({ currency }: { currency: string }) {
     ]);
 
   const income = transactions
-    .filter((t) => t.type === "INCOME")
-    .reduce((sum, t) => sum + decimalToNumber(t.amount), 0);
+    .filter((tx) => tx.type === "INCOME")
+    .reduce((sum, tx) => sum + decimalToNumber(tx.amount), 0);
   const expense = transactions
-    .filter((t) => t.type === "EXPENSE")
-    .reduce((sum, t) => sum + decimalToNumber(t.amount), 0);
+    .filter((tx) => tx.type === "EXPENSE")
+    .reduce((sum, tx) => sum + decimalToNumber(tx.amount), 0);
   const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
 
   const insights: Insight[] = [];
+
+  const buildAction = (key: string, href: string) => ({
+    label: t(key),
+    href,
+  });
 
   if (savingsRate >= 20) {
     insights.push({
       id: "savings-great",
       type: "positive",
-      title: "Excelente ritmo de ahorro",
-      description: `Estás ahorrando ${savingsRate.toFixed(0)}% de tus ingresos este mes.`,
-      action: { label: "Ver metas", href: "/dashboard/personal/goals" },
+      title: t("insights.savings-great.title"),
+      description: t("insights.savings-great.description", { pct: savingsRate.toFixed(0) }),
+      action: buildAction("insights.savings-great.action", "/dashboard/personal/goals"),
     });
   } else if (income > 0 && savingsRate < 5) {
     insights.push({
       id: "savings-low",
       type: "warning",
-      title: "Tu tasa de ahorro es baja",
-      description: `Solo estás ahorrando ${savingsRate.toFixed(0)}% este mes. Intenta reducir gastos discrecionales.`,
-      action: { label: "Ver presupuestos", href: "/dashboard/personal/budgets" },
+      title: t("insights.savings-low.title"),
+      description: t("insights.savings-low.description", { pct: savingsRate.toFixed(0) }),
+      action: buildAction("insights.savings-low.action", "/dashboard/personal/budgets"),
     });
   }
 
@@ -104,12 +108,12 @@ export async function SmartInsights({ currency }: { currency: string }) {
     insights.push({
       id: "budget-overflow",
       type: "warning",
-      title: `Presupuesto excedido: ${overspentBudget.name}`,
-      description: `Llevas ${formatCurrency(decimalToNumber(overspentBudget.spent), currency)} de ${formatCurrency(
-        decimalToNumber(overspentBudget.amount),
-        currency
-      )}.`,
-      action: { label: "Revisar", href: "/dashboard/personal/budgets" },
+      title: t("insights.budget-overflow.title", { name: overspentBudget.name }),
+      description: t("insights.budget-overflow.description", {
+        spent: formatCurrency(decimalToNumber(overspentBudget.spent), currency, locale),
+        amount: formatCurrency(decimalToNumber(overspentBudget.amount), currency, locale),
+      }),
+      action: buildAction("insights.budget-overflow.action", "/dashboard/personal/budgets"),
     });
   }
 
@@ -122,12 +126,15 @@ export async function SmartInsights({ currency }: { currency: string }) {
     }
   );
   if (nearLimitBudget) {
+    const usedPct = (
+      (decimalToNumber(nearLimitBudget.spent) / decimalToNumber(nearLimitBudget.amount)) * 100
+    ).toFixed(0);
     insights.push({
       id: "budget-near",
       type: "tip",
-      title: `Casi al límite: ${nearLimitBudget.name}`,
-      description: `Has usado ${((decimalToNumber(nearLimitBudget.spent) / decimalToNumber(nearLimitBudget.amount)) * 100).toFixed(0)}% del presupuesto.`,
-      action: { label: "Ver", href: "/dashboard/personal/budgets" },
+      title: t("insights.budget-near.title", { name: nearLimitBudget.name }),
+      description: t("insights.budget-near.description", { pct: usedPct }),
+      action: buildAction("insights.budget-near.action", "/dashboard/personal/budgets"),
     });
   }
 
@@ -135,14 +142,18 @@ export async function SmartInsights({ currency }: { currency: string }) {
     .filter((d) => d.dueDate && new Date(d.dueDate) >= now && new Date(d.dueDate) <= weekFromNow)
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())[0];
   if (upcomingDebt) {
+    const days = Math.ceil(
+      (new Date(upcomingDebt.dueDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
     insights.push({
       id: "debt-upcoming",
       type: "warning",
-      title: `Deuda próxima: ${upcomingDebt.name}`,
-      description: `Vence en ${Math.ceil(
-        (new Date(upcomingDebt.dueDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-      )} días por ${formatCurrency(decimalToNumber(upcomingDebt.remainingAmount), currency)}.`,
-      action: { label: "Ver deudas", href: "/dashboard/personal/debts" },
+      title: t("insights.debt-upcoming.title", { name: upcomingDebt.name }),
+      description: t("insights.debt-upcoming.description", {
+        days,
+        amount: formatCurrency(decimalToNumber(upcomingDebt.remainingAmount), currency, locale),
+      }),
+      action: buildAction("insights.debt-upcoming.action", "/dashboard/personal/debts"),
     });
   }
 
@@ -153,12 +164,15 @@ export async function SmartInsights({ currency }: { currency: string }) {
     return pct >= 75 && pct < 100;
   });
   if (nearGoal) {
+    const pct = (
+      (decimalToNumber(nearGoal.currentAmount) / decimalToNumber(nearGoal.targetAmount)) * 100
+    ).toFixed(0);
     insights.push({
       id: "goal-near",
       type: "positive",
-      title: `Meta casi lista: ${nearGoal.name}`,
-      description: `Llevas ${((decimalToNumber(nearGoal.currentAmount) / decimalToNumber(nearGoal.targetAmount)) * 100).toFixed(0)}% del objetivo.`,
-      action: { label: "Ver metas", href: "/dashboard/personal/goals" },
+      title: t("insights.goal-near.title", { name: nearGoal.name }),
+      description: t("insights.goal-near.description", { pct }),
+      action: buildAction("insights.goal-near.action", "/dashboard/personal/goals"),
     });
   }
 
@@ -167,12 +181,16 @@ export async function SmartInsights({ currency }: { currency: string }) {
     0
   );
   if (totalSubscriptions > 0 && income > 0 && totalSubscriptions / income > 0.15) {
+    const pctSubs = ((totalSubscriptions / income) * 100).toFixed(0);
     insights.push({
       id: "subscriptions-high",
       type: "tip",
-      title: "Revisa tus suscripciones",
-      description: `Gastas ${formatCurrency(totalSubscriptions, currency)} mensuales en suscripciones (${((totalSubscriptions / income) * 100).toFixed(0)}% de tus ingresos).`,
-      action: { label: "Auditar", href: "/dashboard/personal/subscriptions" },
+      title: t("insights.subscriptions-high.title"),
+      description: t("insights.subscriptions-high.description", {
+        amount: formatCurrency(totalSubscriptions, currency, locale),
+        pct: pctSubs,
+      }),
+      action: buildAction("insights.subscriptions-high.action", "/dashboard/personal/subscriptions"),
     });
   }
 
@@ -184,9 +202,9 @@ export async function SmartInsights({ currency }: { currency: string }) {
     insights.push({
       id: "investment-loss",
       type: "warning",
-      title: `Inversión en caída: ${negativeInvestment.name}`,
-      description: `Su valor actual es notablemente menor al monto invertido.`,
-      action: { label: "Ver portafolio", href: "/dashboard/personal/investments" },
+      title: t("insights.investment-loss.title", { name: negativeInvestment.name }),
+      description: t("insights.investment-loss.description"),
+      action: buildAction("insights.investment-loss.action", "/dashboard/personal/investments"),
     });
   }
 
@@ -194,10 +212,9 @@ export async function SmartInsights({ currency }: { currency: string }) {
     insights.push({
       id: "default-tip",
       type: "tip",
-      title: "Consejo del día",
-      description:
-        "Registra tus transacciones diarias para descubrir gastos hormiga y tomar mejores decisiones.",
-      action: { label: "Agregar movimiento", href: "/dashboard/transactions" },
+      title: t("insights.default-tip.title"),
+      description: t("insights.default-tip.description"),
+      action: buildAction("insights.default-tip.action", "/dashboard/transactions"),
     });
   }
 
@@ -208,7 +225,7 @@ export async function SmartInsights({ currency }: { currency: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="heading-card flex items-center gap-2 text-base">
           <Lightbulb className="h-5 w-5 text-primary" />
-          Insights inteligentes
+          {t("insights.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>

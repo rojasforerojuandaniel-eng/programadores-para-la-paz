@@ -2634,6 +2634,44 @@
           "tomorrow": "Due tomorrow",
           "inDays": "In {count} days"
         }
+      },
+      "kpiGrid": {
+        "deltaLabel": "vs last month",
+        "balanceTotal": "Total Balance",
+        "netWorth": "Net Worth",
+        "incomeMonth": "Monthly Income",
+        "expenseMonth": "Monthly Expenses",
+        "available": "Available to Spend",
+        "activeGoals": "Active Goals",
+        "pendingDebts": "Pending Debts",
+        "transactionsMonth": "Monthly Transactions",
+        "invoiced": "Invoiced",
+        "collected": "Collected",
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "clients": "Clients",
+        "taxesPending": "Taxes Pending",
+        "bankBalance": "Bank Balance",
+        "totalInvoices": "Total Invoices"
+      },
+      "widgetsKpi": {
+        "balanceTotal": "Total Balance",
+        "income": "Income",
+        "expenses": "Expenses",
+        "activeGoals": "Active Goals",
+        "debts": "Debts",
+        "transactions": "Transactions",
+        "available": "Available",
+        "savings": "Savings",
+        "invoiced": "Invoiced",
+        "collected": "Collected",
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "clients": "Clients",
+        "taxesPending": "Taxes Pending",
+        "bankBalance": "Bank Balance",
+        "invoices": "Invoices",
+        "noData": "No data"
       }
     },
     "commandPalette": {
@@ -2729,6 +2767,93 @@
       "loading": "Loading notifications",
       "preferences": "Notification preferences",
       "centerAria": "Notification center"
+    },
+    "ai": {
+      "briefing": {
+        "ariaLabel": "Daily briefing",
+        "advisorButton": "View advisor",
+        "greeting": {
+          "morning": "Good morning",
+          "afternoon": "Good afternoon",
+          "night": "Good evening"
+        },
+        "items": {
+          "balance": {
+            "label": "Total balance"
+          },
+          "yesterday": {
+            "label": "Yesterday's spending",
+            "labelWithAvg": "Yesterday's spending vs {avg} average"
+          },
+          "income": {
+            "label": "Income this month"
+          },
+          "due": {
+            "label": "Due today",
+            "none": "None",
+            "singular": "{n} pending",
+            "plural": "{n} pending"
+          },
+          "goal": {
+            "label": "Nearest goal",
+            "none": "No active goals",
+            "subvalue": "{current} of {target}"
+          },
+          "insight": {
+            "label": "Insight of the day",
+            "defaultTitle": "Tip of the day",
+            "defaultDesc": "Log your daily transactions to uncover patterns and make better decisions."
+          }
+        }
+      },
+      "insights": {
+        "title": "Smart insights",
+        "savings-great": {
+          "title": "Excellent savings pace",
+          "description": "You're saving {pct}% of your income this month.",
+          "action": "View goals"
+        },
+        "savings-low": {
+          "title": "Your savings rate is low",
+          "description": "You're only saving {pct}% this month. Try cutting discretionary spending.",
+          "action": "View budgets"
+        },
+        "budget-overflow": {
+          "title": "Budget exceeded: {name}",
+          "description": "You've spent {spent} of {amount}.",
+          "action": "Review"
+        },
+        "budget-near": {
+          "title": "Almost at the limit: {name}",
+          "description": "You've used {pct}% of the budget.",
+          "action": "View"
+        },
+        "debt-upcoming": {
+          "title": "Upcoming debt: {name}",
+          "description": "Due in {days} days for {amount}.",
+          "action": "View debts"
+        },
+        "goal-near": {
+          "title": "Goal almost reached: {name}",
+          "description": "You're at {pct}% of the target.",
+          "action": "View goals"
+        },
+        "subscriptions-high": {
+          "title": "Review your subscriptions",
+          "description": "You spend {amount} per month on subscriptions ({pct}% of your income).",
+          "action": "Audit"
+        },
+        "investment-loss": {
+          "title": "Investment in decline: {name}",
+          "description": "Its current value is notably lower than the amount invested.",
+          "action": "View portfolio"
+        },
+        "default-tip": {
+          "title": "Tip of the day",
+          "description": "Log your daily transactions to find small leaks and make better decisions.",
+          "action": "Add movement"
+        }
+      }
     }
   },
   "nav": {
