@@ -746,6 +746,79 @@
         "description": "Review your detailed stats and compare your progress week over week.",
         "viewStats": "View my stats"
       }
+    },
+    "indicators": {
+      "title": "Economic Indicators",
+      "subtitle": "Colombia reference data, updated daily",
+      "refresh": "Refresh",
+      "fallback": {
+        "title": "Showing backup data",
+        "description": "We couldn't connect to the official source. The values shown are for reference only and may not reflect the current market."
+      },
+      "baseValue": "Base value / target: {value}",
+      "source": "Source:",
+      "lastUpdate": "Last updated:",
+      "trend": {
+        "up": "Up",
+        "down": "Down",
+        "flat": "Stable"
+      },
+      "widget": {
+        "title": "Colombia Indicators",
+        "updated": "Updated {date}"
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "subtitle": "Connect banks, accounting, payment gateways, and automation in one place.",
+      "openBankingBanner": {
+        "title": "Open Banking is coming to Colombia",
+        "description": "Decree 0368 of 2026 requires all banks to expose secure APIs. Rhynode will be one of the first to integrate."
+      },
+      "categories": {
+        "banks": "Banks",
+        "accounting": "Accounting",
+        "payments": "Payments",
+        "automation": "Automation"
+      },
+      "openBankingCard": {
+        "title": "What is Open Banking?",
+        "intro": "Open Banking allows authorized apps to access your banking data securely, with your explicit permission. This means:",
+        "bullet1": "Your transactions import automatically with no manual entry",
+        "bullet2": "AI categorizes your expenses instantly",
+        "bullet3": "You receive real-time anomaly alerts",
+        "bullet4": "Your data is encrypted and never sold",
+        "outroBefore": "In Colombia,",
+        "outroBold": "Decree 0368 of April 2026",
+        "outroAfter": "made Open Finance mandatory for all financial entities supervised by the SFC."
+      },
+      "statuses": {
+        "connected": "Connected",
+        "available": "Available",
+        "comingSoon": "Coming soon"
+      },
+      "actions": {
+        "configure": "Configure",
+        "disconnect": "Disconnect",
+        "connect": "Connect"
+      },
+      "waitlist": {
+        "joined": "We'll let you know",
+        "join": "Join the waitlist",
+        "nameLabel": "Name",
+        "namePlaceholder": "Your name",
+        "emailLabel": "Email",
+        "emailPlaceholder": "you@company.com",
+        "cancel": "Cancel",
+        "submit": "Submit"
+      },
+      "toasts": {
+        "connected": "Integration connected",
+        "disconnected": "Integration disconnected",
+        "configure": "Opening {name} configuration...",
+        "invalidForm": "Please enter a valid name and email",
+        "waitlistSuccess": "We'll notify you when it's available"
+      }
     }
   },
   "nav": {

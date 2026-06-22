@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Locale } from "@/lib/locale";
 import {
   Landmark,
   Calculator,
@@ -44,14 +46,21 @@ interface WaitlistFormState {
   email: string;
 }
 
+const categoryLabelKeys: Record<IntegrationCategory, string> = {
+  banks: "categories.banks",
+  accounting: "categories.accounting",
+  payments: "categories.payments",
+  automation: "categories.automation",
+};
+
 const categories: Record<
   IntegrationCategory,
-  { label: string; order: number; icon: typeof Landmark }
+  { labelKey: string; order: number; icon: typeof Landmark }
 > = {
-  banks: { label: "Bancos", order: 0, icon: Landmark },
-  accounting: { label: "Contabilidad", order: 1, icon: Calculator },
-  payments: { label: "Pagos", order: 2, icon: CreditCard },
-  automation: { label: "Automatización", order: 3, icon: Zap },
+  banks: { labelKey: categoryLabelKeys.banks, order: 0, icon: Landmark },
+  accounting: { labelKey: categoryLabelKeys.accounting, order: 1, icon: Calculator },
+  payments: { labelKey: categoryLabelKeys.payments, order: 2, icon: CreditCard },
+  automation: { labelKey: categoryLabelKeys.automation, order: 3, icon: Zap },
 };
 
 const integrationsSeed: Integration[] = [
@@ -148,6 +157,8 @@ function isValidEmail(email: string) {
 }
 
 export default function IntegrationsPage() {
+  const t = useTranslations("dashboard.integrations");
+  const locale = useLocale() as Locale;
   const [integrations, setIntegrations] =
     useState<Integration[]>(integrationsSeed);
   const [waitlist, setWaitlist] = useState<Record<string, WaitlistEntry>>({});
@@ -179,18 +190,18 @@ export default function IntegrationsPage() {
     setIntegrations((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: "connected" } : item))
     );
-    toast.success("Integración conectada");
+    toast.success(t("toasts.connected"));
   }
 
   function handleDisconnect(id: string) {
     setIntegrations((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: "available" } : item))
     );
-    toast.success("Integración desconectada");
+    toast.success(t("toasts.disconnected"));
   }
 
   function handleConfigure(name: string) {
-    toast.info(`Abriendo configuración de ${name}...`);
+    toast.info(t("toasts.configure", { name }));
   }
 
   function toggleWaitlist(id: string) {
@@ -209,7 +220,7 @@ export default function IntegrationsPage() {
 
   function handleWaitlistSubmit(id: string) {
     if (!waitlistForm.name.trim() || !isValidEmail(waitlistForm.email)) {
-      toast.error("Ingresa un nombre y un email válido");
+      toast.error(t("toasts.invalidForm"));
       return;
     }
 
@@ -228,7 +239,7 @@ export default function IntegrationsPage() {
     }).catch(() => null);
     setExpandedWaitlist(null);
     setWaitlistForm({ name: "", email: "" });
-    toast.success("Te notificaremos cuando esté disponible");
+    toast.success(t("toasts.waitlistSuccess"));
   }
 
   const grouped = useMemo(() => {
@@ -246,11 +257,8 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="heading-section">Integraciones</h1>
-        <p className="body-default mt-1">
-          Conecta bancos, contabilidad, pasarelas de pago y automatización en un
-          solo lugar.
-        </p>
+        <h1 className="heading-section">{t("title")}</h1>
+        <p className="body-default mt-1">{t("subtitle")}</p>
       </div>
 
       <Card className="surface-elevated-2 border border-primary/20">
@@ -259,10 +267,9 @@ export default function IntegrationsPage() {
             <Landmark className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1">
-            <p className="font-medium">Open Banking está llegando a Colombia</p>
+            <p className="font-medium">{t("openBankingBanner.title")}</p>
             <p className="body-small text-muted-foreground">
-              El Decreto 0368 de 2026 obliga a todos los bancos a exponer APIs
-              seguras. Rhynode será uno de los primeros en integrarse.
+              {t("openBankingBanner.description")}
             </p>
           </div>
         </CardContent>
@@ -276,7 +283,7 @@ export default function IntegrationsPage() {
               <div className="flex items-center gap-2">
                 <CategoryIcon className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {categories[category].label}
+                  {t(categories[category].labelKey as never)}
                 </h2>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -306,26 +313,21 @@ export default function IntegrationsPage() {
         <CardHeader>
           <CardTitle className="heading-card flex items-center gap-2">
             <LinkIcon className="h-4 w-4" />
-            ¿Qué es Open Banking?
+            {t("openBankingCard.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>
-            Open Banking permite que apps autorizadas accedan a tus datos
-            bancarios de forma segura, con tu permiso explícito. Esto significa:
-          </p>
+          <p>{t("openBankingCard.intro")}</p>
           <ul className="list-disc space-y-1 pl-5">
-            <li>
-              Tus transacciones se importan automáticamente sin escribir nada
-            </li>
-            <li>La IA categoriza tus gastos al instante</li>
-            <li>Recibes alertas de anomalías en tiempo real</li>
-            <li>Tus datos están encriptados y nunca se venden</li>
+            <li>{t("openBankingCard.bullet1")}</li>
+            <li>{t("openBankingCard.bullet2")}</li>
+            <li>{t("openBankingCard.bullet3")}</li>
+            <li>{t("openBankingCard.bullet4")}</li>
           </ul>
           <p>
-            En Colombia, el <strong>Decreto 0368 de abril 2026</strong> hizo
-            Open Finance obligatorio para todas las entidades financieras
-            supervisadas por la SFC.
+            {t("openBankingCard.outroBefore")}{" "}
+            <strong>{t("openBankingCard.outroBold")}</strong>{" "}
+            {t("openBankingCard.outroAfter")}
           </p>
         </CardContent>
       </Card>
@@ -360,6 +362,7 @@ function IntegrationCard({
   onFormChange,
   onWaitlistSubmit,
 }: IntegrationCardProps) {
+  const t = useTranslations("dashboard.integrations");
   const isJoined = Boolean(waitlistEntry);
 
   function statusBadge() {
@@ -370,14 +373,14 @@ function IntegrationCard({
           className="border-success/30 bg-success/10 text-success"
         >
           <CheckCircle2 className="mr-1 h-3 w-3" />
-          Conectado
+          {t("statuses.connected")}
         </Badge>
       );
     }
     if (integration.status === "available") {
-      return <Badge variant="default">Disponible</Badge>;
+      return <Badge variant="default">{t("statuses.available")}</Badge>;
     }
-    return <Badge variant="secondary">Próximamente</Badge>;
+    return <Badge variant="secondary">{t("statuses.comingSoon")}</Badge>;
   }
 
   return (
@@ -415,7 +418,7 @@ function IntegrationCard({
                 onClick={onConfigure}
               >
                 <Settings className="h-4 w-4" />
-                Configurar
+                {t("actions.configure")}
               </Button>
               <Button
                 variant="ghost"
@@ -424,7 +427,7 @@ function IntegrationCard({
                 onClick={onDisconnect}
               >
                 <Unplug className="h-4 w-4" />
-                Desconectar
+                {t("actions.disconnect")}
               </Button>
             </div>
           )}
@@ -432,7 +435,7 @@ function IntegrationCard({
           {integration.status === "available" && (
             <Button size="sm" className="w-full gap-2" onClick={onConnect}>
               <Plug className="h-4 w-4" />
-              Conectar
+              {t("actions.connect")}
             </Button>
           )}
 
@@ -446,7 +449,7 @@ function IntegrationCard({
                   disabled
                 >
                   <CheckCircle2 className="h-4 w-4 text-success" />
-                  Te avisaremos
+                  {t("waitlist.joined")}
                 </Button>
               ) : (
                 <>
@@ -458,7 +461,7 @@ function IntegrationCard({
                       onClick={onToggleWaitlist}
                     >
                       <Bell className="h-4 w-4" />
-                      Unirme a la lista
+                      {t("waitlist.join")}
                     </Button>
                   ) : (
                     <div className="space-y-2">
@@ -467,7 +470,7 @@ function IntegrationCard({
                           htmlFor={`waitlist-name-${integration.id}`}
                           className="text-xs"
                         >
-                          Nombre
+                          {t("waitlist.nameLabel")}
                         </Label>
                         <Input
                           id={`waitlist-name-${integration.id}`}
@@ -475,7 +478,7 @@ function IntegrationCard({
                           onChange={(e) =>
                             onFormChange("name", e.target.value)
                           }
-                          placeholder="Tu nombre"
+                          placeholder={t("waitlist.namePlaceholder")}
                           className="h-8 text-sm"
                         />
                       </div>
@@ -484,7 +487,7 @@ function IntegrationCard({
                           htmlFor={`waitlist-email-${integration.id}`}
                           className="text-xs"
                         >
-                          Email
+                          {t("waitlist.emailLabel")}
                         </Label>
                         <Input
                           id={`waitlist-email-${integration.id}`}
@@ -493,7 +496,7 @@ function IntegrationCard({
                           onChange={(e) =>
                             onFormChange("email", e.target.value)
                           }
-                          placeholder="tu@empresa.com"
+                          placeholder={t("waitlist.emailPlaceholder")}
                           className="h-8 text-sm"
                         />
                       </div>
@@ -504,14 +507,14 @@ function IntegrationCard({
                           className="flex-1"
                           onClick={onToggleWaitlist}
                         >
-                          Cancelar
+                          {t("waitlist.cancel")}
                         </Button>
                         <Button
                           size="sm"
                           className="flex-1"
                           onClick={onWaitlistSubmit}
                         >
-                          Enviar
+                          {t("waitlist.submit")}
                         </Button>
                       </div>
                     </div>

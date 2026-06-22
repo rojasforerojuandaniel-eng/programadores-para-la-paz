@@ -2,6 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, Globe } from "lucide-react";
 import type { EconomicIndicator } from "@/lib/economic-indicators";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatDate as fmtDate } from "@/lib/format";
 
 interface EconomicIndicatorsWidgetProps {
   indicators: EconomicIndicator[];
@@ -9,12 +12,18 @@ interface EconomicIndicatorsWidgetProps {
   attribution: string;
 }
 
-function TrendBadge({ trend }: { trend: "up" | "down" | "flat" }) {
+function TrendBadge({
+  trend,
+  t,
+}: {
+  trend: "up" | "down" | "flat";
+  t: (key: string) => string;
+}) {
   if (trend === "up") {
     return (
       <Badge variant="outline" className="gap-1 text-xs text-emerald-600">
         <TrendingUp className="h-3 w-3" />
-        Subió
+        {t("trend.up")}
       </Badge>
     );
   }
@@ -22,32 +31,36 @@ function TrendBadge({ trend }: { trend: "up" | "down" | "flat" }) {
     return (
       <Badge variant="outline" className="gap-1 text-xs text-rose-600">
         <TrendingDown className="h-3 w-3" />
-        Bajó
+        {t("trend.down")}
       </Badge>
     );
   }
   return (
     <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
       <Minus className="h-3 w-3" />
-      Estable
+      {t("trend.flat")}
     </Badge>
   );
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: Locale): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("es-CO", {
+  return fmtDate(date, locale, {
     month: "short",
     day: "numeric",
-  }).format(date);
+  });
 }
 
-export function EconomicIndicatorsWidget({
+export async function EconomicIndicatorsWidget({
   indicators,
   lastUpdated,
   attribution,
 }: EconomicIndicatorsWidgetProps) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.indicators" });
+
   const displayIndicators = indicators.slice(0, 4);
 
   return (
@@ -56,9 +69,9 @@ export function EconomicIndicatorsWidget({
         <div className="flex items-center justify-between">
           <CardTitle className="heading-card flex items-center gap-2 text-base">
             <Globe className="h-4 w-4 text-primary" />
-            Indicadores Colombia
+            {t("widget.title")}
           </CardTitle>
-          <TrendBadge trend="flat" />
+          <TrendBadge trend="flat" t={t} />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -74,16 +87,16 @@ export function EconomicIndicatorsWidget({
               </p>
               <p className="text-xs text-muted-foreground">{indicator.unit}</p>
               <div className="mt-2 flex items-center justify-between">
-                <TrendBadge trend={indicator.trend} />
+                <TrendBadge trend={indicator.trend} t={t} />
                 <span className="text-xs text-muted-foreground">
-                  {formatDate(indicator.date)}
+                  {formatDate(indicator.date, locale)}
                 </span>
               </div>
             </div>
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          {attribution} · Actualizado {formatDate(lastUpdated)}
+          {attribution} · {t("widget.updated", { date: formatDate(lastUpdated, locale) })}
         </p>
       </CardContent>
     </Card>
