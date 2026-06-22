@@ -8,22 +8,25 @@ import { TrendBadge } from "./trend-badge";
 import { Globe, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, type Locale } from "@/lib/locale-server";
+import { formatDate as fmtDate } from "@/lib/format";
 
 export const metadata = dashboardMetadata(
   "Indicadores Económicos",
   "Tasas de referencia de Colombia: TRM, inflación, tasa de intervención, UVR e IBR."
 );
 
-function formatLastUpdated(value: string): string {
+function formatLastUpdated(value: string, locale: Locale): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("es-CO", {
+  return fmtDate(date, locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
+  });
 }
 
 async function refreshIndicators() {
@@ -32,6 +35,10 @@ async function refreshIndicators() {
 }
 
 export default async function EconomicIndicatorsPage() {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "dashboard.indicators" });
+
   const org = await requireAuth();
   if (!org) redirect("/sign-in");
 
@@ -42,15 +49,13 @@ export default async function EconomicIndicatorsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading-section">Indicadores Económicos</h1>
-          <p className="body-default mt-1">
-            Datos de referencia de Colombia actualizados diariamente
-          </p>
+          <h1 className="heading-section">{t("title")}</h1>
+          <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
         <form action={refreshIndicators}>
           <Button type="submit" variant="outline" size="sm" className="gap-2">
             <RefreshCw className="h-4 w-4" />
-            Actualizar
+            {t("refresh")}
           </Button>
         </form>
       </div>
@@ -59,10 +64,8 @@ export default async function EconomicIndicatorsPage() {
         <div className="flex items-start gap-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
-            <p className="font-medium">Mostrando datos de respaldo</p>
-            <p className="text-sm opacity-90">
-              No pudimos conectarnos con la fuente oficial. Los valores mostrados son de referencia y pueden no reflejar el mercado actual.
-            </p>
+            <p className="font-medium">{t("fallback.title")}</p>
+            <p className="text-sm opacity-90">{t("fallback.description")}</p>
           </div>
         </div>
       )}
@@ -92,7 +95,7 @@ export default async function EconomicIndicatorsPage() {
               </div>
               {indicator.previousValue !== "—" && (
                 <p className="text-xs text-muted-foreground">
-                  Valor base / meta: {indicator.previousValue}
+                  {t("baseValue", { value: indicator.previousValue })}
                 </p>
               )}
               {indicator.description && (
@@ -115,11 +118,11 @@ export default async function EconomicIndicatorsPage() {
 
       <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
         <p>
-          <strong>Fuente:</strong> {source}
+          <strong>{t("source")}</strong> {source}
         </p>
         <p className="mt-1">{attribution}</p>
         <p className="mt-1">
-          <strong>Última actualización:</strong> {formatLastUpdated(lastUpdated)}
+          <strong>{t("lastUpdate")}</strong> {formatLastUpdated(lastUpdated, locale)}
         </p>
       </div>
     </div>

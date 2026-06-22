@@ -746,6 +746,79 @@
         "description": "Revisa tus estadísticas detalladas y compara tu avance semana a semana.",
         "viewStats": "Ver mis stats"
       }
+    },
+    "indicators": {
+      "title": "Indicadores Económicos",
+      "subtitle": "Datos de referencia de Colombia actualizados diariamente",
+      "refresh": "Actualizar",
+      "fallback": {
+        "title": "Mostrando datos de respaldo",
+        "description": "No pudimos conectarnos con la fuente oficial. Los valores mostrados son de referencia y pueden no reflejar el mercado actual."
+      },
+      "baseValue": "Valor base / meta: {value}",
+      "source": "Fuente:",
+      "lastUpdate": "Última actualización:",
+      "trend": {
+        "up": "Subió",
+        "down": "Bajó",
+        "flat": "Estable"
+      },
+      "widget": {
+        "title": "Indicadores Colombia",
+        "updated": "Actualizado {date}"
+      }
+    },
+    "integrations": {
+      "title": "Integraciones",
+      "subtitle": "Conecta bancos, contabilidad, pasarelas de pago y automatización en un solo lugar.",
+      "openBankingBanner": {
+        "title": "Open Banking está llegando a Colombia",
+        "description": "El Decreto 0368 de 2026 obliga a todos los bancos a exponer APIs seguras. Rhynode será uno de los primeros en integrarse."
+      },
+      "categories": {
+        "banks": "Bancos",
+        "accounting": "Contabilidad",
+        "payments": "Pagos",
+        "automation": "Automatización"
+      },
+      "openBankingCard": {
+        "title": "¿Qué es Open Banking?",
+        "intro": "Open Banking permite que apps autorizadas accedan a tus datos bancarios de forma segura, con tu permiso explícito. Esto significa:",
+        "bullet1": "Tus transacciones se importan automáticamente sin escribir nada",
+        "bullet2": "La IA categoriza tus gastos al instante",
+        "bullet3": "Recibes alertas de anomalías en tiempo real",
+        "bullet4": "Tus datos están encriptados y nunca se venden",
+        "outroBefore": "En Colombia, el",
+        "outroBold": "Decreto 0368 de abril 2026",
+        "outroAfter": "hizo Open Finance obligatorio para todas las entidades financieras supervisadas por la SFC."
+      },
+      "statuses": {
+        "connected": "Conectado",
+        "available": "Disponible",
+        "comingSoon": "Próximamente"
+      },
+      "actions": {
+        "configure": "Configurar",
+        "disconnect": "Desconectar",
+        "connect": "Conectar"
+      },
+      "waitlist": {
+        "joined": "Te avisaremos",
+        "join": "Unirme a la lista",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "Tu nombre",
+        "emailLabel": "Email",
+        "emailPlaceholder": "tu@empresa.com",
+        "cancel": "Cancelar",
+        "submit": "Enviar"
+      },
+      "toasts": {
+        "connected": "Integración conectada",
+        "disconnected": "Integración desconectada",
+        "configure": "Abriendo configuración de {name}...",
+        "invalidForm": "Ingresa un nombre y un email válido",
+        "waitlistSuccess": "Te notificaremos cuando esté disponible"
+      }
     }
   },
   "nav": {
