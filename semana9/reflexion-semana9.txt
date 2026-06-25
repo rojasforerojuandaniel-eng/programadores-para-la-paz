@@ -1,0 +1,17 @@
+Reflexión de la semana 9
+
+Es importante que las plataformas tecnológicas que usan las comunidades funcionen de
+manera estable y segura en un servidor porque estas herramientas suelen almacenar
+información sensible de muchas personas y coordinar actividades colectivas. Cuando un
+servidor está bien configurado, monitoreado y protegido, los usuarios pueden confiar en
+que sus datos están a salvo y que el servicio estará disponible cuando lo necesiten.
+
+La estabilidad evita interrupciones que pueden afectar la comunicación, el acceso a
+recursos o la participación de la comunidad. Por eso, contar con logs, monitoreo y
+mecanismos de reinicio es fundamental para detectar problemas a tiempo y responder de
+forma rápida.
+
+Además, la seguridad básica, como proteger credenciales, validar entradas y mantener
+el software actualizado, reduce riesgos de ataques o filtraciones de información. En
+resumen, un servidor confiable protege la participación, la confianza y el bienestar de
+la comunidad que depende de la plataforma.

@@ -1,0 +1,23 @@
+Registro de ejecución del servidor
+
+1. ¿Qué ocurre cuando ejecutas node server.js?
+Al ejecutar el comando node server.js en la terminal, Node.js carga el archivo server.js,
+importa la librería express, configura las rutas de la aplicación y pone el servidor en
+marcha para escuchar conexiones entrantes.
+
+2. ¿Qué mensaje aparece en la terminal?
+En la terminal aparece el mensaje:
+Servidor ejecutándose en puerto 3000
+
+Esto indica que la aplicación se inició correctamente y está lista para recibir solicitudes
+en la dirección http://localhost:3000.
+
+3. ¿Qué sucede cuando visitas la ruta /estado?
+Al visitar http://localhost:3000/estado en el navegador, el servidor responde con un
+objeto JSON que reporta el estado del servicio.
+
+Respuesta esperada de /estado:
+{
+  "estado": "Servidor funcionando",
+  "servicio": "API comunitaria"
+}
