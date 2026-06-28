@@ -3,7 +3,7 @@ import typescript from "eslint-config-next/typescript";
 
 /** @type {import('eslint').Linter.Config[]} */
 const eslintConfig = [
-  { ignores: ["native/**", "native", "native-legacy/**", "native-legacy"] },
+  { ignores: ["native/**", "native", "native-legacy/**", "native-legacy", "apps/mobile/metro.config.js", "apps/mobile/tailwind.config.js"] },
   ...coreWebVitals,
   ...typescript,
   {

@@ -1,4 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, getAuth } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
 import { getPrisma } from "./prisma";
 import type { UserScope } from "./scope";
 
@@ -100,4 +101,65 @@ export async function getOrCreateAuthOrg() {
   }
 
   return org;
+}
+
+function bearerTokenFromRequest(request: Request): string | null {
+  const authHeader = request.headers.get("authorization");
+  return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+}
+
+async function clerkUserIdFromRequest(request: Request): Promise<string | null> {
+  const bearer = bearerTokenFromRequest(request);
+  if (!bearer) {
+    const session = await auth();
+    return session?.userId ?? null;
+  }
+  try {
+    const clerkAuth = await getAuth(request as NextRequest);
+    return clerkAuth?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getUserProfileFromRequest(request: Request) {
+  const userId = await clerkUserIdFromRequest(request);
+  if (!userId) return null;
+
+  const prisma = getPrisma();
+  let profile = await prisma.userProfile.findUnique({ where: { clerkId: userId } });
+  if (!profile) {
+    profile = await prisma.userProfile.create({
+      data: {
+        clerkId: userId,
+        email: "",
+        scope: "PERSONAL",
+        hasBusiness: false,
+        onboardingCompleted: false,
+      },
+    });
+  }
+  return profile;
+}
+
+export async function getOrCreateAuthOrgFromRequest(request: Request) {
+  const profile = await getUserProfileFromRequest(request);
+  if (!profile) return null;
+
+  const prisma = getPrisma();
+  let org = await prisma.organization.findFirst({ where: { slug: profile.clerkId } });
+  if (!org) {
+    org = await prisma.organization.create({
+      data: {
+        name: "Mi Empresa",
+        slug: profile.clerkId,
+        country: "CO",
+        currency: "COP",
+        timezone: "America/Bogota",
+        onboardingCompleted: false,
+        userId: profile.id,
+      },
+    });
+  }
+  return { profile, org };
 }
