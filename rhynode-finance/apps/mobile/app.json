@@ -1,8 +1,54 @@
 {
-  "plugins": [
-    "expo-router",
-    "expo-secure-store",
-    "expo-sqlite",
-    "expo-localization"
-  ]
+  "expo": {
+    "name": "Rhynode",
+    "slug": "rhynode-finance",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "rhynode",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rhynode.finance"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
+      },
+      "package": "com.rhynode.finance",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [{ "scheme": "rhynode" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-localization",
+      "expo-notifications",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Rhynode to access your camera to scan receipts."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Rhynode to use Face ID or fingerprint to secure your account."
+        }
+      ]
+    ]
+  }
 }
