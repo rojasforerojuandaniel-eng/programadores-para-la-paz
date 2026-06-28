@@ -2,6 +2,7 @@
   "name": "rhynode-finance",
   "version": "0.1.0",
   "private": true,
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -21,6 +22,12 @@
     "*.{ts,tsx}": [
       "eslint --fix",
       "bash -c 'npx tsc --noEmit --project tsconfig.json'"
+    ],
+    "apps/mobile/**/*.{ts,tsx}": [
+      "bash -c 'npx tsc --noEmit --project apps/mobile/tsconfig.json'"
+    ],
+    "packages/shared/**/*.{ts,tsx}": [
+      "bash -c 'npx tsc --noEmit --project packages/shared/tsconfig.json'"
     ]
   },
   "dependencies": {
