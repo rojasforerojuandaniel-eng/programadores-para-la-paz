@@ -379,6 +379,7 @@ model UserProfile {
   importJobs        ImportJob[]
   detectedSubscriptions DetectedSubscription[]
   pushSubscriptions PushSubscription[]
+  expoPushTokens    ExpoPushToken[]
   notificationPreference NotificationPreference?
   splitGroups         SplitGroup[]
 
@@ -591,6 +592,18 @@ model PushSubscription {
 
   @@unique([userId, endpoint])
   @@map("push_subscriptions")
+}
+
+model ExpoPushToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("expo_push_tokens")
 }
 
 model Receipt {

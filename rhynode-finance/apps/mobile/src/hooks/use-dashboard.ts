@@ -22,5 +22,7 @@ export function useDashboardSummary() {
   return useQuery<DashboardSummary>({
     queryKey: ['dashboard', 'summary'],
     queryFn: () => api.get('/api/dashboard/summary'),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }

@@ -1,0 +1,9 @@
+appId: com.rhynode.finance
+---
+- launchApp
+- openLink: "rhynode://camera"
+- tapOn:
+    id: "request-camera-permission"
+- tapOn:
+    id: "camera-shutter"
+- assertVisible: "📷"

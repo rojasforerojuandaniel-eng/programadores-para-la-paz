@@ -17,5 +17,7 @@ export function usePersonalData<T>(type: PersonalDataType, key?: string) {
   return useQuery<T>({
     queryKey: ['personal', type, key],
     queryFn: () => api.get(`/api/mobile/personal-data?type=${type}`),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }

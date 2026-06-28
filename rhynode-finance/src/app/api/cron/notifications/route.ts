@@ -7,7 +7,7 @@ import {
   sendSubscriptionReminder,
   sendInvoiceOverdueReminder,
 } from "@/lib/push-events";
-import { sendPushNotification } from "@/lib/notifications";
+import { sendPushNotification, sendExpoPushNotification } from "@/lib/notifications";
 import type { Locale } from "@/lib/locale";
 import type { Notification } from "@/generated/prisma/client";
 import {
@@ -85,21 +85,36 @@ export async function GET(request: Request) {
       totalErrors: 0,
     };
 
-    // Unique users with at least one push subscription
-    const subs = await prisma.pushSubscription.findMany({
-      include: {
-        user: {
-          include: {
-            notificationPreference: true,
+    // Unique users with at least one push subscription (web or Expo)
+    const [subs, expoTokens] = await Promise.all([
+      prisma.pushSubscription.findMany({
+        include: {
+          user: {
+            include: {
+              notificationPreference: true,
+            },
           },
         },
-      },
-    });
+      }),
+      prisma.expoPushToken.findMany({
+        include: {
+          user: {
+            include: {
+              notificationPreference: true,
+            },
+          },
+        },
+      }),
+    ]);
 
-    const userIds = Array.from(new Set(subs.map((s) => s.userId)));
+    const userMap = new Map<string, typeof subs[number]["user"]>();
+    for (const sub of subs) userMap.set(sub.userId, sub.user);
+    for (const token of expoTokens) userMap.set(token.userId, token.user);
+
+    const userIds = Array.from(userMap.keys());
 
     for (const userId of userIds) {
-      const user = subs.find((s) => s.userId === userId)?.user;
+      const user = userMap.get(userId);
       if (!user) continue;
 
       const prefs = user.notificationPreference;
@@ -204,7 +219,10 @@ async function sendScheduledReminder(
   if (!isReminderDue(reminder)) return { sent: 0, errors: 0, skipped: true };
 
   const prisma = getPrisma();
-  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+  const [subs, expoTokens] = await Promise.all([
+    prisma.pushSubscription.findMany({ where: { userId } }),
+    prisma.expoPushToken.findMany({ where: { userId }, select: { token: true } }),
+  ]);
   let sent = 0;
   let errors = 0;
 
@@ -229,6 +247,19 @@ async function sendScheduledReminder(
     } else {
       errors++;
     }
+  }
+
+  if (expoTokens.length > 0) {
+    const expoResult = await sendExpoPushNotification(
+      expoTokens.map((t) => t.token),
+      {
+        title: payload.title,
+        body: payload.body,
+        data: payload.url ? { url: payload.url } : undefined,
+      }
+    );
+    sent += expoResult.sent;
+    errors += expoResult.errors;
   }
 
   const meta = decodeReminderMeta(notification.actionUrl) ?? {

@@ -3,6 +3,7 @@ import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
+import { hapticImpact } from '~/lib/haptics';
 import { useCreateTransaction } from '~/hooks/use-transactions';
 
 interface QuickAddFormProps {
@@ -25,34 +26,44 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
   const [date] = useState(initialDateString(initialDate));
   const { mutate, isPending } = useCreateTransaction();
 
+  const selectType = (next: 'INCOME' | 'EXPENSE') => {
+    setType(next);
+    void hapticImpact();
+  };
+
   const onSubmit = () => {
     const value = parseFloat(amount);
     if (!description || Number.isNaN(value) || value <= 0) return;
 
-    mutate({
-      type,
-      description,
-      amount: value,
-      currency: 'COP',
-      date,
-      category,
-    });
-
-    setDescription('');
-    setAmount('');
+    mutate(
+      {
+        type,
+        description,
+        amount: value,
+        currency: 'COP',
+        date,
+        category,
+      },
+      {
+        onSuccess: () => {
+          setDescription('');
+          setAmount('');
+        },
+      }
+    );
   };
 
   return (
     <View className="gap-4">
       <View className="flex-row gap-4">
         <Button
-          onPress={() => setType('INCOME')}
+          onPress={() => selectType('INCOME')}
           className={`flex-1 ${type === 'INCOME' ? 'bg-success' : 'bg-card'}`}
         >
           <Text className={type === 'INCOME' ? 'text-success-foreground font-semibold' : 'text-foreground'}>Recibí</Text>
         </Button>
         <Button
-          onPress={() => setType('EXPENSE')}
+          onPress={() => selectType('EXPENSE')}
           className={`flex-1 ${type === 'EXPENSE' ? 'bg-destructive' : 'bg-card'}`}
         >
           <Text className={type === 'EXPENSE' ? 'text-destructive-foreground font-semibold' : 'text-foreground'}>Gasté</Text>

@@ -9,5 +9,7 @@ export function useBusinessData<T>(type: BusinessDataType) {
   return useQuery<T>({
     queryKey: ['business', type],
     queryFn: () => api.get(`/api/mobile/business-data?type=${type}`),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
