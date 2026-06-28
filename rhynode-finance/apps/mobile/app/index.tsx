@@ -1,25 +1,14 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Button } from '~/components/ui/button';
+import { Text } from '~/components/ui/text';
+import { View } from '~/components/ui/view';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hello Rhynode</Text>
+    <View className="flex-1 items-center justify-center bg-background px-6">
+      <Text className="text-3xl font-bold text-foreground mb-4">Hello Rhynode</Text>
+      <Button>
+        <Text className="text-primary-foreground font-semibold">Empezar</Text>
+      </Button>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0A0A0F',
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 16,
-  },
-});
