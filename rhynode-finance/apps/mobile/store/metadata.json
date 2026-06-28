@@ -1,0 +1,11 @@
+{
+  "title": "Rhynode Finance",
+  "shortDescription": "Controla tus finanzas personales y empresariales desde Colombia y LATAM.",
+  "fullDescription": "Rhynode es la app de finanzas todo-en-uno para personas y empresas en Colombia y Latinoamérica.\n\nFunciones principales:\n• Dashboard con saldo, ingresos, gastos y salud financiera en tiempo real.\n• Registro rápido de transacciones con voz, escaneo de recibos y categorización inteligente.\n• Finanzas personales: cuentas, presupuestos, metas, deudas, recurrentes, calendario y suscripciones.\n• Finanzas empresariales: facturas, clientes y proyectos.\n• Asesor IA que responde sobre tus datos financieros de forma privada y segura.\n• Multi-moneda, reportes de renta, indicadores económicos de Colombia y alertas personalizadas.\n• Seguridad: autenticación biométrica, encriptación y respaldo en la nube.\n\nDescarga Rhynode y empieza a tomar el control de tu dinero hoy.",
+  "keywords": ["finanzas", "presupuesto", "gastos", "empresa", "Colombia", "LATAM", "dinero", "contabilidad"],
+  "category": "FINANCE",
+  "contentRating": "Everyone",
+  "contactEmail": "soporte@rhynode.com",
+  "supportUrl": "https://rhynode-finance.vercel.app/support",
+  "privacyPolicyUrl": "https://rhynode-finance.vercel.app/privacy"
+}
