@@ -7,6 +7,11 @@ const eslintConfig = [
   ...coreWebVitals,
   ...typescript,
   {
+    files: [
+      "src/**/*.{ts,tsx}",
+      "apps/mobile/**/*.{ts,tsx}",
+      "packages/shared/**/*.{ts,tsx}",
+    ],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "no-console": ["warn", { allow: ["error"] }],
