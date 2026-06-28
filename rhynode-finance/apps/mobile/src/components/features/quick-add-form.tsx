@@ -5,11 +5,24 @@ import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
 import { useCreateTransaction } from '~/hooks/use-transactions';
 
-export function QuickAddForm() {
+interface QuickAddFormProps {
+  initialMerchant?: string;
+  initialTotal?: string;
+  initialDate?: string;
+}
+
+function initialDateString(date?: string) {
+  if (!date) return new Date().toISOString();
+  const d = new Date(date);
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: QuickAddFormProps) {
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState(initialMerchant ?? '');
+  const [amount, setAmount] = useState(initialTotal ?? '');
   const [category, setCategory] = useState('Otros');
+  const [date] = useState(initialDateString(initialDate));
   const { mutate, isPending } = useCreateTransaction();
 
   const onSubmit = () => {
@@ -21,7 +34,7 @@ export function QuickAddForm() {
       description,
       amount: value,
       currency: 'COP',
-      date: new Date().toISOString(),
+      date,
       category,
     });
 

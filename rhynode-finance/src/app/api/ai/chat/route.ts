@@ -1,5 +1,5 @@
 import { decimalToNumber } from "@/lib/decimal";
-import { getUserProfile, getOrCreateAuthOrg } from "@/lib/auth";
+import { getUserProfileFromRequest, getOrCreateAuthOrgFromRequest } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
@@ -179,15 +179,16 @@ async function consumeAnthropicRound(
 
 export const POST = withRateLimit(
   async (request: Request) => {
-    const profile = await getUserProfile();
+    const profile = await getUserProfileFromRequest(request);
     if (!profile) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const org = await getOrCreateAuthOrg();
-    if (!org) {
+    const authOrg = await getOrCreateAuthOrgFromRequest(request);
+    if (!authOrg) {
       return Response.json({ error: "Organization not found" }, { status: 500 });
     }
+    const org = authOrg.org;
 
     const parseResult = chatSchema.safeParse(await request.json());
     if (!parseResult.success) {
