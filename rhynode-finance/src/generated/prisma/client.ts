@@ -162,6 +162,11 @@ export type NotificationPreference = Prisma.NotificationPreferenceModel
  */
 export type PushSubscription = Prisma.PushSubscriptionModel
 /**
+ * Model ExpoPushToken
+ * 
+ */
+export type ExpoPushToken = Prisma.ExpoPushTokenModel
+/**
  * Model Receipt
  * 
  */

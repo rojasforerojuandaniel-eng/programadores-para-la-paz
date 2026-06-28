@@ -2,6 +2,7 @@ import { Pressable, type PressableProps } from 'react-native';
 import { cssInterop } from 'nativewind';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
+import { hapticImpact } from '~/lib/haptics';
 
 type StyledPressableProps = PressableProps & { className?: string };
 
@@ -38,9 +39,21 @@ export interface ButtonProps
   children: React.ReactNode;
 }
 
-export function Button({ className, variant, size, children, ...props }: ButtonProps) {
+export function Button({ className, variant, size, onPress, disabled, children, ...props }: ButtonProps) {
+  const handlePress = (event: Parameters<NonNullable<PressableProps['onPress']>>[0]) => {
+    if (!disabled) {
+      void hapticImpact();
+    }
+    onPress?.(event);
+  };
+
   return (
-    <StyledPressable className={cn(buttonVariants({ variant, size }), className)} {...props}>
+    <StyledPressable
+      className={cn(buttonVariants({ variant, size }), className)}
+      onPress={handlePress}
+      disabled={disabled}
+      {...props}
+    >
       {children}
     </StyledPressable>
   );

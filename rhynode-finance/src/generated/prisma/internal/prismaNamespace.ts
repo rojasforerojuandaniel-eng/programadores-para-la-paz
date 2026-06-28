@@ -408,6 +408,7 @@ export const ModelName = {
   DetectedSubscription: 'DetectedSubscription',
   NotificationPreference: 'NotificationPreference',
   PushSubscription: 'PushSubscription',
+  ExpoPushToken: 'ExpoPushToken',
   Receipt: 'Receipt',
   Achievement: 'Achievement',
   NetWorthSnapshot: 'NetWorthSnapshot',
@@ -436,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "organizationMember" | "client" | "project" | "invoice" | "invoiceItem" | "invoiceReminder" | "transaction" | "taxReport" | "bankAccount" | "paymentLink" | "payment" | "subscription" | "userProfile" | "account" | "category" | "budget" | "goal" | "debt" | "investment" | "recurringTransaction" | "detectedSubscription" | "notificationPreference" | "pushSubscription" | "receipt" | "achievement" | "netWorthSnapshot" | "userActivity" | "notification" | "document" | "importJob" | "webhookEvent" | "currencyRate" | "integration" | "splitGroup" | "splitMember" | "splitExpense"
+    modelProps: "organization" | "organizationMember" | "client" | "project" | "invoice" | "invoiceItem" | "invoiceReminder" | "transaction" | "taxReport" | "bankAccount" | "paymentLink" | "payment" | "subscription" | "userProfile" | "account" | "category" | "budget" | "goal" | "debt" | "investment" | "recurringTransaction" | "detectedSubscription" | "notificationPreference" | "pushSubscription" | "expoPushToken" | "receipt" | "achievement" | "netWorthSnapshot" | "userActivity" | "notification" | "document" | "importJob" | "webhookEvent" | "currencyRate" | "integration" | "splitGroup" | "splitMember" | "splitExpense"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2216,6 +2217,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ExpoPushToken: {
+      payload: Prisma.$ExpoPushTokenPayload<ExtArgs>
+      fields: Prisma.ExpoPushTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExpoPushTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExpoPushTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.ExpoPushTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExpoPushTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        findMany: {
+          args: Prisma.ExpoPushTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>[]
+        }
+        create: {
+          args: Prisma.ExpoPushTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        createMany: {
+          args: Prisma.ExpoPushTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExpoPushTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.ExpoPushTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        update: {
+          args: Prisma.ExpoPushTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExpoPushTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExpoPushTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExpoPushTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExpoPushTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpoPushTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.ExpoPushTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpoPushToken>
+        }
+        groupBy: {
+          args: Prisma.ExpoPushTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpoPushTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExpoPushTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpoPushTokenCountAggregateOutputType> | number
+        }
+      }
+    }
     Receipt: {
       payload: Prisma.$ReceiptPayload<ExtArgs>
       fields: Prisma.ReceiptFieldRefs
@@ -3690,6 +3765,17 @@ export const PushSubscriptionScalarFieldEnum = {
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
 
 
+export const ExpoPushTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpoPushTokenScalarFieldEnum = (typeof ExpoPushTokenScalarFieldEnum)[keyof typeof ExpoPushTokenScalarFieldEnum]
+
+
 export const ReceiptScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -4149,6 +4235,7 @@ export type GlobalOmitConfig = {
   detectedSubscription?: Prisma.DetectedSubscriptionOmit
   notificationPreference?: Prisma.NotificationPreferenceOmit
   pushSubscription?: Prisma.PushSubscriptionOmit
+  expoPushToken?: Prisma.ExpoPushTokenOmit
   receipt?: Prisma.ReceiptOmit
   achievement?: Prisma.AchievementOmit
   netWorthSnapshot?: Prisma.NetWorthSnapshotOmit

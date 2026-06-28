@@ -22,7 +22,7 @@ export default function CameraScreen() {
     return (
       <View className="flex-1 bg-background items-center justify-center px-6">
         <Text className="text-foreground text-lg mb-4">Necesitamos acceso a la cámara para escanear recibos.</Text>
-        <Pressable onPress={requestPermission} className="bg-primary rounded-2xl px-6 py-3">
+        <Pressable testID="request-camera-permission" onPress={requestPermission} className="bg-primary rounded-2xl px-6 py-3">
           <Text className="text-primary-foreground font-semibold">Permitir cámara</Text>
         </Pressable>
       </View>
@@ -81,6 +81,7 @@ export default function CameraScreen() {
       <CameraView ref={cameraRef} className="flex-1" facing="back">
         <View className="absolute bottom-12 left-0 right-0 items-center">
           <Pressable
+            testID="camera-shutter"
             onPress={takePicture}
             disabled={loading}
             className="w-20 h-20 rounded-full border-4 border-white bg-white/20 items-center justify-center"

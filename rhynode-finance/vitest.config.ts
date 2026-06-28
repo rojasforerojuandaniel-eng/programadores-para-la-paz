@@ -11,6 +11,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    exclude: ["**/node_modules/**", "e2e", "dist", ".next", "native", "native-legacy"],
+    exclude: [
+      "**/node_modules/**",
+      "e2e",
+      "dist",
+      ".next",
+      "native",
+      "native-legacy",
+      "apps/mobile/__tests__",
+      "apps/mobile/jest.config.js",
+      "apps/mobile/jest.setup.js",
+      "apps/mobile/maestro",
+    ],
   },
 });

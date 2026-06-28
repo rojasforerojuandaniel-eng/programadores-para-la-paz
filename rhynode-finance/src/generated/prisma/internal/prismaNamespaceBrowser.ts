@@ -75,6 +75,7 @@ export const ModelName = {
   DetectedSubscription: 'DetectedSubscription',
   NotificationPreference: 'NotificationPreference',
   PushSubscription: 'PushSubscription',
+  ExpoPushToken: 'ExpoPushToken',
   Receipt: 'Receipt',
   Achievement: 'Achievement',
   NetWorthSnapshot: 'NetWorthSnapshot',
@@ -577,6 +578,17 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const ExpoPushTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpoPushTokenScalarFieldEnum = (typeof ExpoPushTokenScalarFieldEnum)[keyof typeof ExpoPushTokenScalarFieldEnum]
 
 
 export const ReceiptScalarFieldEnum = {

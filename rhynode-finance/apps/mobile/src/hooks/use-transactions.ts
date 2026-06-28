@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from './use-api';
+import { hapticNotification } from '~/lib/haptics';
 
 export interface Transaction {
   id: string;
@@ -17,6 +18,8 @@ export function useTransactions() {
   return useQuery<{ transactions: Transaction[] }>({
     queryKey: ['transactions', 'personal'],
     queryFn: () => api.get('/api/personal/transactions'),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -27,8 +30,9 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (body: Omit<Transaction, 'id'>) => api.post('/api/personal/transactions', body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions', 'personal'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] });
+      void hapticNotification();
+      void queryClient.invalidateQueries({ queryKey: ['transactions', 'personal'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] });
     },
   });
 }

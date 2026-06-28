@@ -1,0 +1,12 @@
+appId: com.rhynode.finance
+---
+- launchApp
+- tapOn: "Entrar"
+- tapOn: "Agregar"
+- tapOn: "Descripción"
+- inputText: "Hamburguesa"
+- tapOn: "Monto"
+- inputText: "25000"
+- tapOn: "Guardar"
+- tapOn: "Inicio"
+- assertVisible: "Resumen"

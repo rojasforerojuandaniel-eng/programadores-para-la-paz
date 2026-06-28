@@ -1,6 +1,6 @@
 import { addDays, startOfDay } from "date-fns";
 import { getPrisma } from "./prisma";
-import { sendPushNotification, type PushPayload } from "./notifications";
+import { sendPushNotification, sendExpoPushNotification, type PushPayload } from "./notifications";
 import { decimalToNumber } from "./decimal";
 import { logger } from "./logger";
 import {
@@ -82,7 +82,10 @@ async function notifyOnce(
     },
   });
 
-  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+  const [subs, expoTokens] = await Promise.all([
+    prisma.pushSubscription.findMany({ where: { userId } }),
+    prisma.expoPushToken.findMany({ where: { userId }, select: { token: true } }),
+  ]);
   let sent = 0;
   let errors = 0;
 
@@ -96,6 +99,19 @@ async function notifyOnce(
     } else {
       errors++;
     }
+  }
+
+  if (expoTokens.length > 0) {
+    const expoResult = await sendExpoPushNotification(
+      expoTokens.map((t) => t.token),
+      {
+        title: payload.title,
+        body: payload.body,
+        data: payload.url ? { url: payload.url } : undefined,
+      }
+    );
+    sent += expoResult.sent;
+    errors += expoResult.errors;
   }
 
   return { sent, errors, skipped: false };

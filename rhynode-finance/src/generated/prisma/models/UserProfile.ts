@@ -325,6 +325,7 @@ export type UserProfileWhereInput = {
   importJobs?: Prisma.ImportJobListRelationFilter
   detectedSubscriptions?: Prisma.DetectedSubscriptionListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
+  expoPushTokens?: Prisma.ExpoPushTokenListRelationFilter
   notificationPreference?: Prisma.XOR<Prisma.NotificationPreferenceNullableScalarRelationFilter, Prisma.NotificationPreferenceWhereInput> | null
   splitGroups?: Prisma.SplitGroupListRelationFilter
 }
@@ -363,6 +364,7 @@ export type UserProfileOrderByWithRelationInput = {
   importJobs?: Prisma.ImportJobOrderByRelationAggregateInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionOrderByRelationAggregateInput
   pushSubscriptions?: Prisma.PushSubscriptionOrderByRelationAggregateInput
+  expoPushTokens?: Prisma.ExpoPushTokenOrderByRelationAggregateInput
   notificationPreference?: Prisma.NotificationPreferenceOrderByWithRelationInput
   splitGroups?: Prisma.SplitGroupOrderByRelationAggregateInput
 }
@@ -404,6 +406,7 @@ export type UserProfileWhereUniqueInput = Prisma.AtLeast<{
   importJobs?: Prisma.ImportJobListRelationFilter
   detectedSubscriptions?: Prisma.DetectedSubscriptionListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
+  expoPushTokens?: Prisma.ExpoPushTokenListRelationFilter
   notificationPreference?: Prisma.XOR<Prisma.NotificationPreferenceNullableScalarRelationFilter, Prisma.NotificationPreferenceWhereInput> | null
   splitGroups?: Prisma.SplitGroupListRelationFilter
 }, "id" | "clerkId">
@@ -488,6 +491,7 @@ export type UserProfileCreateInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -526,6 +530,7 @@ export type UserProfileUncheckedCreateInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -564,6 +569,7 @@ export type UserProfileUpdateInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -602,6 +608,7 @@ export type UserProfileUncheckedUpdateInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -914,6 +921,20 @@ export type UserProfileUpdateOneRequiredWithoutPushSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserProfileUpdateToOneWithWhereWithoutPushSubscriptionsInput, Prisma.UserProfileUpdateWithoutPushSubscriptionsInput>, Prisma.UserProfileUncheckedUpdateWithoutPushSubscriptionsInput>
 }
 
+export type UserProfileCreateNestedOneWithoutExpoPushTokensInput = {
+  create?: Prisma.XOR<Prisma.UserProfileCreateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedCreateWithoutExpoPushTokensInput>
+  connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutExpoPushTokensInput
+  connect?: Prisma.UserProfileWhereUniqueInput
+}
+
+export type UserProfileUpdateOneRequiredWithoutExpoPushTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.UserProfileCreateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedCreateWithoutExpoPushTokensInput>
+  connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutExpoPushTokensInput
+  upsert?: Prisma.UserProfileUpsertWithoutExpoPushTokensInput
+  connect?: Prisma.UserProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserProfileUpdateToOneWithWhereWithoutExpoPushTokensInput, Prisma.UserProfileUpdateWithoutExpoPushTokensInput>, Prisma.UserProfileUncheckedUpdateWithoutExpoPushTokensInput>
+}
+
 export type UserProfileCreateNestedOneWithoutReceiptsInput = {
   create?: Prisma.XOR<Prisma.UserProfileCreateWithoutReceiptsInput, Prisma.UserProfileUncheckedCreateWithoutReceiptsInput>
   connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutReceiptsInput
@@ -1045,6 +1066,7 @@ export type UserProfileCreateWithoutOrganizationsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1082,6 +1104,7 @@ export type UserProfileUncheckedCreateWithoutOrganizationsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1135,6 +1158,7 @@ export type UserProfileUpdateWithoutOrganizationsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1172,6 +1196,7 @@ export type UserProfileUncheckedUpdateWithoutOrganizationsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1209,6 +1234,7 @@ export type UserProfileCreateWithoutTransactionsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1246,6 +1272,7 @@ export type UserProfileUncheckedCreateWithoutTransactionsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1299,6 +1326,7 @@ export type UserProfileUpdateWithoutTransactionsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1336,6 +1364,7 @@ export type UserProfileUncheckedUpdateWithoutTransactionsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1373,6 +1402,7 @@ export type UserProfileCreateWithoutAccountsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1410,6 +1440,7 @@ export type UserProfileUncheckedCreateWithoutAccountsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1463,6 +1494,7 @@ export type UserProfileUpdateWithoutAccountsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1500,6 +1532,7 @@ export type UserProfileUncheckedUpdateWithoutAccountsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1537,6 +1570,7 @@ export type UserProfileCreateWithoutCategoriesInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1574,6 +1608,7 @@ export type UserProfileUncheckedCreateWithoutCategoriesInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1627,6 +1662,7 @@ export type UserProfileUpdateWithoutCategoriesInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1664,6 +1700,7 @@ export type UserProfileUncheckedUpdateWithoutCategoriesInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1701,6 +1738,7 @@ export type UserProfileCreateWithoutBudgetsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1738,6 +1776,7 @@ export type UserProfileUncheckedCreateWithoutBudgetsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1791,6 +1830,7 @@ export type UserProfileUpdateWithoutBudgetsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1828,6 +1868,7 @@ export type UserProfileUncheckedUpdateWithoutBudgetsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -1865,6 +1906,7 @@ export type UserProfileCreateWithoutGoalsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -1902,6 +1944,7 @@ export type UserProfileUncheckedCreateWithoutGoalsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -1955,6 +1998,7 @@ export type UserProfileUpdateWithoutGoalsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -1992,6 +2036,7 @@ export type UserProfileUncheckedUpdateWithoutGoalsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -2029,6 +2074,7 @@ export type UserProfileCreateWithoutDebtsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -2066,6 +2112,7 @@ export type UserProfileUncheckedCreateWithoutDebtsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -2119,6 +2166,7 @@ export type UserProfileUpdateWithoutDebtsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -2156,6 +2204,7 @@ export type UserProfileUncheckedUpdateWithoutDebtsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -2193,6 +2242,7 @@ export type UserProfileCreateWithoutInvestmentsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -2230,6 +2280,7 @@ export type UserProfileUncheckedCreateWithoutInvestmentsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -2283,6 +2334,7 @@ export type UserProfileUpdateWithoutInvestmentsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -2320,6 +2372,7 @@ export type UserProfileUncheckedUpdateWithoutInvestmentsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -2357,6 +2410,7 @@ export type UserProfileCreateWithoutRecurringTransactionsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -2394,6 +2448,7 @@ export type UserProfileUncheckedCreateWithoutRecurringTransactionsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -2447,6 +2502,7 @@ export type UserProfileUpdateWithoutRecurringTransactionsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -2484,6 +2540,7 @@ export type UserProfileUncheckedUpdateWithoutRecurringTransactionsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -2521,6 +2578,7 @@ export type UserProfileCreateWithoutDetectedSubscriptionsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -2558,6 +2616,7 @@ export type UserProfileUncheckedCreateWithoutDetectedSubscriptionsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -2611,6 +2670,7 @@ export type UserProfileUpdateWithoutDetectedSubscriptionsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -2648,6 +2708,7 @@ export type UserProfileUncheckedUpdateWithoutDetectedSubscriptionsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -2686,6 +2747,7 @@ export type UserProfileCreateWithoutNotificationPreferenceInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
 
@@ -2723,6 +2785,7 @@ export type UserProfileUncheckedCreateWithoutNotificationPreferenceInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -2776,6 +2839,7 @@ export type UserProfileUpdateWithoutNotificationPreferenceInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
 
@@ -2813,6 +2877,7 @@ export type UserProfileUncheckedUpdateWithoutNotificationPreferenceInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -2849,6 +2914,7 @@ export type UserProfileCreateWithoutPushSubscriptionsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -2886,6 +2952,7 @@ export type UserProfileUncheckedCreateWithoutPushSubscriptionsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -2939,6 +3006,7 @@ export type UserProfileUpdateWithoutPushSubscriptionsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -2976,6 +3044,175 @@ export type UserProfileUncheckedUpdateWithoutPushSubscriptionsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserProfileCreateWithoutExpoPushTokensInput = {
+  id?: string
+  clerkId: string
+  email: string
+  name?: string | null
+  avatar?: string | null
+  scope?: string
+  hasBusiness?: boolean
+  xp?: number
+  level?: number
+  title?: string | null
+  streakDays?: number
+  lastActiveAt?: Date | string | null
+  onboardingCompleted?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizations?: Prisma.OrganizationCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  transactions?: Prisma.TransactionCreateNestedManyWithoutUserInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutUserInput
+  budgets?: Prisma.BudgetCreateNestedManyWithoutUserInput
+  goals?: Prisma.GoalCreateNestedManyWithoutUserInput
+  debts?: Prisma.DebtCreateNestedManyWithoutUserInput
+  investments?: Prisma.InvestmentCreateNestedManyWithoutUserInput
+  recurringTransactions?: Prisma.RecurringTransactionCreateNestedManyWithoutUserInput
+  receipts?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  achievements?: Prisma.AchievementCreateNestedManyWithoutUserInput
+  netWorthSnapshots?: Prisma.NetWorthSnapshotCreateNestedManyWithoutUserInput
+  userActivities?: Prisma.UserActivityCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
+  detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
+  splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
+}
+
+export type UserProfileUncheckedCreateWithoutExpoPushTokensInput = {
+  id?: string
+  clerkId: string
+  email: string
+  name?: string | null
+  avatar?: string | null
+  scope?: string
+  hasBusiness?: boolean
+  xp?: number
+  level?: number
+  title?: string | null
+  streakDays?: number
+  lastActiveAt?: Date | string | null
+  onboardingCompleted?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizations?: Prisma.OrganizationUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutUserInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutUserInput
+  budgets?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
+  goals?: Prisma.GoalUncheckedCreateNestedManyWithoutUserInput
+  debts?: Prisma.DebtUncheckedCreateNestedManyWithoutUserInput
+  investments?: Prisma.InvestmentUncheckedCreateNestedManyWithoutUserInput
+  recurringTransactions?: Prisma.RecurringTransactionUncheckedCreateNestedManyWithoutUserInput
+  receipts?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  achievements?: Prisma.AchievementUncheckedCreateNestedManyWithoutUserInput
+  netWorthSnapshots?: Prisma.NetWorthSnapshotUncheckedCreateNestedManyWithoutUserInput
+  userActivities?: Prisma.UserActivityUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
+  detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
+  splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserProfileCreateOrConnectWithoutExpoPushTokensInput = {
+  where: Prisma.UserProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserProfileCreateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedCreateWithoutExpoPushTokensInput>
+}
+
+export type UserProfileUpsertWithoutExpoPushTokensInput = {
+  update: Prisma.XOR<Prisma.UserProfileUpdateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedUpdateWithoutExpoPushTokensInput>
+  create: Prisma.XOR<Prisma.UserProfileCreateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedCreateWithoutExpoPushTokensInput>
+  where?: Prisma.UserProfileWhereInput
+}
+
+export type UserProfileUpdateToOneWithWhereWithoutExpoPushTokensInput = {
+  where?: Prisma.UserProfileWhereInput
+  data: Prisma.XOR<Prisma.UserProfileUpdateWithoutExpoPushTokensInput, Prisma.UserProfileUncheckedUpdateWithoutExpoPushTokensInput>
+}
+
+export type UserProfileUpdateWithoutExpoPushTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clerkId?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
+  hasBusiness?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  xp?: Prisma.IntFieldUpdateOperationsInput | number
+  level?: Prisma.IntFieldUpdateOperationsInput | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  streakDays?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizations?: Prisma.OrganizationUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.TransactionUpdateManyWithoutUserNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutUserNestedInput
+  budgets?: Prisma.BudgetUpdateManyWithoutUserNestedInput
+  goals?: Prisma.GoalUpdateManyWithoutUserNestedInput
+  debts?: Prisma.DebtUpdateManyWithoutUserNestedInput
+  investments?: Prisma.InvestmentUpdateManyWithoutUserNestedInput
+  recurringTransactions?: Prisma.RecurringTransactionUpdateManyWithoutUserNestedInput
+  receipts?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  achievements?: Prisma.AchievementUpdateManyWithoutUserNestedInput
+  netWorthSnapshots?: Prisma.NetWorthSnapshotUpdateManyWithoutUserNestedInput
+  userActivities?: Prisma.UserActivityUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
+  detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
+  splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
+}
+
+export type UserProfileUncheckedUpdateWithoutExpoPushTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clerkId?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
+  hasBusiness?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  xp?: Prisma.IntFieldUpdateOperationsInput | number
+  level?: Prisma.IntFieldUpdateOperationsInput | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  streakDays?: Prisma.IntFieldUpdateOperationsInput | number
+  lastActiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizations?: Prisma.OrganizationUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  transactions?: Prisma.TransactionUncheckedUpdateManyWithoutUserNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutUserNestedInput
+  budgets?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
+  goals?: Prisma.GoalUncheckedUpdateManyWithoutUserNestedInput
+  debts?: Prisma.DebtUncheckedUpdateManyWithoutUserNestedInput
+  investments?: Prisma.InvestmentUncheckedUpdateManyWithoutUserNestedInput
+  recurringTransactions?: Prisma.RecurringTransactionUncheckedUpdateManyWithoutUserNestedInput
+  receipts?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  achievements?: Prisma.AchievementUncheckedUpdateManyWithoutUserNestedInput
+  netWorthSnapshots?: Prisma.NetWorthSnapshotUncheckedUpdateManyWithoutUserNestedInput
+  userActivities?: Prisma.UserActivityUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
+  detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3013,6 +3250,7 @@ export type UserProfileCreateWithoutReceiptsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3050,6 +3288,7 @@ export type UserProfileUncheckedCreateWithoutReceiptsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3103,6 +3342,7 @@ export type UserProfileUpdateWithoutReceiptsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3140,6 +3380,7 @@ export type UserProfileUncheckedUpdateWithoutReceiptsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3177,6 +3418,7 @@ export type UserProfileCreateWithoutAchievementsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3214,6 +3456,7 @@ export type UserProfileUncheckedCreateWithoutAchievementsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3267,6 +3510,7 @@ export type UserProfileUpdateWithoutAchievementsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3304,6 +3548,7 @@ export type UserProfileUncheckedUpdateWithoutAchievementsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3341,6 +3586,7 @@ export type UserProfileCreateWithoutNetWorthSnapshotsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3378,6 +3624,7 @@ export type UserProfileUncheckedCreateWithoutNetWorthSnapshotsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3431,6 +3678,7 @@ export type UserProfileUpdateWithoutNetWorthSnapshotsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3468,6 +3716,7 @@ export type UserProfileUncheckedUpdateWithoutNetWorthSnapshotsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3505,6 +3754,7 @@ export type UserProfileCreateWithoutUserActivitiesInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3542,6 +3792,7 @@ export type UserProfileUncheckedCreateWithoutUserActivitiesInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3595,6 +3846,7 @@ export type UserProfileUpdateWithoutUserActivitiesInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3632,6 +3884,7 @@ export type UserProfileUncheckedUpdateWithoutUserActivitiesInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3669,6 +3922,7 @@ export type UserProfileCreateWithoutNotificationsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3706,6 +3960,7 @@ export type UserProfileUncheckedCreateWithoutNotificationsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3759,6 +4014,7 @@ export type UserProfileUpdateWithoutNotificationsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3796,6 +4052,7 @@ export type UserProfileUncheckedUpdateWithoutNotificationsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3833,6 +4090,7 @@ export type UserProfileCreateWithoutImportJobsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupCreateNestedManyWithoutUserInput
 }
@@ -3870,6 +4128,7 @@ export type UserProfileUncheckedCreateWithoutImportJobsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
   splitGroups?: Prisma.SplitGroupUncheckedCreateNestedManyWithoutUserInput
 }
@@ -3923,6 +4182,7 @@ export type UserProfileUpdateWithoutImportJobsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUpdateManyWithoutUserNestedInput
 }
@@ -3960,6 +4220,7 @@ export type UserProfileUncheckedUpdateWithoutImportJobsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
   splitGroups?: Prisma.SplitGroupUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -3998,6 +4259,7 @@ export type UserProfileCreateWithoutSplitGroupsInput = {
   importJobs?: Prisma.ImportJobCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceCreateNestedOneWithoutUserInput
 }
 
@@ -4035,6 +4297,7 @@ export type UserProfileUncheckedCreateWithoutSplitGroupsInput = {
   importJobs?: Prisma.ImportJobUncheckedCreateNestedManyWithoutUserInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedCreateNestedManyWithoutUserInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedCreateNestedOneWithoutUserInput
 }
 
@@ -4088,6 +4351,7 @@ export type UserProfileUpdateWithoutSplitGroupsInput = {
   importJobs?: Prisma.ImportJobUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUpdateOneWithoutUserNestedInput
 }
 
@@ -4125,6 +4389,7 @@ export type UserProfileUncheckedUpdateWithoutSplitGroupsInput = {
   importJobs?: Prisma.ImportJobUncheckedUpdateManyWithoutUserNestedInput
   detectedSubscriptions?: Prisma.DetectedSubscriptionUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  expoPushTokens?: Prisma.ExpoPushTokenUncheckedUpdateManyWithoutUserNestedInput
   notificationPreference?: Prisma.NotificationPreferenceUncheckedUpdateOneWithoutUserNestedInput
 }
 
@@ -4151,6 +4416,7 @@ export type UserProfileCountOutputType = {
   importJobs: number
   detectedSubscriptions: number
   pushSubscriptions: number
+  expoPushTokens: number
   splitGroups: number
 }
 
@@ -4172,6 +4438,7 @@ export type UserProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   importJobs?: boolean | UserProfileCountOutputTypeCountImportJobsArgs
   detectedSubscriptions?: boolean | UserProfileCountOutputTypeCountDetectedSubscriptionsArgs
   pushSubscriptions?: boolean | UserProfileCountOutputTypeCountPushSubscriptionsArgs
+  expoPushTokens?: boolean | UserProfileCountOutputTypeCountExpoPushTokensArgs
   splitGroups?: boolean | UserProfileCountOutputTypeCountSplitGroupsArgs
 }
 
@@ -4307,6 +4574,13 @@ export type UserProfileCountOutputTypeCountPushSubscriptionsArgs<ExtArgs extends
 /**
  * UserProfileCountOutputType without action
  */
+export type UserProfileCountOutputTypeCountExpoPushTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExpoPushTokenWhereInput
+}
+
+/**
+ * UserProfileCountOutputType without action
+ */
 export type UserProfileCountOutputTypeCountSplitGroupsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SplitGroupWhereInput
 }
@@ -4346,6 +4620,7 @@ export type UserProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   importJobs?: boolean | Prisma.UserProfile$importJobsArgs<ExtArgs>
   detectedSubscriptions?: boolean | Prisma.UserProfile$detectedSubscriptionsArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.UserProfile$pushSubscriptionsArgs<ExtArgs>
+  expoPushTokens?: boolean | Prisma.UserProfile$expoPushTokensArgs<ExtArgs>
   notificationPreference?: boolean | Prisma.UserProfile$notificationPreferenceArgs<ExtArgs>
   splitGroups?: boolean | Prisma.UserProfile$splitGroupsArgs<ExtArgs>
   _count?: boolean | Prisma.UserProfileCountOutputTypeDefaultArgs<ExtArgs>
@@ -4427,6 +4702,7 @@ export type UserProfileInclude<ExtArgs extends runtime.Types.Extensions.Internal
   importJobs?: boolean | Prisma.UserProfile$importJobsArgs<ExtArgs>
   detectedSubscriptions?: boolean | Prisma.UserProfile$detectedSubscriptionsArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.UserProfile$pushSubscriptionsArgs<ExtArgs>
+  expoPushTokens?: boolean | Prisma.UserProfile$expoPushTokensArgs<ExtArgs>
   notificationPreference?: boolean | Prisma.UserProfile$notificationPreferenceArgs<ExtArgs>
   splitGroups?: boolean | Prisma.UserProfile$splitGroupsArgs<ExtArgs>
   _count?: boolean | Prisma.UserProfileCountOutputTypeDefaultArgs<ExtArgs>
@@ -4454,6 +4730,7 @@ export type $UserProfilePayload<ExtArgs extends runtime.Types.Extensions.Interna
     importJobs: Prisma.$ImportJobPayload<ExtArgs>[]
     detectedSubscriptions: Prisma.$DetectedSubscriptionPayload<ExtArgs>[]
     pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
+    expoPushTokens: Prisma.$ExpoPushTokenPayload<ExtArgs>[]
     notificationPreference: Prisma.$NotificationPreferencePayload<ExtArgs> | null
     splitGroups: Prisma.$SplitGroupPayload<ExtArgs>[]
   }
@@ -4885,6 +5162,7 @@ export interface Prisma__UserProfileClient<T, Null = never, ExtArgs extends runt
   importJobs<T extends Prisma.UserProfile$importJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$importJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImportJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   detectedSubscriptions<T extends Prisma.UserProfile$detectedSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$detectedSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DetectedSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pushSubscriptions<T extends Prisma.UserProfile$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expoPushTokens<T extends Prisma.UserProfile$expoPushTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$expoPushTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpoPushTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notificationPreference<T extends Prisma.UserProfile$notificationPreferenceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$notificationPreferenceArgs<ExtArgs>>): Prisma.Prisma__NotificationPreferenceClient<runtime.Types.Result.GetResult<Prisma.$NotificationPreferencePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   splitGroups<T extends Prisma.UserProfile$splitGroupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserProfile$splitGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SplitGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -5730,6 +6008,30 @@ export type UserProfile$pushSubscriptionsArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.PushSubscriptionScalarFieldEnum | Prisma.PushSubscriptionScalarFieldEnum[]
+}
+
+/**
+ * UserProfile.expoPushTokens
+ */
+export type UserProfile$expoPushTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ExpoPushToken
+   */
+  select?: Prisma.ExpoPushTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ExpoPushToken
+   */
+  omit?: Prisma.ExpoPushTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpoPushTokenInclude<ExtArgs> | null
+  where?: Prisma.ExpoPushTokenWhereInput
+  orderBy?: Prisma.ExpoPushTokenOrderByWithRelationInput | Prisma.ExpoPushTokenOrderByWithRelationInput[]
+  cursor?: Prisma.ExpoPushTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExpoPushTokenScalarFieldEnum | Prisma.ExpoPushTokenScalarFieldEnum[]
 }
 
 /**
