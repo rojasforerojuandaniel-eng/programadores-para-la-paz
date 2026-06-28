@@ -3,7 +3,7 @@ import typescript from "eslint-config-next/typescript";
 
 /** @type {import('eslint').Linter.Config[]} */
 const eslintConfig = [
-  { ignores: ["native/**", "native"] },
+  { ignores: ["native/**", "native", "native-legacy/**", "native-legacy"] },
   ...coreWebVitals,
   ...typescript,
   {
