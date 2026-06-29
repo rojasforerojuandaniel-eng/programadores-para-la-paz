@@ -1,0 +1,11 @@
+# EAS Build upload ignore
+# Root git repo is /home/juan-daniel; only rhynode-finance monorepo is needed.
+
+# Ignore all top-level files and directories by default
+/*
+
+# Required EAS/build metadata
+!.easignore
+
+# Only include the Rhynode Finance monorepo
+!rhynode-finance/
