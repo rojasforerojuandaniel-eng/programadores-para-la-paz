@@ -9,3 +9,4 @@
 
 # Only include the Rhynode Finance monorepo
 !rhynode-finance/
+!rhynode-finance/**
