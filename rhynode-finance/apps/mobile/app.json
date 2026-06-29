@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0A0A0F"
     },
-    "assetBundlePatterns": ["./assets/*"],
+    "assetBundlePatterns": [
+      "./assets/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.rhynode.finance"
@@ -26,9 +28,22 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "data": [{ "scheme": "rhynode" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "rhynode"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "plugins": [
@@ -49,6 +64,12 @@
           "faceIDPermission": "Allow Rhynode to use Face ID or fingerprint to secure your account."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c86c4e9c-c8a8-42d1-8243-1949949e0162"
+      }
+    }
   }
 }
