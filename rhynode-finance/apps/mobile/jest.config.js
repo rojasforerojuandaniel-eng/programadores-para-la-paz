@@ -27,5 +27,7 @@ module.exports = {
       },
     ],
   },
-  transformIgnorePatterns: ['/node_modules/react-native-reanimated/plugin/'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|expo|@expo|nativewind|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|victory-native)/)',
+  ],
 };

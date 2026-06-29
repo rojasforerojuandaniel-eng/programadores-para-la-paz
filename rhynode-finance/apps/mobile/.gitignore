@@ -1,0 +1,18 @@
+# Expo local cache / generated files
+.expo/
+*.jsbundle
+
+# Metro / build outputs
+dist/
+*.tsbuildinfo
+
+# Native build outputs (covered by android/.gitignore and ios/.gitignore)
+android/app/build/
+android/build/
+android/.gradle/
+android/.cxx/
+android/.kotlin/
+
+# iOS build outputs if generated later
+ios/Pods/
+ios/build/

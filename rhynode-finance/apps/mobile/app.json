@@ -12,7 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#0A0A0F"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": ["./assets/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.rhynode.finance"
