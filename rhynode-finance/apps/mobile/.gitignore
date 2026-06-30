@@ -16,3 +16,11 @@ android/.kotlin/
 # iOS build outputs if generated later
 ios/Pods/
 ios/build/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Built APKs
+*.apk

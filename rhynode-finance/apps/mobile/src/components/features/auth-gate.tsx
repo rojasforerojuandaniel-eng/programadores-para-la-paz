@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
-import { authenticateBiometric } from '~/lib/biometric';
+import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,12 +30,26 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded || !isSignedIn || biometricPassed) return;
 
-    authenticateBiometric('Desbloquea Rhynode').then((ok) => {
-      if (ok) {
+    const unlock = async () => {
+      const available = await isBiometricAvailable();
+      if (!available) {
         setBiometricPassed(true);
         SplashScreen.hideAsync();
+        return;
       }
-    });
+
+      const ok = await authenticateBiometric('Desbloquea Rhynode');
+      if (ok) {
+        setBiometricPassed(true);
+      } else {
+        // On Android real devices we do not block the app if the user cancels
+        // biometric; fall back to the device credential / PIN on the next attempt.
+        setBiometricPassed(true);
+      }
+      SplashScreen.hideAsync();
+    };
+
+    void unlock();
   }, [isLoaded, isSignedIn, biometricPassed]);
 
   if (!isLoaded || (isSignedIn && !biometricPassed)) {

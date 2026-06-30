@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Text, View } from 'react-native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { AuthGate } from '~/components/features/auth-gate';
 import { tokenCache } from '~/lib/auth';
@@ -67,10 +68,38 @@ function SyncManager() {
   return null;
 }
 
+const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+function MissingClerkKeyScreen() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#08090e',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <Text style={{ color: '#fafafa', fontSize: 18, fontWeight: '700', marginBottom: 12 }}>
+        Error de configuración
+      </Text>
+      <Text style={{ color: '#9ca3af', fontSize: 14, textAlign: 'center' }}>
+        Falta la variable de entorno EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Reconstruye la app con la
+        clave de Clerk configurada.
+      </Text>
+    </View>
+  );
+}
+
 export default function RootLayout() {
+  if (!CLERK_PUBLISHABLE_KEY) {
+    return <MissingClerkKeyScreen />;
+  }
+
   return (
     <ClerkProvider
-      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+      publishableKey={CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
     >
       <PersistQueryClientProvider
