@@ -4,9 +4,11 @@ import {
   enqueueMutation,
   getPendingMutations,
   incrementRetry,
+  markDeadLetter,
   type PendingMutation,
 } from './offline-queue';
 import { queryClient } from './query-client';
+import { showToast } from '~/hooks/use-toast';
 
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL ?? 'https://rhynode-finance.vercel.app';
@@ -21,7 +23,8 @@ export class OfflineError extends Error {
   constructor(
     mutationId: string,
     public readonly method: string,
-    public readonly endpoint: string
+    public readonly endpoint: string,
+    public readonly optimistic: unknown
   ) {
     super('No internet connection. The request was queued and will sync automatically.');
     this.name = 'OfflineError';
@@ -78,11 +81,12 @@ async function request<T>(
       offlineHeaders
     );
 
-    if (method === 'POST' && body && typeof body === 'object') {
-      return { id: mutationId, ...body } as unknown as T;
-    }
+    const optimistic =
+      method === 'POST' && body && typeof body === 'object'
+        ? { id: mutationId, ...body }
+        : null;
 
-    throw new OfflineError(mutationId, method, path);
+    throw new OfflineError(mutationId, method, path, optimistic);
   }
 
   if (token === null || token === undefined) {
@@ -123,6 +127,10 @@ export function createApiClient(token?: string | null) {
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 
+const MAX_RETRIES = 3;
+const DEAD_LETTER_MESSAGE =
+  'Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.';
+
 export async function syncPendingMutations(
   getToken: () => Promise<string | null>
 ): Promise<void> {
@@ -143,7 +151,11 @@ export async function syncPendingMutations(
   let hasSuccess = false;
 
   for (const mutation of mutations) {
-    if (mutation.retries >= 3) continue;
+    if (mutation.retries >= MAX_RETRIES) {
+      await markDeadLetter(mutation.id);
+      showToast(DEAD_LETTER_MESSAGE, 'error');
+      continue;
+    }
 
     const storedHeaders: Record<string, string> = mutation.headers
       ? (JSON.parse(mutation.headers) as Record<string, string>)
@@ -170,7 +182,13 @@ export async function syncPendingMutations(
       await clearMutation(mutation.id);
       hasSuccess = true;
     } catch {
+      const nextRetry = mutation.retries + 1;
       await incrementRetry(mutation.id);
+
+      if (nextRetry >= MAX_RETRIES) {
+        await markDeadLetter(mutation.id);
+        showToast(DEAD_LETTER_MESSAGE, 'error');
+      }
     }
   }
 

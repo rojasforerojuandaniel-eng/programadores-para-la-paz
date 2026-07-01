@@ -17,6 +17,7 @@ import {
 } from '~/lib/notifications';
 import { useNetworkListener, useNetworkStore } from '~/hooks/use-network';
 import { ToastProvider } from '~/components/ui/toast';
+import { OfflineBanner } from '~/components/features/offline-banner';
 
 const persister = createAsyncStoragePersister();
 
@@ -117,6 +118,7 @@ export default function RootLayout() {
           <AuthGate>
             <PushNotificationsSetup />
             <SyncManager />
+            <OfflineBanner />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />

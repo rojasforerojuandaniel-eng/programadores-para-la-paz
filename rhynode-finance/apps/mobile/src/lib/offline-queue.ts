@@ -1,5 +1,7 @@
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
+export type MutationStatus = 'pending' | 'failed_permanently';
+
 export interface PendingMutation {
   id: string;
   method: 'POST' | 'PATCH' | 'DELETE';
@@ -7,6 +9,7 @@ export interface PendingMutation {
   payload: string | null;
   headers: string | null;
   retries: number;
+  status: MutationStatus;
   created_at: string;
 }
 
@@ -25,9 +28,21 @@ function getDatabase(): Promise<SQLiteDatabase> {
           payload TEXT,
           headers TEXT,
           retries INTEGER DEFAULT 0,
+          status TEXT DEFAULT 'pending',
           created_at TEXT NOT NULL
         );
       `);
+
+      const columns = await db.getAllAsync<{ name: string }>(
+        'PRAGMA table_info(pending_mutations)'
+      );
+      const hasStatus = columns.some((column) => column.name === 'status');
+      if (!hasStatus) {
+        await db.execAsync(
+          "ALTER TABLE pending_mutations ADD COLUMN status TEXT DEFAULT 'pending'"
+        );
+      }
+
       return db;
     });
   }
@@ -44,8 +59,8 @@ export async function enqueueMutation(
   const db = await getDatabase();
   await db.runAsync(
     `INSERT INTO pending_mutations
-      (id, method, endpoint, payload, headers, retries, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      (id, method, endpoint, payload, headers, retries, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       method,
@@ -53,6 +68,7 @@ export async function enqueueMutation(
       payload === undefined ? null : JSON.stringify(payload),
       JSON.stringify(headers),
       0,
+      'pending',
       new Date().toISOString(),
     ]
   );
@@ -73,7 +89,7 @@ export async function dequeueMutation(id: string): Promise<PendingMutation | nul
 export async function getPendingMutations(): Promise<PendingMutation[]> {
   const db = await getDatabase();
   return db.getAllAsync<PendingMutation>(
-    'SELECT * FROM pending_mutations ORDER BY created_at ASC'
+    "SELECT * FROM pending_mutations WHERE status = 'pending' ORDER BY created_at ASC"
   );
 }
 
@@ -88,6 +104,14 @@ export async function incrementRetry(id: string): Promise<void> {
 export async function clearMutation(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM pending_mutations WHERE id = ?', [id]);
+}
+
+export async function markDeadLetter(id: string): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
+    "UPDATE pending_mutations SET status = 'failed_permanently' WHERE id = ?",
+    [id]
+  );
 }
 
 function generateId(): string {

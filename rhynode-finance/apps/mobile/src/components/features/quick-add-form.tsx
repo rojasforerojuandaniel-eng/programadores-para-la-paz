@@ -117,7 +117,7 @@ export function QuickAddForm({
       },
       onError: (error) => {
         if (isOfflineError(error)) {
-          showToast('Se guardará cuando recuperes conexión', 'info');
+          showToast('Sin conexión. Se guardará cuando vuelvas en línea.', 'info');
           return;
         }
         const message = error instanceof Error ? error.message : 'No se pudo guardar la transacción';
