@@ -39,6 +39,12 @@ jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(() => Promise.resolve('true')),
+  setItemAsync: jest.fn(() => Promise.resolve()),
+  deleteItemAsync: jest.fn(() => Promise.resolve()),
+}));
+
 jest.mock('~/lib/biometric', () => ({
   isBiometricAvailable: jest.fn(),
   authenticateBiometric: jest.fn(),

@@ -1,7 +1,10 @@
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '~/lib/i18n';
 import { createApiClient } from '~/lib/api';
 import type { Router } from 'expo-router';
+
+export const PUSH_ENABLED_KEY = '@rhynode/push-enabled';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -49,6 +52,9 @@ export async function requestPushPermissionsAsync(): Promise<boolean> {
 export async function registerPushTokenAsync(
   getToken: () => Promise<string | null>
 ): Promise<void> {
+  const pushEnabled = await AsyncStorage.getItem(PUSH_ENABLED_KEY);
+  if (pushEnabled !== 'true') return;
+
   const granted = await requestPushPermissionsAsync();
   if (!granted) return;
 

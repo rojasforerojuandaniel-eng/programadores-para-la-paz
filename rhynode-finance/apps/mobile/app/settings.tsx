@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  Switch,
-  type ColorValue,
-} from 'react-native';
+import { ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '~/components/features/theme-toggle';
 import { LocaleToggle } from '~/components/features/locale-toggle';
+import { LegalLink, SettingsRow, SettingsSwitch } from '~/components/features/settings-items';
 import { Button } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
 import { Pressable } from '~/components/ui/pressable';
@@ -20,116 +15,9 @@ import { ScrollView } from '~/components/ui/scroll-view';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { API_URL } from '~/lib/api';
-import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
-import { requestPushPermissionsAsync, registerPushTokenAsync } from '~/lib/notifications';
-import { useTheme } from '~/lib/theme';
+import { authenticateBiometric, BIOMETRIC_ENABLED_KEY, isBiometricAvailable } from '~/lib/biometric';
 import { showToast } from '~/hooks/use-toast';
-import { cn } from '~/lib/utils';
-
-const PUSH_ENABLED_KEY = '@rhynode/push-enabled';
-const BIOMETRIC_ENABLED_KEY = '@rhynode/biometric-enabled';
-
-interface SwitchColors {
-  trackFalse: ColorValue;
-  trackTrue: ColorValue;
-  thumb: ColorValue;
-  iosBackground: ColorValue;
-}
-
-function useSwitchColors(): SwitchColors {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-
-  return {
-    trackFalse: isDark ? '#26272b' : '#d4d4d8',
-    trackTrue: '#047857',
-    thumb: '#ffffff',
-    iosBackground: isDark ? '#26272b' : '#d4d4d8',
-  };
-}
-
-function SettingsSwitch({
-  value,
-  onValueChange,
-  disabled = false,
-  accessibilityLabel,
-}: {
-  value: boolean;
-  onValueChange: (value: boolean) => void;
-  disabled?: boolean;
-  accessibilityLabel?: string;
-}) {
-  const colors = useSwitchColors();
-
-  return (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      disabled={disabled}
-      trackColor={{ false: colors.trackFalse, true: colors.trackTrue }}
-      thumbColor={colors.thumb}
-      ios_backgroundColor={colors.iosBackground}
-      accessibilityRole="switch"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ checked: value, disabled }}
-    />
-  );
-}
-
-function SettingsRow({
-  label,
-  description,
-  children,
-  testID,
-}: {
-  label: string;
-  description?: string;
-  children: React.ReactNode;
-  testID?: string;
-}) {
-  return (
-    <View
-      testID={testID}
-      className="flex-row items-center justify-between gap-4 py-3"
-    >
-      <View className="flex-1 gap-1">
-        <Text className="text-base font-medium text-foreground">{label}</Text>
-        {description && (
-          <Text className="text-sm text-muted-foreground">{description}</Text>
-        )}
-      </View>
-      {children}
-    </View>
-  );
-}
-
-function LegalLink({
-  label,
-  url,
-  errorMessage,
-}: {
-  label: string;
-  url: string;
-  errorMessage: string;
-}) {
-  const handlePress = () => {
-    void Linking.openURL(url).catch(() => {
-      showToast(errorMessage, 'error');
-    });
-  };
-
-  return (
-    <Pressable
-      onPress={handlePress}
-      accessibilityRole="link"
-      accessibilityLabel={label}
-      className="flex-row items-center justify-between py-3 active:opacity-70"
-    >
-      <Text className="text-base text-foreground">{label}</Text>
-      <Text className="text-2xl text-muted-foreground">→</Text>
-    </Pressable>
-  );
-}
+import { PUSH_ENABLED_KEY, requestPushPermissionsAsync, registerPushTokenAsync } from '~/lib/notifications';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -228,7 +116,12 @@ export default function SettingsScreen() {
   return (
     <ScrollView className="flex-1 bg-background">
       <View className="px-6 pt-6 pb-10 gap-6">
-        <Pressable onPress={() => router.back()} className="self-start">
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityLabel={t('common.actions.back')}
+          accessibilityRole="button"
+          className="self-start"
+        >
           <Text className="text-primary">{t('common.actions.back')}</Text>
         </Pressable>
 

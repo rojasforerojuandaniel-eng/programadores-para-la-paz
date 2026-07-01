@@ -3,7 +3,8 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
+import * as SecureStore from 'expo-secure-store';
+import { authenticateBiometric, BIOMETRIC_ENABLED_KEY, isBiometricAvailable } from '~/lib/biometric';
 import { PinLock } from '~/components/features/pin-lock';
 import { Text } from '~/components/ui/text';
 import { colors } from '~/theme/colors';
@@ -48,6 +49,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (!isLoaded || !isSignedIn || biometricPassed || showPinLock) return;
 
     const unlock = async () => {
+      const enabled = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
+      if (enabled !== 'true') {
+        setBiometricPassed(true);
+        await SplashScreen.hideAsync();
+        return;
+      }
+
       const available = await isBiometricAvailable();
       if (!available) {
         setBiometricPassed(true);

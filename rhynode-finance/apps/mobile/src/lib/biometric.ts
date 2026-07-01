@@ -1,6 +1,8 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import i18n from '~/lib/i18n';
 
+export const BIOMETRIC_ENABLED_KEY = '@rhynode/biometric-enabled';
+
 export async function isBiometricAvailable(): Promise<boolean> {
   const compatible = await LocalAuthentication.hasHardwareAsync().catch(() => false);
   const enrolled = await LocalAuthentication.isEnrolledAsync().catch(() => false);

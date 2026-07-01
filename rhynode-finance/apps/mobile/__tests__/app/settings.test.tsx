@@ -164,7 +164,8 @@ describe('SettingsScreen', () => {
     });
 
     expect(tree).toBeDefined();
-    const instance = tree!.root;
+    if (!tree) throw new Error('SettingsScreen render tree is undefined');
+    const instance = tree.root;
 
     expect(() => findByText(instance, 'Ajustes')).not.toThrow();
     expect(() => findByText(instance, 'Cuenta')).not.toThrow();
