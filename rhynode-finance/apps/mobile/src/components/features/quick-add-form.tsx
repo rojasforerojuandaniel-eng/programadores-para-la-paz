@@ -1,10 +1,14 @@
 import { useState } from 'react';
+import * as Localization from 'expo-localization';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
 import { hapticImpact } from '~/lib/haptics';
+import { parseLocaleAmount } from '~/lib/parse-amount';
+import { showToast } from '~/hooks/use-toast';
 import { useCreateTransaction } from '~/hooks/use-transactions';
+import { CategoryPicker } from './category-picker';
 
 interface QuickAddFormProps {
   initialMerchant?: string;
@@ -16,6 +20,15 @@ function initialDateString(date?: string) {
   if (!date) return new Date().toISOString();
   const d = new Date(date);
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+function isOfflineError(error: unknown): error is { name: 'OfflineError'; message: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    (error as { name: string }).name === 'OfflineError'
+  );
 }
 
 export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: QuickAddFormProps) {
@@ -32,13 +45,25 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
   };
 
   const onSubmit = () => {
-    const value = parseFloat(amount);
-    if (!description || Number.isNaN(value) || value <= 0) return;
+    const trimmedDescription = description.trim();
+    if (!trimmedDescription) {
+      showToast('Ingresa una descripción', 'error');
+      return;
+    }
+
+    const value = parseLocaleAmount(
+      amount,
+      Localization.getLocales()[0]?.languageTag ?? 'es-CO'
+    );
+    if (Number.isNaN(value) || value <= 0) {
+      showToast('Ingresa un monto válido', 'error');
+      return;
+    }
 
     mutate(
       {
         type,
-        description,
+        description: trimmedDescription,
         amount: value,
         currency: 'COP',
         date,
@@ -48,6 +73,16 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
         onSuccess: () => {
           setDescription('');
           setAmount('');
+          setCategory('Otros');
+          showToast('Transacción guardada', 'success');
+        },
+        onError: (error) => {
+          if (isOfflineError(error)) {
+            showToast('Se guardará cuando recuperes conexión', 'info');
+            return;
+          }
+          const message = error instanceof Error ? error.message : 'No se pudo guardar la transacción';
+          showToast(message, 'error');
         },
       }
     );
@@ -59,12 +94,14 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
         <Button
           onPress={() => selectType('INCOME')}
           className={`flex-1 ${type === 'INCOME' ? 'bg-success' : 'bg-card'}`}
+          accessibilityState={{ selected: type === 'INCOME' }}
         >
           <Text className={type === 'INCOME' ? 'text-success-foreground font-semibold' : 'text-foreground'}>Recibí</Text>
         </Button>
         <Button
           onPress={() => selectType('EXPENSE')}
           className={`flex-1 ${type === 'EXPENSE' ? 'bg-destructive' : 'bg-card'}`}
+          accessibilityState={{ selected: type === 'EXPENSE' }}
         >
           <Text className={type === 'EXPENSE' ? 'text-destructive-foreground font-semibold' : 'text-foreground'}>Gasté</Text>
         </Button>
@@ -87,13 +124,7 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
         onChangeText={setAmount}
       />
 
-      <TextInput
-        className="bg-card text-foreground rounded-2xl px-4 py-4"
-        placeholder="Categoría"
-        placeholderTextColor="#6b7280"
-        value={category}
-        onChangeText={setCategory}
-      />
+      <CategoryPicker value={category} onChange={setCategory} />
 
       <Button onPress={onSubmit} disabled={isPending || !description || !amount}>
         <Text className="text-primary-foreground font-semibold">{isPending ? 'Guardando...' : 'Guardar'}</Text>
