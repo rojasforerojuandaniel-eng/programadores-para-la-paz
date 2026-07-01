@@ -22,5 +22,9 @@ ios/build/
 .env.*
 !.env.example
 
+# Android signing keystores and credentials (never commit)
+*.keystore
+*.jks
+
 # Built APKs
 *.apk

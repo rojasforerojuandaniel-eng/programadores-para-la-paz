@@ -33,6 +33,11 @@ yarn-error.log*
 *.pem
 Thumbs.db
 
+# Android signing keystores and credentials (never commit)
+*.keystore
+*.jks
+
+
 # IDE
 .vscode/*
 !.vscode/extensions.json

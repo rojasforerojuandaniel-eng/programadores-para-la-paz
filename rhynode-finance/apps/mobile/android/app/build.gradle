@@ -9,7 +9,7 @@ def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
-    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())
+    entryFile = file("$projectRoot/index.android.js")
     reactNativeDir = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
     hermesCommand = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsolutePath() + "/sdks/hermesc/%OS-BIN%/hermesc"
     codegenDir = new File(["node", "--print", "require.resolve('@react-native/codegen/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
@@ -105,15 +105,29 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            def releaseStoreFile = System.getenv('RHYNODE_RELEASE_STORE_FILE') ?: findProperty('RHYNODE_RELEASE_STORE_FILE') ?: ''
+            def releaseStorePassword = System.getenv('RHYNODE_RELEASE_STORE_PASSWORD') ?: findProperty('RHYNODE_RELEASE_STORE_PASSWORD') ?: ''
+            def releaseKeyAlias = System.getenv('RHYNODE_RELEASE_KEY_ALIAS') ?: findProperty('RHYNODE_RELEASE_KEY_ALIAS') ?: ''
+            def releaseKeyPassword = System.getenv('RHYNODE_RELEASE_KEY_PASSWORD') ?: findProperty('RHYNODE_RELEASE_KEY_PASSWORD') ?: ''
+
+            if (releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Production release signing is configured via RHYNODE_RELEASE_* environment variables.
+            // See scripts/generate-android-keystore.sh to create the production keystore.
+            // Never commit the keystore or its passwords.
+            signingConfig signingConfigs.release
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
