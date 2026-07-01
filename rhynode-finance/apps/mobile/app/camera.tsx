@@ -6,6 +6,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { API_URL } from '~/lib/api';
+import { showToast } from '~/hooks/use-toast';
 
 export default function CameraScreen() {
   const router = useRouter();
@@ -30,30 +31,32 @@ export default function CameraScreen() {
   }
 
   const takePicture = async () => {
-    const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.7 });
-    if (!photo?.base64) return;
+    const photo = await cameraRef.current?.takePictureAsync({ base64: false, quality: 0.7 });
+    if (!photo?.uri) return;
 
     setLoading(true);
     try {
       const token = await getToken().catch(() => null);
-      const uploadHeaders: Record<string, string> = {};
-      if (token) uploadHeaders.Authorization = `Bearer ${token}`;
+      if (!token) throw new Error('Missing auth token');
+      const uploadHeaders: Record<string, string> = { Authorization: `Bearer ${token}` };
+
+      const form = new FormData();
+      form.append('file', {
+        uri: photo.uri,
+        name: 'receipt.jpg',
+        type: 'image/jpeg',
+      } as unknown as Blob);
 
       const blobRes = await fetch(`${API_URL}/api/mobile/upload-receipt`, {
         method: 'POST',
         headers: uploadHeaders,
-        body: (() => {
-          const form = new FormData();
-          form.append('file', {
-            uri: photo.uri,
-            name: 'receipt.jpg',
-            type: 'image/jpeg',
-          } as unknown as Blob);
-          return form;
-        })(),
+        body: form,
       });
 
-      if (!blobRes.ok) throw new Error('Upload failed');
+      if (!blobRes.ok) {
+        const text = await blobRes.text().catch(() => '');
+        throw new Error(`Upload failed (${blobRes.status}): ${text}`);
+      }
       const { url } = (await blobRes.json()) as { url: string };
 
       const ocrRes = await fetch(`${API_URL}/api/ai/ocr`, {
@@ -62,6 +65,10 @@ export default function CameraScreen() {
         body: JSON.stringify({ imageUrl: url }),
       });
 
+      if (!ocrRes.ok) {
+        const text = await ocrRes.text().catch(() => '');
+        throw new Error(`OCR failed (${ocrRes.status}): ${text}`);
+      }
       const ocrData = await ocrRes.json();
       router.push({
         pathname: '/(tabs)/add',
@@ -71,7 +78,9 @@ export default function CameraScreen() {
           date: ocrData.date ?? '',
         },
       });
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error procesando el recibo';
+      showToast(message, 'error');
       setLoading(false);
     }
   };
@@ -82,11 +91,13 @@ export default function CameraScreen() {
         <View className="absolute bottom-12 left-0 right-0 items-center">
           <Pressable
             testID="camera-shutter"
+            accessibilityRole="button"
+            accessibilityLabel="Tomar foto del recibo"
             onPress={takePicture}
             disabled={loading}
             className="w-20 h-20 rounded-full border-4 border-white bg-white/20 items-center justify-center"
           >
-            <Text className="text-white">{loading ? '...' : '📷'}</Text>
+            <Text className="text-white text-3xl">{loading ? '...' : '●'}</Text>
           </Pressable>
         </View>
       </CameraView>
