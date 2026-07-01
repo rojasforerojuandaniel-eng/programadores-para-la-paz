@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
 import { API_URL } from '~/lib/api';
+import { chatMessageSchema, chatHistorySchema, type ChatMessage } from '~/schemas/dashboard';
 
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
+export type { ChatMessage };
 
 export function useChat() {
   const { getToken } = useAuth();
@@ -23,10 +20,12 @@ export function useChat() {
     setStreaming(true);
 
     try {
-      const history = messages.slice(-10).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const history = chatHistorySchema.parse(
+        messages.slice(-10).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }))
+      );
 
       const token = await getToken().catch(() => null);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -63,11 +62,13 @@ export function useChat() {
       }
 
       const finalText = assistantText || responseText.trim() || 'No entendí bien, intenta de otra forma.';
+      const assistantMsg: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: finalText,
+      };
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `assistant-${Date.now()}`, role: 'assistant', content: finalText },
-      ]);
+      setMessages((prev) => [...prev, chatMessageSchema.parse(assistantMsg)]);
     } catch {
       setMessages((prev) => [
         ...prev,

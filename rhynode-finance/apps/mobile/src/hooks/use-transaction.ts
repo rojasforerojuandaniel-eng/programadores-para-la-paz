@@ -1,35 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
 import { useApi } from './use-api';
 import { hapticNotification } from '~/lib/haptics';
-
-const transactionDetailSchema = z.object({
-  id: z.string(),
-  type: z.enum(['INCOME', 'EXPENSE']),
-  category: z.string().nullable(),
-  description: z.string(),
-  amount: z.number(),
-  currency: z.string(),
-  date: z.string(),
-  accountName: z.string().nullable(),
-  bankAccountName: z.string().nullable(),
-  organizationName: z.string(),
-});
-
-export type TransactionDetail = z.infer<typeof transactionDetailSchema>;
-
-const updateBodySchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE']).optional(),
-  category: z.string().optional(),
-  description: z.string().min(1).max(200).optional(),
-  amount: z.number().positive().optional(),
-  currency: z.string().optional(),
-  date: z.string().optional(),
-  accountId: z.string().optional(),
-  bankAccountId: z.string().optional(),
-});
-
-export type UpdateTransactionBody = z.infer<typeof updateBodySchema>;
+import {
+  transactionDetailSchema,
+  transactionMutationResponseSchema,
+  deleteTransactionResponseSchema,
+  type TransactionDetail,
+  type UpdateTransactionBody,
+} from '~/schemas/transaction';
 
 export function useTransaction(id: string | undefined) {
   const api = useApi();
@@ -37,7 +15,7 @@ export function useTransaction(id: string | undefined) {
   return useQuery<TransactionDetail>({
     queryKey: ['transaction', id],
     queryFn: async () => {
-      const response = await api.get<{ transaction: unknown }>(`/api/personal/transactions/${id}`);
+      const response = await api.get(`/api/personal/transactions/${id}`, transactionMutationResponseSchema);
       return transactionDetailSchema.parse(response.transaction);
     },
     enabled: Boolean(id),
@@ -51,7 +29,7 @@ export function useDeleteTransaction() {
 
   return useMutation({
     mutationFn: (transactionId: string) =>
-      api.delete<{ success: boolean }>(`/api/personal/transactions/${transactionId}`),
+      api.delete(`/api/personal/transactions/${transactionId}`, deleteTransactionResponseSchema),
     onSuccess: (_, transactionId) => {
       void hapticNotification();
       void queryClient.invalidateQueries({ queryKey: ['transaction', transactionId] });
@@ -67,7 +45,7 @@ export function useUpdateTransaction() {
 
   return useMutation({
     mutationFn: ({ transactionId, body }: { transactionId: string; body: UpdateTransactionBody }) =>
-      api.patch<{ transaction: unknown }>(`/api/personal/transactions/${transactionId}`, body),
+      api.patch(`/api/personal/transactions/${transactionId}`, body, transactionMutationResponseSchema),
     onSuccess: (response, { transactionId }) => {
       void hapticNotification();
       const transaction = transactionDetailSchema.parse(response.transaction);
