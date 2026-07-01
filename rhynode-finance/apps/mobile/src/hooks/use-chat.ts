@@ -40,49 +40,34 @@ export function useChat() {
 
       if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+      const responseText = await response.text();
       let assistantText = '';
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed.startsWith('data: ')) continue;
-            const data = trimmed.slice(6).trim();
-            if (data === '[DONE]') continue;
-            try {
-              const event = JSON.parse(data);
-              if (event?.delta?.text) {
-                assistantText += event.delta.text;
-                setMessages((prev) => {
-                  const rest = prev.filter((m) => m.id !== 'assistant-current');
-                  return [
-                    ...rest,
-                    { id: 'assistant-current', role: 'assistant', content: assistantText },
-                  ];
-                });
-              }
-            } catch {
-              // ignore malformed SSE events
+      if (responseText.includes('data: ')) {
+        const lines = responseText.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const data = trimmed.slice(6).trim();
+          if (data === '[DONE]') continue;
+          try {
+            const event = JSON.parse(data);
+            const delta = event?.delta?.text ?? event?.text;
+            if (typeof delta === 'string') {
+              assistantText += delta;
             }
+          } catch {
+            // ignore malformed SSE events
           }
         }
       }
 
-      setMessages((prev) => {
-        const rest = prev.filter((m) => m.id !== 'assistant-current');
-        return [
-          ...rest,
-          { id: `assistant-${Date.now()}`, role: 'assistant', content: assistantText || 'No entendí bien, intenta de otra forma.' },
-        ];
-      });
+      const finalText = assistantText || responseText.trim() || 'No entendí bien, intenta de otra forma.';
+
+      setMessages((prev) => [
+        ...prev,
+        { id: `assistant-${Date.now()}`, role: 'assistant', content: finalText },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
