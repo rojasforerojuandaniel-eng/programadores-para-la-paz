@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { API_URL } from '~/lib/api';
 import { chatMessageSchema, chatHistorySchema, type ChatMessage } from '~/schemas/dashboard';
 
@@ -40,56 +42,8 @@ function parseSseResponse(text: string): string {
   return assistantText.trim() || text.trim();
 }
 
-function classifyFetchError(error: unknown, didTimeout: boolean): ChatError {
-  if (didTimeout) {
-    return {
-      type: 'timeout',
-      message: 'El asesor tardó demasiado en responder. Intenta de nuevo.',
-    };
-  }
-
-  if (error instanceof DOMException && error.name === 'AbortError') {
-    // User cancellation is not surfaced as an error.
-    return { type: 'unknown', message: '' };
-  }
-
-  if (error instanceof TypeError) {
-    return {
-      type: 'network',
-      message: 'No se pudo conectar con el asesor. Revisa tu conexión.',
-    };
-  }
-
-  const message = error instanceof Error ? error.message : 'Error desconocido';
-
-  if (/network/i.test(message) || /fetch/i.test(message)) {
-    return {
-      type: 'network',
-      message: 'No se pudo conectar con el asesor. Revisa tu conexión.',
-    };
-  }
-
-  return {
-    type: 'unknown',
-    message: `Error inesperado: ${message}`,
-  };
-}
-
-function buildServerError(response: Response, body: string): ChatError {
-  if (response.status === 401 || response.status === 403) {
-    return {
-      type: 'auth',
-      message: 'Tu sesión expiró. Vuelve a iniciar sesión.',
-    };
-  }
-
-  return {
-    type: 'server',
-    message: `El asesor respondió con error ${response.status}${body ? `: ${body}` : ''}`,
-  };
-}
-
 export function useChat() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
@@ -142,7 +96,7 @@ export function useChat() {
         if (!token) {
           setError({
             type: 'auth',
-            message: 'No se pudo obtener tu sesión. Vuelve a iniciar sesión.',
+            message: t('auth.sessionMissing'),
           });
           return;
         }
@@ -164,13 +118,13 @@ export function useChat() {
         if (!response.ok) {
           const status = response.status;
           const body = await response.text().catch(() => '');
-          setError(buildServerError(response, body));
+          setError(buildServerError(t, response, body));
           return;
         }
 
         const responseText = await response.text();
         const assistantText = parseSseResponse(responseText);
-        const finalText = assistantText || 'No entendí bien, intenta de otra forma.';
+        const finalText = assistantText || t('advisor.emptyResponse');
 
         const assistantMsg: ChatMessage = {
           id: `assistant-${Date.now()}`,
@@ -180,7 +134,7 @@ export function useChat() {
 
         setMessages((prev) => [...prev, chatMessageSchema.parse(assistantMsg)]);
       } catch (caughtError) {
-        const chatError = classifyFetchError(caughtError, didTimeout);
+        const chatError = classifyFetchError(t, caughtError, didTimeout);
         if (chatError.message) {
           setError(chatError);
         }
@@ -190,7 +144,7 @@ export function useChat() {
         setStreaming(false);
       }
     },
-    [getToken, messages, streaming]
+    [getToken, messages, streaming, t]
   );
 
   return {
@@ -199,5 +153,57 @@ export function useChat() {
     cancel,
     streaming,
     error,
+  };
+}
+
+function classifyFetchError(t: TFunction, error: unknown, didTimeout: boolean): ChatError {
+  if (didTimeout) {
+    return {
+      type: 'timeout',
+      message: t('advisor.timeout'),
+    };
+  }
+
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return { type: 'unknown', message: '' };
+  }
+
+  if (error instanceof TypeError) {
+    return {
+      type: 'network',
+      message: t('advisor.networkError'),
+    };
+  }
+
+  const message = error instanceof Error ? error.message : t('errors.unknownFallback');
+
+  if (/network/i.test(message) || /fetch/i.test(message)) {
+    return {
+      type: 'network',
+      message: t('advisor.networkError'),
+    };
+  }
+
+  return {
+    type: 'unknown',
+    message: t('errors.unexpectedWithDetail', { detail: message }),
+  };
+}
+
+function buildServerError(
+  t: TFunction,
+  response: Response,
+  body: string
+): ChatError {
+  if (response.status === 401 || response.status === 403) {
+    return {
+      type: 'auth',
+      message: t('auth.sessionExpired'),
+    };
+  }
+
+  return {
+    type: 'server',
+    message: t('advisor.serverError', { status: response.status, body: body ? `: ${body}` : '' }),
   };
 }

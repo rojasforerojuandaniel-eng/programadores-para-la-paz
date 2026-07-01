@@ -1,26 +1,28 @@
 import { useRouter } from 'expo-router';
 import { CreditCard, Target, PiggyBank, Scale, Repeat, Calendar, Sparkles } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { colors } from '~/theme/colors';
 
-const items = [
-  { label: 'Cuentas', route: '/personal/accounts' as const, icon: CreditCard },
-  { label: 'Presupuestos', route: '/personal/budgets' as const, icon: Target },
-  { label: 'Metas', route: '/personal/goals' as const, icon: PiggyBank },
-  { label: 'Deudas', route: '/personal/debts' as const, icon: Scale },
-  { label: 'Recurrentes', route: '/personal/recurring' as const, icon: Repeat },
-  { label: 'Suscripciones', route: '/personal/subscriptions' as const, icon: Sparkles },
-  { label: 'Calendario', route: '/personal/calendar' as const, icon: Calendar },
-];
-
 export default function PlanTab() {
+  const { t } = useTranslation();
   const router = useRouter();
+
+  const items = [
+    { label: t('common.plan.accounts'), route: '/personal/accounts' as const, icon: CreditCard },
+    { label: t('common.plan.budgets'), route: '/personal/budgets' as const, icon: Target },
+    { label: t('common.plan.goals'), route: '/personal/goals' as const, icon: PiggyBank },
+    { label: t('common.plan.debts'), route: '/personal/debts' as const, icon: Scale },
+    { label: t('common.plan.recurring'), route: '/personal/recurring' as const, icon: Repeat },
+    { label: t('common.plan.subscriptions'), route: '/personal/subscriptions' as const, icon: Sparkles },
+    { label: t('common.plan.calendar'), route: '/personal/calendar' as const, icon: Calendar },
+  ];
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">
-      <Text className="text-foreground text-2xl font-bold mb-6">Plan financiero</Text>
+      <Text className="text-foreground text-2xl font-bold mb-6">{t('dashboard.plan.title')}</Text>
       <View className="gap-3">
         {items.map((item) => {
           const Icon = item.icon;

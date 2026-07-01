@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { AlertCircle, TrendingUp } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { MfaCodeInput } from '~/components/features/mfa-code-input';
 import { hapticImpact } from '~/lib/haptics';
 import { colors } from '~/theme/colors';
@@ -26,6 +27,7 @@ const COLORS = {
 };
 
 export default function MfaScreen() {
+  const { t } = useTranslation();
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -52,20 +54,20 @@ export default function MfaScreen() {
         await setActive({ session: result.createdSessionId });
         router.replace('/(tabs)');
       } else {
-        setError('Código incorrecto o expirado. Intenta de nuevo.');
+        setError(t('errors.mfa.invalidCode'));
       }
     } catch (err) {
       const status = getClerkErrorStatus(err);
       if (isNetworkError(err)) {
-        setError('No hay conexión. Revisa tu red e intenta de nuevo.');
+        setError(t('errors.network'));
       } else if (status === 'sign_in_second_factor_not_allowed') {
-        setError('La verificación en dos pasos no está permitida para esta cuenta.');
+        setError(t('errors.mfa.notAllowed'));
       } else if (status === 'too_many_requests') {
-        setError('Demasiados intentos. Espera un momento e intenta de nuevo.');
+        setError(t('errors.tooManyRequests'));
       } else if (status === 'code_invalid' || status === 'verification_failed') {
-        setError('Código incorrecto o expirado. Intenta de nuevo.');
+        setError(t('errors.mfa.invalidCode'));
       } else {
-        setError('No se pudo verificar el código. Intenta de nuevo.');
+        setError(t('errors.mfa.verifyFailed'));
       }
     } finally {
       setLoading(false);
@@ -86,14 +88,14 @@ export default function MfaScreen() {
             <View style={styles.logoBox}>
               <TrendingUp color={COLORS.foreground} size={28} />
             </View>
-            <Text style={styles.logoText}>Rhynode</Text>
+            <Text style={styles.logoText}>{t('common.appName')}</Text>
           </View>
 
-          <Text style={styles.title}>Verificación en dos pasos</Text>
+          <Text style={styles.title}>{t('auth.mfa.title')}</Text>
           <Text style={styles.subtitle}>
             {identifier
-              ? `Ingresa el código de autenticación para ${identifier}`
-              : 'Ingresa el código de autenticación de tu app de autenticación'}
+              ? t('auth.mfa.subtitleWithIdentifier', { identifier })
+              : t('auth.mfa.subtitle')}
           </Text>
 
           {error ? (
@@ -118,7 +120,7 @@ export default function MfaScreen() {
 
           <Pressable
             testID="mfa-verify-button"
-            accessibilityLabel="Verificar código"
+            accessibilityLabel={t('a11y.mfa.verify')}
             accessibilityRole="button"
             onPress={() => {
               void hapticImpact();
@@ -131,7 +133,7 @@ export default function MfaScreen() {
             ]}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Verificando...' : 'Verificar'}
+              {loading ? t('auth.mfa.verifyLoading') : t('auth.mfa.verify')}
             </Text>
           </Pressable>
 
@@ -139,8 +141,8 @@ export default function MfaScreen() {
             testID="mfa-toggle-backup"
             accessibilityLabel={
               isBackupCode
-                ? 'Usar código de autenticador (TOTP)'
-                : 'Usar código de respaldo'
+                ? t('a11y.mfa.useTotp')
+                : t('a11y.mfa.useBackupCode')
             }
             accessibilityRole="button"
             onPress={() => {
@@ -152,11 +154,10 @@ export default function MfaScreen() {
           >
             <Text style={styles.toggleText}>
               {isBackupCode
-                ? 'Usar código de autenticador (TOTP)'
-                : 'Usar código de respaldo'}
+                ? t('auth.mfa.useTotp')
+                : t('auth.mfa.useBackupCode')}
             </Text>
           </Pressable>
-
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

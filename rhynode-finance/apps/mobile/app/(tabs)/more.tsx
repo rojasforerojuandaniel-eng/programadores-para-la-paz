@@ -1,24 +1,26 @@
 import { useRouter } from 'expo-router';
 import { FileText, Users, FolderOpen, Brain, Settings } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { colors } from '~/theme/colors';
 
-const items = [
-  { label: 'Facturas', route: '/business/invoices' as const, icon: FileText },
-  { label: 'Clientes', route: '/business/clients' as const, icon: Users },
-  { label: 'Proyectos', route: '/business/projects' as const, icon: FolderOpen },
-  { label: 'Asesor IA', route: '/advisor' as const, icon: Brain },
-  { label: 'Ajustes', route: '/settings' as const, icon: Settings },
-];
-
 export default function MoreTab() {
+  const { t } = useTranslation();
   const router = useRouter();
+
+  const items = [
+    { label: t('common.menu.invoices'), route: '/business/invoices' as const, icon: FileText },
+    { label: t('common.menu.clients'), route: '/business/clients' as const, icon: Users },
+    { label: t('common.menu.projects'), route: '/business/projects' as const, icon: FolderOpen },
+    { label: t('advisor.menuLabel'), route: '/advisor' as const, icon: Brain },
+    { label: t('settings.menuLabel'), route: '/settings' as const, icon: Settings },
+  ];
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">
-      <Text className="text-foreground text-2xl font-bold mb-6">Más</Text>
+      <Text className="text-foreground text-2xl font-bold mb-6">{t('common.more.title')}</Text>
       <View className="gap-3">
         {items.map((item) => {
           const Icon = item.icon;

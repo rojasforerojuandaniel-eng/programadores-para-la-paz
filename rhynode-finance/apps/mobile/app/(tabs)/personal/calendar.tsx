@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
 export default function CalendarScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { data, isLoading } = usePersonalData('calendar');
 
@@ -20,11 +22,11 @@ export default function CalendarScreen() {
   return (
     <View className="flex-1 bg-background px-6 pt-6">
       <Pressable onPress={() => router.back()} className="mb-4">
-        <Text className="text-primary">← Volver</Text>
+        <Text className="text-primary">{t('common.actions.back')}</Text>
       </Pressable>
-      <Text className="text-foreground text-2xl font-bold mb-4">Calendario</Text>
+      <Text className="text-foreground text-2xl font-bold mb-4">{t('dashboard.personal.calendar.title')}</Text>
 
-      {isLoading ? <Text className="text-muted-foreground">Cargando...</Text> : null}
+      {isLoading ? <Text className="text-muted-foreground">{t('common.loading')}</Text> : null}
 
       {events.map((event) => (
         <View key={`${event.type}-${event.id}`} className="bg-card rounded-2xl p-4 mb-3">

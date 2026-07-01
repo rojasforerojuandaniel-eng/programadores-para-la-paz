@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Apple, AlertCircle, TrendingUp } from 'lucide-react-native';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { TextInput } from '~/components/ui/text-input';
 import { GoogleIcon } from '~/components/ui/google-icon';
 import { hapticImpact } from '~/lib/haptics';
@@ -29,9 +30,9 @@ const COLORS = {
   destructive: '#ef4444',
 };
 
-const emailSchema = z.string().email('Ingresa un correo electrónico válido');
-
 export default function SignInScreen() {
+  const { t } = useTranslation();
+  const emailSchema = z.string().email(t('errors.invalidEmail'));
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startSSOFlow } = useSSO();
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function SignInScreen() {
     const result = emailSchema.safeParse(value);
     if (!result.success) {
       const issue = result.error.issues[0];
-      setEmailError(issue?.message ?? 'Correo inválido');
+      setEmailError(issue?.message ?? t('errors.invalidEmailFallback'));
       return false;
     }
     setEmailError('');
@@ -71,18 +72,16 @@ export default function SignInScreen() {
       } else if (result.status === 'needs_second_factor') {
         router.push({
           pathname: '/(auth)/mfa',
-          params: {
-            identifier: email,
-          },
+          params: { identifier: email },
         });
       } else {
-        setError('No se pudo completar el inicio de sesión');
+        setError(t('errors.signInIncomplete'));
       }
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
         console.error('[sign-in] unexpected error', err);
       }
-      setError('No se pudo iniciar sesión. Verifica tus credenciales e intenta de nuevo.');
+      setError(t('errors.signInFailed'));
     } finally {
       setLoading(false);
     }
@@ -104,7 +103,7 @@ export default function SignInScreen() {
       if (process.env.NODE_ENV === 'development') {
         console.error('[sign-in] social sign-in error', err);
       }
-      setError('No se pudo iniciar sesión con Google/Apple. Intenta de nuevo.');
+      setError(t('errors.socialSignInFailed'));
     } finally {
       setSocialLoading(null);
     }
@@ -124,11 +123,11 @@ export default function SignInScreen() {
             <View style={styles.logoBox}>
               <TrendingUp color={COLORS.foreground} size={28} />
             </View>
-            <Text style={styles.logoText}>Rhynode</Text>
+            <Text style={styles.logoText}>{t('common.appName')}</Text>
           </View>
 
-          <Text style={styles.title}>Bienvenido de vuelta</Text>
-          <Text style={styles.subtitle}>Inicia sesión para continuar con Rhynode</Text>
+          <Text style={styles.title}>{t('auth.signIn.title')}</Text>
+          <Text style={styles.subtitle}>{t('auth.signIn.subtitle')}</Text>
 
           {error ? (
             <View style={styles.errorBox}>
@@ -138,7 +137,7 @@ export default function SignInScreen() {
           ) : null}
 
           <TextInput
-            label="Correo electrónico"
+            label={t('auth.signIn.emailLabel')}
             placeholderTextColor={COLORS.muted}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -161,8 +160,8 @@ export default function SignInScreen() {
 
           <TextInput
             ref={passwordRef}
-            label="Contraseña"
-            placeholder="Contraseña"
+            label={t('auth.signIn.passwordLabel')}
+            placeholder={t('auth.signIn.passwordPlaceholder')}
             placeholderTextColor={COLORS.muted}
             secureTextEntry
             textContentType="password"
@@ -177,7 +176,7 @@ export default function SignInScreen() {
           />
 
           <Pressable
-            accessibilityLabel="Entrar"
+            accessibilityLabel={t('a11y.signIn.submit')}
             accessibilityRole="button"
             onPress={() => {
               void hapticImpact();
@@ -190,51 +189,51 @@ export default function SignInScreen() {
             ]}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? t('auth.signIn.submitLoading') : t('auth.signIn.submit')}
             </Text>
           </Pressable>
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o continúa con</Text>
+            <Text style={styles.dividerText}>{t('auth.signIn.divider')}</Text>
             <View style={styles.dividerLine} />
           </View>
 
           <View style={styles.socialRow}>
             <Pressable
-              accessibilityLabel="Iniciar sesión con Google"
+              accessibilityLabel={t('a11y.signIn.google')}
               accessibilityRole="button"
               onPress={() => onSocialSignIn('oauth_google')}
               disabled={!!socialLoading}
               style={styles.socialButton}
             >
               <GoogleIcon />
-              <Text style={styles.socialButtonText}>Google</Text>
+              <Text style={styles.socialButtonText}>{t('auth.signIn.google')}</Text>
             </Pressable>
             {Platform.OS === 'ios' ? (
               <Pressable
-                accessibilityLabel="Iniciar sesión con Apple"
+                accessibilityLabel={t('a11y.signIn.apple')}
                 accessibilityRole="button"
                 onPress={() => onSocialSignIn('oauth_apple')}
                 disabled={!!socialLoading}
                 style={styles.socialButton}
               >
                 <Apple color={COLORS.foreground} size={20} />
-                <Text style={styles.socialButtonText}>Apple</Text>
+                <Text style={styles.socialButtonText}>{t('auth.signIn.apple')}</Text>
               </Pressable>
             ) : null}
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>¿No tienes cuenta? </Text>
+            <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
             <Pressable
               onPress={() =>
                 Linking.openURL('https://rhynode-finance.vercel.app/sign-up')
               }
-              accessibilityLabel="Regístrate"
+              accessibilityLabel={t('a11y.signIn.signUp')}
               accessibilityRole="link"
             >
-              <Text style={styles.footerLink}>Regístrate</Text>
+              <Text style={styles.footerLink}>{t('auth.signIn.signUp')}</Text>
             </Pressable>
           </View>
         </View>

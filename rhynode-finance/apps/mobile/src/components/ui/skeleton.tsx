@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Animated } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { View } from '~/components/ui/view';
 import { cn } from '~/lib/utils';
 import { useReducedMotion } from '~/hooks/use-reduced-motion';
@@ -18,6 +19,7 @@ const variantClasses: Record<SkeletonVariant, string> = {
 };
 
 export function Skeleton({ variant = 'line', className }: SkeletonProps) {
+  const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const pulse = useMemo<Animated.Value | null>(
     () => (reducedMotion ? null : new Animated.Value(1)),
@@ -54,7 +56,7 @@ export function Skeleton({ variant = 'line', className }: SkeletonProps) {
     <Animated.View
       style={reducedMotion || !pulse ? undefined : { opacity: pulse }}
       accessibilityState={{ busy: true }}
-      accessibilityLabel="Cargando"
+      accessibilityLabel={t('a11y.loading')}
       aria-busy
     >
       <View className={cn(variantClasses[variant], className)} />

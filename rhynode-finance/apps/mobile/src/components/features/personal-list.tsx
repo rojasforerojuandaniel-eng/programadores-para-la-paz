@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { AnimatedListItem } from '~/components/ui/animated-list-item';
 import { EmptyState } from '~/components/ui/empty-state';
 import { Pressable } from '~/components/ui/pressable';
@@ -27,12 +28,13 @@ export function PersonalList<T>({
   emptySubtitle,
   renderItem,
 }: PersonalListProps<T>) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24 }}>
       <Pressable onPress={() => router.back()} className="mb-4">
-        <Text className="text-primary">← Volver</Text>
+        <Text className="text-primary">{t('common.actions.back')}</Text>
       </Pressable>
       <Text className="text-foreground text-2xl font-bold mb-4">{title}</Text>
 

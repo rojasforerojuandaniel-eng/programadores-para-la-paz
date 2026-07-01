@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { FlatList, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { ChatMessageItem } from '~/components/features/chat-message';
 import { KeyboardAvoidingView } from '~/components/ui/keyboard-avoiding-view';
@@ -11,14 +12,16 @@ import { View } from '~/components/ui/view';
 import { useChat, type ChatMessage } from '~/hooks/use-chat';
 
 function TypingIndicator() {
+  const { t } = useTranslation();
   return (
     <View className="bg-card self-start rounded-2xl rounded-bl-sm px-4 py-3 mb-3">
-      <Text className="text-muted-foreground text-sm">El asesor está escribiendo…</Text>
+      <Text className="text-muted-foreground text-sm">{t('advisor.typing')}</Text>
     </View>
   );
 }
 
 export default function AdvisorScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { messages, send, cancel, streaming, error } = useChat();
   const [input, setInput] = useState('');
@@ -40,9 +43,9 @@ export default function AdvisorScreen() {
     >
       <View className="px-6 pt-6 pb-2">
         <Pressable onPress={() => router.back()} className="mb-4">
-          <Text className="text-primary">← Volver</Text>
+          <Text className="text-primary">{t('common.actions.back')}</Text>
         </Pressable>
-        <Text className="text-foreground text-2xl font-bold">Asesor IA</Text>
+        <Text className="text-foreground text-2xl font-bold">{t('advisor.title')}</Text>
       </View>
 
       <FlatList
@@ -55,7 +58,7 @@ export default function AdvisorScreen() {
         ListFooterComponent={streaming ? <TypingIndicator /> : null}
         ListEmptyComponent={
           <Text className="text-muted-foreground text-center mt-8">
-            Escribe una pregunta sobre tus finanzas.
+            {t('advisor.emptyState')}
           </Text>
         }
       />
@@ -69,9 +72,9 @@ export default function AdvisorScreen() {
 
         <View className="flex-row items-center gap-2">
           <TextInput
-            label="Pregunta al asesor"
+            label={t('advisor.inputLabel')}
             className="flex-1 bg-card text-foreground rounded-2xl px-4 py-3"
-            placeholder="Pregunta algo…"
+            placeholder={t('advisor.inputPlaceholder')}
             placeholderTextColor="#6b7280"
             value={input}
             onChangeText={setInput}

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
 import * as Localization from 'expo-localization';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
@@ -47,11 +48,12 @@ export function QuickAddForm({
   transactionId,
   initialCurrency,
 }: QuickAddFormProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType ?? 'EXPENSE');
   const [description, setDescription] = useState(initialMerchant ?? '');
   const [amount, setAmount] = useState(initialTotal ?? '');
-  const [category, setCategory] = useState(initialCategory ?? 'Otros');
+  const [category, setCategory] = useState(initialCategory ?? t('transactions.categories.other'));
   const [date] = useState(initialDateString(initialDate));
   const [currency] = useState(initialCurrency ?? 'COP');
   const createMutation = useCreateTransaction();
@@ -67,7 +69,7 @@ export function QuickAddForm({
   const onSubmit = () => {
     const trimmedDescription = description.trim();
     if (!trimmedDescription) {
-      showToast('Ingresa una descripción', 'error');
+      showToast(t('errors.validation.descriptionRequired'), 'error');
       return;
     }
 
@@ -76,7 +78,7 @@ export function QuickAddForm({
       Localization.getLocales()[0]?.languageTag ?? 'es-CO'
     );
     if (Number.isNaN(value) || value <= 0) {
-      showToast('Ingresa un monto válido', 'error');
+      showToast(t('errors.validation.amountInvalid'), 'error');
       return;
     }
 
@@ -94,15 +96,15 @@ export function QuickAddForm({
         { transactionId, body: baseBody },
         {
           onSuccess: () => {
-            showToast('Transacción actualizada', 'success');
+            showToast(t('transactions.update.success'), 'success');
             router.back();
           },
           onError: (error) => {
             if (isOfflineError(error)) {
-              showToast('Se actualizará cuando recuperes conexión', 'info');
+              showToast(t('transactions.update.offlinePending'), 'info');
               return;
             }
-            const message = error instanceof Error ? error.message : 'No se pudo actualizar la transacción';
+            const message = error instanceof Error ? error.message : t('errors.transactions.updateFailed');
             showToast(message, 'error');
           },
         }
@@ -114,15 +116,15 @@ export function QuickAddForm({
       onSuccess: () => {
         setDescription('');
         setAmount('');
-        setCategory('Otros');
-        showToast('Transacción guardada', 'success');
+        setCategory(t('transactions.categories.other'));
+        showToast(t('transactions.create.success'), 'success');
       },
       onError: (error) => {
         if (isOfflineError(error)) {
-          showToast('Sin conexión. Se guardará cuando vuelvas en línea.', 'info');
+          showToast(t('transactions.create.offlinePending'), 'info');
           return;
         }
-        const message = error instanceof Error ? error.message : 'No se pudo guardar la transacción';
+        const message = error instanceof Error ? error.message : t('errors.transactions.createFailed');
         showToast(message, 'error');
       },
     });
@@ -136,20 +138,20 @@ export function QuickAddForm({
           className={`flex-1 ${type === 'INCOME' ? 'bg-success' : 'bg-card'}`}
           accessibilityState={{ selected: type === 'INCOME' }}
         >
-          <Text className={type === 'INCOME' ? 'text-success-foreground font-semibold' : 'text-foreground'}>Recibí</Text>
+          <Text className={type === 'INCOME' ? 'text-success-foreground font-semibold' : 'text-foreground'}>{t('transactions.quickAdd.income')}</Text>
         </Button>
         <Button
           onPress={() => selectType('EXPENSE')}
           className={`flex-1 ${type === 'EXPENSE' ? 'bg-destructive' : 'bg-card'}`}
           accessibilityState={{ selected: type === 'EXPENSE' }}
         >
-          <Text className={type === 'EXPENSE' ? 'text-destructive-foreground font-semibold' : 'text-foreground'}>Gasté</Text>
+          <Text className={type === 'EXPENSE' ? 'text-destructive-foreground font-semibold' : 'text-foreground'}>{t('transactions.quickAdd.expense')}</Text>
         </Button>
       </View>
 
       <TextInput
-        label="Descripción"
-        placeholder="Descripción"
+        label={t('transactions.form.descriptionLabel')}
+        placeholder={t('transactions.form.descriptionPlaceholder')}
         placeholderTextColor="#6b7280"
         value={description}
         onChangeText={setDescription}
@@ -160,8 +162,8 @@ export function QuickAddForm({
 
       <TextInput
         ref={amountRef}
-        label="Monto"
-        placeholder="Monto"
+        label={t('transactions.form.amountLabel')}
+        placeholder={t('transactions.form.amountPlaceholder')}
         placeholderTextColor="#6b7280"
         keyboardType="decimal-pad"
         value={amount}
@@ -177,7 +179,7 @@ export function QuickAddForm({
       <CategoryPicker value={category} onChange={setCategory} />
 
       <Button onPress={onSubmit} disabled={isPending || !description || !amount}>
-        <Text className="text-primary-foreground font-semibold">{isPending ? 'Guardando...' : 'Guardar'}</Text>
+        <Text className="text-primary-foreground font-semibold">{isPending ? t('common.saving') : t('common.save')}</Text>
       </Button>
     </View>
   );

@@ -1,21 +1,23 @@
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
 
 export default function ClientsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { data, isLoading } = useBusinessData('clients');
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">
       <Pressable onPress={() => router.back()} className="mb-4">
-        <Text className="text-primary">← Volver</Text>
+        <Text className="text-primary">{t('common.actions.back')}</Text>
       </Pressable>
-      <Text className="text-foreground text-2xl font-bold mb-4">Clientes</Text>
+      <Text className="text-foreground text-2xl font-bold mb-4">{t('dashboard.clientsTitle')}</Text>
 
-      {isLoading ? <Text className="text-muted-foreground">Cargando...</Text> : null}
+      {isLoading ? <Text className="text-muted-foreground">{t('common.loading')}</Text> : null}
 
       {data?.clients.map((client) => (
         <View key={client.id} className="bg-card rounded-2xl p-4 mb-3">

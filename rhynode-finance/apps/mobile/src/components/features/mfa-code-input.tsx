@@ -1,4 +1,5 @@
 import { View, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Shield } from 'lucide-react-native';
 import { colors } from '~/theme/colors';
 
@@ -23,10 +24,11 @@ export function MfaCodeInput({
   editable = true,
   maxLength = 6,
   autoFocus = false,
-  accessibilityLabel = 'Código TOTP',
+  accessibilityLabel,
   placeholder = '000000',
   isBackupCode = false,
 }: MfaCodeInputProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.inputWrap}>
       <Shield color={COLORS.muted} size={20} style={styles.inputIcon} />
@@ -35,15 +37,15 @@ export function MfaCodeInput({
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmitEditing}
-        placeholder={isBackupCode ? 'Código de respaldo' : placeholder}
+        placeholder={isBackupCode ? t('auth.mfa.backupCodePlaceholder') : placeholder}
         placeholderTextColor={COLORS.muted}
         keyboardType="number-pad"
         returnKeyType="done"
         maxLength={maxLength}
         editable={editable}
         autoFocus={autoFocus}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityHint={isBackupCode ? 'Ingresa un código de respaldo' : 'Ingresa el código de 6 dígitos de tu autenticador'}
+        accessibilityLabel={accessibilityLabel ?? t('auth.mfa.totpAccessibilityLabel')}
+        accessibilityHint={isBackupCode ? t('auth.mfa.backupCodeHint') : t('auth.mfa.totpHint')}
         textContentType="oneTimeCode"
       />
     </View>

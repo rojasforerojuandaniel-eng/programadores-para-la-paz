@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View, type PressableProps } from 'react-native';
 import { cssInterop } from 'nativewind';
+import { useTranslation } from 'react-i18next';
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import { authenticateBiometric } from '~/lib/biometric';
@@ -83,6 +84,7 @@ function KeyButton({
   accessibilityLabel?: string;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation();
   const handlePress = (event: Parameters<NonNullable<PressableProps['onPress']>>[0]) => {
     if (!disabled) {
       void hapticImpact();
@@ -108,6 +110,7 @@ function KeyButton({
 }
 
 export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<PinLockMode>('verify');
   const [pin, setPin] = useState('');
   const [draftPin, setDraftPin] = useState('');
@@ -151,7 +154,7 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
           onUnlock();
           return;
         }
-        setError('PIN incorrecto');
+        setError(t('auth.pin.error.invalid'));
         setPin('');
       } else if (mode === 'create') {
         setDraftPin(pin);
@@ -164,11 +167,11 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
           onUnlock();
           return;
         }
-        setError('Los PIN no coinciden. Inténtalo de nuevo.');
+        setError(t('auth.pin.error.mismatch'));
         resetCreate();
       }
     } catch {
-      setError('No se pudo verificar el PIN. Intenta de nuevo.');
+      setError(t('auth.pin.error.verifyFailed'));
       setPin('');
     } finally {
       setIsBusy(false);
@@ -179,25 +182,25 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
     setIsBusy(true);
     setError(null);
     const ok = await authenticateBiometric({
-      promptMessage: 'Desbloquea Rhynode',
-      fallbackLabel: 'Usar PIN del dispositivo',
+      promptMessage: t('auth.biometric.promptMessage'),
+      fallbackLabel: t('auth.biometric.deviceFallbackLabel'),
       disableDeviceCredentials: false,
     });
     if (ok) {
       void hapticNotification();
       onUnlock();
     } else {
-      setError('No se pudo desbloquear con el dispositivo.');
+      setError(t('auth.biometric.error.deviceUnlockFailed'));
     }
     setIsBusy(false);
   };
 
   const title =
     mode === 'verify'
-      ? 'Ingresa tu PIN de seguridad'
+      ? t('auth.pin.title.verify')
       : mode === 'create'
-        ? 'Crea un PIN de seguridad'
-        : 'Confirma tu PIN';
+        ? t('auth.pin.title.create')
+        : t('auth.pin.title.confirm');
 
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
@@ -208,14 +211,14 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
           <Text className="text-center text-2xl font-bold text-foreground">{title}</Text>
           {mode === 'verify' && (
             <Text className="text-center text-muted-foreground">
-              Usa los 6 dígitos que configuraste como respaldo.
+              {t('auth.pin.verifyHint')}
             </Text>
           )}
         </View>
 
         <View
           className="flex-row justify-center gap-3"
-          accessibilityLabel={`PIN de ${pin.length} de ${PIN_LENGTH} dígitos`}
+          accessibilityLabel={t('a11y.pin.progress', { current: pin.length, length: PIN_LENGTH })}
         >
           {Array.from({ length: PIN_LENGTH }).map((_, index) => {
             const filled = index < pin.length;
@@ -243,7 +246,7 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
               <KeyButton
                 key={digit}
                 onPress={() => handleDigit(digit)}
-                accessibilityLabel={`Tecla ${digit}`}
+                accessibilityLabel={t('a11y.pin.key', { digit })}
                 disabled={isBusy}
               >
                 <Text className="text-2xl font-semibold text-foreground">{digit}</Text>
@@ -255,14 +258,14 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
             <View className="h-16 w-16" />
             <KeyButton
               onPress={() => handleDigit('0')}
-              accessibilityLabel="Tecla 0"
+              accessibilityLabel={t('a11y.pin.key', { digit: '0' })}
               disabled={isBusy}
             >
               <Text className="text-2xl font-semibold text-foreground">0</Text>
             </KeyButton>
             <KeyButton
               onPress={handleDelete}
-              accessibilityLabel="Borrar"
+              accessibilityLabel={t('common.delete')}
               disabled={isBusy || pin.length === 0}
             >
               <Text className="text-lg font-semibold text-foreground">⌫</Text>
@@ -274,14 +277,14 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
           onPress={handleSubmit}
           disabled={pin.length !== PIN_LENGTH || isBusy}
           accessibilityRole="button"
-          accessibilityLabel="Continuar"
+          accessibilityLabel={t('common.continue')}
           accessibilityState={{ disabled: pin.length !== PIN_LENGTH || isBusy }}
           className={cn(
             'min-h-[48px] items-center justify-center rounded-2xl bg-primary px-5 py-3 active:opacity-90',
             (pin.length !== PIN_LENGTH || isBusy) && 'opacity-50'
           )}
         >
-          <Text className="text-lg font-semibold text-primary-foreground">Continuar</Text>
+          <Text className="text-lg font-semibold text-primary-foreground">{t('common.continue')}</Text>
         </StyledPressable>
 
         {allowDeviceFallback && (
@@ -289,11 +292,11 @@ export function PinLock({ onUnlock, allowDeviceFallback = true }: PinLockProps) 
             onPress={handleDeviceFallback}
             disabled={isBusy}
             accessibilityRole="button"
-            accessibilityLabel="Usar desbloqueo del dispositivo"
+            accessibilityLabel={t('a11y.pin.deviceFallback')}
             className="min-h-[48px] items-center justify-center rounded-2xl bg-secondary px-5 py-3 active:opacity-90"
           >
             <Text className="text-base font-medium text-secondary-foreground">
-              Usar PIN o contraseña del dispositivo
+              {t('auth.pin.deviceFallbackLabel')}
             </Text>
           </StyledPressable>
         )}

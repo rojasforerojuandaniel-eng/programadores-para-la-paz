@@ -8,28 +8,12 @@ import {
   Text as RNText,
   type AccessibilityRole,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, Tag, X } from 'lucide-react-native';
 import { colors } from '~/theme/colors';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
-
-export const COMMON_CATEGORIES = [
-  'Alimentación',
-  'Transporte',
-  'Vivienda',
-  'Servicios',
-  'Entretenimiento',
-  'Salud',
-  'Educación',
-  'Ropa',
-  'Viajes',
-  'Tecnología',
-  'Mascotas',
-  'Regalos',
-  'Ingresos',
-  'Otros',
-];
 
 interface CategoryPickerProps {
   value: string;
@@ -38,15 +22,34 @@ interface CategoryPickerProps {
 }
 
 export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps) {
+  const { t } = useTranslation();
+  const commonCategories = useMemo(
+    () => [
+      t('transactions.categories.food'),
+      t('transactions.categories.transport'),
+      t('transactions.categories.housing'),
+      t('transactions.categories.utilities'),
+      t('transactions.categories.entertainment'),
+      t('transactions.categories.health'),
+      t('transactions.categories.education'),
+      t('transactions.categories.clothing'),
+      t('transactions.categories.travel'),
+      t('transactions.categories.technology'),
+      t('transactions.categories.pets'),
+      t('transactions.categories.gifts'),
+      t('transactions.categories.income'),
+      t('transactions.categories.other'),
+    ],
+    [t]
+  );
+
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const titleRef = useRef<React.ElementRef<typeof RNText>>(null);
 
   useEffect(() => {
     if (open) {
-      AccessibilityInfo.announceForAccessibility('Seleccionar categoría');
-      // Move screen reader focus to the modal title on Android. iOS will rely on
-      // the announcement because setAccessibilityFocus behavior differs by platform.
+      AccessibilityInfo.announceForAccessibility(t('transactions.categoryPicker.openAnnouncement'));
       const timer = setTimeout(() => {
         const focusable = titleRef.current as
           | ({ setAccessibilityFocus?: () => void })
@@ -55,20 +58,20 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [open]);
+  }, [open, t]);
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return COMMON_CATEGORIES;
-    return COMMON_CATEGORIES.filter((category) =>
+    if (!normalized) return commonCategories;
+    return commonCategories.filter((category) =>
       category.toLowerCase().includes(normalized)
     );
-  }, [query]);
+  }, [query, commonCategories]);
 
   const recentCategories = useMemo(() => {
     if (!recent) return [];
-    return recent.filter((category) => COMMON_CATEGORIES.includes(category));
-  }, [recent]);
+    return recent.filter((category) => commonCategories.includes(category));
+  }, [recent, commonCategories]);
 
   const select = (category: string) => {
     onChange(category);
@@ -81,7 +84,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
       <Pressable
         onPress={() => setOpen(true)}
         style={styles.row}
-        accessibilityLabel={`Categoría: ${value}`}
+        accessibilityLabel={t('transactions.categoryPicker.currentValue', { category: value })}
         accessibilityRole="button"
       >
         <Tag size={20} color="#9ca3af" strokeWidth={1.5} />
@@ -108,12 +111,12 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
               style={styles.title}
               accessibilityRole="header"
             >
-              Seleccionar categoría
+              {t('transactions.categoryPicker.title')}
             </RNText>
             <Pressable
               onPress={() => setOpen(false)}
               style={styles.closeButton}
-              accessibilityLabel="Cerrar"
+              accessibilityLabel={t('common.close')}
             >
               <X size={24} color="#9ca3af" strokeWidth={1.5} />
             </Pressable>
@@ -121,9 +124,9 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
 
           <View className="mb-4 rounded-2xl bg-card px-3 py-2">
             <TextInput
-              label="Buscar categoría"
+              label={t('transactions.categoryPicker.searchLabel')}
               className="text-foreground"
-              placeholder="Buscar categoría"
+              placeholder={t('transactions.categoryPicker.searchPlaceholder')}
               placeholderTextColor="#6b7280"
               value={query}
               onChangeText={setQuery}
@@ -133,7 +136,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
 
           {recentCategories.length > 0 && (
             <View className="mb-4">
-              <Text className="mb-2 text-sm text-muted-foreground">Recientes</Text>
+              <Text className="mb-2 text-sm text-muted-foreground">{t('transactions.categoryPicker.recent')}</Text>
               <View className="flex-row flex-wrap gap-2">
                 {recentCategories.map((category) => (
                   <Pressable
@@ -188,7 +191,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
             ItemSeparatorComponent={() => <View className="h-px bg-border" />}
             ListEmptyComponent={
               <Text className="py-8 text-center text-muted-foreground">
-                No se encontraron categorías
+                {t('transactions.categoryPicker.noResults')}
               </Text>
             }
           />

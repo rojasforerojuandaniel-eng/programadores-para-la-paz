@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AccessibilityInfo, Pressable, Text } from 'react-native';
-
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, MotiView } from '~/components/ui/moti-view';
 import { cn } from '~/lib/utils';
 import { type ToastType, useToast } from '~/hooks/use-toast';
@@ -12,6 +12,7 @@ const toastStyles: Record<ToastType, string> = {
 };
 
 function ToastItem({ id, message, type }: { id: string; message: string; type: ToastType }) {
+  const { t } = useTranslation();
   const dismiss = useToast((state) => state.dismiss);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ function ToastItem({ id, message, type }: { id: string; message: string; type: T
       accessibilityRole="alert"
       accessibilityLabel={message}
     >
-      <Pressable onPress={() => dismiss(id)} accessibilityLabel="Descartar notificación">
+      <Pressable onPress={() => dismiss(id)} accessibilityLabel={t('a11y.dismissNotification')}>
         <Text className="text-sm font-medium text-primary-foreground">{message}</Text>
       </Pressable>
     </MotiView>

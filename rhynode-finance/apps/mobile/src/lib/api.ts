@@ -1,5 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import { z, type ZodType } from 'zod';
+import i18n from '~/lib/i18n';
 import {
   clearMutation,
   enqueueMutation,
@@ -48,7 +49,7 @@ export class OfflineError extends Error {
     public readonly endpoint: string,
     public readonly optimistic: unknown
   ) {
-    super('No internet connection. The request was queued and will sync automatically.');
+    super(i18n.t('errors.offlineQueued'));
     this.name = 'OfflineError';
     this.mutationId = mutationId;
   }
@@ -96,7 +97,7 @@ export { isNetworkAvailable };
 export function safeJson<T>(schema: ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
-    throw new SchemaError('Response validation failed', result.error.issues);
+    throw new SchemaError(i18n.t('errors.schemaValidation'), result.error.issues);
   }
   return result.data;
 }
@@ -161,7 +162,7 @@ async function request<T>(
   }
 
   if (token === null || token === undefined) {
-    throw new AuthError('Authentication required');
+    throw new AuthError(i18n.t('auth.required'));
   }
 
   let body: BodyInit | null | undefined = options.body;
@@ -187,7 +188,7 @@ async function request<T>(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    throw new ApiError(text || 'Algo salió mal. Inténtalo de nuevo.', response.status);
+    throw new ApiError(text || i18n.t('errors.generic'), response.status);
   }
 
   const json = (await response.json()) as unknown;
@@ -212,8 +213,6 @@ export function createApiClient(token?: string | null) {
 export type ApiClient = ReturnType<typeof createApiClient>;
 
 const MAX_RETRIES = 3;
-const DEAD_LETTER_MESSAGE =
-  'Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.';
 
 function parseStoredHeaders(headers: string | null): Record<string, string> {
   if (!headers) return {};
@@ -233,11 +232,11 @@ export async function syncPendingMutations(
   try {
     token = await getToken();
   } catch (error) {
-    throw new AuthError('Failed to refresh authentication token', error);
+    throw new AuthError(i18n.t('auth.tokenRefreshFailed'), error);
   }
 
   if (!token) {
-    throw new AuthError('Authentication required to sync pending changes');
+    throw new AuthError(i18n.t('auth.requiredForSync'));
   }
 
   const mutations = await getPendingMutations();
@@ -246,7 +245,7 @@ export async function syncPendingMutations(
   for (const mutation of mutations) {
     if (mutation.retries >= MAX_RETRIES) {
       await markDeadLetter(mutation.id);
-      showToast(DEAD_LETTER_MESSAGE, 'error');
+      showToast(i18n.t('errors.syncFailed'), 'error');
       continue;
     }
 
@@ -281,7 +280,7 @@ export async function syncPendingMutations(
 
       if (!response.ok) {
         const text = await response.text().catch(() => '');
-        throw new Error(text || 'Request failed');
+        throw new Error(text || i18n.t('errors.requestFailed'));
       }
 
       await clearMutation(mutation.id);
@@ -292,7 +291,7 @@ export async function syncPendingMutations(
 
       if (nextRetry >= MAX_RETRIES) {
         await markDeadLetter(mutation.id);
-        showToast(DEAD_LETTER_MESSAGE, 'error');
+        showToast(i18n.t('errors.syncFailed'), 'error');
       }
     }
   }

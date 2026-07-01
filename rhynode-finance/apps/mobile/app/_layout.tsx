@@ -18,6 +18,7 @@ import {
 import { useNetworkListener, useNetworkStore } from '~/hooks/use-network';
 import { ToastProvider } from '~/components/ui/toast';
 import { OfflineBanner } from '~/components/features/offline-banner';
+import { useTranslation } from 'react-i18next';
 
 const persister = createAsyncStoragePersister();
 
@@ -78,6 +79,7 @@ function DynamicStatusBar() {
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function MissingClerkKeyScreen() {
+  const { t } = useTranslation();
   return (
     <View
       style={{
@@ -89,11 +91,10 @@ function MissingClerkKeyScreen() {
       }}
     >
       <Text style={{ color: '#fafafa', fontSize: 18, fontWeight: '700', marginBottom: 12 }}>
-        Error de configuración
+        {t('errors.configTitle')}
       </Text>
       <Text style={{ color: '#9ca3af', fontSize: 14, textAlign: 'center' }}>
-        Falta la variable de entorno EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Reconstruye la app con la
-        clave de Clerk configurada.
+        {t('errors.missingClerkKey')}
       </Text>
     </View>
   );

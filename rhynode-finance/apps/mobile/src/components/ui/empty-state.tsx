@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
@@ -15,6 +16,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon: Icon, title, subtitle, action }: EmptyStateProps) {
+  const { t } = useTranslation();
   return (
     <View
       className="items-center justify-center px-6 py-10"

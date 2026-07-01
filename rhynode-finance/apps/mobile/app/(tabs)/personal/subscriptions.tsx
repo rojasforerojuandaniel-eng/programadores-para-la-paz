@@ -1,21 +1,23 @@
 import { Receipt } from 'lucide-react-native';
 import { formatCurrency } from '@rhynode/shared';
+import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
 export default function SubscriptionsScreen() {
+  const { t } = useTranslation();
   const { data, isLoading } = usePersonalData('subscriptions');
 
   return (
     <PersonalList
-      title="Suscripciones"
+      title={t('dashboard.personal.subscriptions.title')}
       items={data?.subscriptions}
       isLoading={isLoading}
       emptyIcon={Receipt}
-      emptyTitle="No tienes suscripciones registradas"
-      emptySubtitle="Agrega Netflix, Spotify y otras suscripciones para ver su impacto."
+      emptyTitle={t('dashboard.personal.subscriptions.empty.title')}
+      emptySubtitle={t('dashboard.personal.subscriptions.empty.subtitle')}
       renderItem={(sub) => (
         <View className="bg-card rounded-2xl p-4">
           <Text className="text-foreground font-medium">{sub.name}</Text>

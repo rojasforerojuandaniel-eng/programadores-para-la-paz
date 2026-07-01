@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { X } from 'lucide-react-native';
 import { ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { useAuth } from '@clerk/clerk-expo';
 import { Text } from '~/components/ui/text';
@@ -12,11 +13,8 @@ import { showToast } from '~/hooks/use-toast';
 import { ocrResultSchema, uploadReceiptResponseSchema } from '~/schemas/dashboard';
 import { compressImage } from '~/lib/image-compress';
 
-const OFFLINE_SUCCESS_MESSAGE = 'Recibo guardado; se procesará al reconectar.';
-const PROCESS_ERROR_MESSAGE =
-  'No pudimos leer el recibo. Intenta de nuevo o ingresa manualmente.';
-
 export default function CameraScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { getToken } = useAuth();
   const cameraRef = useRef<CameraView>(null);
@@ -35,16 +33,16 @@ export default function CameraScreen() {
     return (
       <View className="flex-1 bg-background items-center justify-center px-6">
         <Text className="text-foreground text-lg mb-4">
-          Necesitamos acceso a la cámara para escanear recibos.
+          {t('camera.permissionBody')}
         </Text>
         <Pressable
           testID="request-camera-permission"
           accessibilityRole="button"
-          accessibilityLabel="Permitir acceso a la cámara"
+          accessibilityLabel={t('a11y.allowCamera')}
           onPress={requestPermission}
           className="bg-primary rounded-2xl px-6 py-3"
         >
-          <Text className="text-primary-foreground font-semibold">Permitir cámara</Text>
+          <Text className="text-primary-foreground font-semibold">{t('camera.permissionButton')}</Text>
         </Pressable>
       </View>
     );
@@ -93,10 +91,10 @@ export default function CameraScreen() {
       });
     } catch (error) {
       if (error instanceof OfflineError) {
-        showToast(OFFLINE_SUCCESS_MESSAGE, 'success');
+        showToast(t('camera.offlineSuccess'), 'success');
         router.back();
       } else {
-        showToast(PROCESS_ERROR_MESSAGE, 'error');
+        showToast(t('camera.processError'), 'error');
       }
     } finally {
       setLoading(false);
@@ -110,7 +108,7 @@ export default function CameraScreen() {
           <Pressable
             testID="camera-close"
             accessibilityRole="button"
-            accessibilityLabel="Cerrar cámara"
+            accessibilityLabel={t('a11y.closeCamera')}
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full bg-black/40 items-center justify-center"
           >
@@ -134,7 +132,7 @@ export default function CameraScreen() {
             </View>
           </View>
           <Text className="text-white/80 mt-4 text-sm font-medium">
-            Alinea el recibo dentro del marco
+            {t('camera.frameHint')}
           </Text>
         </View>
 
@@ -142,7 +140,7 @@ export default function CameraScreen() {
           <Pressable
             testID="camera-shutter"
             accessibilityRole="button"
-            accessibilityLabel="Tomar foto del recibo"
+            accessibilityLabel={t('a11y.takeReceiptPhoto')}
             onPress={takePicture}
             disabled={loading}
             className="w-20 h-20 rounded-full border-4 border-white bg-white/20 items-center justify-center"

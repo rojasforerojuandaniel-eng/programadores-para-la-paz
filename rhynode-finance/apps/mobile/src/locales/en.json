@@ -2,6 +2,371 @@
   "common": {
     "appName": "Rhynode",
     "getStarted": "Get Started",
-    "hello": "Hello"
+    "hello": "Hello",
+    "tabs": {
+      "home": "Home",
+      "transactions": "Transactions",
+      "add": "Add",
+      "plan": "Plan",
+      "more": "More"
+    },
+    "actions": {
+      "addTransaction": "Add transaction",
+      "back": "← Back",
+      "backShort": "Back"
+    },
+    "menu": {
+      "invoices": "Invoices",
+      "clients": "Clients",
+      "projects": "Projects"
+    },
+    "plan": {
+      "accounts": "Accounts",
+      "budgets": "Budgets",
+      "goals": "Goals",
+      "debts": "Debts",
+      "recurring": "Recurring",
+      "subscriptions": "Subscriptions",
+      "calendar": "Calendar"
+    },
+    "more": {
+      "title": "More"
+    },
+    "empty": {
+      "noTransactionsTitle": "No transactions yet",
+      "noTransactionsSubtitle": "Add one"
+    },
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "save": "Save",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "close": "Close",
+    "retry": "Retry",
+    "delete": "Delete",
+    "of": "of"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue with Rhynode",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Password",
+      "submit": "Sign in",
+      "submitLoading": "Signing in...",
+      "divider": "or continue with",
+      "google": "Google",
+      "apple": "Apple",
+      "noAccount": "Don't have an account? ",
+      "signUp": "Sign up"
+    },
+    "mfa": {
+      "title": "Two-step verification",
+      "subtitle": "Enter the authentication code from your authenticator app",
+      "subtitleWithIdentifier": "Enter the authentication code for {{identifier}}",
+      "verify": "Verify",
+      "verifyLoading": "Verifying...",
+      "useTotp": "Use authenticator code (TOTP)",
+      "useBackupCode": "Use backup code",
+      "totpAccessibilityLabel": "TOTP code",
+      "backupCodePlaceholder": "Backup code",
+      "backupCodeHint": "Enter a backup code",
+      "totpHint": "Enter the 6-digit code from your authenticator"
+    },
+    "onboarding": {
+      "title": "Welcome to Rhynode",
+      "subtitle": "Choose how you want to use the app: personal, business, or both."
+    },
+    "biometric": {
+      "promptMessage": "Unlock Rhynode",
+      "fallbackPin": "Use PIN",
+      "deviceFallbackLabel": "Use device PIN",
+      "error": {
+        "deviceUnlockFailed": "Could not unlock with the device."
+      }
+    },
+    "pin": {
+      "title": {
+        "verify": "Enter your security PIN",
+        "create": "Create a security PIN",
+        "confirm": "Confirm your PIN"
+      },
+      "verifyHint": "Use the 6 digits you set as backup.",
+      "deviceFallbackLabel": "Use device PIN or password",
+      "error": {
+        "invalid": "Incorrect PIN",
+        "mismatch": "PINs don't match. Try again.",
+        "verifyFailed": "Could not verify the PIN. Try again."
+      }
+    },
+    "required": "Authentication required",
+    "requiredForSync": "Authentication required to sync pending changes",
+    "tokenRefreshFailed": "Failed to refresh authentication token",
+    "sessionExpired": "Your session expired. Sign in again.",
+    "sessionMissing": "Could not get your session. Sign in again."
+  },
+  "dashboard": {
+    "title": "Summary",
+    "balance": {
+      "total": "Total balance",
+      "hideAccessibility": "Hide balance",
+      "showAccessibility": "Show balance"
+    },
+    "kpis": {
+      "income": "Income",
+      "expense": "Expenses"
+    },
+    "upcomingPayments": {
+      "title": "Upcoming payments",
+      "empty": {
+        "title": "No upcoming payments",
+        "subtitle": "Add debts or goals to see them here."
+      }
+    },
+    "plan": {
+      "title": "Financial plan"
+    },
+    "healthScore": {
+      "label": "Health Score"
+    },
+    "personal": {
+      "accounts": {
+        "title": "Accounts",
+        "empty": {
+          "title": "No accounts yet",
+          "subtitle": "Create an account to start organizing your money."
+        }
+      },
+      "budgets": {
+        "title": "Budgets",
+        "empty": {
+          "title": "No budgets yet",
+          "subtitle": "Set a budget to control your spending."
+        }
+      },
+      "goals": {
+        "title": "Savings goals",
+        "empty": {
+          "title": "No goals yet",
+          "subtitle": "Define a goal and start saving with purpose."
+        }
+      },
+      "debts": {
+        "title": "Debts",
+        "empty": {
+          "title": "No debts recorded",
+          "subtitle": "Record your debts to plan payments without stress."
+        },
+        "owe": "I owe",
+        "owed": "Owed to me",
+        "dueLabel": "Due: "
+      },
+      "recurring": {
+        "title": "Recurring",
+        "empty": {
+          "title": "No recurring expenses",
+          "subtitle": "Add fixed payments to anticipate your cash flow."
+        }
+      },
+      "subscriptions": {
+        "title": "Subscriptions",
+        "empty": {
+          "title": "No subscriptions recorded",
+          "subtitle": "Add Netflix, Spotify and other subscriptions to see their impact."
+        }
+      },
+      "calendar": {
+        "title": "Calendar"
+      }
+    },
+    "projectsTitle": "Projects",
+    "invoicesTitle": "Invoices",
+    "clientsTitle": "Clients",
+    "noClient": "No client",
+    "invoices": {
+      "due": "Due {{date}}"
+    }
+  },
+  "transactions": {
+    "title": "Transaction detail",
+    "loading": "Loading transaction...",
+    "notFoundTitle": "Transaction not found",
+    "notFoundBody": "The transaction you're looking for doesn't exist or was deleted.",
+    "income": "Income",
+    "expense": "Expense",
+    "accountLabel": "Account",
+    "bankAccountLabel": "Bank account",
+    "organizationLabel": "Organization",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "dateLabel": "Date",
+    "currencyLabel": "Currency",
+    "defaultCategory": "Others",
+    "noCategory": "No category",
+    "form": {
+      "editTitle": "Edit transaction",
+      "addTitle": "Add transaction",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Description",
+      "amountLabel": "Amount",
+      "amountPlaceholder": "Amount"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "share": "Share"
+    },
+    "deleteTitle": "Delete transaction",
+    "deleteMessage": "Are you sure you want to delete \"{{description}}\"? This action cannot be undone.",
+    "deleteConfirm": "Delete",
+    "deleteSuccess": "Transaction deleted",
+    "shareMessage": "{{type}}: {{amount}} - {{description}} ({{date}})",
+    "update": {
+      "success": "Transaction updated",
+      "offlinePending": "It will update when you reconnect"
+    },
+    "create": {
+      "success": "Transaction saved",
+      "offlinePending": "Offline. It will be saved when you go back online."
+    },
+    "quickAdd": {
+      "income": "I received",
+      "expense": "I spent"
+    },
+    "categoryPicker": {
+      "title": "Select category",
+      "openAnnouncement": "Select category",
+      "currentValue": "Category: {{category}}",
+      "searchLabel": "Search category",
+      "searchPlaceholder": "Search category",
+      "recent": "Recent",
+      "noResults": "No categories found"
+    },
+    "categories": {
+      "food": "Food",
+      "transport": "Transport",
+      "housing": "Housing",
+      "utilities": "Utilities",
+      "entertainment": "Entertainment",
+      "health": "Health",
+      "education": "Education",
+      "clothing": "Clothing",
+      "travel": "Travel",
+      "technology": "Technology",
+      "pets": "Pets",
+      "gifts": "Gifts",
+      "income": "Income",
+      "other": "Others"
+    }
+  },
+  "advisor": {
+    "menuLabel": "AI Advisor",
+    "title": "AI Advisor",
+    "typing": "The advisor is typing…",
+    "emptyState": "Write a question about your finances.",
+    "inputLabel": "Ask the advisor",
+    "inputPlaceholder": "Ask something…",
+    "timeout": "The advisor took too long to respond. Try again.",
+    "networkError": "Could not connect to the advisor. Check your connection.",
+    "serverError": "The advisor responded with error {{status}}{{body}}",
+    "emptyResponse": "I didn't quite understand, try rephrasing."
+  },
+  "camera": {
+    "permissionBody": "We need camera access to scan receipts.",
+    "permissionButton": "Allow camera",
+    "frameHint": "Align the receipt inside the frame",
+    "offlineSuccess": "Receipt saved; it will be processed when you reconnect.",
+    "processError": "We couldn't read the receipt. Try again or enter it manually."
+  },
+  "settings": {
+    "menuLabel": "Settings",
+    "title": "Settings",
+    "signOutTitle": "Sign out",
+    "signOutMessage": "Are you sure you want to sign out?",
+    "signOutConfirm": "Sign out",
+    "signOutButton": "Sign out",
+    "signOutError": "Could not sign out. Try again."
+  },
+  "errors": {
+    "invalidEmail": "Enter a valid email",
+    "invalidEmailFallback": "Invalid email",
+    "signInIncomplete": "Could not complete sign in",
+    "signInFailed": "Could not sign in. Check your credentials and try again.",
+    "socialSignInFailed": "Could not sign in with Google/Apple. Try again.",
+    "mfa": {
+      "invalidCode": "Incorrect or expired code. Try again.",
+      "notAllowed": "Two-step verification is not allowed for this account.",
+      "verifyFailed": "Could not verify the code. Try again."
+    },
+    "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+    "network": "No connection. Check your network and try again.",
+    "offlineQueued": "No internet connection. The request was queued and will sync automatically.",
+    "schemaValidation": "Response validation failed",
+    "generic": "Something went wrong. Try again.",
+    "syncFailed": "Some changes couldn't sync. Check the error log.",
+    "requestFailed": "Request failed",
+    "offline": {
+      "message": "No internet connection. Some changes are pending."
+    },
+    "connectionRetry": "Check your connection and try again.",
+    "loadFailed": "We couldn't load your data",
+    "validation": {
+      "descriptionRequired": "Enter a description",
+      "amountInvalid": "Enter a valid amount"
+    },
+    "transactions": {
+      "updateFailed": "Could not update the transaction",
+      "createFailed": "Could not save the transaction"
+    },
+    "deleteFailed": "Could not delete",
+    "configTitle": "Configuration error",
+    "missingClerkKey": "The EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY environment variable is missing. Rebuild the app with the Clerk key configured.",
+    "unknownFallback": "Unknown error",
+    "unexpectedWithDetail": "Unexpected error: {{detail}}"
+  },
+  "a11y": {
+    "signIn": {
+      "submit": "Sign in",
+      "google": "Sign in with Google",
+      "apple": "Sign in with Apple",
+      "signUp": "Sign up"
+    },
+    "mfa": {
+      "verify": "Verify code",
+      "useTotp": "Use authenticator code (TOTP)",
+      "useBackupCode": "Use backup code"
+    },
+    "categoryPicker": {
+      "openAnnouncement": "Select category",
+      "currentValue": "Category: {{category}}"
+    },
+    "chat": {
+      "userMessage": "Your message",
+      "assistantMessage": "Advisor reply"
+    },
+    "transactionActions": {
+      "edit": "Edit transaction",
+      "delete": "Delete transaction",
+      "share": "Share transaction"
+    },
+    "transaction": {
+      "viewDetail": "View detail of {{description}}"
+    },
+    "pin": {
+      "progress": "PIN {{current}} of {{length}} digits",
+      "key": "Key {{digit}}",
+      "deviceFallback": "Use device unlock"
+    },
+    "loading": "Loading",
+    "errorCodeLabel": "Error code: {{detail}}",
+    "dismissNotification": "Dismiss notification",
+    "allowCamera": "Allow camera access",
+    "closeCamera": "Close camera",
+    "takeReceiptPhoto": "Take receipt photo",
+    "goBack": "Go back",
+    "offline": {
+      "banner": "No internet connection"
+    }
   }
 }

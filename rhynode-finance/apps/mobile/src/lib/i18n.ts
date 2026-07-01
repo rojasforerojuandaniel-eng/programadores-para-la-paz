@@ -9,11 +9,12 @@ const resources = {
   en: { translation: en },
 };
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
   resources,
   lng: Localization.getLocales()[0]?.languageCode ?? 'es',
   fallbackLng: 'es',
   interpolation: { escapeValue: false },
+  react: { useSuspense: false },
 });
 
 export default i18n;

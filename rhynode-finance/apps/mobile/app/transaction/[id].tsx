@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, Alert, Share } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { formatCurrency, formatDate } from '@rhynode/shared';
 import { TransactionActions } from '~/components/features/transaction-actions';
 import { Button } from '~/components/ui/button';
@@ -21,38 +22,42 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 function LoadingState() {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 bg-background items-center justify-center px-6">
       <ActivityIndicator className="text-success" />
-      <Text className="text-muted-foreground mt-4">Cargando movimiento...</Text>
+      <Text className="text-muted-foreground mt-4">{t('transactions.loading')}</Text>
     </View>
   );
 }
 
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 bg-background px-6 pt-6">
       <Text className="text-destructive text-base mb-4">{message}</Text>
       <Button onPress={onRetry} testID="retry-button">
-        <Text className="text-primary-foreground font-semibold">Reintentar</Text>
+        <Text className="text-primary-foreground font-semibold">{t('common.retry')}</Text>
       </Button>
     </View>
   );
 }
 
 function NotFoundState({ onBack }: { onBack: () => void }) {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 bg-background px-6 pt-6">
-      <Text className="text-foreground text-2xl font-bold mb-2">Movimiento no encontrado</Text>
-      <Text className="text-muted-foreground mb-6">El movimiento que buscas no existe o fue eliminado.</Text>
+      <Text className="text-foreground text-2xl font-bold mb-2">{t('transactions.notFoundTitle')}</Text>
+      <Text className="text-muted-foreground mb-6">{t('transactions.notFoundBody')}</Text>
       <Button onPress={onBack} testID="not-found-back">
-        <Text className="text-primary-foreground font-semibold">Volver</Text>
+        <Text className="text-primary-foreground font-semibold">{t('common.actions.backShort')}</Text>
       </Button>
     </View>
   );
 }
 
 export default function TransactionDetailScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = useMemo(() => (typeof rawId === 'string' ? rawId : undefined), [rawId]);
   const router = useRouter();
@@ -78,10 +83,10 @@ export default function TransactionDetailScreen() {
   const isIncome = transaction.type === 'INCOME';
   const sourceLabel = transaction.accountName ?? transaction.bankAccountName ?? transaction.organizationName;
   const sourceName = transaction.accountName
-    ? 'Cuenta'
+    ? t('transactions.accountLabel')
     : transaction.bankAccountName
-      ? 'Cuenta bancaria'
-      : 'Organización';
+      ? t('transactions.bankAccountLabel')
+      : t('transactions.organizationLabel');
 
   const handleEdit = () => {
     router.push({
@@ -92,7 +97,7 @@ export default function TransactionDetailScreen() {
         total: transaction.amount.toString(),
         date: transaction.date,
         type: transaction.type,
-        category: transaction.category ?? 'Otros',
+        category: transaction.category ?? t('transactions.defaultCategory'),
         currency: transaction.currency,
       },
     });
@@ -100,21 +105,21 @@ export default function TransactionDetailScreen() {
 
   const handleDelete = () => {
     Alert.alert(
-      'Eliminar movimiento',
-      `¿Seguro que quieres eliminar "${transaction.description}"? Esta acción no se puede deshacer.`,
+      t('transactions.deleteTitle'),
+      t('transactions.deleteMessage', { description: transaction.description }),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Eliminar',
+          text: t('transactions.deleteConfirm'),
           style: 'destructive',
           onPress: () => {
             deleteMutation.mutate(transaction.id, {
               onSuccess: () => {
-                showToast('Movimiento eliminado', 'success');
+                showToast(t('transactions.deleteSuccess'), 'success');
                 router.back();
               },
               onError: (deleteError) => {
-                const message = deleteError instanceof Error ? deleteError.message : 'No se pudo eliminar';
+                const message = deleteError instanceof Error ? deleteError.message : t('errors.deleteFailed');
                 showToast(message, 'error');
               },
             });
@@ -125,8 +130,13 @@ export default function TransactionDetailScreen() {
   };
 
   const handleShare = async () => {
-    const typeLabel = isIncome ? 'Ingreso' : 'Gasto';
-    const message = `${typeLabel}: ${formatCurrency(transaction.amount, transaction.currency, 'es')} - ${transaction.description} (${formatDate(transaction.date, 'es')})`;
+    const typeLabel = isIncome ? t('transactions.income') : t('transactions.expense');
+    const message = t('transactions.shareMessage', {
+      type: typeLabel,
+      amount: formatCurrency(transaction.amount, transaction.currency, 'es'),
+      description: transaction.description,
+      date: formatDate(transaction.date, 'es'),
+    });
 
     try {
       await Share.share({ message });
@@ -141,16 +151,16 @@ export default function TransactionDetailScreen() {
         onPress={() => router.back()}
         className="mb-4 self-start"
         accessibilityRole="button"
-        accessibilityLabel="Volver atrás"
+        accessibilityLabel={t('a11y.goBack')}
       >
-        <Text className="text-primary text-lg">← Volver</Text>
+        <Text className="text-primary text-lg">{t('common.actions.back')}</Text>
       </Pressable>
 
-      <Text className="text-foreground text-2xl font-bold mb-6">Detalle del movimiento</Text>
+      <Text className="text-foreground text-2xl font-bold mb-6">{t('transactions.title')}</Text>
 
       <View className="bg-card rounded-2xl p-5">
         <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-muted-foreground text-sm">{isIncome ? 'Ingreso' : 'Gasto'}</Text>
+          <Text className="text-muted-foreground text-sm">{isIncome ? t('transactions.income') : t('transactions.expense')}</Text>
           <Text
             className={`text-3xl font-bold tabular-nums ${isIncome ? 'text-success' : 'text-destructive'}`}
           >
@@ -158,11 +168,11 @@ export default function TransactionDetailScreen() {
           </Text>
         </View>
 
-        <DetailRow label="Descripción" value={transaction.description} />
-        {transaction.category ? <DetailRow label="Categoría" value={transaction.category} /> : null}
-        <DetailRow label="Fecha" value={formatDate(transaction.date, 'es')} />
-        <DetailRow label={sourceName} value={sourceLabel} />
-        <DetailRow label="Divisa" value={transaction.currency} />
+        <DetailRow label={t('transactions.descriptionLabel')} value={transaction.description} />
+        {transaction.category ? <DetailRow label={t('transactions.categoryLabel')} value={transaction.category} /> : null}
+        <DetailRow label={t('transactions.dateLabel')} value={formatDate(transaction.date, 'es')} />
+        <DetailRow label={sourceName} value={sourceLabel ?? ''} />
+        <DetailRow label={t('transactions.currencyLabel')} value={transaction.currency} />
       </View>
 
       <TransactionActions

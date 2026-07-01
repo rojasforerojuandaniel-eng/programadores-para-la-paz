@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import i18n from '~/lib/i18n';
 import { createApiClient } from '~/lib/api';
 import type { Router } from 'expo-router';
 
@@ -33,7 +34,7 @@ export async function requestPushPermissionsAsync(): Promise<boolean> {
   try {
     const channelId = 'rhynode-default';
     await Notifications.setNotificationChannelAsync(channelId, {
-      name: 'Rhynode',
+      name: i18n.t('common.appName'),
       importance: Notifications.AndroidImportance.DEFAULT,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',

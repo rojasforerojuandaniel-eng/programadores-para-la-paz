@@ -1,12 +1,14 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { z, type ZodType } from 'zod';
 import { createApiClient, type ApiClient, type FormDataField, AuthError } from '~/lib/api';
 
 export function useApi(): ApiClient {
   const { getToken } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return useMemo(() => {
     const getAuthToken = async (): Promise<string> => {
@@ -16,12 +18,12 @@ export function useApi(): ApiClient {
         token = await getToken();
       } catch (error) {
         router.replace('/(auth)/sign-in');
-        throw new AuthError('Failed to refresh authentication token', error);
+        throw new AuthError(t('auth.tokenRefreshFailed'), error);
       }
 
       if (!token) {
         router.replace('/(auth)/sign-in');
-        throw new AuthError('Authentication required');
+        throw new AuthError(t('auth.required'));
       }
 
       return token;
@@ -49,5 +51,5 @@ export function useApi(): ApiClient {
         return createApiClient(token).postFormData<T>(path, fields, schema);
       },
     };
-  }, [getToken, router]);
+  }, [getToken, router, t]);
 }

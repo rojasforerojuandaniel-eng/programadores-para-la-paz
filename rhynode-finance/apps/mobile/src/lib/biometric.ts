@@ -1,4 +1,5 @@
 import * as LocalAuthentication from 'expo-local-authentication';
+import i18n from '~/lib/i18n';
 
 export async function isBiometricAvailable(): Promise<boolean> {
   const compatible = await LocalAuthentication.hasHardwareAsync().catch(() => false);
@@ -13,8 +14,8 @@ export interface AuthenticateBiometricOptions {
 }
 
 export async function authenticateBiometric({
-  promptMessage = 'Desbloquea Rhynode',
-  fallbackLabel = 'Usar PIN',
+  promptMessage = i18n.t('auth.biometric.promptMessage'),
+  fallbackLabel = i18n.t('auth.biometric.fallbackPin'),
   disableDeviceCredentials = false,
 }: AuthenticateBiometricOptions = {}): Promise<boolean> {
   const available = await isBiometricAvailable();

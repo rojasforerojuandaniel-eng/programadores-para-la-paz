@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
 import { PinLock } from '~/components/features/pin-lock';
 import { Text } from '~/components/ui/text';
@@ -10,15 +11,17 @@ import { colors } from '~/theme/colors';
 SplashScreen.preventAutoHideAsync();
 
 function SplashLoader() {
+  const { t } = useTranslation();
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <ActivityIndicator size="large" color={colors.primary} />
-      <Text className="mt-4 text-muted-foreground">Rhynode</Text>
+      <Text className="mt-4 text-muted-foreground">{t('common.appName')}</Text>
     </View>
   );
 }
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { isLoaded, isSignedIn } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -53,8 +56,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       }
 
       const ok = await authenticateBiometric({
-        promptMessage: 'Desbloquea Rhynode',
-        fallbackLabel: 'Usar PIN',
+        promptMessage: t('auth.biometric.promptMessage'),
+        fallbackLabel: t('auth.biometric.fallbackPin'),
         disableDeviceCredentials: true,
       });
 
@@ -67,7 +70,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
 
     void unlock();
-  }, [isLoaded, isSignedIn, biometricPassed, showPinLock]);
+  }, [isLoaded, isSignedIn, biometricPassed, showPinLock, t]);
 
   if (!isLoaded) {
     return <SplashLoader />;

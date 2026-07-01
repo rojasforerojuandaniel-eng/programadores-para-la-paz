@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
@@ -10,6 +11,7 @@ interface TransactionActionsProps {
 }
 
 export function TransactionActions({ onEdit, onDelete, onShare, disabled }: TransactionActionsProps) {
+  const { t } = useTranslation();
   return (
     <View className="flex-row gap-3 mt-6">
       <Button
@@ -17,27 +19,27 @@ export function TransactionActions({ onEdit, onDelete, onShare, disabled }: Tran
         disabled={disabled}
         variant="secondary"
         className="flex-1"
-        accessibilityLabel="Editar movimiento"
+        accessibilityLabel={t('a11y.transactionActions.edit')}
       >
-        <Text className="text-secondary-foreground font-semibold">Editar</Text>
+        <Text className="text-secondary-foreground font-semibold">{t('transactions.actions.edit')}</Text>
       </Button>
       <Button
         onPress={onDelete}
         disabled={disabled}
         variant="destructive"
         className="flex-1"
-        accessibilityLabel="Eliminar movimiento"
+        accessibilityLabel={t('a11y.transactionActions.delete')}
       >
-        <Text className="text-destructive-foreground font-semibold">Eliminar</Text>
+        <Text className="text-destructive-foreground font-semibold">{t('transactions.actions.delete')}</Text>
       </Button>
       <Button
         onPress={onShare}
         disabled={disabled}
         variant="default"
         className="flex-1"
-        accessibilityLabel="Compartir movimiento"
+        accessibilityLabel={t('a11y.transactionActions.share')}
       >
-        <Text className="text-primary-foreground font-semibold">Compartir</Text>
+        <Text className="text-primary-foreground font-semibold">{t('transactions.actions.share')}</Text>
       </Button>
     </View>
   );

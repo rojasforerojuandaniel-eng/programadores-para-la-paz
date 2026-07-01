@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Receipt } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { TransactionListItem } from '~/components/features/transaction-list-item';
 import { AnimatedListItem } from '~/components/ui/animated-list-item';
 import { EmptyState } from '~/components/ui/empty-state';
@@ -11,6 +12,7 @@ import { useTransactions } from '~/hooks/use-transactions';
 import { colors } from '~/theme/colors';
 
 export default function TransactionsTab() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { data, isLoading, isError, isFetching, refetch, error } = useTransactions();
 
@@ -31,7 +33,7 @@ export default function TransactionsTab() {
     return (
       <View className="flex-1 bg-background px-6 pt-6">
         <ErrorState
-          message="Revisa tu conexión e intenta de nuevo."
+          message={t('errors.connectionRetry')}
           onRetry={refetch}
           error={error}
         />
@@ -53,10 +55,10 @@ export default function TransactionsTab() {
         ListEmptyComponent={
           <EmptyState
             icon={Receipt}
-            title="Aún no tienes movimientos"
-            subtitle="Agrega uno"
+            title={t('common.empty.noTransactionsTitle')}
+            subtitle={t('common.empty.noTransactionsSubtitle')}
             action={{
-              label: 'Agregar movimiento',
+              label: t('common.actions.addTransaction'),
               onPress: () => router.push('/(tabs)/add'),
             }}
           />
