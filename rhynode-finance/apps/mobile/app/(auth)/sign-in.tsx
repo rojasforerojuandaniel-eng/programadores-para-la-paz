@@ -15,7 +15,6 @@ import {
 import { Mail, Lock, Apple, AlertCircle, TrendingUp } from 'lucide-react-native';
 import { GoogleIcon } from '~/components/ui/google-icon';
 import { hapticImpact } from '~/lib/haptics';
-import { API_URL } from '~/lib/api';
 
 const COLORS = {
   background: '#08090e',
@@ -51,34 +50,9 @@ export default function SignInScreen() {
         await setActive({ session: result.createdSessionId });
         router.replace('/(tabs)');
       } else if (result.status === 'needs_second_factor') {
-        const tokenResponse = await fetch(`${API_URL}/api/mobile/demo-token`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        const tokenData = (await tokenResponse.json()) as {
-          token?: string;
-          error?: string;
-        };
-        if (tokenData.token) {
-          const ticketResult = await signIn.create({
-            strategy: 'ticket',
-            ticket: tokenData.token,
-          });
-          if (ticketResult.status === 'complete' && ticketResult.createdSessionId) {
-            await setActive({ session: ticketResult.createdSessionId });
-            router.replace('/(tabs)');
-          } else {
-            setError(
-              'Tu cuenta requiere verificación adicional (MFA). Configúrala en la web e intenta de nuevo.'
-            );
-          }
-        } else {
-          setError(
-            tokenData.error ??
-              'Tu cuenta requiere verificación adicional (MFA). Configúrala en la web e intenta de nuevo.'
-          );
-        }
+        setError(
+          'Tu cuenta requiere verificación en dos pasos. Configúrala en la web e intenta de nuevo.'
+        );
       } else {
         setError('No se pudo completar el inicio de sesión');
       }
