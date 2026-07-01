@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Home, List, PlusCircle, Target, Menu } from 'lucide-react-native';
 import { useColorScheme } from 'react-native';
+import { colors } from '~/theme/colors';
 
 export default function TabsLayout() {
   const scheme = useColorScheme();
-  const tint = '#10b981';
+  const tint = colors.primary;
   const barBg = scheme === 'dark' ? '#0A0A0F' : '#ffffff';
   const inactive = '#6b7280';
 

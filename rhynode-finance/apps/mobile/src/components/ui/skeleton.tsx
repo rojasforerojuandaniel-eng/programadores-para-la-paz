@@ -19,10 +19,13 @@ const variantClasses: Record<SkeletonVariant, string> = {
 
 export function Skeleton({ variant = 'line', className }: SkeletonProps) {
   const reducedMotion = useReducedMotion();
-  const pulse = useMemo(() => new Animated.Value(1), []);
+  const pulse = useMemo<Animated.Value | null>(
+    () => (reducedMotion ? null : new Animated.Value(1)),
+    [reducedMotion]
+  );
 
   useEffect(() => {
-    if (reducedMotion) {
+    if (reducedMotion || !pulse) {
       return;
     }
 
@@ -49,7 +52,7 @@ export function Skeleton({ variant = 'line', className }: SkeletonProps) {
 
   return (
     <Animated.View
-      style={reducedMotion ? undefined : { opacity: pulse }}
+      style={reducedMotion || !pulse ? undefined : { opacity: pulse }}
       accessibilityState={{ busy: true }}
       accessibilityLabel="Cargando"
       aria-busy

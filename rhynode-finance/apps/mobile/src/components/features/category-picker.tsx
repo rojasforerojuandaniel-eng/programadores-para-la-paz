@@ -9,6 +9,7 @@ import {
   type AccessibilityRole,
 } from 'react-native';
 import { ChevronDown, Tag, X } from 'lucide-react-native';
+import { colors } from '~/theme/colors';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   chipSelected: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.primary,
   },
   listRow: {
     backgroundColor: '#0d0e13',
@@ -231,6 +232,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   listRowSelected: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.primary,
   },
 });

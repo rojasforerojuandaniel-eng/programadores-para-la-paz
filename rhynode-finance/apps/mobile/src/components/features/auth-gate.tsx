@@ -5,13 +5,14 @@ import { SplashScreen, useRouter, useSegments } from 'expo-router';
 import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
 import { PinLock } from '~/components/features/pin-lock';
 import { Text } from '~/components/ui/text';
+import { colors } from '~/theme/colors';
 
 SplashScreen.preventAutoHideAsync();
 
 function SplashLoader() {
   return (
     <View className="flex-1 items-center justify-center bg-background">
-      <ActivityIndicator size="large" color="#10b981" />
+      <ActivityIndicator size="large" color={colors.primary} />
       <Text className="mt-4 text-muted-foreground">Rhynode</Text>
     </View>
   );

@@ -1,5 +1,6 @@
 import { View, TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { Shield } from 'lucide-react-native';
+import { colors } from '~/theme/colors';
 
 interface MfaCodeInputProps extends Pick<TextInputProps, 'value' | 'onChangeText' | 'onSubmitEditing' | 'editable' | 'maxLength' | 'autoFocus'> {
   accessibilityLabel?: string;
@@ -11,7 +12,7 @@ const COLORS = {
   background: '#0d0e13',
   foreground: '#fafafa',
   muted: '#9ca3af',
-  primary: '#10b981',
+  primary: colors.primary,
   border: '#26272b',
 };
 

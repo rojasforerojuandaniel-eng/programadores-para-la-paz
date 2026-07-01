@@ -13,13 +13,14 @@ import {
 import { AlertCircle, TrendingUp } from 'lucide-react-native';
 import { MfaCodeInput } from '~/components/features/mfa-code-input';
 import { hapticImpact } from '~/lib/haptics';
+import { colors } from '~/theme/colors';
 
 const COLORS = {
   background: '#08090e',
   foreground: '#fafafa',
   card: '#0d0e13',
   muted: '#9ca3af',
-  primary: '#10b981',
+  primary: colors.primary,
   border: '#26272b',
   destructive: '#ef4444',
 };

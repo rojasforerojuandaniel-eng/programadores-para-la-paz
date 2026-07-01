@@ -8,6 +8,7 @@ import { ErrorState } from '~/components/ui/error-state';
 import { Skeleton, SkeletonGroup } from '~/components/ui/skeleton';
 import { View } from '~/components/ui/view';
 import { useTransactions } from '~/hooks/use-transactions';
+import { colors } from '~/theme/colors';
 
 export default function TransactionsTab() {
   const router = useRouter();
@@ -60,7 +61,7 @@ export default function TransactionsTab() {
             }}
           />
         }
-        refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor="#10b981" />}
+        refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.primary} />}
       />
     </View>
   );
