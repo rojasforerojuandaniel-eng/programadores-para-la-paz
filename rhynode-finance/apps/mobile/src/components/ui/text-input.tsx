@@ -1,6 +1,32 @@
+import React from 'react';
 import { TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from 'react-native';
 import { cssInterop } from 'nativewind';
+import { Text } from '~/components/ui/text';
+import { View } from '~/components/ui/view';
+import { cn } from '~/lib/utils';
 
-type TextInputProps = RNTextInputProps & { className?: string };
+type StyledTextInputProps = RNTextInputProps & { className?: string };
+type TextInputProps = RNTextInputProps & {
+  className?: string;
+  label: string;
+};
 
-export const TextInput = cssInterop(RNTextInput, { className: 'style' }) as React.ComponentType<TextInputProps>;
+const StyledTextInput = cssInterop(RNTextInput, { className: 'style' }) as React.ComponentType<StyledTextInputProps>;
+
+export function TextInput({ className, label, ...props }: TextInputProps) {
+  return (
+    <View className="gap-1">
+      <Text className="text-xs font-medium text-muted-foreground" accessibilityLabel={label}>
+        {label}
+      </Text>
+      <StyledTextInput
+        className={cn(
+          'min-h-[48px] bg-card text-foreground rounded-2xl px-4 py-3',
+          className
+        )}
+        accessibilityLabel={label}
+        {...props}
+      />
+    </View>
+  );
+}

@@ -69,6 +69,7 @@ export default function AdvisorScreen() {
 
         <View className="flex-row items-center gap-2">
           <TextInput
+            label="Pregunta al asesor"
             className="flex-1 bg-card text-foreground rounded-2xl px-4 py-3"
             placeholder="Pregunta algo…"
             placeholderTextColor="#6b7280"

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet } from 'react-native';
-import { ChevronDown, Search, Tag, X } from 'lucide-react-native';
+import { ChevronDown, Tag, X } from 'lucide-react-native';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
@@ -84,10 +84,10 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
             </Pressable>
           </View>
 
-          <View className="mb-4 flex-row items-center gap-2 rounded-2xl bg-card px-3 py-2">
-            <Search size={20} color="#9ca3af" strokeWidth={1.5} />
+          <View className="mb-4 rounded-2xl bg-card px-3 py-2">
             <TextInput
-              className="flex-1 text-foreground"
+              label="Buscar categoría"
+              className="text-foreground"
               placeholder="Buscar categoría"
               placeholderTextColor="#6b7280"
               value={query}

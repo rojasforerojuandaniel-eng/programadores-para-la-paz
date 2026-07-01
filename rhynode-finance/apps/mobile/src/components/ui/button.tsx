@@ -1,3 +1,4 @@
+import React from 'react';
 import { Pressable, type PressableProps } from 'react-native';
 import { cssInterop } from 'nativewind';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -37,14 +38,28 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   className?: string;
   children: React.ReactNode;
+  loading?: boolean;
 }
 
-export function Button({ className, variant, size, onPress, disabled, children, ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  onPress,
+  disabled,
+  loading = false,
+  children,
+  accessibilityLabel,
+  accessibilityState,
+  ...props
+}: ButtonProps) {
   const handlePress = (event: Parameters<NonNullable<PressableProps['onPress']>>[0]) => {
-    if (!disabled) {
+    if (!disabled && !loading) {
       void hapticImpact();
     }
-    onPress?.(event);
+    if (!loading) {
+      onPress?.(event);
+    }
   };
 
   return (
@@ -52,6 +67,9 @@ export function Button({ className, variant, size, onPress, disabled, children, 
       className={cn(buttonVariants({ variant, size }), className)}
       onPress={handlePress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled ?? false, busy: loading, ...accessibilityState }}
+      accessibilityLabel={accessibilityLabel}
       {...props}
     >
       {children}

@@ -42,7 +42,12 @@ export function Skeleton({ variant = 'line', className }: SkeletonProps) {
   }, [pulse]);
 
   return (
-    <Animated.View style={{ opacity: pulse }}>
+    <Animated.View
+      style={{ opacity: pulse }}
+      accessibilityState={{ busy: true }}
+      accessibilityLabel="Cargando"
+      aria-busy
+    >
       <View className={cn(variantClasses[variant], className)} />
     </Animated.View>
   );

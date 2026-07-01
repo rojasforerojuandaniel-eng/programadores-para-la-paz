@@ -146,7 +146,7 @@ export function QuickAddForm({
       </View>
 
       <TextInput
-        className="bg-card text-foreground rounded-2xl px-4 py-4"
+        label="Descripción"
         placeholder="Descripción"
         placeholderTextColor="#6b7280"
         value={description}
@@ -154,7 +154,7 @@ export function QuickAddForm({
       />
 
       <TextInput
-        className="bg-card text-foreground rounded-2xl px-4 py-4"
+        label="Monto"
         placeholder="Monto"
         placeholderTextColor="#6b7280"
         keyboardType="decimal-pad"
