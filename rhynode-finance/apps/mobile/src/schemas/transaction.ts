@@ -44,6 +44,9 @@ export const transactionDetailResponseSchema = z.object({
 });
 export type TransactionDetailResponse = z.infer<typeof transactionDetailResponseSchema>;
 
+export const updateTransactionResponseSchema = transactionDetailResponseSchema;
+export type UpdateTransactionResponse = z.infer<typeof updateTransactionResponseSchema>;
+
 export const createTransactionBodySchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE']).optional(),
   category: z.string().optional(),

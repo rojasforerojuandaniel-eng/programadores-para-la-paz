@@ -2,9 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from './use-api';
 import { hapticNotification } from '~/lib/haptics';
 import {
-  transactionDetailSchema,
   transactionDetailResponseSchema,
-  transactionMutationResponseSchema,
+  updateTransactionResponseSchema,
   deleteTransactionResponseSchema,
   type TransactionDetail,
   type UpdateTransactionBody,
@@ -46,11 +45,10 @@ export function useUpdateTransaction() {
 
   return useMutation({
     mutationFn: ({ transactionId, body }: { transactionId: string; body: UpdateTransactionBody }) =>
-      api.patch(`/api/personal/transactions/${transactionId}`, body, transactionMutationResponseSchema),
+      api.patch(`/api/personal/transactions/${transactionId}`, body, updateTransactionResponseSchema),
     onSuccess: (response, { transactionId }) => {
       void hapticNotification();
-      const transaction = transactionDetailSchema.parse(response.transaction);
-      queryClient.setQueryData(['transaction', transactionId], transaction);
+      queryClient.setQueryData(['transaction', transactionId], response.transaction);
       void queryClient.invalidateQueries({ queryKey: ['transactions', 'personal'] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] });
     },
