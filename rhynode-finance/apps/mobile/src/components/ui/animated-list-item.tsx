@@ -1,4 +1,6 @@
+import { View } from '~/components/ui/view';
 import { MotiView } from '~/components/ui/moti-view';
+import { useReducedMotion } from '~/hooks/use-reduced-motion';
 
 interface AnimatedListItemProps {
   children: React.ReactNode;
@@ -7,6 +9,12 @@ interface AnimatedListItemProps {
 }
 
 export function AnimatedListItem({ children, index = 0, className }: AnimatedListItemProps) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <View className={className}>{children}</View>;
+  }
+
   return (
     <MotiView
       className={className}

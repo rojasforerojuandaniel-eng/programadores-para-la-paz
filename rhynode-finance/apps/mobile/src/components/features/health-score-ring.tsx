@@ -7,7 +7,7 @@ interface HealthScoreRingProps {
 }
 
 export function HealthScoreRing({ score }: HealthScoreRingProps) {
-  const color = score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+  const color = score >= 80 ? '#047857' : score >= 50 ? '#f59e0b' : '#ef4444';
   return (
     <Card className="items-center justify-center">
       <View

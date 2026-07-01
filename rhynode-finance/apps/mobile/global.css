@@ -3,29 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 5.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 160 84% 39%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4% 16%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 4% 16%;
-  --muted-foreground: 240 5% 65%;
-  --accent: 217 91% 60%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 4% 16%;
-  --input: 240 4% 16%;
-  --ring: 160 84% 39%;
-  --success: 160 84% 39%;
-  --success-foreground: 0 0% 98%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 98%;
+  /* React Native/Hermes does not reliably parse modern space-separated hsl(),
+     so we use hex values for the mobile theme. */
+  --background: #08090e;
+  --foreground: #fafafa;
+  --card: #0d0e13;
+  --card-foreground: #fafafa;
+  --popover: #08090e;
+  --popover-foreground: #fafafa;
+  --primary: #047857;
+  --primary-foreground: #fafafa;
+  --secondary: #26272b;
+  --secondary-foreground: #fafafa;
+  --muted: #26272b;
+  --muted-foreground: #9ca3af;
+  --accent: #3b82f6;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #26272b;
+  --input: #26272b;
+  --ring: #047857;
+  --success: #047857;
+  --success-foreground: #fafafa;
+  --warning: #f59e0b;
+  --warning-foreground: #fafafa;
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
