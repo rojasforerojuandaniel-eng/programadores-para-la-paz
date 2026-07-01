@@ -1,13 +1,20 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { X } from 'lucide-react-native';
+import { ActivityIndicator } from 'react-native';
 import { Pressable } from '~/components/ui/pressable';
 import { useAuth } from '@clerk/clerk-expo';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
-import { API_URL, safeJson } from '~/lib/api';
+import { createApiClient, OfflineError, safeJson } from '~/lib/api';
 import { showToast } from '~/hooks/use-toast';
 import { ocrResultSchema, uploadReceiptResponseSchema } from '~/schemas/dashboard';
+import { compressImage } from '~/lib/image-compress';
+
+const OFFLINE_SUCCESS_MESSAGE = 'Recibo guardado; se procesará al reconectar.';
+const PROCESS_ERROR_MESSAGE =
+  'No pudimos leer el recibo. Intenta de nuevo o ingresa manualmente.';
 
 export default function CameraScreen() {
   const router = useRouter();
@@ -17,14 +24,24 @@ export default function CameraScreen() {
   const [loading, setLoading] = useState(false);
 
   if (!permission) {
-    return <View className="flex-1 bg-background" />;
+    return (
+      <View className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   if (!permission.granted) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-6">
-        <Text className="text-foreground text-lg mb-4">Necesitamos acceso a la cámara para escanear recibos.</Text>
-        <Pressable testID="request-camera-permission" onPress={requestPermission} className="bg-primary rounded-2xl px-6 py-3">
+        <Text className="text-foreground text-lg mb-4">
+          Necesitamos acceso a la cámara para escanear recibos.
+        </Text>
+        <Pressable
+          testID="request-camera-permission"
+          onPress={requestPermission}
+          className="bg-primary rounded-2xl px-6 py-3"
+        >
           <Text className="text-primary-foreground font-semibold">Permitir cámara</Text>
         </Pressable>
       </View>
@@ -39,37 +56,28 @@ export default function CameraScreen() {
     try {
       const token = await getToken().catch(() => null);
       if (!token) throw new Error('Missing auth token');
-      const uploadHeaders: Record<string, string> = { Authorization: `Bearer ${token}` };
 
-      const form = new FormData();
-      form.append('file', {
-        uri: photo.uri,
-        name: 'receipt.jpg',
-        type: 'image/jpeg',
-      } as unknown as Blob);
+      const compressedUri = await compressImage(photo.uri);
+      const receiptField = {
+        name: 'file' as const,
+        file: { uri: compressedUri, name: 'receipt.jpg', type: 'image/jpeg' },
+      };
 
-      const blobRes = await fetch(`${API_URL}/api/mobile/upload-receipt`, {
+      const api = createApiClient(token);
+      const { url } = await api.postFormData(
+        '/api/mobile/upload-receipt',
+        [receiptField],
+        uploadReceiptResponseSchema
+      );
+
+      const ocrRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL ?? 'https://rhynode-finance.vercel.app'}/api/ai/ocr`, {
         method: 'POST',
-        headers: uploadHeaders,
-        body: form,
-      });
-
-      if (!blobRes.ok) {
-        const text = await blobRes.text().catch(() => '');
-        throw new Error(`Upload failed (${blobRes.status}): ${text}`);
-      }
-      const uploadJson = (await blobRes.json()) as unknown;
-      const { url } = safeJson(uploadReceiptResponseSchema, uploadJson);
-
-      const ocrRes = await fetch(`${API_URL}/api/ai/ocr`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...uploadHeaders },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ imageUrl: url }),
       });
 
       if (!ocrRes.ok) {
-        const text = await ocrRes.text().catch(() => '');
-        throw new Error(`OCR failed (${ocrRes.status}): ${text}`);
+        throw new Error('OCR request failed');
       }
       const ocrJson = (await ocrRes.json()) as unknown;
       const ocrData = safeJson(ocrResultSchema, ocrJson);
@@ -82,8 +90,13 @@ export default function CameraScreen() {
         },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error procesando el recibo';
-      showToast(message, 'error');
+      if (error instanceof OfflineError) {
+        showToast(OFFLINE_SUCCESS_MESSAGE, 'success');
+        router.back();
+      } else {
+        showToast(PROCESS_ERROR_MESSAGE, 'error');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -91,6 +104,38 @@ export default function CameraScreen() {
   return (
     <View className="flex-1 bg-black">
       <CameraView ref={cameraRef} className="flex-1" facing="back">
+        <View className="absolute top-12 left-4">
+          <Pressable
+            testID="camera-close"
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar cámara"
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-black/40 items-center justify-center"
+          >
+            <X size={24} color="#ffffff" strokeWidth={2} />
+          </Pressable>
+        </View>
+
+        <View className="absolute inset-0 items-center justify-center pointer-events-none">
+          <View className="w-3/4 aspect-[3/4] border-2 border-white/60 rounded-xl">
+            <View className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white">
+              {' '}
+            </View>
+            <View className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white">
+              {' '}
+            </View>
+            <View className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white">
+              {' '}
+            </View>
+            <View className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white">
+              {' '}
+            </View>
+          </View>
+          <Text className="text-white/80 mt-4 text-sm font-medium">
+            Alinea el recibo dentro del marco
+          </Text>
+        </View>
+
         <View className="absolute bottom-12 left-0 right-0 items-center">
           <Pressable
             testID="camera-shutter"
@@ -100,7 +145,11 @@ export default function CameraScreen() {
             disabled={loading}
             className="w-20 h-20 rounded-full border-4 border-white bg-white/20 items-center justify-center"
           >
-            <Text className="text-white text-3xl">{loading ? '...' : '●'}</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text className="text-white text-3xl">●</Text>
+            )}
           </Pressable>
         </View>
       </CameraView>

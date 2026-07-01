@@ -2,7 +2,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { z, type ZodType } from 'zod';
-import { createApiClient, type ApiClient, AuthError } from '~/lib/api';
+import { createApiClient, type ApiClient, type FormDataField, AuthError } from '~/lib/api';
 
 export function useApi(): ApiClient {
   const { getToken } = useAuth();
@@ -43,6 +43,10 @@ export function useApi(): ApiClient {
       delete: async <T>(path: string, schema?: ZodType<T>) => {
         const token = await getAuthToken();
         return createApiClient(token).delete<T>(path, schema);
+      },
+      postFormData: async <T>(path: string, fields: FormDataField[], schema?: ZodType<T>) => {
+        const token = await getAuthToken();
+        return createApiClient(token).postFormData<T>(path, fields, schema);
       },
     };
   }, [getToken, router]);

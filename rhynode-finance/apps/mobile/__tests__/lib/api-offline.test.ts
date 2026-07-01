@@ -96,6 +96,31 @@ describe('api offline behavior', () => {
     );
   });
 
+  it('postFormData while offline queues a lightweight representation with file URI', async () => {
+    setOnline(false);
+
+    const api = apiModule.createApiClient('token');
+    const fields = [
+      { name: 'file', file: { uri: 'file://tmp/receipt.jpg', name: 'receipt.jpg', type: 'image/jpeg' } },
+    ];
+
+    let thrownError: apiModule.OfflineError | undefined;
+    try {
+      await api.postFormData('/api/mobile/upload-receipt', fields);
+    } catch (error) {
+      thrownError = error as apiModule.OfflineError;
+    }
+
+    expect(thrownError).toBeDefined();
+    expect(thrownError?.name).toBe('OfflineError');
+
+    const mutations = await offlineQueue.getPendingMutations();
+    expect(mutations).toHaveLength(1);
+    const payload = JSON.parse(mutations[0].payload ?? '{}');
+    expect(payload.__formData).toBe(true);
+    expect(payload.fields).toEqual(fields);
+  });
+
   it('syncPendingMutations skips processing when offline', async () => {
     setOnline(false);
     const getToken = jest.fn().mockResolvedValue('token');

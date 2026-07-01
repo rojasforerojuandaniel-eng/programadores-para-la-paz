@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { z } from "zod";
+// Supports both live camera and offline-sync reconstructed multipart uploads.
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
 import { clerkUserIdFromRequest } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";

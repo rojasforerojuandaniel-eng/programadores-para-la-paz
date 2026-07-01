@@ -18,6 +18,27 @@ export interface ApiOptions {
   token?: string | null;
 }
 
+export interface FormDataFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+export interface FormDataField {
+  name: string;
+  value?: string;
+  file?: FormDataFile;
+}
+
+interface InternalRequestInit extends RequestInit {
+  formDataFields?: FormDataField[];
+}
+
+interface SerializedFormData {
+  __formData: true;
+  fields: FormDataField[];
+}
+
 export class OfflineError extends Error {
   readonly mutationId: string;
 
@@ -70,6 +91,8 @@ async function isNetworkAvailable(): Promise<boolean> {
   return state.isConnected === true && state.isInternetReachable !== false;
 }
 
+export { isNetworkAvailable };
+
 export function safeJson<T>(schema: ZodType<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
@@ -78,32 +101,60 @@ export function safeJson<T>(schema: ZodType<T>, data: unknown): T {
   return result.data;
 }
 
+function isSerializedFormData(payload: unknown): payload is SerializedFormData {
+  return (
+    typeof payload === 'object' &&
+    payload !== null &&
+    '__formData' in payload &&
+    (payload as SerializedFormData).__formData === true &&
+    Array.isArray((payload as SerializedFormData).fields)
+  );
+}
+
+function buildFormData(fields: FormDataField[]): FormData {
+  const form = new FormData();
+  for (const field of fields) {
+    if (field.file) {
+      form.append(
+        field.name,
+        { uri: field.file.uri, name: field.file.name, type: field.file.type } as unknown as Blob
+      );
+    } else {
+      form.append(field.name, field.value ?? '');
+    }
+  }
+  return form;
+}
+
 async function request<T>(
   path: string,
-  options: RequestInit = {},
+  options: InternalRequestInit = {},
   { token }: ApiOptions = {},
   schema?: ZodType<T>
 ): Promise<T> {
   const method = options.method ?? 'GET';
 
   if (MUTATION_METHODS.has(method) && !(await isNetworkAvailable())) {
-    const body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined;
-
+    let bodyPayload: unknown = undefined;
     const offlineHeaders: Record<string, string> = {};
-    if (body && typeof body === 'object') {
+
+    if (options.formDataFields && options.formDataFields.length > 0) {
+      bodyPayload = { __formData: true, fields: options.formDataFields };
+    } else if (typeof options.body === 'string') {
+      bodyPayload = JSON.parse(options.body);
       offlineHeaders['Content-Type'] = 'application/json';
     }
 
     const mutationId = await enqueueMutation(
       method as 'POST' | 'PATCH' | 'DELETE',
       path,
-      body,
+      bodyPayload,
       offlineHeaders
     );
 
     const optimistic =
-      method === 'POST' && body && typeof body === 'object'
-        ? { id: mutationId, ...body }
+      method === 'POST' && bodyPayload && typeof bodyPayload === 'object'
+        ? { id: mutationId, ...bodyPayload }
         : null;
 
     throw new OfflineError(mutationId, method, path, optimistic);
@@ -113,17 +164,25 @@ async function request<T>(
     throw new AuthError('Authentication required');
   }
 
+  let body: BodyInit | null | undefined = options.body;
+  let contentType: string | undefined = 'application/json';
+
+  if (options.formDataFields && options.formDataFields.length > 0) {
+    body = buildFormData(options.formDataFields);
+    contentType = undefined;
+  }
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
-    headers: {
-      ...headers,
-      ...options.headers,
-    },
+    headers,
+    body,
   });
 
   if (!response.ok) {
@@ -145,6 +204,8 @@ export function createApiClient(token?: string | null) {
       request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, { token }, schema),
     delete: <T>(path: string, schema?: ZodType<T>) =>
       request<T>(path, { method: 'DELETE' }, { token }, schema),
+    postFormData: <T>(path: string, fields: FormDataField[], schema?: ZodType<T>) =>
+      request<T>(path, { method: 'POST', formDataFields: fields }, { token }, schema),
   };
 }
 
@@ -153,6 +214,15 @@ export type ApiClient = ReturnType<typeof createApiClient>;
 const MAX_RETRIES = 3;
 const DEAD_LETTER_MESSAGE =
   'Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.';
+
+function parseStoredHeaders(headers: string | null): Record<string, string> {
+  if (!headers) return {};
+  try {
+    return JSON.parse(headers) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
 
 export async function syncPendingMutations(
   getToken: () => Promise<string | null>
@@ -180,21 +250,33 @@ export async function syncPendingMutations(
       continue;
     }
 
-    const storedHeaders: Record<string, string> = mutation.headers
-      ? (JSON.parse(mutation.headers) as Record<string, string>)
-      : {};
+    const storedHeaders = parseStoredHeaders(mutation.headers);
+    const payload = mutation.payload ? (JSON.parse(mutation.payload) as unknown) : undefined;
+    const serializedFormData = isSerializedFormData(payload) ? payload : null;
+
+    let body: BodyInit | undefined;
+    let contentType: string | undefined = 'application/json';
+
+    if (serializedFormData) {
+      body = buildFormData(serializedFormData.fields);
+      contentType = undefined;
+    } else {
+      body = mutation.payload ?? undefined;
+    }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       ...storedHeaders,
     };
+    if (contentType) {
+      headers['Content-Type'] = contentType;
+    }
 
     try {
       const response = await fetch(`${API_URL}${mutation.endpoint}`, {
         method: mutation.method,
         headers,
-        body: mutation.payload ?? undefined,
+        body,
       });
 
       if (!response.ok) {
