@@ -1,7 +1,8 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { createApiClient, type ApiClient, AuthError } from '~/lib/api';
 import { useMemo } from 'react';
+import { z, type ZodType } from 'zod';
+import { createApiClient, type ApiClient, AuthError } from '~/lib/api';
 
 export function useApi(): ApiClient {
   const { getToken } = useAuth();
@@ -27,21 +28,21 @@ export function useApi(): ApiClient {
     };
 
     return {
-      get: async <T>(path: string) => {
+      get: async <T>(path: string, schema?: ZodType<T>) => {
         const token = await getAuthToken();
-        return createApiClient(token).get<T>(path);
+        return createApiClient(token).get<T>(path, schema);
       },
-      post: async <T>(path: string, body: unknown) => {
+      post: async <T>(path: string, body: unknown, schema?: ZodType<T>) => {
         const token = await getAuthToken();
-        return createApiClient(token).post<T>(path, body);
+        return createApiClient(token).post<T>(path, body, schema);
       },
-      patch: async <T>(path: string, body: unknown) => {
+      patch: async <T>(path: string, body: unknown, schema?: ZodType<T>) => {
         const token = await getAuthToken();
-        return createApiClient(token).patch<T>(path, body);
+        return createApiClient(token).patch<T>(path, body, schema);
       },
-      delete: async <T>(path: string) => {
+      delete: async <T>(path: string, schema?: ZodType<T>) => {
         const token = await getAuthToken();
-        return createApiClient(token).delete<T>(path);
+        return createApiClient(token).delete<T>(path, schema);
       },
     };
   }, [getToken, router]);

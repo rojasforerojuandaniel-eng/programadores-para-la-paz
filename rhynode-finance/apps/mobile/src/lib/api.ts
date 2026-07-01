@@ -1,4 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
+import { z, type ZodType } from 'zod';
 import {
   clearMutation,
   enqueueMutation,
@@ -52,6 +53,16 @@ export class ApiError extends Error {
   }
 }
 
+export class SchemaError extends Error {
+  constructor(
+    message: string,
+    public readonly issues: z.core.$ZodIssue[]
+  ) {
+    super(message);
+    this.name = 'SchemaError';
+  }
+}
+
 const MUTATION_METHODS = new Set<RequestInit['method']>(['POST', 'PATCH', 'DELETE']);
 
 async function isNetworkAvailable(): Promise<boolean> {
@@ -59,10 +70,19 @@ async function isNetworkAvailable(): Promise<boolean> {
   return state.isConnected === true && state.isInternetReachable !== false;
 }
 
+export function safeJson<T>(schema: ZodType<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    throw new SchemaError('Response validation failed', result.error.issues);
+  }
+  return result.data;
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  { token }: ApiOptions = {}
+  { token }: ApiOptions = {},
+  schema?: ZodType<T>
 ): Promise<T> {
   const method = options.method ?? 'GET';
 
@@ -111,17 +131,20 @@ async function request<T>(
     throw new ApiError(`API ${response.status}: ${text || response.statusText}`, response.status);
   }
 
-  return response.json() as Promise<T>;
+  const json = (await response.json()) as unknown;
+  return schema ? safeJson(schema, json) : (json as T);
 }
 
 export function createApiClient(token?: string | null) {
   return {
-    get: <T>(path: string) => request<T>(path, {}, { token }),
-    post: <T>(path: string, body: unknown) =>
-      request<T>(path, { method: 'POST', body: JSON.stringify(body) }, { token }),
-    patch: <T>(path: string, body: unknown) =>
-      request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, { token }),
-    delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }, { token }),
+    get: <T>(path: string, schema?: ZodType<T>) =>
+      request<T>(path, {}, { token }, schema),
+    post: <T>(path: string, body: unknown, schema?: ZodType<T>) =>
+      request<T>(path, { method: 'POST', body: JSON.stringify(body) }, { token }, schema),
+    patch: <T>(path: string, body: unknown, schema?: ZodType<T>) =>
+      request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, { token }, schema),
+    delete: <T>(path: string, schema?: ZodType<T>) =>
+      request<T>(path, { method: 'DELETE' }, { token }, schema),
   };
 }
 
