@@ -4,16 +4,9 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
 
-interface Client {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-}
-
 export default function ClientsScreen() {
   const router = useRouter();
-  const { data, isLoading } = useBusinessData<{ clients: Client[] }>('clients');
+  const { data, isLoading } = useBusinessData('clients');
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">

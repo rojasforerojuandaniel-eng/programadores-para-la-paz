@@ -5,16 +5,8 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
-interface Recurring {
-  id: string;
-  description: string;
-  amount: number;
-  frequency: string;
-  currency: string;
-}
-
 export default function RecurringScreen() {
-  const { data, isLoading } = usePersonalData<{ recurring: Recurring[] }>('recurring');
+  const { data, isLoading } = usePersonalData('recurring');
 
   return (
     <PersonalList

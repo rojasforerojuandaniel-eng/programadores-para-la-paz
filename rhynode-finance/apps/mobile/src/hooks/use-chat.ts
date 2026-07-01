@@ -5,6 +5,35 @@ import { chatMessageSchema, chatHistorySchema, type ChatMessage } from '~/schema
 
 export type { ChatMessage };
 
+function parseSseResponse(text: string): string {
+  if (!text.includes('data: ')) return text.trim();
+
+  let assistantText = '';
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data: ')) continue;
+    const data = trimmed.slice(6).trim();
+    if (data === '[DONE]') continue;
+
+    try {
+      const event = JSON.parse(data);
+      const delta = event?.delta?.text ?? event?.text;
+      if (typeof delta === 'string') {
+        assistantText += delta;
+      }
+    } catch (error) {
+      console.error('Failed to parse chat SSE event', {
+        data,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return assistantText.trim() || text.trim();
+}
+
 export function useChat() {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -27,7 +56,10 @@ export function useChat() {
         }))
       );
 
-      const token = await getToken().catch(() => null);
+      const token = await getToken().catch((error) => {
+        console.error('Failed to refresh auth token for chat', error);
+        return null;
+      });
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -37,31 +69,16 @@ export function useChat() {
         body: JSON.stringify({ message: text, history }),
       });
 
-      if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
-
-      const responseText = await response.text();
-      let assistantText = '';
-
-      if (responseText.includes('data: ')) {
-        const lines = responseText.split('\n');
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith('data: ')) continue;
-          const data = trimmed.slice(6).trim();
-          if (data === '[DONE]') continue;
-          try {
-            const event = JSON.parse(data);
-            const delta = event?.delta?.text ?? event?.text;
-            if (typeof delta === 'string') {
-              assistantText += delta;
-            }
-          } catch {
-            // ignore malformed SSE events
-          }
-        }
+      if (!response.ok) {
+        const status = response.status;
+        const body = await response.text().catch(() => '');
+        throw new Error(`Chat request failed: ${status}${body ? ` - ${body}` : ''}`);
       }
 
-      const finalText = assistantText || responseText.trim() || 'No entendí bien, intenta de otra forma.';
+      const responseText = await response.text();
+      const assistantText = parseSseResponse(responseText);
+      const finalText = assistantText || 'No entendí bien, intenta de otra forma.';
+
       const assistantMsg: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -69,10 +86,16 @@ export function useChat() {
       };
 
       setMessages((prev) => [...prev, chatMessageSchema.parse(assistantMsg)]);
-    } catch {
+    } catch (error) {
+      console.error('Chat send failed', error);
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       setMessages((prev) => [
         ...prev,
-        { id: `error-${Date.now()}`, role: 'assistant', content: 'Error al contactar al asesor. Intenta más tarde.' },
+        {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: `Error al contactar al asesor: ${message}`,
+        },
       ]);
     } finally {
       setStreaming(false);

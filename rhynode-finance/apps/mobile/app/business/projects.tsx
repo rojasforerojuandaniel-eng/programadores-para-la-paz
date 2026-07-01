@@ -5,17 +5,9 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
 
-interface Project {
-  id: string;
-  name: string;
-  budget: number | null;
-  currency: string;
-  status: string;
-}
-
 export default function ProjectsScreen() {
   const router = useRouter();
-  const { data, isLoading } = useBusinessData<{ projects: Project[] }>('projects');
+  const { data, isLoading } = useBusinessData('projects');
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">

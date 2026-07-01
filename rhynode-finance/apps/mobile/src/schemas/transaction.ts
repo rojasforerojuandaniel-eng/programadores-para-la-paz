@@ -39,6 +39,23 @@ export const deleteTransactionResponseSchema = z.object({
   success: z.boolean(),
 });
 
+export const transactionDetailResponseSchema = z.object({
+  transaction: transactionDetailSchema,
+});
+export type TransactionDetailResponse = z.infer<typeof transactionDetailResponseSchema>;
+
+export const createTransactionBodySchema = z.object({
+  type: z.enum(['INCOME', 'EXPENSE']).optional(),
+  category: z.string().optional(),
+  description: z.string().min(1).max(200),
+  amount: z.number().positive(),
+  currency: z.string().optional(),
+  date: z.string().optional(),
+  accountId: z.string().optional(),
+  bankAccountId: z.string().optional(),
+});
+export type CreateTransactionBody = z.infer<typeof createTransactionBodySchema>;
+
 export const updateTransactionBodySchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE']).optional(),
   category: z.string().optional(),

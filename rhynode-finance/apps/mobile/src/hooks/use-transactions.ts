@@ -5,7 +5,9 @@ import {
   transactionSchema,
   transactionsResponseSchema,
   transactionMutationResponseSchema,
+  createTransactionBodySchema,
   type Transaction,
+  type CreateTransactionBody,
 } from '~/schemas/transaction';
 
 export type { Transaction };
@@ -28,8 +30,8 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: Omit<Transaction, 'id'>) =>
-      api.post('/api/personal/transactions', body, transactionMutationResponseSchema),
+    mutationFn: (body: CreateTransactionBody) =>
+      api.post('/api/personal/transactions', createTransactionBodySchema.parse(body), transactionMutationResponseSchema),
     onSuccess: () => {
       void hapticNotification();
       void queryClient.invalidateQueries({ queryKey: ['transactions', 'personal'] });

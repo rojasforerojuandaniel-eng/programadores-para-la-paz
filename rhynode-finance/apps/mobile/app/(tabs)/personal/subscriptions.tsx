@@ -5,16 +5,8 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
-interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  frequency: string;
-  currency: string;
-}
-
 export default function SubscriptionsScreen() {
-  const { data, isLoading } = usePersonalData<{ subscriptions: Subscription[] }>('subscriptions');
+  const { data, isLoading } = usePersonalData('subscriptions');
 
   return (
     <PersonalList

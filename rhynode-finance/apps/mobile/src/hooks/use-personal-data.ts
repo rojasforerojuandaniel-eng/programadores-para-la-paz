@@ -1,22 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
-import { type ZodType } from 'zod';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useApi } from './use-api';
+import {
+  personalDataSchemaMap,
+  type PersonalDataResponseMap,
+  type PersonalDataType,
+} from '~/schemas/personal-data';
 
-export type PersonalDataType =
-  | 'accounts'
-  | 'budgets'
-  | 'goals'
-  | 'debts'
-  | 'recurring'
-  | 'subscriptions'
-  | 'calendar'
-  | 'categories';
+export type { PersonalDataType };
 
-export function usePersonalData<T>(type: PersonalDataType, key?: string, schema?: ZodType<T>) {
+export function usePersonalData<TType extends PersonalDataType>(
+  type: TType
+): UseQueryResult<PersonalDataResponseMap[TType]> {
   const api = useApi();
+  const schema = personalDataSchemaMap[type];
 
-  return useQuery<T>({
-    queryKey: ['personal', type, key],
+  return useQuery({
+    queryKey: ['personal', type],
     queryFn: () => api.get(`/api/mobile/personal-data?type=${type}`, schema),
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

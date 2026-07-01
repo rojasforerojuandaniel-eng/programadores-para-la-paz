@@ -5,16 +5,8 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
-interface Account {
-  id: string;
-  name: string;
-  type: string;
-  balance: number;
-  currency: string;
-}
-
 export default function AccountsScreen() {
-  const { data, isLoading } = usePersonalData<{ accounts: Account[] }>('accounts');
+  const { data, isLoading } = usePersonalData('accounts');
 
   return (
     <PersonalList

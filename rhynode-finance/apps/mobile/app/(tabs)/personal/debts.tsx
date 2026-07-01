@@ -5,17 +5,8 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
-interface Debt {
-  id: string;
-  name: string;
-  type: string;
-  remainingAmount: number;
-  currency: string;
-  dueDate?: string | null;
-}
-
 export default function DebtsScreen() {
-  const { data, isLoading } = usePersonalData<{ debts: Debt[] }>('debts');
+  const { data, isLoading } = usePersonalData('debts');
 
   return (
     <PersonalList

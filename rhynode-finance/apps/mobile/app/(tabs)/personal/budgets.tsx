@@ -4,17 +4,10 @@ import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
-
-interface Budget {
-  id: string;
-  name: string;
-  amount: number;
-  spent: number;
-  currency: string;
-}
+import { Budget } from '~/schemas/personal-data';
 
 export default function BudgetsScreen() {
-  const { data, isLoading } = usePersonalData<{ budgets: Budget[] }>('budgets');
+  const { data, isLoading } = usePersonalData('budgets');
 
   const percent = (b: Budget) => Math.min(100, Math.round((b.spent / b.amount) * 100));
 

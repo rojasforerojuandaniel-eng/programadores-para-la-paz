@@ -3,6 +3,7 @@ import { useApi } from './use-api';
 import { hapticNotification } from '~/lib/haptics';
 import {
   transactionDetailSchema,
+  transactionDetailResponseSchema,
   transactionMutationResponseSchema,
   deleteTransactionResponseSchema,
   type TransactionDetail,
@@ -15,8 +16,8 @@ export function useTransaction(id: string | undefined) {
   return useQuery<TransactionDetail>({
     queryKey: ['transaction', id],
     queryFn: async () => {
-      const response = await api.get(`/api/personal/transactions/${id}`, transactionMutationResponseSchema);
-      return transactionDetailSchema.parse(response.transaction);
+      const response = await api.get(`/api/personal/transactions/${id}`, transactionDetailResponseSchema);
+      return response.transaction;
     },
     enabled: Boolean(id),
     staleTime: 1000 * 60 * 5,

@@ -15,10 +15,7 @@ interface CalendarEvent {
 
 export default function CalendarScreen() {
   const router = useRouter();
-  const { data, isLoading } = usePersonalData<{
-    debts: CalendarEvent[];
-    goals: CalendarEvent[];
-  }>('calendar');
+  const { data, isLoading } = usePersonalData('calendar');
 
   const events = [
     ...(data?.debts ?? []).map((d) => ({ ...d, type: 'debt' as const, date: d.dueDate })),

@@ -6,14 +6,7 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { hapticNotification } from '~/lib/haptics';
 import { usePersonalData } from '~/hooks/use-personal-data';
-
-interface Goal {
-  id: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  currency: string;
-}
+import { Goal } from '~/schemas/personal-data';
 
 function GoalCompletionHaptic({ complete }: { complete: boolean }) {
   const triggered = useRef(false);
@@ -29,7 +22,7 @@ function GoalCompletionHaptic({ complete }: { complete: boolean }) {
 }
 
 export default function GoalsScreen() {
-  const { data, isLoading } = usePersonalData<{ goals: Goal[] }>('goals');
+  const { data, isLoading } = usePersonalData('goals');
 
   const percent = (g: Goal) => Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
 

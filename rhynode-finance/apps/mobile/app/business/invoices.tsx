@@ -5,19 +5,9 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
 
-interface Invoice {
-  id: string;
-  number: string;
-  clientName: string | null;
-  total: number;
-  currency: string;
-  status: string;
-  dueDate: string | null;
-}
-
 export default function InvoicesScreen() {
   const router = useRouter();
-  const { data, isLoading } = useBusinessData<{ invoices: Invoice[] }>('invoices');
+  const { data, isLoading } = useBusinessData('invoices');
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">

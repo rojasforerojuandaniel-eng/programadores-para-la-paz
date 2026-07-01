@@ -1,13 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
-import { type ZodType } from 'zod';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useApi } from './use-api';
+import {
+  businessDataSchemaMap,
+  type BusinessDataResponseMap,
+  type BusinessDataType,
+} from '~/schemas/business-data';
 
-export type BusinessDataType = 'invoices' | 'clients' | 'projects';
+export type { BusinessDataType };
 
-export function useBusinessData<T>(type: BusinessDataType, schema?: ZodType<T>) {
+export function useBusinessData<TType extends BusinessDataType>(
+  type: TType
+): UseQueryResult<BusinessDataResponseMap[TType]> {
   const api = useApi();
+  const schema = businessDataSchemaMap[type];
 
-  return useQuery<T>({
+  return useQuery({
     queryKey: ['business', type],
     queryFn: () => api.get(`/api/mobile/business-data?type=${type}`, schema),
     refetchOnWindowFocus: true,
