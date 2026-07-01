@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Receipt } from 'lucide-react-native';
 import { FlatList, RefreshControl } from 'react-native';
 import { TransactionListItem } from '~/components/features/transaction-list-item';
@@ -8,6 +9,7 @@ import { View } from '~/components/ui/view';
 import { useTransactions } from '~/hooks/use-transactions';
 
 export default function TransactionsTab() {
+  const router = useRouter();
   const { data, isLoading, refetch } = useTransactions();
 
   if (isLoading && !data) {
@@ -39,6 +41,10 @@ export default function TransactionsTab() {
             icon={Receipt}
             title="No hay movimientos aún"
             subtitle="Registra tu primer ingreso o gasto para empezar."
+            action={{
+              label: 'Registrar movimiento',
+              onPress: () => router.push('/(tabs)/add'),
+            }}
           />
         }
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#10b981" />}
