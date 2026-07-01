@@ -5,8 +5,9 @@ import { Pressable } from '~/components/ui/pressable';
 import { useAuth } from '@clerk/clerk-expo';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
-import { API_URL } from '~/lib/api';
+import { API_URL, safeJson } from '~/lib/api';
 import { showToast } from '~/hooks/use-toast';
+import { ocrResultSchema, uploadReceiptResponseSchema } from '~/schemas/dashboard';
 
 export default function CameraScreen() {
   const router = useRouter();
@@ -57,7 +58,8 @@ export default function CameraScreen() {
         const text = await blobRes.text().catch(() => '');
         throw new Error(`Upload failed (${blobRes.status}): ${text}`);
       }
-      const { url } = (await blobRes.json()) as { url: string };
+      const uploadJson = (await blobRes.json()) as unknown;
+      const { url } = safeJson(uploadReceiptResponseSchema, uploadJson);
 
       const ocrRes = await fetch(`${API_URL}/api/ai/ocr`, {
         method: 'POST',
@@ -69,7 +71,8 @@ export default function CameraScreen() {
         const text = await ocrRes.text().catch(() => '');
         throw new Error(`OCR failed (${ocrRes.status}): ${text}`);
       }
-      const ocrData = await ocrRes.json();
+      const ocrJson = (await ocrRes.json()) as unknown;
+      const ocrData = safeJson(ocrResultSchema, ocrJson);
       router.push({
         pathname: '/(tabs)/add',
         params: {
