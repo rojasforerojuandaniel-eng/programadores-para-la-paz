@@ -67,7 +67,7 @@ async function request<T>(
   const method = options.method ?? 'GET';
 
   if (MUTATION_METHODS.has(method) && !(await isNetworkAvailable())) {
-    const body = options.body ? JSON.parse(options.body as string) : undefined;
+    const body = typeof options.body === 'string' ? JSON.parse(options.body) : undefined;
 
     const offlineHeaders: Record<string, string> = {};
     if (body && typeof body === 'object') {
