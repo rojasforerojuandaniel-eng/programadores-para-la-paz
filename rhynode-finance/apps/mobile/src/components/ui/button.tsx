@@ -9,7 +9,7 @@ type StyledPressableProps = PressableProps & { className?: string };
 const StyledPressable = cssInterop(Pressable, { className: 'style' }) as React.ComponentType<StyledPressableProps>;
 
 const buttonVariants = cva(
-  'flex-row items-center justify-center rounded-2xl px-5 py-3 active:opacity-90',
+  'min-h-[48px] min-w-[48px] flex-row items-center justify-center rounded-2xl px-5 py-3 active:opacity-90',
   {
     variants: {
       variant: {
