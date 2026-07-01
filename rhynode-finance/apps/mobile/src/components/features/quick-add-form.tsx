@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import * as Localization from 'expo-localization';
+import { useRouter } from 'expo-router';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
@@ -8,12 +9,17 @@ import { hapticImpact } from '~/lib/haptics';
 import { parseLocaleAmount } from '~/lib/parse-amount';
 import { showToast } from '~/hooks/use-toast';
 import { useCreateTransaction } from '~/hooks/use-transactions';
+import { useUpdateTransaction } from '~/hooks/use-transaction';
 import { CategoryPicker } from './category-picker';
 
 interface QuickAddFormProps {
   initialMerchant?: string;
   initialTotal?: string;
   initialDate?: string;
+  initialType?: 'INCOME' | 'EXPENSE';
+  initialCategory?: string;
+  transactionId?: string;
+  initialCurrency?: string;
 }
 
 function initialDateString(date?: string) {
@@ -31,13 +37,25 @@ function isOfflineError(error: unknown): error is { name: 'OfflineError'; messag
   );
 }
 
-export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: QuickAddFormProps) {
-  const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
+export function QuickAddForm({
+  initialMerchant,
+  initialTotal,
+  initialDate,
+  initialType,
+  initialCategory,
+  transactionId,
+  initialCurrency,
+}: QuickAddFormProps) {
+  const router = useRouter();
+  const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType ?? 'EXPENSE');
   const [description, setDescription] = useState(initialMerchant ?? '');
   const [amount, setAmount] = useState(initialTotal ?? '');
-  const [category, setCategory] = useState('Otros');
+  const [category, setCategory] = useState(initialCategory ?? 'Otros');
   const [date] = useState(initialDateString(initialDate));
-  const { mutate, isPending } = useCreateTransaction();
+  const [currency] = useState(initialCurrency ?? 'COP');
+  const createMutation = useCreateTransaction();
+  const updateMutation = useUpdateTransaction();
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const selectType = (next: 'INCOME' | 'EXPENSE') => {
     setType(next);
@@ -60,32 +78,52 @@ export function QuickAddForm({ initialMerchant, initialTotal, initialDate }: Qui
       return;
     }
 
-    mutate(
-      {
-        type,
-        description: trimmedDescription,
-        amount: value,
-        currency: 'COP',
-        date,
-        category,
+    const baseBody = {
+      type,
+      description: trimmedDescription,
+      amount: value,
+      currency,
+      date,
+      category,
+    };
+
+    if (transactionId) {
+      updateMutation.mutate(
+        { transactionId, body: baseBody },
+        {
+          onSuccess: () => {
+            showToast('Transacción actualizada', 'success');
+            router.back();
+          },
+          onError: (error) => {
+            if (isOfflineError(error)) {
+              showToast('Se actualizará cuando recuperes conexión', 'info');
+              return;
+            }
+            const message = error instanceof Error ? error.message : 'No se pudo actualizar la transacción';
+            showToast(message, 'error');
+          },
+        }
+      );
+      return;
+    }
+
+    createMutation.mutate(baseBody, {
+      onSuccess: () => {
+        setDescription('');
+        setAmount('');
+        setCategory('Otros');
+        showToast('Transacción guardada', 'success');
       },
-      {
-        onSuccess: () => {
-          setDescription('');
-          setAmount('');
-          setCategory('Otros');
-          showToast('Transacción guardada', 'success');
-        },
-        onError: (error) => {
-          if (isOfflineError(error)) {
-            showToast('Se guardará cuando recuperes conexión', 'info');
-            return;
-          }
-          const message = error instanceof Error ? error.message : 'No se pudo guardar la transacción';
-          showToast(message, 'error');
-        },
-      }
-    );
+      onError: (error) => {
+        if (isOfflineError(error)) {
+          showToast('Se guardará cuando recuperes conexión', 'info');
+          return;
+        }
+        const message = error instanceof Error ? error.message : 'No se pudo guardar la transacción';
+        showToast(message, 'error');
+      },
+    });
   };
 
   return (
