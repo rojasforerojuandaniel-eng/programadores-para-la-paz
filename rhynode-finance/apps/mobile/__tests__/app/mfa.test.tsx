@@ -170,11 +170,7 @@ describe('MfaScreen', () => {
     expect(errorText).toBeTruthy();
   });
 
-  it('shows a network error and logs when attemptSecondFactor throws a network error', async () => {
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined);
-
+  it('shows a network error when attemptSecondFactor throws a network error', async () => {
     mockAttemptSecondFactor.mockRejectedValue(
       new Error('Network request failed')
     );
@@ -199,9 +195,6 @@ describe('MfaScreen', () => {
 
     const errorText = findByText(tree.root, 'No hay conexión. Revisa tu red e intenta de nuevo.');
     expect(errorText).toBeTruthy();
-    expect(consoleErrorSpy).toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
   });
 
   it('supports backup codes as fallback', async () => {

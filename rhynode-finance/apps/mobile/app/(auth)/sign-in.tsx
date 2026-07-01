@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSignIn, useSSO } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   Linking,
   StyleSheet,
+  type TextInput as RNTextInput,
 } from 'react-native';
-import { Mail, Lock, Apple, AlertCircle, TrendingUp } from 'lucide-react-native';
+import { Apple, AlertCircle, TrendingUp } from 'lucide-react-native';
+import { z } from 'zod';
+import { TextInput } from '~/components/ui/text-input';
 import { GoogleIcon } from '~/components/ui/google-icon';
 import { hapticImpact } from '~/lib/haptics';
 
@@ -26,6 +28,8 @@ const COLORS = {
   destructive: '#ef4444',
 };
 
+const emailSchema = z.string().email('Ingresa un correo electrónico válido');
+
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startSSOFlow } = useSSO();
@@ -33,11 +37,25 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const passwordRef = useRef<RNTextInput>(null);
+
+  const validateEmail = (value: string) => {
+    const result = emailSchema.safeParse(value);
+    if (!result.success) {
+      const issue = result.error.issues[0];
+      setEmailError(issue?.message ?? 'Correo inválido');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
 
   const onSignIn = async () => {
     if (!isLoaded || !signIn || !email || !password) return;
+    if (!validateEmail(email)) return;
     setError('');
     setLoading(true);
     try {
@@ -116,36 +134,44 @@ export default function SignInScreen() {
             </View>
           ) : null}
 
-          <View style={styles.inputWrap}>
-            <Mail
-              color={COLORS.muted}
-              size={20}
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor={COLORS.muted}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-              textContentType="emailAddress"
-            />
-          </View>
+          <TextInput
+            label="Correo electrónico"
+            placeholderTextColor={COLORS.muted}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            value={email}
+            onChangeText={(value) => {
+              setEmail(value);
+              if (emailError) validateEmail(value);
+            }}
+            onBlur={() => validateEmail(email)}
+          />
+          {emailError ? (
+            <View style={styles.fieldErrorBox}>
+              <Text style={styles.fieldErrorText}>{emailError}</Text>
+            </View>
+          ) : null}
 
-          <View style={styles.inputWrap}>
-            <Lock color={COLORS.muted} size={20} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña"
-              placeholderTextColor={COLORS.muted}
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              textContentType="password"
-            />
-          </View>
+          <TextInput
+            ref={passwordRef}
+            label="Contraseña"
+            placeholder="Contraseña"
+            placeholderTextColor={COLORS.muted}
+            secureTextEntry
+            textContentType="password"
+            returnKeyType="done"
+            blurOnSubmit
+            onSubmitEditing={() => {
+              void hapticImpact();
+              void onSignIn();
+            }}
+            value={password}
+            onChangeText={setPassword}
+          />
 
           <Pressable
             accessibilityLabel="Entrar"
@@ -278,27 +304,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.foreground,
   },
-  inputWrap: {
-    position: 'relative',
+  fieldErrorBox: {
+    marginTop: -12,
     marginBottom: 16,
+    paddingHorizontal: 4,
   },
-  inputIcon: {
-    position: 'absolute',
-    left: 16,
-    top: 18,
-    zIndex: 1,
-  },
-  input: {
-    width: '100%',
-    height: 56,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.card,
-    color: COLORS.foreground,
-    paddingHorizontal: 16,
-    paddingLeft: 48,
-    fontSize: 16,
+  fieldErrorText: {
+    fontSize: 13,
+    color: COLORS.destructive,
   },
   button: {
     height: 56,

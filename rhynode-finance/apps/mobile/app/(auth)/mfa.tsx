@@ -66,7 +66,6 @@ export default function MfaScreen() {
       } else {
         setError('No se pudo verificar el código. Intenta de nuevo.');
       }
-      console.error('MFA verification error:', err);
     } finally {
       setLoading(false);
     }

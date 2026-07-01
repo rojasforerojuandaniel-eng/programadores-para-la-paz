@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from 'react-native';
 import { cssInterop } from 'nativewind';
 import { Text } from '~/components/ui/text';
@@ -11,15 +11,21 @@ type TextInputProps = RNTextInputProps & {
   label: string;
 };
 
-const StyledTextInput = cssInterop(RNTextInput, { className: 'style' }) as React.ComponentType<StyledTextInputProps>;
+const StyledTextInput = cssInterop(RNTextInput, { className: 'style' }) as React.ForwardRefExoticComponent<
+  StyledTextInputProps & React.RefAttributes<RNTextInput>
+>;
 
-export function TextInput({ className, label, ...props }: TextInputProps) {
+export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
+  { className, label, ...props },
+  ref
+) {
   return (
     <View className="gap-1">
       <Text className="text-xs font-medium text-muted-foreground" accessibilityLabel={label}>
         {label}
       </Text>
       <StyledTextInput
+        ref={ref}
         className={cn(
           'min-h-[48px] bg-card text-foreground rounded-2xl px-4 py-3',
           className
@@ -29,4 +35,4 @@ export function TextInput({ className, label, ...props }: TextInputProps) {
       />
     </View>
   );
-}
+});

@@ -1,5 +1,13 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AccessibilityInfo,
+  FlatList,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text as RNText,
+  type AccessibilityRole,
+} from 'react-native';
 import { ChevronDown, Tag, X } from 'lucide-react-native';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
@@ -31,6 +39,22 @@ interface CategoryPickerProps {
 export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const titleRef = useRef<React.ElementRef<typeof RNText>>(null);
+
+  useEffect(() => {
+    if (open) {
+      AccessibilityInfo.announceForAccessibility('Seleccionar categoría');
+      // Move screen reader focus to the modal title on Android. iOS will rely on
+      // the announcement because setAccessibilityFocus behavior differs by platform.
+      const timer = setTimeout(() => {
+        const focusable = titleRef.current as
+          | ({ setAccessibilityFocus?: () => void })
+          | null;
+        focusable?.setAccessibilityFocus?.();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -69,12 +93,22 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
         visible={open}
         onRequestClose={() => setOpen(false)}
         presentationStyle="fullScreen"
+        accessibilityViewIsModal
+        accessibilityLiveRegion="assertive"
       >
-        <View className="flex-1 bg-background px-4 pt-12">
+        <View
+          className="flex-1 bg-background px-4 pt-12"
+          accessibilityRole={('dialog' as AccessibilityRole)}
+          accessible
+        >
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-lg font-semibold text-foreground">
+            <RNText
+              ref={titleRef}
+              style={styles.title}
+              accessibilityRole="header"
+            >
               Seleccionar categoría
-            </Text>
+            </RNText>
             <Pressable
               onPress={() => setOpen(false)}
               style={styles.closeButton}
@@ -164,6 +198,11 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
 }
 
 const styles = StyleSheet.create({
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fafafa',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

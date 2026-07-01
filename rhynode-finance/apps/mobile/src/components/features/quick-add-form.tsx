@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import type { TextInput as RNTextInput } from 'react-native';
 import * as Localization from 'expo-localization';
 import { useRouter } from 'expo-router';
 import { Button } from '~/components/ui/button';
@@ -56,6 +57,7 @@ export function QuickAddForm({
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const amountRef = useRef<RNTextInput>(null);
 
   const selectType = (next: 'INCOME' | 'EXPENSE') => {
     setType(next);
@@ -151,15 +153,25 @@ export function QuickAddForm({
         placeholderTextColor="#6b7280"
         value={description}
         onChangeText={setDescription}
+        returnKeyType="next"
+        blurOnSubmit={false}
+        onSubmitEditing={() => amountRef.current?.focus()}
       />
 
       <TextInput
+        ref={amountRef}
         label="Monto"
         placeholder="Monto"
         placeholderTextColor="#6b7280"
         keyboardType="decimal-pad"
         value={amount}
         onChangeText={setAmount}
+        returnKeyType="done"
+        blurOnSubmit
+        onSubmitEditing={() => {
+          void hapticImpact();
+          onSubmit();
+        }}
       />
 
       <CategoryPicker value={category} onChange={setCategory} />
