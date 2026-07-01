@@ -50,9 +50,12 @@ export default function SignInScreen() {
         await setActive({ session: result.createdSessionId });
         router.replace('/(tabs)');
       } else if (result.status === 'needs_second_factor') {
-        setError(
-          'Tu cuenta requiere verificación en dos pasos. Configúrala en la web e intenta de nuevo.'
-        );
+        router.push({
+          pathname: '/(auth)/mfa',
+          params: {
+            identifier: email,
+          },
+        });
       } else {
         setError('No se pudo completar el inicio de sesión');
       }
@@ -145,6 +148,8 @@ export default function SignInScreen() {
           </View>
 
           <Pressable
+            accessibilityLabel="Entrar"
+            accessibilityRole="button"
             onPress={() => {
               void hapticImpact();
               void onSignIn();
@@ -168,6 +173,8 @@ export default function SignInScreen() {
 
           <View style={styles.socialRow}>
             <Pressable
+              accessibilityLabel="Iniciar sesión con Google"
+              accessibilityRole="button"
               onPress={() => onSocialSignIn('oauth_google')}
               disabled={!!socialLoading}
               style={styles.socialButton}
@@ -177,6 +184,8 @@ export default function SignInScreen() {
             </Pressable>
             {Platform.OS === 'ios' ? (
               <Pressable
+                accessibilityLabel="Iniciar sesión con Apple"
+                accessibilityRole="button"
                 onPress={() => onSocialSignIn('oauth_apple')}
                 disabled={!!socialLoading}
                 style={styles.socialButton}
@@ -193,6 +202,8 @@ export default function SignInScreen() {
               onPress={() =>
                 Linking.openURL('https://rhynode-finance.vercel.app/sign-up')
               }
+              accessibilityLabel="Regístrate"
+              accessibilityRole="link"
             >
               <Text style={styles.footerLink}>Regístrate</Text>
             </Pressable>
