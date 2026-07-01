@@ -39,6 +39,16 @@ export class AuthError extends Error {
   }
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 const MUTATION_METHODS = new Set<RequestInit['method']>(['POST', 'PATCH', 'DELETE']);
 
 async function isNetworkAvailable(): Promise<boolean> {
@@ -94,7 +104,7 @@ async function request<T>(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    throw new Error(`API ${response.status}: ${text || response.statusText}`);
+    throw new ApiError(`API ${response.status}: ${text || response.statusText}`, response.status);
   }
 
   return response.json() as Promise<T>;

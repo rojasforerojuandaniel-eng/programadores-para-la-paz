@@ -53,6 +53,18 @@ jest.mock('~/hooks/use-transaction', () => ({
   useDeleteTransaction: jest.fn(),
 }));
 
+jest.mock('~/lib/api', () => ({
+  ApiError: class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+    }
+  },
+}));
+
 jest.mock('~/hooks/use-toast', () => ({
   showToast: jest.fn(),
 }));
@@ -87,6 +99,7 @@ jest.mock('~/components/features/transaction-actions', () => ({
 
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Alert, Share } from 'react-native';
+import { ApiError } from '~/lib/api';
 import { useDeleteTransaction, useTransaction } from '~/hooks/use-transaction';
 import { showToast } from '~/hooks/use-toast';
 import TransactionDetailScreen from '../../../app/transaction/[id]';
@@ -160,7 +173,7 @@ describe('TransactionDetailScreen', () => {
     (useTransaction as jest.Mock).mockReturnValue({
       data: undefined,
       isLoading: false,
-      error: new Error('API 404: Not Found'),
+      error: new ApiError('API 404: Not Found', 404),
       refetch: mockRefetch,
     });
 

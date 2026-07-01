@@ -7,6 +7,7 @@ import { Button } from '~/components/ui/button';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
+import { ApiError } from '~/lib/api';
 import { useDeleteTransaction, useTransaction } from '~/hooks/use-transaction';
 import { showToast } from '~/hooks/use-toast';
 
@@ -22,7 +23,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function LoadingState() {
   return (
     <View className="flex-1 bg-background items-center justify-center px-6">
-      <ActivityIndicator color="#10b981" />
+      <ActivityIndicator className="text-success" />
       <Text className="text-muted-foreground mt-4">Cargando movimiento...</Text>
     </View>
   );
@@ -62,7 +63,7 @@ export default function TransactionDetailScreen() {
     return <LoadingState />;
   }
 
-  if (error instanceof Error && error.message.includes('404')) {
+  if (error instanceof ApiError && error.status === 404) {
     return <NotFoundState onBack={() => router.back()} />;
   }
 

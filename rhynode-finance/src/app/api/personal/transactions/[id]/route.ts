@@ -119,24 +119,47 @@ export const PATCH = withRateLimit(
 
       const { type, category, description, amount, currency, date, accountId, bankAccountId } = parsed.data;
 
-      const transaction = await prisma.transaction.update({
-        where: { id },
-        data: {
-          type,
-          category,
-          description,
-          amount,
-          currency,
-          date: date ? new Date(date) : undefined,
-          accountId,
-          bankAccountId,
-        },
-        include: {
-          account: true,
-          bankAccount: true,
-          organization: true,
-        },
-      });
+      if (accountId) {
+        const account = await prisma.account.findUnique({ where: { id: accountId } });
+        if (!account || account.userId !== auth.profile.id) {
+          return NextResponse.json({ error: "Invalid account" }, { status: 400 });
+        }
+      }
+
+      if (bankAccountId) {
+        const bankAccount = await prisma.bankAccount.findUnique({ where: { id: bankAccountId } });
+        if (!bankAccount || bankAccount.organizationId !== auth.org.id) {
+          return NextResponse.json({ error: "Invalid bank account" }, { status: 400 });
+        }
+      }
+
+      const [updateResult, transaction] = await prisma.$transaction([
+        prisma.transaction.updateMany({
+          where: { id, organizationId: auth.org.id, userId: auth.profile.id, scope: "PERSONAL" },
+          data: {
+            type,
+            category,
+            description,
+            amount,
+            currency,
+            date: date ? new Date(date) : undefined,
+            accountId,
+            bankAccountId,
+          },
+        }),
+        prisma.transaction.findFirst({
+          where: { id, organizationId: auth.org.id, userId: auth.profile.id, scope: "PERSONAL" },
+          include: {
+            account: true,
+            bankAccount: true,
+            organization: true,
+          },
+        }),
+      ]);
+
+      if (updateResult.count === 0 || !transaction) {
+        return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+      }
 
       return NextResponse.json({
         transaction: serializeTransaction(transaction, auth.org.name),
@@ -168,7 +191,14 @@ export const DELETE = withRateLimit(
         return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
       }
 
-      await prisma.transaction.delete({ where: { id } });
+      const { count } = await prisma.transaction.deleteMany({
+        where: { id, organizationId: auth.org.id, userId: auth.profile.id, scope: "PERSONAL" },
+      });
+
+      if (count === 0) {
+        return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+      }
+
       return NextResponse.json({ success: true });
     } catch (error) {
       logger.error("Failed to delete personal transaction", { error: error instanceof Error ? error.message : String(error) });
