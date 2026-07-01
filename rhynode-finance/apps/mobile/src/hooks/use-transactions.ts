@@ -18,6 +18,8 @@ export function useTransactions() {
   return useQuery<{ transactions: Transaction[] }>({
     queryKey: ['transactions', 'personal'],
     queryFn: () => api.get('/api/personal/transactions'),
+    retry: 2,
+    staleTime: 30_000,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });

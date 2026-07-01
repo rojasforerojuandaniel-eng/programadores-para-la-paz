@@ -4,13 +4,14 @@ import { FlatList, RefreshControl } from 'react-native';
 import { TransactionListItem } from '~/components/features/transaction-list-item';
 import { AnimatedListItem } from '~/components/ui/animated-list-item';
 import { EmptyState } from '~/components/ui/empty-state';
+import { ErrorState } from '~/components/ui/error-state';
 import { Skeleton, SkeletonGroup } from '~/components/ui/skeleton';
 import { View } from '~/components/ui/view';
 import { useTransactions } from '~/hooks/use-transactions';
 
 export default function TransactionsTab() {
   const router = useRouter();
-  const { data, isLoading, refetch } = useTransactions();
+  const { data, isLoading, isError, isFetching, refetch, error } = useTransactions();
 
   if (isLoading && !data) {
     return (
@@ -21,6 +22,18 @@ export default function TransactionsTab() {
           <Skeleton variant="card" className="h-20" />
           <Skeleton variant="card" className="h-20" />
         </SkeletonGroup>
+      </View>
+    );
+  }
+
+  if (isError && !data) {
+    return (
+      <View className="flex-1 bg-background px-6 pt-6">
+        <ErrorState
+          message="Revisa tu conexión e intenta de nuevo."
+          onRetry={refetch}
+          error={error}
+        />
       </View>
     );
   }
@@ -47,7 +60,7 @@ export default function TransactionsTab() {
             }}
           />
         }
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#10b981" />}
+        refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor="#10b981" />}
       />
     </View>
   );

@@ -6,26 +6,33 @@ import { HealthScoreRing } from '~/components/features/health-score-ring';
 import { KpiCard } from '~/components/features/kpi-card';
 import { AnimatePresence, MotiView } from '~/components/ui/moti-view';
 import { EmptyState } from '~/components/ui/empty-state';
+import { ErrorState } from '~/components/ui/error-state';
 import { ScrollView } from '~/components/ui/scroll-view';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useDashboardSummary } from '~/hooks/use-dashboard';
 
 export default function HomeTab() {
-  const { data, isLoading, refetch } = useDashboardSummary();
+  const { data, isLoading, isError, isFetching, refetch, error } = useDashboardSummary();
 
   return (
     <ScrollView
       className="flex-1 bg-background"
       contentContainerStyle={{ padding: 24, gap: 16 }}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#10b981" />
+        <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor="#10b981" />
       }
     >
       <Text className="text-foreground text-2xl font-bold mb-2">Resumen</Text>
 
       {isLoading && !data ? (
         <DashboardSkeleton />
+      ) : isError && !data ? (
+        <ErrorState
+          message="Revisa tu conexión e intenta de nuevo."
+          onRetry={refetch}
+          error={error}
+        />
       ) : data ? (
         <AnimatePresence>
           <MotiView
