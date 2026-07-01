@@ -6,15 +6,28 @@ export async function isBiometricAvailable(): Promise<boolean> {
   return compatible && enrolled;
 }
 
-export async function authenticateBiometric(reason: string): Promise<boolean> {
+export interface AuthenticateBiometricOptions {
+  promptMessage?: string;
+  fallbackLabel?: string;
+  disableDeviceCredentials?: boolean;
+}
+
+export async function authenticateBiometric({
+  promptMessage = 'Desbloquea Rhynode',
+  fallbackLabel = 'Usar PIN',
+  disableDeviceCredentials = false,
+}: AuthenticateBiometricOptions = {}): Promise<boolean> {
   const available = await isBiometricAvailable();
   if (!available) return true;
 
-  const result = await LocalAuthentication.authenticateAsync({
-    promptMessage: reason,
-    fallbackLabel: 'Usar PIN',
-    disableDeviceFallback: false,
-  });
-
-  return result.success;
+  try {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage,
+      fallbackLabel,
+      disableDeviceFallback: disableDeviceCredentials,
+    });
+    return result.success;
+  } catch {
+    return false;
+  }
 }

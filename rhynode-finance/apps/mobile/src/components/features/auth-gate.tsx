@@ -1,15 +1,28 @@
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
 import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
+import { PinLock } from '~/components/features/pin-lock';
+import { Text } from '~/components/ui/text';
 
 SplashScreen.preventAutoHideAsync();
+
+function SplashLoader() {
+  return (
+    <View className="flex-1 items-center justify-center bg-background">
+      <ActivityIndicator size="large" color="#10b981" />
+      <Text className="mt-4 text-muted-foreground">Rhynode</Text>
+    </View>
+  );
+}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [biometricPassed, setBiometricPassed] = useState(false);
+  const [showPinLock, setShowPinLock] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -18,7 +31,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     if (!isSignedIn && !inAuthGroup) {
       router.replace('/(auth)/sign-in');
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync();
       return;
     }
 
@@ -28,32 +41,47 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [isLoaded, isSignedIn, segments, router]);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || biometricPassed) return;
+    if (!isLoaded || !isSignedIn || biometricPassed || showPinLock) return;
 
     const unlock = async () => {
       const available = await isBiometricAvailable();
       if (!available) {
         setBiometricPassed(true);
-        SplashScreen.hideAsync();
+        await SplashScreen.hideAsync();
         return;
       }
 
-      const ok = await authenticateBiometric('Desbloquea Rhynode');
+      const ok = await authenticateBiometric({
+        promptMessage: 'Desbloquea Rhynode',
+        fallbackLabel: 'Usar PIN',
+        disableDeviceCredentials: true,
+      });
+
       if (ok) {
         setBiometricPassed(true);
       } else {
-        // On Android real devices we do not block the app if the user cancels
-        // biometric; fall back to the device credential / PIN on the next attempt.
-        setBiometricPassed(true);
+        setShowPinLock(true);
       }
-      SplashScreen.hideAsync();
+      await SplashScreen.hideAsync();
     };
 
     void unlock();
-  }, [isLoaded, isSignedIn, biometricPassed]);
+  }, [isLoaded, isSignedIn, biometricPassed, showPinLock]);
 
-  if (!isLoaded || (isSignedIn && !biometricPassed)) {
-    return null;
+  if (!isLoaded) {
+    return <SplashLoader />;
+  }
+
+  if (isSignedIn && !biometricPassed) {
+    if (showPinLock) {
+      return (
+        <PinLock
+          onUnlock={() => setBiometricPassed(true)}
+          allowDeviceFallback
+        />
+      );
+    }
+    return <SplashLoader />;
   }
 
   return <>{children}</>;
