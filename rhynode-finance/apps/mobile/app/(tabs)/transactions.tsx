@@ -52,10 +52,10 @@ export default function TransactionsTab() {
         ListEmptyComponent={
           <EmptyState
             icon={Receipt}
-            title="No hay movimientos aún"
-            subtitle="Registra tu primer ingreso o gasto para empezar."
+            title="Aún no tienes movimientos"
+            subtitle="Agrega uno"
             action={{
-              label: 'Registrar movimiento',
+              label: 'Agregar movimiento',
               onPress: () => router.push('/(tabs)/add'),
             }}
           />

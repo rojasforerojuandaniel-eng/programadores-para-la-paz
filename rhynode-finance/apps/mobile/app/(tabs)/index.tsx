@@ -1,5 +1,6 @@
+import { useRouter } from 'expo-router';
 import { RefreshControl } from 'react-native';
-import { Calendar } from 'lucide-react-native';
+import { Calendar, Receipt } from 'lucide-react-native';
 import { BalanceCard } from '~/components/features/balance-card';
 import { DashboardSkeleton } from '~/components/features/dashboard-skeleton';
 import { HealthScoreRing } from '~/components/features/health-score-ring';
@@ -13,6 +14,7 @@ import { View } from '~/components/ui/view';
 import { useDashboardSummary } from '~/hooks/use-dashboard';
 
 export default function HomeTab() {
+  const router = useRouter();
   const { data, isLoading, isError, isFetching, refetch, error } = useDashboardSummary();
 
   return (
@@ -34,6 +36,17 @@ export default function HomeTab() {
           error={error}
         />
       ) : data ? (
+        data.totalBalance === 0 && data.income === 0 && data.expense === 0 ? (
+          <EmptyState
+            icon={Receipt}
+            title="Aún no tienes movimientos"
+            subtitle="Agrega uno"
+            action={{
+              label: 'Agregar movimiento',
+              onPress: () => router.push('/(tabs)/add'),
+            }}
+          />
+        ) : (
         <AnimatePresence>
           <MotiView
             from={{ opacity: 0, translateY: 16 }}
@@ -69,7 +82,7 @@ export default function HomeTab() {
             </View>
           </MotiView>
         </AnimatePresence>
-      ) : null}
+      )) : null}
     </ScrollView>
   );
 }
