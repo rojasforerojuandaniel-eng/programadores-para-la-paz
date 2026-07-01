@@ -11,6 +11,7 @@
     "android:build": "eas build --profile preview --platform android",
     "android:dev": "eas build --profile development --platform android",
     "ios:build": "eas build --profile production --platform ios",
+    "test": "jest --no-coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -10,12 +10,11 @@ module.exports = {
     defaultPlatform: 'ios',
     platforms: ['android', 'ios', 'native'],
   },
-  resolver: '@react-native/jest-preset/jest/resolver.js',
   moduleNameMapper: {
     '^~/(.*)$': '<rootDir>/src/$1',
     '^@rhynode/shared$': '<rootDir>/../../packages/shared/src/index.ts',
     '^react-test-renderer$':
-      '<rootDir>/../../node_modules/.pnpm/react-test-renderer@19.2.3_react@19.0.0/node_modules/react-test-renderer',
+      '<rootDir>/../../node_modules/.pnpm/react-test-renderer@19.0.0_react@19.0.0/node_modules/react-test-renderer',
   },
   transform: {
     '\\.[jt]sx?$': [
@@ -28,6 +27,6 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|nativewind|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|victory-native)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native/js-polyfills|expo|@expo|nativewind|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|class-variance-authority|clsx|tailwind-merge)/)',
   ],
 };
