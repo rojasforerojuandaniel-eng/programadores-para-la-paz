@@ -10,12 +10,13 @@ import { AuthGate } from '~/components/features/auth-gate';
 import { tokenCache } from '~/lib/auth';
 import { syncPendingMutations } from '~/lib/api';
 import { createAsyncStoragePersister, queryClient } from '~/lib/query-client';
-import { ThemeProvider } from '~/lib/theme';
+import { ThemeProvider, useTheme } from '~/lib/theme';
 import {
   registerPushTokenAsync,
   setupNotificationListeners,
 } from '~/lib/notifications';
 import { useNetworkListener, useNetworkStore } from '~/hooks/use-network';
+import { ToastProvider } from '~/components/ui/toast';
 
 const persister = createAsyncStoragePersister();
 
@@ -68,6 +69,11 @@ function SyncManager() {
   return null;
 }
 
+function DynamicStatusBar() {
+  const { resolvedTheme } = useTheme();
+  return <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />;
+}
+
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function MissingClerkKeyScreen() {
@@ -107,6 +113,7 @@ export default function RootLayout() {
         persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
       >
         <ThemeProvider>
+          <ToastProvider />
           <AuthGate>
             <PushNotificationsSetup />
             <SyncManager />
@@ -116,7 +123,7 @@ export default function RootLayout() {
               <Stack.Screen name="index" />
             </Stack>
           </AuthGate>
-          <StatusBar style="light" />
+          <DynamicStatusBar />
         </ThemeProvider>
       </PersistQueryClientProvider>
     </ClerkProvider>

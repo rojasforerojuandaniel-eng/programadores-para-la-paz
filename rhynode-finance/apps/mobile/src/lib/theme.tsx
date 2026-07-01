@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useColorScheme as useDeviceColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View } from '~/components/ui/view';
+import { cn } from '~/lib/utils';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -35,7 +37,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
-      {children}
+      <View className={cn('flex-1', resolvedTheme === 'dark' ? 'dark' : '')}>
+        {children}
+      </View>
     </ThemeContext.Provider>
   );
 }
