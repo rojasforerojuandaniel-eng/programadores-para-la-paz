@@ -4,23 +4,18 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 
-interface CalendarEvent {
-  id: string;
-  name: string;
-  dueDate?: string | null;
-  deadline?: string | null;
-  amount?: number;
-  type: 'debt' | 'goal';
-}
-
 export default function CalendarScreen() {
   const router = useRouter();
   const { data, isLoading } = usePersonalData('calendar');
 
-  const events = [
+  const rawEvents = [
     ...(data?.debts ?? []).map((d) => ({ ...d, type: 'debt' as const, date: d.dueDate })),
     ...(data?.goals ?? []).map((g) => ({ ...g, type: 'goal' as const, date: g.deadline })),
-  ].filter((e) => e.date).sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+  ];
+
+  const events = rawEvents
+    .filter((e): e is typeof rawEvents[number] & { date: string } => !!e.date)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
     <View className="flex-1 bg-background px-6 pt-6">
@@ -34,7 +29,9 @@ export default function CalendarScreen() {
       {events.map((event) => (
         <View key={`${event.type}-${event.id}`} className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-foreground font-medium">{event.name}</Text>
-          <Text className="text-muted-foreground text-sm capitalize">{event.type} · {new Date(event.date!).toLocaleDateString('es-CO')}</Text>
+          <Text className="text-muted-foreground text-sm capitalize">
+            {event.type} · {new Date(event.date).toLocaleDateString('es-CO')}
+          </Text>
         </View>
       ))}
     </View>

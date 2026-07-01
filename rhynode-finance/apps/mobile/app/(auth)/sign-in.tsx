@@ -79,7 +79,10 @@ export default function SignInScreen() {
         setError('No se pudo completar el inicio de sesión');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[sign-in] unexpected error', err);
+      }
+      setError('No se pudo iniciar sesión. Verifica tus credenciales e intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -98,11 +101,10 @@ export default function SignInScreen() {
         router.replace('/(tabs)');
       }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'No se pudo iniciar sesión con Google/Apple. Intenta de nuevo.'
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[sign-in] social sign-in error', err);
+      }
+      setError('No se pudo iniciar sesión con Google/Apple. Intenta de nuevo.');
     } finally {
       setSocialLoading(null);
     }
