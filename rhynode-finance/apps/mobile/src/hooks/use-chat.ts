@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
 import { API_URL } from '~/lib/api';
 import { chatMessageSchema, chatHistorySchema, type ChatMessage } from '~/schemas/dashboard';
 
 export type { ChatMessage };
+
+export type ChatErrorType = 'network' | 'server' | 'timeout' | 'auth' | 'unknown';
+
+export interface ChatError {
+  type: ChatErrorType;
+  message: string;
+}
+
+const CHAT_TIMEOUT_MS = 15000;
 
 function parseSseResponse(text: string): string {
   if (!text.includes('data: ')) return text.trim();
@@ -23,84 +32,172 @@ function parseSseResponse(text: string): string {
       if (typeof delta === 'string') {
         assistantText += delta;
       }
-    } catch (error) {
-      console.error('Failed to parse chat SSE event', {
-        data,
-        error: error instanceof Error ? error.message : String(error),
-      });
+    } catch {
+      // Skip malformed SSE events silently.
     }
   }
 
   return assistantText.trim() || text.trim();
 }
 
+function classifyFetchError(error: unknown, didTimeout: boolean): ChatError {
+  if (didTimeout) {
+    return {
+      type: 'timeout',
+      message: 'El asesor tardó demasiado en responder. Intenta de nuevo.',
+    };
+  }
+
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    // User cancellation is not surfaced as an error.
+    return { type: 'unknown', message: '' };
+  }
+
+  if (error instanceof TypeError) {
+    return {
+      type: 'network',
+      message: 'No se pudo conectar con el asesor. Revisa tu conexión.',
+    };
+  }
+
+  const message = error instanceof Error ? error.message : 'Error desconocido';
+
+  if (/network/i.test(message) || /fetch/i.test(message)) {
+    return {
+      type: 'network',
+      message: 'No se pudo conectar con el asesor. Revisa tu conexión.',
+    };
+  }
+
+  return {
+    type: 'unknown',
+    message: `Error inesperado: ${message}`,
+  };
+}
+
+function buildServerError(response: Response, body: string): ChatError {
+  if (response.status === 401 || response.status === 403) {
+    return {
+      type: 'auth',
+      message: 'Tu sesión expiró. Vuelve a iniciar sesión.',
+    };
+  }
+
+  return {
+    type: 'server',
+    message: `El asesor respondió con error ${response.status}${body ? `: ${body}` : ''}`,
+  };
+}
+
 export function useChat() {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<ChatError | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const send = async (text: string) => {
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: text,
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
     };
-    setMessages((prev) => [...prev, userMsg]);
-    setStreaming(true);
+  }, []);
 
-    try {
-      const history = chatHistorySchema.parse(
-        messages.slice(-10).map((m) => ({
-          role: m.role,
-          content: m.content,
-        }))
-      );
+  const send = useCallback(
+    async (text: string) => {
+      const trimmedText = text.trim();
+      if (!trimmedText || streaming) return;
 
-      const token = await getToken().catch((error) => {
-        console.error('Failed to refresh auth token for chat', error);
-        return null;
-      });
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers.Authorization = `Bearer ${token}`;
+      setError(null);
+      setStreaming(true);
 
-      const response = await fetch(`${API_URL}/api/ai/chat`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ message: text, history }),
-      });
-
-      if (!response.ok) {
-        const status = response.status;
-        const body = await response.text().catch(() => '');
-        throw new Error(`Chat request failed: ${status}${body ? ` - ${body}` : ''}`);
-      }
-
-      const responseText = await response.text();
-      const assistantText = parseSseResponse(responseText);
-      const finalText = assistantText || 'No entendí bien, intenta de otra forma.';
-
-      const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: finalText,
+      const userMsg: ChatMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: trimmedText,
       };
 
-      setMessages((prev) => [...prev, chatMessageSchema.parse(assistantMsg)]);
-    } catch (error) {
-      console.error('Chat send failed', error);
-      const message = error instanceof Error ? error.message : 'Error desconocido';
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: `Error al contactar al asesor: ${message}`,
-        },
-      ]);
-    } finally {
-      setStreaming(false);
-    }
-  };
+      setMessages((prev) => [...prev, userMsg]);
 
-  return { messages, send, streaming };
+      let didTimeout = false;
+      const abortController = new AbortController();
+      abortRef.current = abortController;
+
+      const timeoutId = setTimeout(() => {
+        didTimeout = true;
+        abortController.abort();
+      }, CHAT_TIMEOUT_MS);
+
+      try {
+        let token: string | null;
+        try {
+          token = await getToken();
+        } catch {
+          token = null;
+        }
+
+        if (!token) {
+          setError({
+            type: 'auth',
+            message: 'No se pudo obtener tu sesión. Vuelve a iniciar sesión.',
+          });
+          return;
+        }
+
+        const history = chatHistorySchema.parse(
+          [...messages.slice(-10), { role: 'user', content: trimmedText } as const].slice(-10)
+        );
+
+        const response = await fetch(`${API_URL}/api/ai/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ message: trimmedText, history }),
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          const status = response.status;
+          const body = await response.text().catch(() => '');
+          setError(buildServerError(response, body));
+          return;
+        }
+
+        const responseText = await response.text();
+        const assistantText = parseSseResponse(responseText);
+        const finalText = assistantText || 'No entendí bien, intenta de otra forma.';
+
+        const assistantMsg: ChatMessage = {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: finalText,
+        };
+
+        setMessages((prev) => [...prev, chatMessageSchema.parse(assistantMsg)]);
+      } catch (caughtError) {
+        const chatError = classifyFetchError(caughtError, didTimeout);
+        if (chatError.message) {
+          setError(chatError);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        abortRef.current = null;
+        setStreaming(false);
+      }
+    },
+    [getToken, messages, streaming]
+  );
+
+  return {
+    messages,
+    send,
+    cancel,
+    streaming,
+    error,
+  };
 }

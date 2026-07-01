@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { FlatList, Platform } from 'react-native';
 import { Button } from '~/components/ui/button';
+import { ChatMessageItem } from '~/components/features/chat-message';
 import { KeyboardAvoidingView } from '~/components/ui/keyboard-avoiding-view';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
@@ -9,9 +10,17 @@ import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
 import { useChat, type ChatMessage } from '~/hooks/use-chat';
 
+function TypingIndicator() {
+  return (
+    <View className="bg-card self-start rounded-2xl rounded-bl-sm px-4 py-3 mb-3">
+      <Text className="text-muted-foreground text-sm">El asesor está escribiendo…</Text>
+    </View>
+  );
+}
+
 export default function AdvisorScreen() {
   const router = useRouter();
-  const { messages, send, streaming } = useChat();
+  const { messages, send, cancel, streaming, error } = useChat();
   const [input, setInput] = useState('');
   const listRef = useRef<FlatList>(null);
 
@@ -21,15 +30,7 @@ export default function AdvisorScreen() {
     setInput('');
   };
 
-  const renderItem = ({ item }: { item: ChatMessage }) => (
-    <View
-      className={`max-w-[85%] rounded-2xl p-4 mb-3 ${
-        item.role === 'user' ? 'bg-primary self-end rounded-br-sm' : 'bg-card self-start rounded-bl-sm'
-      }`}
-    >
-      <Text className={item.role === 'user' ? 'text-primary-foreground' : 'text-foreground'}>{item.content}</Text>
-    </View>
-  );
+  const renderItem = ({ item }: { item: ChatMessage }) => <ChatMessageItem message={item} />;
 
   return (
     <KeyboardAvoidingView
@@ -51,6 +52,7 @@ export default function AdvisorScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ padding: 24 }}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+        ListFooterComponent={streaming ? <TypingIndicator /> : null}
         ListEmptyComponent={
           <Text className="text-muted-foreground text-center mt-8">
             Escribe una pregunta sobre tus finanzas.
@@ -59,17 +61,31 @@ export default function AdvisorScreen() {
       />
 
       <View className="px-6 py-4">
+        {error && (
+          <View className="bg-destructive/10 rounded-2xl px-4 py-3 mb-3">
+            <Text className="text-destructive text-sm">{error.message}</Text>
+          </View>
+        )}
+
         <View className="flex-row items-center gap-2">
           <TextInput
             className="flex-1 bg-card text-foreground rounded-2xl px-4 py-3"
-            placeholder="Pregunta algo..."
+            placeholder="Pregunta algo…"
             placeholderTextColor="#6b7280"
             value={input}
             onChangeText={setInput}
             multiline
+            editable={!streaming}
           />
-          <Button onPress={onSend} disabled={streaming || !input.trim()} className="h-12 w-12 p-0">
-            <Text className="text-primary-foreground">↑</Text>
+          <Button
+            onPress={streaming ? cancel : onSend}
+            disabled={!streaming && !input.trim()}
+            className="h-12 w-12 p-0"
+            variant={streaming ? 'destructive' : 'default'}
+          >
+            <Text className={streaming ? 'text-destructive-foreground' : 'text-primary-foreground'}>
+              {streaming ? '✕' : '↑'}
+            </Text>
           </Button>
         </View>
       </View>
