@@ -39,6 +39,8 @@ export default function CameraScreen() {
         </Text>
         <Pressable
           testID="request-camera-permission"
+          accessibilityRole="button"
+          accessibilityLabel="Permitir acceso a la cámara"
           onPress={requestPermission}
           className="bg-primary rounded-2xl px-6 py-3"
         >

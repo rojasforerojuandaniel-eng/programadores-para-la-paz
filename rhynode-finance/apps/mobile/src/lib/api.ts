@@ -187,7 +187,7 @@ async function request<T>(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    throw new ApiError(`API ${response.status}: ${text || response.statusText}`, response.status);
+    throw new ApiError(text || 'Algo salió mal. Inténtalo de nuevo.', response.status);
   }
 
   const json = (await response.json()) as unknown;
@@ -281,7 +281,7 @@ export async function syncPendingMutations(
 
       if (!response.ok) {
         const text = await response.text().catch(() => '');
-        throw new Error(`API ${response.status}: ${text || response.statusText}`);
+        throw new Error(text || 'Request failed');
       }
 
       await clearMutation(mutation.id);
