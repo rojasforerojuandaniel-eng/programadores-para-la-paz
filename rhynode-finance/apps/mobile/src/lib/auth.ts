@@ -9,7 +9,3 @@ export const tokenCache: TokenCache = {
     return SecureStore.setItemAsync(key, token);
   },
 };
-
-export async function clearAuthStorage(): Promise<void> {
-  await SecureStore.deleteItemAsync('clerk-token');
-}

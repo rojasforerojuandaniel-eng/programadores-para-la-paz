@@ -29,6 +29,16 @@ export class OfflineError extends Error {
   }
 }
 
+export class AuthError extends Error {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
 const MUTATION_METHODS = new Set<RequestInit['method']>(['POST', 'PATCH', 'DELETE']);
 
 async function isNetworkAvailable(): Promise<boolean> {
@@ -65,12 +75,14 @@ async function request<T>(
     throw new OfflineError(mutationId, method, path);
   }
 
+  if (token === null || token === undefined) {
+    throw new AuthError('Authentication required');
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
 
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -106,20 +118,30 @@ export async function syncPendingMutations(
 ): Promise<void> {
   if (!(await isNetworkAvailable())) return;
 
+  let token: string | null;
+  try {
+    token = await getToken();
+  } catch (error) {
+    throw new AuthError('Failed to refresh authentication token', error);
+  }
+
+  if (!token) {
+    throw new AuthError('Authentication required to sync pending changes');
+  }
+
   const mutations = await getPendingMutations();
   let hasSuccess = false;
 
   for (const mutation of mutations) {
     if (mutation.retries >= 3) continue;
 
-    const token = await getToken();
     const storedHeaders: Record<string, string> = mutation.headers
       ? (JSON.parse(mutation.headers) as Record<string, string>)
       : {};
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
       ...storedHeaders,
     };
 
