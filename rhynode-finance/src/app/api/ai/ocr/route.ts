@@ -2,6 +2,7 @@ import { getUserProfile, clerkUserIdFromRequest } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 interface OcrResult {
   merchant: string;
@@ -86,9 +87,11 @@ export const POST = withRateLimit(
         ],
       });
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "Unknown error";
+      logger.error("OCR AI request failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return new Response(
-        JSON.stringify({ error: "AI request failed", detail }),
+        JSON.stringify({ error: "AI request failed" }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }

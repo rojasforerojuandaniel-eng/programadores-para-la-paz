@@ -7,6 +7,7 @@ import { getAnthropicTools, executeTool, type ToolName } from "@/lib/ai-tools";
 import { detectIntent, formatIntentReply } from "@/lib/chat-intents";
 import { getLocale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
+import { logger } from "@/lib/logger";
 
 // This endpoint intentionally calls the Anthropic API directly instead of going
 // through `@/lib/ai-provider`. The advisor runs a multi-round streaming tool-use
@@ -364,14 +365,15 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
               }
               controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             } catch (error) {
+              logger.error("Fast-path intent execution failed", {
+                error: error instanceof Error ? error.message : String(error),
+              });
               write({
                 type: "error",
                 message:
-                  error instanceof Error
-                    ? error.message
-                    : locale === "en"
-                      ? "Error processing the query"
-                      : "Error procesando la consulta",
+                  locale === "en"
+                    ? "Error processing the query"
+                    : "Error procesando la consulta",
               });
             }
             controller.close();
@@ -432,10 +434,13 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
 
             if (!aiResponse.ok) {
               const text = await aiResponse.text();
+              logger.error("Anthropic chat API request failed", {
+                status: aiResponse.status,
+                response: text,
+              });
               write({
                 type: "error",
                 message: "AI request failed",
-                detail: text,
               });
               controller.close();
               return;
@@ -520,14 +525,15 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         } catch (error) {
+          logger.error("Chat streaming failed", {
+            error: error instanceof Error ? error.message : String(error),
+          });
           write({
             type: "error",
             message:
-              error instanceof Error
-                ? error.message
-                : locale === "en"
-                  ? "Error processing the conversation"
-                  : "Error procesando la conversación",
+              locale === "en"
+                ? "Error processing the conversation"
+                : "Error procesando la conversación",
           });
           controller.close();
         }
