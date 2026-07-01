@@ -282,6 +282,39 @@
   "settings": {
     "menuLabel": "Ajustes",
     "title": "Ajustes",
+    "account": {
+      "title": "Cuenta",
+      "emailLabel": "Correo electrónico"
+    },
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "language": {
+      "title": "Idioma",
+      "es": "Español",
+      "en": "English"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "push": "Notificaciones push",
+      "pushDescription": "Recibe alertas de pagos y recordatorios.",
+      "permissionError": "No se pudieron activar las notificaciones. Verifica los permisos."
+    },
+    "biometric": {
+      "title": "Biometría / PIN",
+      "description": "Desbloquea la app con huella, rostro o PIN.",
+      "enabled": "Activado",
+      "disabled": "Desactivado",
+      "error": "No se pudo verificar la biometría. Inténtalo de nuevo."
+    },
+    "legal": {
+      "title": "Legal",
+      "privacy": "Política de privacidad",
+      "terms": "Términos de servicio"
+    },
     "signOutTitle": "Cerrar sesión",
     "signOutMessage": "¿Estás seguro de que quieres salir?",
     "signOutConfirm": "Cerrar sesión",

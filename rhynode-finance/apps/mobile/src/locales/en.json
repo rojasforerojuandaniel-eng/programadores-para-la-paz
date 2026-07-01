@@ -282,6 +282,39 @@
   "settings": {
     "menuLabel": "Settings",
     "title": "Settings",
+    "account": {
+      "title": "Account",
+      "emailLabel": "Email"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language",
+      "es": "Español",
+      "en": "English"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "push": "Push notifications",
+      "pushDescription": "Get alerts for payments and reminders.",
+      "permissionError": "Could not enable notifications. Check permissions."
+    },
+    "biometric": {
+      "title": "Biometric / PIN",
+      "description": "Unlock the app with fingerprint, face or PIN.",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "error": "Could not verify biometrics. Try again."
+    },
+    "legal": {
+      "title": "Legal",
+      "privacy": "Privacy policy",
+      "terms": "Terms of service"
+    },
     "signOutTitle": "Sign out",
     "signOutMessage": "Are you sure you want to sign out?",
     "signOutConfirm": "Sign out",
