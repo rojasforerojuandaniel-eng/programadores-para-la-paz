@@ -108,7 +108,7 @@ function bearerTokenFromRequest(request: Request): string | null {
   return authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
 }
 
-async function clerkUserIdFromRequest(request: Request): Promise<string | null> {
+export async function clerkUserIdFromRequest(request: Request): Promise<string | null> {
   const bearer = bearerTokenFromRequest(request);
   if (!bearer) {
     const session = await auth();

@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { z } from "zod";
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
+import { clerkUserIdFromRequest } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
+
+const MAX_RECEIPT_SIZE = 4.5 * 1024 * 1024;
+
+const uploadReceiptSchema = z.object({
+  file: z.instanceof(File).refine((f) => f.size > 0, {
+    message: "File must not be empty",
+  }),
+});
 
 export const POST = withRateLimit(
   async (request: Request) => {
@@ -13,21 +23,48 @@ export const POST = withRateLimit(
       }
 
       const form = await request.formData();
-      const file = form.get("file") as File | null;
-      if (!file) {
-        return NextResponse.json({ error: "Missing file" }, { status: 400 });
+      const file = form.get("file");
+
+      const parseResult = uploadReceiptSchema.safeParse({ file });
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Invalid input", details: parseResult.error.flatten() },
+          { status: 400 }
+        );
       }
 
-      const blob = await put(`receipts/${auth.profile.id}/${Date.now()}-${file.name}`, file, {
-        access: "public",
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
+      const validatedFile = parseResult.data.file;
+      if (validatedFile.size > MAX_RECEIPT_SIZE) {
+        return NextResponse.json(
+          { error: "File too large", maxBytes: MAX_RECEIPT_SIZE },
+          { status: 413 }
+        );
+      }
+
+      const blob = await put(
+        `receipts/${auth.profile.id}/${Date.now()}-${validatedFile.name}`,
+        validatedFile,
+        {
+          access: "public",
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        }
+      );
 
       return NextResponse.json({ url: blob.url });
     } catch (error) {
-      logger.error("Mobile upload receipt error", { error: error instanceof Error ? error.message : String(error) });
-      return NextResponse.json({ error: "Failed to upload receipt" }, { status: 500 });
+      logger.error("Mobile upload receipt error", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return NextResponse.json(
+        { error: "Failed to upload receipt" },
+        { status: 500 }
+      );
     }
   },
-  { key: "mobile-upload-receipt", maxRequests: 30, windowMs: 60000 }
+  {
+    key: "mobile-upload-receipt",
+    maxRequests: 10,
+    windowMs: 60000,
+    identifier: clerkUserIdFromRequest,
+  }
 );

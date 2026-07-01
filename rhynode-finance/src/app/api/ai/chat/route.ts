@@ -1,5 +1,5 @@
 import { decimalToNumber } from "@/lib/decimal";
-import { getUserProfileFromRequest, getOrCreateAuthOrgFromRequest } from "@/lib/auth";
+import { getUserProfileFromRequest, getOrCreateAuthOrgFromRequest, clerkUserIdFromRequest } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
@@ -543,5 +543,5 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
       },
     });
   },
-  { key: "ai-chat", maxRequests: 10, windowMs: 60000 }
+  { key: "ai-chat", maxRequests: 20, windowMs: 60000, identifier: clerkUserIdFromRequest }
 );

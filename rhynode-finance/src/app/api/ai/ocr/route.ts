@@ -1,4 +1,4 @@
-import { getUserProfile } from "@/lib/auth";
+import { getUserProfile, clerkUserIdFromRequest } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
 import { z } from "zod";
@@ -11,8 +11,25 @@ interface OcrResult {
   confidence: number;
 }
 
+const DEFAULT_STORAGE_HOSTS = ["public.blob.vercel-storage.com"];
+const ALLOWED_STORAGE_HOSTS =
+  process.env.ALLOWED_STORAGE_HOSTS?.split(",").map((host) => host.trim()) ??
+  DEFAULT_STORAGE_HOSTS;
+
+function isOwnStorageUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_STORAGE_HOSTS.some(
+      (host) =>
+        parsed.hostname === host || parsed.hostname.endsWith(`.${host}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 const ocrSchema = z.object({
-  imageUrl: z.string().min(1).max(100_000),
+  imageUrl: z.string().url().max(2_000),
 });
 
 export const POST = withRateLimit(
@@ -27,19 +44,29 @@ export const POST = withRateLimit(
 
     const parseResult = ocrSchema.safeParse(await request.json());
     if (!parseResult.success) {
-      return new Response(JSON.stringify({ error: "Invalid input", details: parseResult.error.flatten() }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Invalid input",
+          details: parseResult.error.flatten(),
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const { imageUrl } = parseResult.data;
 
+    if (!isOwnStorageUrl(imageUrl)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid image URL" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     if (!isAIConfigured()) {
-      return new Response(JSON.stringify({ error: "AI service not configured" }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "AI service not configured" }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const userPrompt = `Extrae de este recibo: merchant (comercio), total (número), fecha (string ISO), items (array de objetos con description y amount). Responde solo JSON sin markdown ni explicaciones.`;
@@ -60,10 +87,10 @@ export const POST = withRateLimit(
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
-      return new Response(JSON.stringify({ error: "AI request failed", detail }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "AI request failed", detail }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     let result: OcrResult;
@@ -96,5 +123,5 @@ export const POST = withRateLimit(
       headers: { "Content-Type": "application/json" },
     });
   },
-  { key: "ai-ocr", maxRequests: 10, windowMs: 60000 }
+  { key: "ai-ocr", maxRequests: 10, windowMs: 60000, identifier: clerkUserIdFromRequest }
 );
