@@ -302,7 +302,7 @@ export default function SettingsScreen() {
                         {payloadPreview}
                       </Text>
                       <Text className="text-xs text-muted-foreground">
-                        {mutation.retries} {t('common.retry')?.toLowerCase() ?? 'retry'}
+                        {mutation.retries} {t('common.retry').toLowerCase()}
                       </Text>
                       <View className="flex-row gap-2 mt-1">
                         <Button

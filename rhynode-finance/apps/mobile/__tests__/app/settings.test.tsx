@@ -186,4 +186,24 @@ describe('SettingsScreen', () => {
     expect(() => findByText(instance, 'Legal')).not.toThrow();
     expect(() => findByText(instance, 'Cerrar sesión')).not.toThrow();
   });
+
+  it('exposes an accessible SettingsRow with a compound label', async () => {
+    let tree: renderer.ReactTestRenderer | undefined;
+
+    renderer.act(() => {
+      tree = renderer.create(<SettingsScreen />);
+    });
+
+    await renderer.act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(tree).toBeDefined();
+    if (!tree) throw new Error('SettingsScreen render tree is undefined');
+
+    const row = tree.root.findByProps({ testID: 'push-toggle-row' });
+    expect(row).toBeTruthy();
+    expect(row.props.accessibilityRole).toBe('button');
+    expect(row.props.accessibilityLabel).toContain('Notificaciones push');
+  });
 });

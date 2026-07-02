@@ -64,12 +64,17 @@ export function SettingsRow({
   children: React.ReactNode;
   testID?: string;
 }) {
+  const compoundLabel = description ? `${label}, ${description}` : label;
+
   return (
     <View
       testID={testID}
       className="flex-row items-center justify-between gap-4 py-3"
+      accessibilityRole="button"
+      accessibilityLabel={compoundLabel}
+      accessible
     >
-      <View className="flex-1 gap-1">
+      <View className="flex-1 gap-1" pointerEvents="none">
         <Text className="text-base font-medium text-foreground">{label}</Text>
         {description && (
           <Text className="text-sm text-muted-foreground">{description}</Text>
