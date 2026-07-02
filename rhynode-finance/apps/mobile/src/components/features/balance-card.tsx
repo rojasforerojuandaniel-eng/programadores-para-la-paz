@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '~/components/ui/card';
@@ -30,7 +30,7 @@ export function BalanceCard({ balance, currency }: BalanceCardProps) {
         </Pressable>
       </View>
       <Text className="text-foreground text-3xl font-bold">
-        {visible ? formatCurrency(balance, currency, 'es') : '••••••'}
+        {visible ? localizedFormatCurrency(balance, currency) : '••••••'}
       </Text>
     </Card>
   );

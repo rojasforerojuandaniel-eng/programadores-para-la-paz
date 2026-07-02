@@ -1,5 +1,5 @@
 import { CreditCard } from 'lucide-react-native';
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency, localizedFormatDate } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
@@ -22,9 +22,9 @@ export default function DebtsScreen() {
         <View className="bg-card rounded-2xl p-4">
           <Text className="text-foreground font-medium">{debt.name}</Text>
           <Text className="text-muted-foreground text-sm">{debt.type === 'OWE' ? t('dashboard.personal.debts.owe') : t('dashboard.personal.debts.owed')}</Text>
-          <Text className="text-foreground text-lg font-bold mt-1">{formatCurrency(debt.remainingAmount, debt.currency, 'es')}</Text>
+          <Text className="text-foreground text-lg font-bold mt-1">{localizedFormatCurrency(debt.remainingAmount, debt.currency)}</Text>
           {debt.dueDate ? (
-            <Text className="text-muted-foreground text-sm">{t('dashboard.personal.debts.dueLabel')}{new Date(debt.dueDate).toLocaleDateString('es-CO')}</Text>
+            <Text className="text-muted-foreground text-sm">{t('dashboard.personal.debts.dueLabel')}{localizedFormatDate(debt.dueDate)}</Text>
           ) : null}
         </View>
       )}

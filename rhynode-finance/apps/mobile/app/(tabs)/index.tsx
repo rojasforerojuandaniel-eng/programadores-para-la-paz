@@ -12,6 +12,7 @@ import { ErrorState } from '~/components/ui/error-state';
 import { ScrollView } from '~/components/ui/scroll-view';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
+import { localizedFormatDate } from '~/lib/i18n-locale';
 import { useDashboardSummary } from '~/hooks/use-dashboard';
 import { useReducedMotion } from '~/hooks/use-reduced-motion';
 import { colors } from '~/theme/colors';
@@ -68,7 +69,7 @@ export default function HomeTab() {
                 data.upcomingItems.map((item) => (
                   <View key={item.id} className="bg-card rounded-2xl p-4">
                     <Text className="text-foreground font-medium">{item.title}</Text>
-                    <Text className="text-muted-foreground text-sm">{item.dueDate ? new Date(item.dueDate).toLocaleDateString('es-CO') : ''}</Text>
+                    <Text className="text-muted-foreground text-sm">{item.dueDate ? localizedFormatDate(item.dueDate) : ''}</Text>
                   </View>
                 ))
               ) : (
@@ -103,7 +104,7 @@ export default function HomeTab() {
                   data.upcomingItems.map((item) => (
                     <View key={item.id} className="bg-card rounded-2xl p-4">
                       <Text className="text-foreground font-medium">{item.title}</Text>
-                      <Text className="text-muted-foreground text-sm">{item.dueDate ? new Date(item.dueDate).toLocaleDateString('es-CO') : ''}</Text>
+                      <Text className="text-muted-foreground text-sm">{item.dueDate ? localizedFormatDate(item.dueDate) : ''}</Text>
                     </View>
                   ))
                 ) : (

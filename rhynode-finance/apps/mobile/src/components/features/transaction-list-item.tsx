@@ -1,4 +1,4 @@
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency, localizedFormatDate } from '~/lib/i18n-locale';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
@@ -26,11 +26,11 @@ export function TransactionListItem({ transaction }: TransactionListItemProps) {
         <View className="flex-1">
           <Text className="text-foreground font-medium">{transaction.description}</Text>
           <Text className="text-muted-foreground text-sm">
-            {transaction.category ?? t('transactions.noCategory')} · {new Date(transaction.date).toLocaleDateString('es-CO')}
+            {transaction.category ?? t('transactions.noCategory')} · {localizedFormatDate(transaction.date)}
           </Text>
         </View>
         <Text className={`font-bold ${isIncome ? 'text-success' : 'text-destructive'}`}>
-          {isIncome ? '+' : '-'} {formatCurrency(transaction.amount, transaction.currency, 'es')}
+          {isIncome ? '+' : '-'} {localizedFormatCurrency(transaction.amount, transaction.currency)}
         </Text>
       </View>
     </Pressable>

@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { ActivityIndicator, Alert, Share } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency, formatDate } from '@rhynode/shared';
+import { localizedFormatCurrency, localizedFormatDate } from '~/lib/i18n-locale';
 import { TransactionActions } from '~/components/features/transaction-actions';
 import { Button } from '~/components/ui/button';
 import { Pressable } from '~/components/ui/pressable';
@@ -133,9 +133,9 @@ export default function TransactionDetailScreen() {
     const typeLabel = isIncome ? t('transactions.income') : t('transactions.expense');
     const message = t('transactions.shareMessage', {
       type: typeLabel,
-      amount: formatCurrency(transaction.amount, transaction.currency, 'es'),
+      amount: localizedFormatCurrency(transaction.amount, transaction.currency),
       description: transaction.description,
-      date: formatDate(transaction.date, 'es'),
+      date: localizedFormatDate(transaction.date),
     });
 
     try {
@@ -164,13 +164,13 @@ export default function TransactionDetailScreen() {
           <Text
             className={`text-3xl font-bold tabular-nums ${isIncome ? 'text-success' : 'text-destructive'}`}
           >
-            {isIncome ? '+' : '-'} {formatCurrency(transaction.amount, transaction.currency, 'es')}
+            {isIncome ? '+' : '-'} {localizedFormatCurrency(transaction.amount, transaction.currency)}
           </Text>
         </View>
 
         <DetailRow label={t('transactions.descriptionLabel')} value={transaction.description} />
         {transaction.category ? <DetailRow label={t('transactions.categoryLabel')} value={transaction.category} /> : null}
-        <DetailRow label={t('transactions.dateLabel')} value={formatDate(transaction.date, 'es')} />
+        <DetailRow label={t('transactions.dateLabel')} value={localizedFormatDate(transaction.date)} />
         <DetailRow label={sourceName} value={sourceLabel ?? ''} />
         <DetailRow label={t('transactions.currencyLabel')} value={transaction.currency} />
       </View>

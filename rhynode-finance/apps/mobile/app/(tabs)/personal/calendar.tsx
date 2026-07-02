@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { localizedFormatDate } from '~/lib/i18n-locale';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
@@ -32,7 +33,7 @@ export default function CalendarScreen() {
         <View key={`${event.type}-${event.id}`} className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-foreground font-medium">{event.name}</Text>
           <Text className="text-muted-foreground text-sm capitalize">
-            {event.type} · {new Date(event.date).toLocaleDateString('es-CO')}
+            {event.type} · {localizedFormatDate(event.date)}
           </Text>
         </View>
       ))}

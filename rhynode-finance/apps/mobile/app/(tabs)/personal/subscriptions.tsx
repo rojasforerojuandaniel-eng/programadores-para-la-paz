@@ -1,5 +1,5 @@
 import { Receipt } from 'lucide-react-native';
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
@@ -22,7 +22,7 @@ export default function SubscriptionsScreen() {
         <View className="bg-card rounded-2xl p-4">
           <Text className="text-foreground font-medium">{sub.name}</Text>
           <Text className="text-muted-foreground text-sm capitalize">{sub.frequency.toLowerCase()}</Text>
-          <Text className="text-foreground text-lg font-bold mt-1">{formatCurrency(sub.amount, sub.currency, 'es')}</Text>
+          <Text className="text-foreground text-lg font-bold mt-1">{localizedFormatCurrency(sub.amount, sub.currency)}</Text>
         </View>
       )}
     />

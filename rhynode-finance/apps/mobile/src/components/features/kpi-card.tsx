@@ -1,4 +1,4 @@
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { Card } from '~/components/ui/card';
 import { Text } from '~/components/ui/text';
 
@@ -14,7 +14,7 @@ export function KpiCard({ label, amount, currency, variant = 'income' }: KpiCard
   return (
     <Card className="flex-1">
       <Text className="text-muted-foreground text-xs mb-1">{label}</Text>
-      <Text className={`text-lg font-bold ${colorClass}`}>{formatCurrency(amount, currency, 'es')}</Text>
+      <Text className={`text-lg font-bold ${colorClass}`}>{localizedFormatCurrency(amount, currency)}</Text>
     </Card>
   );
 }

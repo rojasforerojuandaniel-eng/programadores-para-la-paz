@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Target } from 'lucide-react-native';
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
@@ -43,7 +43,7 @@ export default function GoalsScreen() {
             <GoalCompletionHaptic complete={complete} />
             <Text className="text-foreground font-medium">{goal.name}</Text>
             <Text className="text-muted-foreground text-sm">
-              {formatCurrency(goal.currentAmount, goal.currency, 'es')} {t('common.of')} {formatCurrency(goal.targetAmount, goal.currency, 'es')}
+              {localizedFormatCurrency(goal.currentAmount, goal.currency)} {t('common.of')} {localizedFormatCurrency(goal.targetAmount, goal.currency)}
             </Text>
             <View className="h-2 bg-secondary rounded-full mt-2 overflow-hidden">
               <View className="h-full bg-success" style={{ width: `${percent(goal)}%` }} />

@@ -1,5 +1,5 @@
 import { Repeat } from 'lucide-react-native';
-import { formatCurrency } from '@rhynode/shared';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
@@ -22,7 +22,7 @@ export default function RecurringScreen() {
         <View className="bg-card rounded-2xl p-4">
           <Text className="text-foreground font-medium">{item.description}</Text>
           <Text className="text-muted-foreground text-sm capitalize">{item.frequency.toLowerCase()}</Text>
-          <Text className="text-foreground text-lg font-bold mt-1">{formatCurrency(item.amount, item.currency, 'es')}</Text>
+          <Text className="text-foreground text-lg font-bold mt-1">{localizedFormatCurrency(item.amount, item.currency)}</Text>
         </View>
       )}
     />
