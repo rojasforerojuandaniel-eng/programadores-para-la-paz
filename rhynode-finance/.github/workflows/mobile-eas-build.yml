@@ -1,0 +1,46 @@
+name: Mobile EAS Production Build
+
+on:
+  push:
+    branches:
+      - feat/mobile-production-ready
+  workflow_dispatch:
+
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   EXPO_TOKEN — Expo access token with permission to trigger EAS builds.
+#                Generate at https://expo.dev/settings/access-tokens.
+
+jobs:
+  eas-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+          packager: pnpm
+
+      - name: Build Android production
+        run: eas build --profile production --platform android --non-interactive
