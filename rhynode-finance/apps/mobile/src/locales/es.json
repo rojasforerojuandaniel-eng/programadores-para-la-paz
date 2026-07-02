@@ -70,6 +70,7 @@
       "useTotp": "Usar código de autenticador (TOTP)",
       "useBackupCode": "Usar código de respaldo",
       "totpAccessibilityLabel": "Código TOTP",
+      "totpPlaceholder": "000000",
       "backupCodePlaceholder": "Código de respaldo",
       "backupCodeHint": "Ingresa un código de respaldo",
       "totpHint": "Ingresa el código de 6 dígitos de tu autenticador"

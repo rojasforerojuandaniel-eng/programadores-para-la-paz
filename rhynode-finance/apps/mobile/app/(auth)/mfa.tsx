@@ -23,7 +23,7 @@ const COLORS = {
   muted: '#9ca3af',
   primary: colors.primary,
   border: '#26272b',
-  destructive: '#ef4444',
+  destructive: '#dc2626',
 };
 
 export default function MfaScreen() {
@@ -117,6 +117,7 @@ export default function MfaScreen() {
             isBackupCode={isBackupCode}
             editable={!loading}
             autoFocus
+            placeholder={t('auth.mfa.totpPlaceholder')}
           />
 
           <Pressable

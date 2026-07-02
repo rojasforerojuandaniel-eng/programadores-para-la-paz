@@ -70,6 +70,7 @@
       "useTotp": "Use authenticator code (TOTP)",
       "useBackupCode": "Use backup code",
       "totpAccessibilityLabel": "TOTP code",
+      "totpPlaceholder": "000000",
       "backupCodePlaceholder": "Backup code",
       "backupCodeHint": "Enter a backup code",
       "totpHint": "Enter the 6-digit code from your authenticator"

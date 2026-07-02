@@ -26,10 +26,13 @@ export function MfaCodeInput({
   autoFocus = false,
   keyboardType,
   accessibilityLabel,
-  placeholder = '000000',
+  placeholder,
   isBackupCode = false,
 }: MfaCodeInputProps) {
   const { t } = useTranslation();
+  const resolvedPlaceholder = isBackupCode
+    ? t('auth.mfa.backupCodePlaceholder')
+    : placeholder ?? t('auth.mfa.totpPlaceholder');
   return (
     <View style={styles.inputWrap}>
       <Shield color={COLORS.muted} size={20} style={styles.inputIcon} />
@@ -38,7 +41,7 @@ export function MfaCodeInput({
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmitEditing}
-        placeholder={isBackupCode ? t('auth.mfa.backupCodePlaceholder') : placeholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={COLORS.muted}
         keyboardType={keyboardType ?? (isBackupCode ? 'default' : 'number-pad')}
         returnKeyType="done"

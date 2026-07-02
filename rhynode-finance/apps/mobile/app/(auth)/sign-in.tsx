@@ -27,7 +27,7 @@ const COLORS = {
   muted: '#9ca3af',
   primary: colors.primary,
   border: '#26272b',
-  destructive: '#ef4444',
+  destructive: '#dc2626',
 };
 
 export default function SignInScreen() {
@@ -130,7 +130,7 @@ export default function SignInScreen() {
           <Text style={styles.subtitle}>{t('auth.signIn.subtitle')}</Text>
 
           {error ? (
-            <View style={styles.errorBox}>
+            <View style={styles.errorBox} accessibilityLiveRegion="assertive">
               <AlertCircle color={COLORS.destructive} size={18} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
