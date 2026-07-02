@@ -114,6 +114,11 @@ export async function markDeadLetter(id: string): Promise<void> {
   );
 }
 
+export async function resetOfflineQueue(): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM pending_mutations');
+}
+
 function generateId(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 9)}`;
 }

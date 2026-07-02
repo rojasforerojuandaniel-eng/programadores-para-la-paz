@@ -112,6 +112,15 @@ jest.mock('~/lib/api', () => ({
   }),
 }));
 
+jest.mock('~/lib/query-client', () => ({
+  queryClient: { clear: jest.fn(), invalidateQueries: jest.fn() },
+  createAsyncStoragePersister: jest.fn(),
+}));
+
+jest.mock('~/lib/offline-queue', () => ({
+  resetOfflineQueue: jest.fn(),
+}));
+
 jest.mock('~/hooks/use-toast', () => ({
   showToast: jest.fn(),
 }));

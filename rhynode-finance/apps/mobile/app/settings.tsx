@@ -15,6 +15,8 @@ import { ScrollView } from '~/components/ui/scroll-view';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { API_URL } from '~/lib/api';
+import { queryClient } from '~/lib/query-client';
+import { resetOfflineQueue } from '~/lib/offline-queue';
 import { authenticateBiometric, BIOMETRIC_ENABLED_KEY, isBiometricAvailable } from '~/lib/biometric';
 import { showToast } from '~/hooks/use-toast';
 import { PUSH_ENABLED_KEY, requestPushPermissionsAsync, registerPushTokenAsync } from '~/lib/notifications';
@@ -100,7 +102,25 @@ export default function SettingsScreen() {
     setSignOutError(null);
 
     try {
+      const token = await getToken();
+      if (token) {
+        try {
+          await fetch(`${API_URL}/api/mobile/push-token`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch {
+          // Best-effort push-token revocation; continue with sign-out.
+        }
+      }
+
       await signOut();
+
+      queryClient.clear();
+      await AsyncStorage.removeItem(PUSH_ENABLED_KEY);
+      await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
+      await resetOfflineQueue();
+
       router.replace('/(auth)/sign-in');
     } catch {
       setSignOutError(t('settings.signOutError'));
