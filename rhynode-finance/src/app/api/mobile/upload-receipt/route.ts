@@ -9,10 +9,27 @@ import { logger } from "@/lib/logger";
 
 const MAX_RECEIPT_SIZE = 4.5 * 1024 * 1024;
 
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
+
+function sanitizeFileName(name: string): string {
+  const base = name.replace(/\\/g, "/").split("/").pop() ?? "receipt";
+  return base.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
+}
+
 const uploadReceiptSchema = z.object({
-  file: z.instanceof(File).refine((f) => f.size > 0, {
-    message: "File must not be empty",
-  }),
+  file: z
+    .instanceof(File)
+    .refine((f) => f.size > 0, {
+      message: "File must not be empty",
+    })
+    .refine((f) => ALLOWED_MIME_TYPES.has(f.type), {
+      message: "Invalid file type. Allowed: JPEG, PNG, WebP, PDF",
+    }),
 });
 
 export const POST = withRateLimit(
@@ -42,10 +59,12 @@ export const POST = withRateLimit(
         );
       }
 
+      const safeName = sanitizeFileName(validatedFile.name);
       const blob = await put(
-        `receipts/${auth.profile.id}/${Date.now()}-${validatedFile.name}`,
+        `receipts/${auth.profile.id}/${Date.now()}-${safeName}`,
         validatedFile,
         {
+          // Public so the OCR/AI provider can fetch the image; path is scoped to the user.
           access: "public",
           token: process.env.BLOB_READ_WRITE_TOKEN,
         }
