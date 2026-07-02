@@ -113,6 +113,7 @@ export default function MfaScreen() {
               void onVerify();
             }}
             maxLength={isBackupCode ? 16 : 6}
+            keyboardType={isBackupCode ? 'default' : 'number-pad'}
             isBackupCode={isBackupCode}
             editable={!loading}
             autoFocus

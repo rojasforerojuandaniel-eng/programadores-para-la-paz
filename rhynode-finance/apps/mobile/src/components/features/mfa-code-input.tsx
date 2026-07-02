@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Shield } from 'lucide-react-native';
 import { colors } from '~/theme/colors';
 
-interface MfaCodeInputProps extends Pick<TextInputProps, 'value' | 'onChangeText' | 'onSubmitEditing' | 'editable' | 'maxLength' | 'autoFocus'> {
+interface MfaCodeInputProps extends Pick<TextInputProps, 'value' | 'onChangeText' | 'onSubmitEditing' | 'editable' | 'maxLength' | 'autoFocus' | 'keyboardType'> {
   accessibilityLabel?: string;
   placeholder?: string;
   isBackupCode?: boolean;
@@ -24,6 +24,7 @@ export function MfaCodeInput({
   editable = true,
   maxLength = 6,
   autoFocus = false,
+  keyboardType,
   accessibilityLabel,
   placeholder = '000000',
   isBackupCode = false,
@@ -39,7 +40,7 @@ export function MfaCodeInput({
         onSubmitEditing={onSubmitEditing}
         placeholder={isBackupCode ? t('auth.mfa.backupCodePlaceholder') : placeholder}
         placeholderTextColor={COLORS.muted}
-        keyboardType="number-pad"
+        keyboardType={keyboardType ?? (isBackupCode ? 'default' : 'number-pad')}
         returnKeyType="done"
         maxLength={maxLength}
         editable={editable}
