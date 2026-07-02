@@ -97,7 +97,8 @@
       "error": {
         "invalid": "PIN incorrecto",
         "mismatch": "Los PIN no coinciden. Inténtalo de nuevo.",
-        "verifyFailed": "No se pudo verificar el PIN. Intenta de nuevo."
+        "verifyFailed": "No se pudo verificar el PIN. Intenta de nuevo.",
+        "locked": "Demasiados intentos. Vuelve a intentarlo en {{minutes}} minutos."
       }
     },
     "required": "Se requiere autenticación",
@@ -389,7 +390,8 @@
     "pin": {
       "progress": "PIN de {{current}} de {{length}} dígitos",
       "key": "Tecla {{digit}}",
-      "deviceFallback": "Usar desbloqueo del dispositivo"
+      "deviceFallback": "Usar desbloqueo del dispositivo",
+      "deleteHint": "Borrar el último dígito ingresado"
     },
     "loading": "Cargando",
     "errorCodeLabel": "Código de error: {{detail}}",

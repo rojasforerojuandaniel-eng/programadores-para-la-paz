@@ -97,7 +97,8 @@
       "error": {
         "invalid": "Incorrect PIN",
         "mismatch": "PINs don't match. Try again.",
-        "verifyFailed": "Could not verify the PIN. Try again."
+        "verifyFailed": "Could not verify the PIN. Try again.",
+        "locked": "Too many attempts. Try again in {{minutes}} minutes."
       }
     },
     "required": "Authentication required",
@@ -389,7 +390,8 @@
     "pin": {
       "progress": "PIN {{current}} of {{length}} digits",
       "key": "Key {{digit}}",
-      "deviceFallback": "Use device unlock"
+      "deviceFallback": "Use device unlock",
+      "deleteHint": "Delete the last entered digit"
     },
     "loading": "Loading",
     "errorCodeLabel": "Error code: {{detail}}",
