@@ -21,7 +21,7 @@ export async function authenticateBiometric({
   disableDeviceCredentials = false,
 }: AuthenticateBiometricOptions = {}): Promise<boolean> {
   const available = await isBiometricAvailable();
-  if (!available) return true;
+  if (!available) return false;
 
   try {
     const result = await LocalAuthentication.authenticateAsync({
