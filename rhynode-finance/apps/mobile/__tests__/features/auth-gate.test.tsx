@@ -18,6 +18,11 @@ jest.mock('react-native', () => {
     TextInput: mockComponent('TextInput'),
     Pressable: mockComponent('Pressable'),
     ActivityIndicator: mockComponent('ActivityIndicator'),
+    AppState: {
+      currentState: 'active',
+      addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+      removeEventListener: jest.fn(),
+    },
     Platform: { OS: 'ios' },
     StyleSheet: {
       create: (styles: Record<string, unknown>) => styles,
@@ -37,6 +42,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(),
+  useUser: jest.fn(),
 }));
 
 jest.mock('expo-secure-store', () => ({
@@ -75,7 +81,7 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },
 }));
 
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
 import { authenticateBiometric, isBiometricAvailable } from '~/lib/biometric';
 import { AuthGate } from '../../src/components/features/auth-gate';
@@ -106,6 +112,11 @@ describe('AuthGate', () => {
     });
 
     (useSegments as jest.Mock).mockReturnValue(['(tabs)']);
+
+    (useUser as jest.Mock).mockReturnValue({
+      user: { id: 'user-123' },
+      isLoaded: true,
+    });
   });
 
   it('renders a splash loader while Clerk auth is loading', () => {
@@ -219,7 +230,7 @@ describe('AuthGate', () => {
     expect(findByText(tree.root, 'Protected content')).toBeTruthy();
   });
 
-  it('shows children immediately when no biometric hardware is enrolled', async () => {
+  it('falls back to PIN lock when biometric hardware is not available', async () => {
     (useAuth as jest.Mock).mockReturnValue({
       isLoaded: true,
       isSignedIn: true,
@@ -243,6 +254,14 @@ describe('AuthGate', () => {
 
     expect(authenticateBiometric).not.toHaveBeenCalled();
     expect(SplashScreen.hideAsync).toHaveBeenCalled();
+    expect(findByTestID(tree.root, 'pin-lock')).toBeTruthy();
+    expect(() => findByText(tree.root, 'Protected content')).toThrow();
+
+    const pinLock = findByTestID(tree.root, 'pin-lock');
+    await renderer.act(async () => {
+      pinLock.props.onPress();
+    });
+
     expect(findByText(tree.root, 'Protected content')).toBeTruthy();
   });
 });

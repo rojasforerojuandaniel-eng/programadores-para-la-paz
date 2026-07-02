@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, AppState, View } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +58,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
       const available = await isBiometricAvailable();
       if (!available) {
-        setBiometricPassed(true);
+        setShowPinLock(true);
         await SplashScreen.hideAsync();
         return;
       }
@@ -79,6 +79,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     void unlock();
   }, [isLoaded, isSignedIn, biometricPassed, showPinLock, t]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        setBiometricPassed(false);
+        setShowPinLock(false);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   if (!isLoaded) {
     return <SplashLoader />;
