@@ -52,7 +52,7 @@ export function createMockDb() {
     });
   }
 
-  async function runAsync(sql: string, params: unknown[]): Promise<void> {
+  async function runAsync(sql: string, params: unknown[] = []): Promise<void> {
     const insertMatch = sql.match(/INSERT INTO (\w+)/);
     if (insertMatch) {
       const tableName = insertMatch[1];
@@ -87,8 +87,12 @@ export function createMockDb() {
     const deleteMatch = sql.match(/DELETE FROM (\w+)/);
     if (deleteMatch) {
       const tableName = deleteMatch[1];
-      const id = params[0];
-      tables[tableName] = tables[tableName]?.filter((r) => r.id !== id) ?? [];
+      if (params.length === 0) {
+        tables[tableName] = [];
+      } else {
+        const id = params[0];
+        tables[tableName] = tables[tableName]?.filter((r) => r.id !== id) ?? [];
+      }
     }
   }
 

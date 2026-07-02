@@ -18,6 +18,8 @@ jest.mock('~/lib/query-client', () => ({
   createAsyncStoragePersister: jest.fn(),
 }));
 
+import { queryClient } from '~/lib/query-client';
+
 jest.mock('~/hooks/use-toast', () => ({
   showToast: jest.fn(),
   useToast: {
@@ -27,6 +29,7 @@ jest.mock('~/hooks/use-toast', () => ({
 
 import NetInfo from '@react-native-community/netinfo';
 import * as SQLite from 'expo-sqlite';
+import { z } from 'zod';
 import * as apiModule from '~/lib/api';
 import * as offlineQueue from '~/lib/offline-queue';
 import { showToast } from '~/hooks/use-toast';
@@ -197,5 +200,134 @@ describe('api offline behavior', () => {
       'Un cambio no pudo sincronizarse. Revisa la cola offline.',
       'error'
     );
+  });
+
+  it('syncPendingMutations throws AuthError when token refresh fails', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockRejectedValue(new Error('refresh failed'));
+
+    await expect(apiModule.syncPendingMutations(getToken)).rejects.toBeInstanceOf(
+      apiModule.AuthError
+    );
+  });
+
+  it('syncPendingMutations throws AuthError when no token is available', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockResolvedValue(null);
+
+    await expect(apiModule.syncPendingMutations(getToken)).rejects.toBeInstanceOf(
+      apiModule.AuthError
+    );
+  });
+
+  it('syncPendingMutations propagates auth errors from the server', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockResolvedValue('token');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: jest.fn().mockResolvedValue('Unauthorized'),
+    });
+
+    await offlineQueue.enqueueMutation('POST', '/api/personal/transactions', { amount: 100 });
+
+    await expect(apiModule.syncPendingMutations(getToken)).rejects.toBeInstanceOf(
+      apiModule.AuthError
+    );
+  });
+
+  it('syncPendingMutations sends form-data payloads with files', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockResolvedValue('token');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    await offlineQueue.enqueueMutation(
+      'POST',
+      '/api/mobile/upload-receipt',
+      {
+        __formData: true,
+        fields: [
+          { name: 'file', file: { uri: 'file://receipt.jpg', name: 'receipt.jpg', type: 'image/jpeg' } },
+        ],
+      },
+      { 'Content-Type': 'multipart/form-data' }
+    );
+
+    await apiModule.syncPendingMutations(getToken);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [, init] = global.fetch.mock.calls[0];
+    expect(init.body).toBeInstanceOf(FormData);
+  });
+
+  it('syncPendingMutations handles undefined payload', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockResolvedValue('token');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    await offlineQueue.enqueueMutation('POST', '/api/personal/transactions', undefined);
+
+    await apiModule.syncPendingMutations(getToken);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('syncPendingMutations invalidates queries after successful sync', async () => {
+    setOnline(true);
+    const getToken = jest.fn().mockResolvedValue('token');
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
+    });
+
+    await offlineQueue.enqueueMutation('POST', '/api/personal/transactions', { amount: 100 });
+
+    await apiModule.syncPendingMutations(getToken);
+
+    expect(queryClient.invalidateQueries).toHaveBeenCalled();
+  });
+
+  it('throws AuthError when the API client has no token', async () => {
+    setOnline(true);
+    const api = apiModule.createApiClient(undefined);
+
+    await expect(api.get('/api/health')).rejects.toBeInstanceOf(apiModule.AuthError);
+  });
+
+  it('throws SchemaError when response does not match the schema', async () => {
+    setOnline(true);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({ unexpected: true }),
+    });
+
+    const api = apiModule.createApiClient('token');
+    const schema = z.object({ required: z.string() });
+
+    await expect(api.get('/api/health', schema)).rejects.toBeInstanceOf(apiModule.SchemaError);
+  });
+
+  it('postFormData sends a real FormData body when online', async () => {
+    setOnline(true);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ok: true }),
+    });
+
+    const api = apiModule.createApiClient('token');
+    const fields = [{ name: 'file', file: { uri: 'file://receipt.jpg', name: 'receipt.jpg', type: 'image/jpeg' } }];
+
+    const result = await api.postFormData('/api/upload', fields);
+
+    expect(result).toEqual({ ok: true });
+    const [, init] = global.fetch.mock.calls[0];
+    expect(init.body).toBeInstanceOf(FormData);
   });
 });

@@ -40,6 +40,13 @@ describe('biometric', () => {
 
       await expect(isBiometricAvailable()).resolves.toBe(false);
     });
+
+    it('returns false when enrollment check throws', async () => {
+      (LocalAuthentication.hasHardwareAsync as jest.Mock).mockResolvedValue(true);
+      (LocalAuthentication.isEnrolledAsync as jest.Mock).mockRejectedValue(new Error('enrollment error'));
+
+      await expect(isBiometricAvailable()).resolves.toBe(false);
+    });
   });
 
   describe('authenticateBiometric', () => {

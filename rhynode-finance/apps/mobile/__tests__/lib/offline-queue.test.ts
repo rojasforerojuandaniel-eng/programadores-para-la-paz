@@ -75,4 +75,47 @@ describe('offline-queue', () => {
     const pending = await offlineQueue.getPendingMutations();
     expect(pending).toHaveLength(0);
   });
+
+  it('dequeueMutation returns null for unknown id', async () => {
+    const mutation = await offlineQueue.dequeueMutation('unknown-id');
+    expect(mutation).toBeNull();
+  });
+
+  it('stores null payload when undefined is passed', async () => {
+    const id = await offlineQueue.enqueueMutation('POST', '/api/test', undefined);
+
+    const all = await mockDb.getAllAsync<Row>('SELECT * FROM pending_mutations WHERE id = ?', [id]);
+    expect(all[0].payload).toBeNull();
+  });
+
+  it('getFailedMutations only returns failed_permanently mutations', async () => {
+    const id = await offlineQueue.enqueueMutation('POST', '/api/test', { amount: 100 });
+    await offlineQueue.markDeadLetter(id);
+
+    const failed = await offlineQueue.getFailedMutations();
+    expect(failed).toHaveLength(1);
+    expect(failed[0].status).toBe('failed_permanently');
+  });
+
+  it('retryMutation resets status and retries', async () => {
+    const id = await offlineQueue.enqueueMutation('POST', '/api/test', { amount: 100 });
+    await offlineQueue.markDeadLetter(id);
+    await offlineQueue.retryMutation(id);
+
+    const pending = await offlineQueue.getPendingMutations();
+    expect(pending).toHaveLength(1);
+    expect(Number(pending[0].retries)).toBe(0);
+    expect(pending[0].status).toBe('pending');
+  });
+
+  it('resetOfflineQueue removes all mutations', async () => {
+    await offlineQueue.enqueueMutation('POST', '/api/test', { amount: 100 });
+    await offlineQueue.enqueueMutation('PATCH', '/api/test', { amount: 200 });
+    await offlineQueue.markDeadLetter(await offlineQueue.enqueueMutation('DELETE', '/api/test', null));
+
+    await offlineQueue.resetOfflineQueue();
+
+    expect(await offlineQueue.getPendingMutations()).toHaveLength(0);
+    expect(await offlineQueue.getFailedMutations()).toHaveLength(0);
+  });
 });

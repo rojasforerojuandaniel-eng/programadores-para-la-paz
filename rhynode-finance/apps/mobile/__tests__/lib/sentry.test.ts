@@ -2,7 +2,7 @@ jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   captureException: jest.fn(),
   captureMessage: jest.fn(),
-  close: jest.fn(),
+  close: jest.fn().mockResolvedValue(undefined),
   wrap: (Component: unknown) => Component,
 }));
 
@@ -117,6 +117,112 @@ describe('Sentry helper', () => {
       jest.clearAllMocks();
       captureMessage('test message');
       expect(SecureStore.setItemAsync).not.toHaveBeenCalled();
+    });
+
+    it('closes Sentry when disabling after initialization', async () => {
+      setSentryEnabled(true);
+      await initSentryAsync();
+
+      setSentryEnabled(false);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(isSentryInitialized()).toBe(false);
+    });
+
+    it('reads the stored enabled value on module load', async () => {
+      jest.resetModules();
+      jest.doMock('expo-secure-store', () => ({
+        getItemAsync: jest.fn().mockResolvedValue('true'),
+        setItemAsync: jest.fn(),
+        deleteItemAsync: jest.fn(),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fresh = require('~/lib/sentry') as typeof import('~/lib/sentry');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(fresh.isSentryEnabled()).toBe(true);
+    });
+
+    it('falls back to disabled when SecureStore read fails on load', async () => {
+      jest.resetModules();
+      jest.doMock('expo-secure-store', () => ({
+        getItemAsync: jest.fn().mockRejectedValue(new Error('locked')),
+        setItemAsync: jest.fn(),
+        deleteItemAsync: jest.fn(),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fresh = require('~/lib/sentry') as typeof import('~/lib/sentry');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(fresh.isSentryEnabled()).toBe(false);
+    });
+
+    it('handles Sentry SDK without a close method', async () => {
+      jest.isolateModules(async () => {
+        jest.doMock('expo-secure-store', () => ({
+          getItemAsync: jest.fn().mockResolvedValue('true'),
+          setItemAsync: jest.fn(),
+          deleteItemAsync: jest.fn(),
+        }));
+
+        jest.doMock('@sentry/react-native', () => ({
+          init: jest.fn(),
+          captureException: jest.fn(),
+          captureMessage: jest.fn(),
+          close: undefined,
+          wrap: (Component: unknown) => Component,
+        }));
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fresh = require('~/lib/sentry') as typeof import('~/lib/sentry');
+        fresh.setSentryEnabled(true);
+        await fresh.initSentryAsync();
+        fresh.setSentryEnabled(false);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(fresh.isSentryInitialized()).toBe(false);
+      });
+    });
+
+    it('does not try to close when Sentry was never initialized', async () => {
+      setSentryEnabled(false);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(isSentryInitialized()).toBe(false);
+    });
+
+    it('initializes from SecureStore consent when no explicit cache is set', async () => {
+      jest.resetModules();
+      jest.doMock('expo-secure-store', () => ({
+        getItemAsync: jest.fn().mockResolvedValue('true'),
+        setItemAsync: jest.fn(),
+        deleteItemAsync: jest.fn(),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fresh = require('~/lib/sentry') as typeof import('~/lib/sentry');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      await fresh.initSentryAsync();
+      expect(fresh.isSentryInitialized()).toBe(true);
+    });
+
+    it('does not initialize when SecureStore consent is denied and no explicit cache', async () => {
+      jest.resetModules();
+      jest.doMock('expo-secure-store', () => ({
+        getItemAsync: jest.fn().mockResolvedValue('false'),
+        setItemAsync: jest.fn(),
+        deleteItemAsync: jest.fn(),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fresh = require('~/lib/sentry') as typeof import('~/lib/sentry');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      await fresh.initSentryAsync();
+      expect(fresh.isSentryInitialized()).toBe(false);
     });
   });
 });
