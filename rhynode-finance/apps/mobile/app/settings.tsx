@@ -19,7 +19,18 @@ import { queryClient } from '~/lib/query-client';
 import { resetOfflineQueue, getFailedMutations, retryMutation, clearMutation, type PendingMutation } from '~/lib/offline-queue';
 import { authenticateBiometric, BIOMETRIC_ENABLED_KEY, isBiometricAvailable } from '~/lib/biometric';
 import { showToast } from '~/hooks/use-toast';
-import { PUSH_ENABLED_KEY, requestPushPermissionsAsync, registerPushTokenAsync } from '~/lib/notifications';
+import {
+  setAnalyticsEnabled as setAnalyticsConsent,
+  isAnalyticsEnabled,
+} from '~/lib/analytics';
+import { setSentryEnabled as setSentryConsent } from '~/lib/sentry';
+import {
+  PUSH_ENABLED_KEY,
+  requestPushPermissionsAsync,
+  registerPushTokenAsync,
+  getPushConsentAsync,
+  setPushConsentAsync,
+} from '~/lib/notifications';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -30,6 +41,7 @@ export default function SettingsScreen() {
   const [signOutError, setSignOutError] = useState<string | null>(null);
 
   const [pushEnabled, setPushEnabled] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
@@ -39,13 +51,16 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const loadPreferences = async () => {
-      const [pushStored, biometricStored, available] = await Promise.all([
-        AsyncStorage.getItem(PUSH_ENABLED_KEY),
-        SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY),
-        isBiometricAvailable(),
-      ]);
+      const [pushStored, pushConsentStored, biometricStored, available] =
+        await Promise.all([
+          AsyncStorage.getItem(PUSH_ENABLED_KEY),
+          getPushConsentAsync(),
+          SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY),
+          isBiometricAvailable(),
+        ]);
 
-      setPushEnabled(pushStored === 'true');
+      setPushEnabled(pushStored === 'true' && pushConsentStored === 'granted');
+      setAnalyticsEnabled(isAnalyticsEnabled());
       setBiometricEnabled(biometricStored === 'true');
       setBiometricAvailable(available);
       setIsLoadingPreferences(false);
@@ -80,12 +95,20 @@ export default function SettingsScreen() {
 
       setPushEnabled(true);
       await AsyncStorage.setItem(PUSH_ENABLED_KEY, 'true');
+      await setPushConsentAsync('granted');
       await registerPushTokenAsync(getToken);
       return;
     }
 
     setPushEnabled(false);
     await AsyncStorage.setItem(PUSH_ENABLED_KEY, 'false');
+    await setPushConsentAsync('denied');
+  };
+
+  const handleAnalyticsToggle = async (value: boolean) => {
+    setAnalyticsConsent(value);
+    await setSentryConsent(value);
+    setAnalyticsEnabled(value);
   };
 
   const handleBiometricToggle = async (value: boolean) => {
@@ -220,12 +243,28 @@ export default function SettingsScreen() {
 
         <Card>
           <Text className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            {t('settings.notifications.title')}
+            {t('settings.privacy.title')}
           </Text>
           <SettingsRow
-            label={t('settings.notifications.push')}
-            description={t('settings.notifications.pushDescription')}
-            testID="push-toggle-row"
+            label={t('settings.privacy.analytics')}
+            description={t('settings.privacy.analyticsDescription')}
+            testID="analytics-toggle-row"
+          >
+            {isLoadingPreferences ? (
+              <ActivityIndicator color="#9ca3af" />
+            ) : (
+              <SettingsSwitch
+                value={analyticsEnabled}
+                onValueChange={handleAnalyticsToggle}
+                accessibilityLabel={t('settings.privacy.analytics')}
+              />
+            )}
+          </SettingsRow>
+          <View className="h-px bg-border" />
+          <SettingsRow
+            label={t('settings.privacy.pushConsent')}
+            description={t('settings.privacy.pushConsentDescription')}
+            testID="push-consent-toggle-row"
           >
             {isLoadingPreferences ? (
               <ActivityIndicator color="#9ca3af" />
@@ -233,7 +272,7 @@ export default function SettingsScreen() {
               <SettingsSwitch
                 value={pushEnabled}
                 onValueChange={handlePushToggle}
-                accessibilityLabel={t('settings.notifications.push')}
+                accessibilityLabel={t('settings.privacy.pushConsent')}
               />
             )}
           </SettingsRow>

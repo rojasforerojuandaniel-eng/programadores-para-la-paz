@@ -1,10 +1,28 @@
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import i18n from '~/lib/i18n';
 import { createApiClient } from '~/lib/api';
 import type { Router } from 'expo-router';
 
 export const PUSH_ENABLED_KEY = '@rhynode/push-enabled';
+export const PUSH_CONSENT_KEY = '@rhynode/consent-push';
+
+export type PushConsent = 'granted' | 'denied' | null;
+
+export async function getPushConsentAsync(): Promise<PushConsent> {
+  const value = await SecureStore.getItemAsync(PUSH_CONSENT_KEY);
+  if (value === 'granted' || value === 'denied') return value;
+  return null;
+}
+
+export async function setPushConsentAsync(value: PushConsent): Promise<void> {
+  if (value === null) {
+    await SecureStore.deleteItemAsync(PUSH_CONSENT_KEY);
+    return;
+  }
+  await SecureStore.setItemAsync(PUSH_CONSENT_KEY, value);
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -54,6 +72,9 @@ export async function registerPushTokenAsync(
 ): Promise<void> {
   const pushEnabled = await AsyncStorage.getItem(PUSH_ENABLED_KEY);
   if (pushEnabled !== 'true') return;
+
+  const consent = await getPushConsentAsync();
+  if (consent !== 'granted') return;
 
   const granted = await requestPushPermissionsAsync();
   if (!granted) return;
