@@ -389,6 +389,7 @@ export default function SettingsScreen() {
         </Card>
 
         <Button
+          testID="settings-sign-out"
           variant="destructive"
           onPress={handleSignOut}
           loading={isSigningOut}

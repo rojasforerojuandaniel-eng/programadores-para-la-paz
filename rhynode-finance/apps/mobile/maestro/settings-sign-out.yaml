@@ -1,0 +1,13 @@
+appId: com.rhynode.finance
+---
+- launchApp
+- tapOn:
+    id: "sign-in-submit"
+- tapOn: "Más"
+- tapOn:
+    id: "menu-settings"
+- scroll
+- tapOn:
+    id: "settings-sign-out"
+- tapOn: "Cerrar sesión"
+- assertVisible: "Entrar"

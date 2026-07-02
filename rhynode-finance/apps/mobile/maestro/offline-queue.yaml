@@ -1,15 +1,19 @@
 appId: com.rhynode.finance
 ---
 - launchApp
+- setAirplaneMode: true
 - tapOn:
     id: "sign-in-submit"
+- tapOn: "Agregar"
 - tapOn:
     id: "transaction-description"
-- inputText: "Hamburguesa"
+- inputText: "Café offline"
 - tapOn:
     id: "transaction-amount"
-- inputText: "25000"
+- inputText: "12000"
 - tapOn:
     id: "transaction-save"
+- assertVisible: "Sin conexión"
+- setAirplaneMode: false
 - tapOn: "Inicio"
 - assertVisible: "Resumen"

@@ -150,6 +150,7 @@ export function QuickAddForm({
       </View>
 
       <TextInput
+        testID="transaction-description"
         label={t('transactions.form.descriptionLabel')}
         placeholder={t('transactions.form.descriptionPlaceholder')}
         placeholderTextColor="#6b7280"
@@ -161,6 +162,7 @@ export function QuickAddForm({
       />
 
       <TextInput
+        testID="transaction-amount"
         ref={amountRef}
         label={t('transactions.form.amountLabel')}
         placeholder={t('transactions.form.amountPlaceholder')}
@@ -178,7 +180,7 @@ export function QuickAddForm({
 
       <CategoryPicker value={category} onChange={setCategory} />
 
-      <Button onPress={onSubmit} disabled={isPending || !description || !amount}>
+      <Button testID="transaction-save" onPress={onSubmit} disabled={isPending || !description || !amount}>
         <Text className="text-primary-foreground font-semibold">{isPending ? t('common.saving') : t('common.save')}</Text>
       </Button>
     </View>

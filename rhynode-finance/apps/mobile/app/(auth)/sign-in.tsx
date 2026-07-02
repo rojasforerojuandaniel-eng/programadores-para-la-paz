@@ -176,6 +176,7 @@ export default function SignInScreen() {
           />
 
           <Pressable
+            testID="sign-in-submit"
             accessibilityLabel={t('a11y.signIn.submit')}
             accessibilityRole="button"
             onPress={() => {

@@ -27,6 +27,9 @@ export default function MoreTab() {
           return (
             <Pressable
               key={item.route}
+              testID={`menu-${item.route.replace(/^\//, '').replace(/\//g, '-')}`}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
               onPress={() => router.push(item.route)}
               className="flex-row items-center bg-card rounded-2xl p-4 active:opacity-80"
             >

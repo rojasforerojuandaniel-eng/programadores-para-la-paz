@@ -1,0 +1,14 @@
+appId: com.rhynode.finance
+---
+- launchApp
+- tapOn:
+    id: "sign-in-submit"
+- tapOn: "Más"
+- tapOn:
+    id: "menu-advisor"
+- tapOn:
+    id: "advisor-input"
+- inputText: "¿Cómo voy este mes?"
+- tapOn:
+    id: "advisor-send"
+- assertVisible: "Asesor IA"

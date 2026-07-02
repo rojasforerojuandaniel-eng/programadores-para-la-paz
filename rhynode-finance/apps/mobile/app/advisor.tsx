@@ -72,6 +72,7 @@ export default function AdvisorScreen() {
 
         <View className="flex-row items-center gap-2">
           <TextInput
+            testID="advisor-input"
             label={t('advisor.inputLabel')}
             className="flex-1 bg-card text-foreground rounded-2xl px-4 py-3"
             placeholder={t('advisor.inputPlaceholder')}
@@ -82,10 +83,12 @@ export default function AdvisorScreen() {
             editable={!streaming}
           />
           <Button
+            testID="advisor-send"
             onPress={streaming ? cancel : onSend}
             disabled={!streaming && !input.trim()}
             className="h-12 w-12 p-0"
             variant={streaming ? 'destructive' : 'default'}
+            accessibilityLabel={streaming ? t('common.actions.cancel') : t('common.actions.send')}
           >
             <Text className={streaming ? 'text-destructive-foreground' : 'text-primary-foreground'}>
               {streaming ? '✕' : '↑'}
