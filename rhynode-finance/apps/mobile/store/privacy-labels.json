@@ -1,0 +1,235 @@
+{
+  "$schema": "https://developer.apple.com/help/app-store-connect/reference/specifying-your-apps-data-use",
+  "appName": "Rhynode Finance",
+  "bundleId": "com.rhynode.finance",
+  "privacyLabels": {
+    "contactInfo": {
+      "emailAddress": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality", "accountManagement", "developerCommunications"]
+      },
+      "name": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality", "accountManagement"]
+      },
+      "phoneNumber": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      }
+    },
+    "financialInfo": {
+      "paymentInfo": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "creditInfo": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "otherFinancialInfo": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality"],
+        "description": "User-entered accounts, transactions, budgets, debts, goals, subscriptions, invoices and tax-estimation data."
+      }
+    },
+    "location": {
+      "preciseLocation": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "coarseLocation": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      }
+    },
+    "sensitiveInfo": {
+      "collected": true,
+      "linkedToUser": true,
+      "usedForTracking": false,
+      "purposes": ["appFunctionality"],
+      "description": "Financial data related to the user's assets is treated as sensitive under Colombian law (Ley 1581 de 2012)."
+    },
+    "contacts": {
+      "collected": false,
+      "linkedToUser": false,
+      "usedForTracking": false,
+      "purposes": []
+    },
+    "userContent": {
+      "photos": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "videos": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "audio": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality"],
+        "description": "Voice input is processed on-device for quick transaction entry; audio is not stored or transmitted."
+      },
+      "customerSupport": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "otherUserContent": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      }
+    },
+    "browsingHistory": {
+      "collected": false,
+      "linkedToUser": false,
+      "usedForTracking": false,
+      "purposes": []
+    },
+    "searchHistory": {
+      "collected": false,
+      "linkedToUser": false,
+      "usedForTracking": false,
+      "purposes": []
+    },
+    "identifiers": {
+      "userID": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality", "accountManagement"],
+        "description": "Internal user identifier from Clerk authentication."
+      },
+      "deviceID": {
+        "collected": true,
+        "linkedToUser": true,
+        "usedForTracking": false,
+        "purposes": ["appFunctionality", "analytics"],
+        "description": "Push token and device identifiers used for push notifications and diagnostic logs."
+      }
+    },
+    "purchaseHistory": {
+      "collected": true,
+      "linkedToUser": true,
+      "usedForTracking": false,
+      "purposes": ["appFunctionality"],
+      "description": "Subscription status and in-app purchase records processed via Stripe."
+    },
+    "usageData": {
+      "productInteraction": {
+        "collected": true,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": ["analytics", "productPersonalization"],
+        "description": "Feature usage and interaction metrics to improve the app."
+      },
+      "advertisingData": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      },
+      "otherUsageData": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      }
+    },
+    "diagnostics": {
+      "crashData": {
+        "collected": true,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": ["analytics"],
+        "description": "Crash logs shared with Sentry for stability monitoring."
+      },
+      "performanceData": {
+        "collected": true,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": ["analytics"],
+        "description": "API latency and error rates monitored via Sentry and PostHog."
+      },
+      "otherDiagnosticData": {
+        "collected": false,
+        "linkedToUser": false,
+        "usedForTracking": false,
+        "purposes": []
+      }
+    },
+    "otherData": {
+      "collected": false,
+      "linkedToUser": false,
+      "usedForTracking": false,
+      "purposes": []
+    }
+  },
+  "thirdPartyServiceProviders": [
+    {
+      "name": "Clerk",
+      "purpose": "Authentication and identity management",
+      "dataTypes": ["emailAddress", "name", "userID"]
+    },
+    {
+      "name": "Vercel",
+      "purpose": "Application hosting and serverless compute",
+      "dataTypes": ["emailAddress", "userID", "usageData", "diagnostics"]
+    },
+    {
+      "name": "Neon",
+      "purpose": "PostgreSQL database hosting",
+      "dataTypes": ["emailAddress", "name", "userID", "otherFinancialInfo"]
+    },
+    {
+      "name": "Stripe",
+      "purpose": "Subscription payment processing",
+      "dataTypes": ["emailAddress", "purchaseHistory"]
+    },
+    {
+      "name": "Sentry",
+      "purpose": "Crash reporting and performance monitoring",
+      "dataTypes": ["crashData", "performanceData", "deviceID"]
+    },
+    {
+      "name": "PostHog",
+      "purpose": "Product analytics",
+      "dataTypes": ["usageData", "deviceID"]
+    },
+    {
+      "name": "Anthropic / Ollama",
+      "purpose": "AI advisor, OCR and financial summaries",
+      "dataTypes": ["otherFinancialInfo", "userContent"],
+      "note": "Open-ended queries only; common queries are resolved locally without invoking external AI."
+    }
+  ],
+  "notes": [
+    "This privacy label mapping is provisional and must be reviewed against the final App Store privacy questionnaire before launch.",
+    "Voice input is processed on-device and is not retained; mark audio accordingly if your questionnaire does not support on-device-only collection.",
+    "Financial data entered by the user is considered sensitive under Colombian data-protection law and is encrypted at rest."
+  ]
+}

@@ -7,5 +7,6 @@
   "contentRating": "Everyone",
   "contactEmail": "soporte@rhynode.com",
   "supportUrl": "https://rhynode-finance.vercel.app/support",
-  "privacyPolicyUrl": "https://rhynode-finance.vercel.app/privacy"
+  "privacyPolicyUrl": "https://rhynode-finance.vercel.app/privacy",
+  "termsUrl": "https://rhynode-finance.vercel.app/terms"
 }
