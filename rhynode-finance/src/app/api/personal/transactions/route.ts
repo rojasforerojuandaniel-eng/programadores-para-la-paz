@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -16,6 +17,14 @@ const createSchema = z.object({
   bankAccountId: z.string().optional(),
 });
 
+function parsePagination(request: Request): { cursor: string | null; limit: number } {
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const limitRaw = parseInt(url.searchParams.get("limit") ?? "25", 10);
+  const limit = Number.isNaN(limitRaw) ? 25 : Math.min(Math.max(1, limitRaw), 100);
+  return { cursor, limit };
+}
+
 export const GET = withRateLimit(
   async (request: Request) => {
     try {
@@ -24,18 +33,43 @@ export const GET = withRateLimit(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
+      const { cursor, limit } = parsePagination(request);
+
+      const baseWhere: Prisma.TransactionWhereInput = {
+        organizationId: auth.org.id,
+        scope: "PERSONAL",
+        userId: auth.profile.id,
+      };
+
+      let where: Prisma.TransactionWhereInput = baseWhere;
+      if (cursor) {
+        const cursorTx = await prisma.transaction.findUnique({
+          where: { id: cursor },
+        });
+        if (cursorTx) {
+          where = {
+            ...baseWhere,
+            OR: [
+              { date: { lt: cursorTx.date } },
+              { date: cursorTx.date, id: { lt: cursor } },
+            ],
+          };
+        }
+      }
+
       const transactions = await prisma.transaction.findMany({
-        where: {
-          organizationId: auth.org.id,
-          scope: "PERSONAL",
-          userId: auth.profile.id,
-        },
+        where,
         include: { account: true, bankAccount: true },
-        orderBy: { date: "desc" },
-        take: 100,
+        orderBy: [{ date: "desc" }, { id: "desc" }],
+        take: limit + 1,
       });
 
-      return NextResponse.json({ transactions });
+      const nextCursor = transactions.length > limit ? transactions[limit].id : null;
+
+      return NextResponse.json({
+        transactions: transactions.slice(0, limit),
+        nextCursor,
+      });
     } catch (error) {
       logger.error("Failed to fetch personal transactions", { error: error instanceof Error ? error.message : String(error) });
       return NextResponse.json({ error: "Failed to fetch transactions" }, { status: 500 });
