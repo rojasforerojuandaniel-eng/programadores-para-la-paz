@@ -48,12 +48,12 @@ export const updateTransactionResponseSchema = transactionDetailResponseSchema;
 export type UpdateTransactionResponse = z.infer<typeof updateTransactionResponseSchema>;
 
 export const createTransactionBodySchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE']).optional(),
+  type: z.enum(['INCOME', 'EXPENSE']),
   category: z.string().optional(),
   description: z.string().min(1).max(200),
   amount: z.number().positive(),
   currency: z.string().optional(),
-  date: z.string().optional(),
+  date: z.string().datetime().optional(),
   accountId: z.string().optional(),
   bankAccountId: z.string().optional(),
 });
