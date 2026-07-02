@@ -21,7 +21,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
 ) {
   return (
     <View className="gap-1">
-      <Text className="text-xs font-medium text-muted-foreground" accessibilityLabel={label}>
+      <Text className="text-xs font-medium text-muted-foreground">
         {label}
       </Text>
       <StyledTextInput

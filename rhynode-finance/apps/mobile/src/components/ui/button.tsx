@@ -54,12 +54,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const handlePress = (event: Parameters<NonNullable<PressableProps['onPress']>>[0]) => {
-    if (!disabled && !loading) {
-      void hapticImpact();
-    }
-    if (!loading) {
-      onPress?.(event);
-    }
+    if (disabled || loading) return;
+    void hapticImpact();
+    onPress?.(event);
   };
 
   return (
