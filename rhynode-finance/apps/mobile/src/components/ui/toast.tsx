@@ -3,6 +3,7 @@ import { AccessibilityInfo, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, MotiView } from '~/components/ui/moti-view';
 import { cn } from '~/lib/utils';
+import { useReducedMotion } from '~/hooks/use-reduced-motion';
 import { type ToastType, useToast } from '~/hooks/use-toast';
 
 const DISMISS_DELAY_MS = 4000;
@@ -16,6 +17,7 @@ const toastStyles: Record<ToastType, string> = {
 function ToastItem({ id, message, type }: { id: string; message: string; type: ToastType }) {
   const { t } = useTranslation();
   const dismiss = useToast((state) => state.dismiss);
+  const reducedMotion = useReducedMotion();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
   const remainingRef = useRef<number>(DISMISS_DELAY_MS);
@@ -63,17 +65,18 @@ function ToastItem({ id, message, type }: { id: string; message: string; type: T
   return (
     <MotiView
       className={cn(
-        'w-full rounded-2xl px-4 py-3 shadow-lg',
+        'w-full min-h-[48px] justify-center rounded-2xl px-4 py-3 shadow-lg',
         toastStyles[type]
       )}
       from={{ opacity: 0, translateY: -20, scale: 0.95 }}
       animate={{ opacity: 1, translateY: 0, scale: 1 }}
       exit={{ opacity: 0, translateX: 100 }}
-      transition={{ type: 'timing', duration: 200 }}
+      transition={reducedMotion ? { type: 'timing', duration: 0 } : { type: 'timing', duration: 200 }}
       accessibilityRole="alert"
       accessibilityLabel={message}
     >
       <Pressable
+        className="min-h-[48px] justify-center"
         onPress={() => dismiss(id)}
         onPressIn={pauseTimer}
         onPressOut={resumeTimer}
