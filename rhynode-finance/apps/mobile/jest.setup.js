@@ -8,4 +8,20 @@ jest.mock('expo-localization', () => ({
   getLocales: jest.fn(() => [{ languageCode: 'es', languageTag: 'es-CO', regionCode: 'CO' }]),
 }));
 
-require('~/lib/i18n');
+const mockI18n = require('i18next');
+const { initReactI18next } = require('react-i18next');
+const es = require('./src/locales/es.json');
+const en = require('./src/locales/en.json');
+
+void mockI18n.use(initReactI18next).init({
+  resources: {
+    es: { translation: es },
+    en: { translation: en },
+  },
+  lng: 'es',
+  fallbackLng: 'es',
+  interpolation: { escapeValue: false },
+  react: { useSuspense: false },
+});
+
+jest.doMock('~/lib/i18n', () => mockI18n);

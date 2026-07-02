@@ -51,7 +51,9 @@ import { showToast, useToast } from '~/hooks/use-toast';
 
 describe('ToastProvider', () => {
   afterEach(() => {
-    useToast.setState({ toasts: [], queue: [] });
+    renderer.act(() => {
+      useToast.setState({ toasts: [], queue: [] });
+    });
   });
 
   it('stacks visible toasts with increasing translateY offset and zIndex', () => {

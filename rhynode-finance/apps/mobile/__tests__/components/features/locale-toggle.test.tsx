@@ -34,16 +34,18 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-const mockSetItem = jest.fn(() => Promise.resolve());
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  setItem: mockSetItem,
-  getItem: jest.fn(() => Promise.resolve(null)),
-}));
-
-const mockChangeLanguage = jest.fn(() => Promise.resolve());
 jest.mock('~/lib/i18n', () => ({
   __esModule: true,
-  default: { language: 'es', changeLanguage: mockChangeLanguage },
+  default: {
+    language: 'es',
+    changeLanguage: jest.fn(() => Promise.resolve()),
+  },
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
 }));
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,7 +75,7 @@ describe('LocaleToggle', () => {
       englishButton.props.onPress();
     });
 
-    expect(mockSetItem).toHaveBeenCalledWith('@rhynode/locale', 'en');
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith('@rhynode/locale', 'en');
     expect(i18n.changeLanguage).toHaveBeenCalledWith('en');
   });
 });
