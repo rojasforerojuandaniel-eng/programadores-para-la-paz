@@ -33,8 +33,6 @@
     "expo-linking": "~7.1.7",
     "expo-local-authentication": "~16.0.5",
     "expo-localization": "~16.1.6",
-    "expo-modules-autolinking": "~2.1.15",
-    "expo-modules-core": "~2.5.0",
     "expo-notifications": "~0.31.0",
     "expo-router": "~5.1.11",
     "expo-secure-store": "~14.2.4",
@@ -46,6 +44,7 @@
     "moti": "^0.30.0",
     "nativewind": "^4.1.0",
     "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-hook-form": "^7.54.0",
     "react-i18next": "^15.0.0",
     "react-native": "0.79.6",
@@ -67,5 +66,21 @@
     "expo-build-properties": "^0.14.8",
     "jest-expo": "^53.0.14",
     "typescript": "~5.8.3"
+  },
+  "expo": {
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      },
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "@clerk/clerk-expo",
+          "@rhynode/shared",
+          "react-native-css-interop",
+          "clsx"
+        ],
+        "listUnknownPackages": false
+      }
+    }
   }
 }

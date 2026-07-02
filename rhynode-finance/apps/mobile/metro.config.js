@@ -9,20 +9,32 @@ config.projectRoot = __dirname;
 // Limit Metro workers to avoid saturating the available RAM.
 config.maxWorkers = 2;
 
-// pnpm uses symlinks in node_modules; Metro must follow them.
+// pnpm uses symlinks in node_modules; Metro must follow them so it can resolve
+// workspace packages and transitive dependencies in the virtual store.
 config.resolver.unstable_enableSymlinks = true;
+
+// Preserve Expo's default watch folders (workspace root node_modules + local
+// packages) and extend them with the monorepo root and pnpm store. The pnpm
+// store is watched so Metro can compute SHA-1 for files reached through
+// symlinks during native embed builds.
+config.watchFolders = [
+  ...(config.watchFolders || []),
+  path.resolve(__dirname, '../..'),
+  path.resolve(__dirname, '../../node_modules/.pnpm'),
+  path.resolve(__dirname, '../../packages/shared'),
+];
+
+// pnpm workspaces isolate packages in the root store, so point Metro at the
+// local and root node_modules directories.
 config.resolver.nodeModulesPaths = [
   path.resolve(__dirname, 'node_modules'),
   path.resolve(__dirname, '../../node_modules'),
 ];
 
-config.watchFolders = [
-  path.resolve(__dirname),
-  path.resolve(__dirname, '../../packages/shared'),
-];
-
 config.resolver.extraNodeModules = {
   '@rhynode/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+  react: path.resolve(__dirname, '../../node_modules/.pnpm/react@19.0.0/node_modules/react'),
+  'react-dom': path.resolve(__dirname, '../../node_modules/.pnpm/react-dom@19.0.0_react@19.0.0/node_modules/react-dom'),
 };
 
 // Prevent Metro from resolving the newer React 19.2.x used by the web apps in

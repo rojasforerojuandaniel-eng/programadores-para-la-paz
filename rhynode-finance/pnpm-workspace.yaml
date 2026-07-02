@@ -1,13 +1,25 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@prisma/engines'
-  - '@sentry/cli'
-  - '@swc/core'
-  - 'esbuild'
-  - 'prisma'
-  - 'sharp'
-  - 'unrs-resolver'
+
+overrides:
+  metro: ^0.82.0
+  metro-resolver: ^0.82.0
+  metro-config: ^0.82.0
+
+allowBuilds:
+  '@clerk/shared': true
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@sentry/cli': true
+  '@swc/core': true
+  browser-tabs-lock: true
+  bufferutil: true
+  core-js: true
+  esbuild: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+
 verifyDepsBeforeRun: false
