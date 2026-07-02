@@ -9,10 +9,6 @@ config.projectRoot = __dirname;
 // Limit Metro workers to avoid saturating the available RAM.
 config.maxWorkers = 2;
 
-// pnpm uses symlinks in node_modules; Metro must follow them so it can resolve
-// workspace packages and transitive dependencies in the virtual store.
-config.resolver.unstable_enableSymlinks = true;
-
 // Preserve Expo's default watch folders (workspace root node_modules + local
 // packages) and extend them with the monorepo root and pnpm store. The pnpm
 // store is watched so Metro can compute SHA-1 for files reached through
