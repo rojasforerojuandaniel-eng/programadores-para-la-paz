@@ -1,7 +1,7 @@
-const { getDefaultConfig } = require('expo/metro-config');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 const path = require('path');
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // Force Metro/project discovery to use apps/mobile as the root.
 config.projectRoot = __dirname;

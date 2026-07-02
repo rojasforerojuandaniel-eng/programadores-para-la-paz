@@ -50,6 +50,13 @@
     },
     "plugins": [
       [
+        "@sentry/react-native/expo",
+        {
+          "organization": "rhynode",
+          "project": "rhynode-finance-mobile"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
