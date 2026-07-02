@@ -10,6 +10,7 @@ const isPublicRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/api/webhooks/(.*)",
   "/api/health",
+  "/api/mobile/health",
   "/api/debug-dashboard",
   "/api/economic-indicators",
   "/api/payment-links/public/(.*)",
@@ -30,6 +31,7 @@ const isPublicRoute = createRouteMatcher([
 const isPublicApiRoute = createRouteMatcher([
   "/api/webhooks/(.*)",
   "/api/health",
+  "/api/mobile/health",
   "/api/debug-dashboard",
   "/api/economic-indicators",
   "/api/payment-links/public/(.*)",

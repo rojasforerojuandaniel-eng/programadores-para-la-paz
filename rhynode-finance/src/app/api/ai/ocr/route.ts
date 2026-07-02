@@ -1,4 +1,4 @@
-import { getUserProfile, clerkUserIdFromRequest } from "@/lib/auth";
+import { getUserProfileFromRequest, clerkUserIdFromRequest } from "@/lib/auth";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { createChatCompletionText, isAIConfigured } from "@/lib/ai-provider";
 import { z } from "zod";
@@ -29,13 +29,23 @@ function isOwnStorageUrl(url: string): boolean {
   }
 }
 
+function isOwnReceiptForUser(url: string, userId: string): boolean {
+  if (!isOwnStorageUrl(url)) return false;
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname.startsWith(`/receipts/${userId}/`);
+  } catch {
+    return false;
+  }
+}
+
 const ocrSchema = z.object({
   imageUrl: z.string().url().max(2_000),
 });
 
 export const POST = withRateLimit(
   async (request: Request) => {
-    const profile = await getUserProfile();
+    const profile = await getUserProfileFromRequest(request);
     if (!profile) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -60,6 +70,13 @@ export const POST = withRateLimit(
       return new Response(
         JSON.stringify({ error: "Invalid image URL" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!isOwnReceiptForUser(imageUrl, profile.id)) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }
 
