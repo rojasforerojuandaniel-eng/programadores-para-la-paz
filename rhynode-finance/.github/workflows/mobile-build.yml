@@ -1,0 +1,59 @@
+name: Mobile Build & Test
+
+on:
+  push:
+    branches:
+      - main
+      - feat/mobile-android-perfect-2026-06-30
+      - feat/mobile-production-ready
+  pull_request:
+    branches:
+      - main
+      - feat/mobile-production-ready
+  workflow_dispatch:
+
+# Required repository secrets / variables:
+#   None. This workflow uses only the checked-in lockfile and workspace scripts.
+#   If the mobile package later requires runtime secrets during tests, add them here.
+
+jobs:
+  mobile-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck mobile package
+        run: pnpm --filter @rhynode/mobile typecheck
+
+      - name: Test mobile package
+        run: pnpm --filter @rhynode/mobile test
+
+      - name: Detect lint script
+        id: lint-check
+        run: |
+          if jq -e '.scripts.lint' apps/mobile/package.json >/dev/null 2>&1; then
+            echo "has-lint=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-lint=false" >> "$GITHUB_OUTPUT"
+            echo "No lint script found in apps/mobile/package.json; skipping lint step."
+          fi
+
+      - name: Lint mobile package
+        if: steps.lint-check.outputs.has-lint == 'true'
+        run: pnpm --filter @rhynode/mobile lint
