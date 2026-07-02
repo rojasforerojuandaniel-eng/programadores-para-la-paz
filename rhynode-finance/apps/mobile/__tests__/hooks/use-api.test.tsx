@@ -19,6 +19,10 @@ jest.mock('@clerk/clerk-expo', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('react-i18next', () => ({
+  useTranslation: jest.fn(() => ({ t: (key: string) => key })),
+}));
+
 jest.mock('~/lib/offline-queue', () => ({
   clearMutation: jest.fn(),
   enqueueMutation: jest.fn(),
@@ -138,5 +142,29 @@ describe('useApi', () => {
     const { current: api } = renderUseApi();
 
     await expect(api.get('/api/protected')).rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('redirects and throws AuthError when getToken throws', async () => {
+    mockGetToken.mockRejectedValue(new Error('refresh failed'));
+    mockFetch(200, {});
+
+    const { current: api } = renderUseApi();
+
+    await expect(api.get('/api/protected')).rejects.toBeInstanceOf(AuthError);
+  });
+
+  it('supports POST, PATCH, DELETE and form-data methods', async () => {
+    mockFetch(200, { ok: true });
+
+    const { current: api } = renderUseApi();
+
+    await expect(api.post('/api/post', { a: 1 })).resolves.toEqual({ ok: true });
+    await expect(api.patch('/api/patch', { b: 2 })).resolves.toEqual({ ok: true });
+    await expect(api.delete('/api/delete')).resolves.toEqual({ ok: true });
+    await expect(
+      api.postFormData('/api/upload', [{ name: 'file', value: 'x' }])
+    ).resolves.toEqual({ ok: true });
+
+    expect(global.fetch).toHaveBeenCalledTimes(4);
   });
 });

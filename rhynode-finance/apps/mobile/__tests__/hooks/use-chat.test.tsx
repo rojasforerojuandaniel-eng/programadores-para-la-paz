@@ -41,6 +41,11 @@ function renderHook<T>(useHook: () => T) {
         tree.update(React.createElement(Wrapper));
       });
     },
+    unmount: () => {
+      renderer.act(() => {
+        tree.unmount();
+      });
+    },
   };
 }
 
@@ -269,4 +274,159 @@ describe('useChat', () => {
     expect(result.current.error).toBeNull();
     expect(result.current.messages).toHaveLength(3);
   });
+
+  it('falls back to plain text when SSE data is empty', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: jest.fn().mockResolvedValue('Respuesta directa'),
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.messages[1].content).toBe('Respuesta directa');
+  });
+
+  it('skips malformed SSE events', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: jest.fn().mockResolvedValue(
+        'data: malformed\n\ndata: {"text":"Válido"}\n\ndata: [DONE]'
+      ),
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.messages[1].content).toBe('Válido');
+  });
+
+  it('does nothing when text is empty or only whitespace', async () => {
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('   ');
+    });
+
+    expect(result.current.messages).toHaveLength(0);
+    expect(result.current.streaming).toBe(false);
+  });
+
+  it('does nothing when sending while already streaming', async () => {
+    global.fetch = jest.fn().mockImplementation(() => new Promise(() => {}));
+
+    const { result } = renderHook(() => useChat());
+
+    renderer.act(() => {
+      void result.current.send('Primero');
+    });
+
+    await waitFor(() => result.current.streaming === true);
+
+    await renderer.act(async () => {
+      await result.current.send('Segundo');
+    });
+
+    expect(result.current.messages).toHaveLength(1);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('sets auth error when getToken throws', async () => {
+    mockedUseAuth.mockReturnValue({
+      getToken: jest.fn().mockRejectedValue(new Error('refresh failed')),
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(result.current.error?.type).toBe('auth');
+  });
+
+  it('classifies generic network errors by message', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network fetch aborted'));
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.error?.type).toBe('network');
+  });
+
+  it('classifies unknown generic errors', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('Something weird'));
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.error?.type).toBe('unknown');
+  });
+
+  it('sets auth error on 401 response', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: jest.fn().mockResolvedValue('Unauthorized'),
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.error?.type).toBe('auth');
+  });
+
+  it('uses empty response detail when server body is empty', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      text: jest.fn().mockResolvedValue(''),
+    });
+
+    const { result } = renderHook(() => useChat());
+
+    await renderer.act(async () => {
+      await result.current.send('Hola');
+    });
+
+    expect(result.current.error?.type).toBe('server');
+    expect(result.current.error?.message).toContain('422');
+  });
+
+  it('aborts the active request on unmount', async () => {
+    global.fetch = jest.fn().mockImplementation(() => new Promise(() => {}));
+
+    const { result, unmount } = renderHook(() => useChat());
+
+    renderer.act(() => {
+      void result.current.send('Hola');
+    });
+
+    await waitFor(() => result.current.streaming === true);
+
+    renderer.act(() => {
+      unmount();
+    });
+
+    expect(result.current.streaming).toBe(true);
+  });
 });
+

@@ -91,4 +91,32 @@ describe('useReducedMotion', () => {
 
     expect(tree.root.findByType('Text').props.children).toBe('reduced');
   });
+
+  it('does not update state after unmounting', async () => {
+    let resolvePromise: (value: boolean) => void = () => {};
+    AccessibilityInfo.isReduceMotionEnabled.mockImplementation(
+      () => new Promise((resolve) => {
+        resolvePromise = resolve;
+      })
+    );
+
+    let tree: renderer.ReactTestRenderer | undefined;
+    renderer.act(() => {
+      tree = renderer.create(React.createElement(TestComponent));
+    });
+
+    if (!tree) throw new Error('Renderer tree was not created');
+
+    renderer.act(() => {
+      tree!.unmount();
+    });
+
+    await renderer.act(async () => {
+      resolvePromise(true);
+      await Promise.resolve();
+    });
+
+    // No error should be thrown and the stale component should not update.
+    expect(AccessibilityInfo.isReduceMotionEnabled).toHaveBeenCalled();
+  });
 });
