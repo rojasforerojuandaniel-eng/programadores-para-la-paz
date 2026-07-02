@@ -4,6 +4,17 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+// Reads a boolean config from an environment variable, a Gradle project
+// property, or falls back to the default. Allows disabling ProGuard etc.
+// for local debugging without editing this file.
+def getBooleanConfig(String name, boolean defaultValue) {
+    def env = System.getenv(name)
+    if (env != null) return env.toBoolean()
+    def prop = findProperty(name)
+    if (prop != null) return prop.toBoolean()
+    return defaultValue
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -67,9 +78,10 @@ react {
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Enable ProGuard on release builds by default. Override via the Gradle property
+ * `android.enableProguardInReleaseBuilds` or env var of the same name.
  */
-def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInReleaseBuilds') ?: false).toBoolean()
+def enableProguardInReleaseBuilds = getBooleanConfig('android.enableProguardInReleaseBuilds', true)
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -95,7 +107,7 @@ android {
         applicationId 'com.rhynode.finance'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 1000
         versionName "0.1.0"
     }
     signingConfigs {
@@ -128,10 +140,10 @@ android {
             // See scripts/generate-android-keystore.sh to create the production keystore.
             // Never commit the keystore or its passwords.
             signingConfig signingConfigs.release
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
+            shrinkResources getBooleanConfig('android.enableShrinkResourcesInReleaseBuilds', true)
             minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            crunchPngs getBooleanConfig('android.enablePngCrunchInReleaseBuilds', true)
         }
     }
     packagingOptions {
