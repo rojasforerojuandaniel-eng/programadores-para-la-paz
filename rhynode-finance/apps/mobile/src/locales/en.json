@@ -285,9 +285,27 @@
     "offlineSuccess": "Receipt saved; it will be processed when you reconnect.",
     "processError": "We couldn't read the receipt. Try again or enter it manually."
   },
+  "consent": {
+    "title": "Privacy and data",
+    "analytics": {
+      "label": "Analytics and diagnostics",
+      "description": "Share anonymous usage and crash data to help improve Rhynode."
+    },
+    "push": {
+      "label": "Push notifications",
+      "description": "Get alerts for payments, reminders and important updates."
+    }
+  },
   "settings": {
     "menuLabel": "Settings",
     "title": "Settings",
+    "privacy": {
+      "title": "Privacy",
+      "analytics": "Allow analytics",
+      "analyticsDescription": "Help us improve the app with anonymous usage data.",
+      "pushConsent": "Allow push notifications",
+      "pushConsentDescription": "Get alerts for payments and reminders."
+    },
     "account": {
       "title": "Account",
       "emailLabel": "Email"

@@ -105,9 +105,9 @@ export default function SettingsScreen() {
     await setPushConsentAsync('denied');
   };
 
-  const handleAnalyticsToggle = async (value: boolean) => {
+  const handleAnalyticsToggle = (value: boolean) => {
     setAnalyticsConsent(value);
-    await setSentryConsent(value);
+    setSentryConsent(value);
     setAnalyticsEnabled(value);
   };
 

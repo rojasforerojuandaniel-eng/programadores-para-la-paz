@@ -1,5 +1,6 @@
 import React from 'react';
 import { Linking, Switch, type ColorValue } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
@@ -94,15 +95,21 @@ export function LegalLink({
   url: string;
   errorMessage: string;
 }) {
-  const handlePress = () => {
-    void Linking.openURL(url).catch(() => {
-      showToast(errorMessage, 'error');
-    });
+  const handlePress = async () => {
+    try {
+      await WebBrowser.openBrowserAsync(url);
+    } catch {
+      try {
+        await Linking.openURL(url);
+      } catch {
+        showToast(errorMessage, 'error');
+      }
+    }
   };
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={() => void handlePress()}
       accessibilityRole="link"
       accessibilityLabel={label}
       className="flex-row items-center justify-between py-3 active:opacity-70"

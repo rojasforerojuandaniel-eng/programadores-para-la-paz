@@ -105,6 +105,10 @@ jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 'default' },
 }));
 
+jest.mock('expo-web-browser', () => ({
+  openBrowserAsync: jest.fn(() => Promise.resolve({ type: 'opened' })),
+}));
+
 jest.mock('~/lib/api', () => ({
   API_URL: 'https://rhynode-finance.vercel.app',
   createApiClient: () => ({
@@ -181,7 +185,7 @@ describe('SettingsScreen', () => {
     expect(() => findByText(instance, 'Correo electrónico')).not.toThrow();
     expect(() => findByText(instance, 'Tema')).not.toThrow();
     expect(() => findByText(instance, 'Idioma')).not.toThrow();
-    expect(() => findByText(instance, 'Notificaciones')).not.toThrow();
+    expect(() => findByText(instance, 'Privacidad')).not.toThrow();
     expect(() => findByText(instance, 'Biometría / PIN')).not.toThrow();
     expect(() => findByText(instance, 'Legal')).not.toThrow();
     expect(() => findByText(instance, 'Cerrar sesión')).not.toThrow();
@@ -201,7 +205,8 @@ describe('SettingsScreen', () => {
     expect(tree).toBeDefined();
     if (!tree) throw new Error('SettingsScreen render tree is undefined');
 
-    expect(() => tree.root.findByProps({ testID: 'push-toggle-row' })).not.toThrow();
+    expect(() => tree.root.findByProps({ testID: 'analytics-toggle-row' })).not.toThrow();
+    expect(() => tree.root.findByProps({ testID: 'push-consent-toggle-row' })).not.toThrow();
     expect(() => tree.root.findByProps({ testID: 'biometric-toggle-row' })).not.toThrow();
   });
 });

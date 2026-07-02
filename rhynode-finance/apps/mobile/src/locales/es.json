@@ -285,9 +285,27 @@
     "offlineSuccess": "Recibo guardado; se procesará al reconectar.",
     "processError": "No pudimos leer el recibo. Intenta de nuevo o ingresa manualmente."
   },
+  "consent": {
+    "title": "Privacidad y datos",
+    "analytics": {
+      "label": "Análisis y diagnóstico",
+      "description": "Comparte datos de uso y fallos de forma anónima para mejorar Rhynode."
+    },
+    "push": {
+      "label": "Notificaciones push",
+      "description": "Recibe alertas de pagos, recordatorios y actualizaciones importantes."
+    }
+  },
   "settings": {
     "menuLabel": "Ajustes",
     "title": "Ajustes",
+    "privacy": {
+      "title": "Privacidad",
+      "analytics": "Permitir analíticas",
+      "analyticsDescription": "Ayúdanos a mejorar la app con datos de uso anónimos.",
+      "pushConsent": "Permitir notificaciones push",
+      "pushConsentDescription": "Recibe alertas de pagos y recordatorios."
+    },
     "account": {
       "title": "Cuenta",
       "emailLabel": "Correo electrónico"

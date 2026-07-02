@@ -1,7 +1,12 @@
-import * as Sentry from '@sentry/react-native';
+import {
+  captureException as sentryCaptureException,
+  captureMessage as sentryCaptureMessage,
+  init as sentryInit,
+} from '@sentry/react-native';
 import * as SecureStore from 'expo-secure-store';
+import { CONSENT_SENTRY_KEY } from './consent';
 
-export const SENTRY_ENABLED_KEY = '@rhynode/consent-analytics';
+export const SENTRY_ENABLED_KEY = CONSENT_SENTRY_KEY;
 
 let isInitialized = false;
 let sentryEnabledCache: boolean | null = null;
@@ -33,14 +38,12 @@ export async function initSentryAsync(): Promise<void> {
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
   if (!dsn) return;
 
-  // Honor any explicit in-memory toggle; otherwise read the persisted value so
-  // the first launch after granting consent initializes Sentry correctly.
   const enabled = sentryCacheExplicitlySet
     ? sentryEnabledCache === true
     : (await SecureStore.getItemAsync(SENTRY_ENABLED_KEY)) === 'true';
   if (!enabled) return;
 
-  Sentry.init({
+  sentryInit({
     dsn,
     debug: __DEV__,
     enableNative: true,
@@ -60,12 +63,12 @@ export function setSentryEnabled(enabled: boolean): void {
 
 export function captureException(error: unknown): void {
   if (!isInitialized) return;
-  Sentry.captureException(error);
+  sentryCaptureException(error);
 }
 
 export function captureMessage(message: string): void {
   if (!isInitialized) return;
-  Sentry.captureMessage(message);
+  sentryCaptureMessage(message);
 }
 
 async function closeSentryAsync(): Promise<void> {
