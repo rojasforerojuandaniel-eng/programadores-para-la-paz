@@ -93,6 +93,13 @@ export async function getPendingMutations(): Promise<PendingMutation[]> {
   );
 }
 
+export async function getFailedMutations(): Promise<PendingMutation[]> {
+  const db = await getDatabase();
+  return db.getAllAsync<PendingMutation>(
+    "SELECT * FROM pending_mutations WHERE status = 'failed_permanently' ORDER BY created_at DESC"
+  );
+}
+
 export async function incrementRetry(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
@@ -110,6 +117,14 @@ export async function markDeadLetter(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
     "UPDATE pending_mutations SET status = 'failed_permanently' WHERE id = ?",
+    [id]
+  );
+}
+
+export async function retryMutation(id: string): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
+    "UPDATE pending_mutations SET status = 'pending', retries = 0 WHERE id = ?",
     [id]
   );
 }

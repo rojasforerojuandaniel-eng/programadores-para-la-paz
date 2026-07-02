@@ -316,6 +316,16 @@
       "privacy": "Política de privacidad",
       "terms": "Términos de servicio"
     },
+    "offlineQueue": {
+      "title": "Cola offline",
+      "expand": "Mostrar cambios fallidos",
+      "collapse": "Ocultar cambios fallidos",
+      "empty": "Sin cambios fallidos",
+      "retry": "Reintentar",
+      "delete": "Borrar",
+      "cleared": "Borrado",
+      "retrySuccess": "Puesto en cola para reintentar"
+    },
     "signOutTitle": "Cerrar sesión",
     "signOutMessage": "¿Estás seguro de que quieres salir?",
     "signOutConfirm": "Cerrar sesión",
@@ -339,6 +349,7 @@
     "schemaValidation": "La validación de la respuesta falló",
     "generic": "Algo salió mal. Inténtalo de nuevo.",
     "syncFailed": "Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.",
+    "syncFailedQueue": "Un cambio no pudo sincronizarse. Revisa la cola offline.",
     "requestFailed": "La solicitud falló",
     "offline": {
       "message": "Sin conexión a internet. Algunos cambios están pendientes."

@@ -316,6 +316,16 @@
       "privacy": "Privacy policy",
       "terms": "Terms of service"
     },
+    "offlineQueue": {
+      "title": "Offline queue",
+      "expand": "Show failed changes",
+      "collapse": "Hide failed changes",
+      "empty": "No failed changes",
+      "retry": "Retry",
+      "delete": "Delete",
+      "cleared": "Cleared",
+      "retrySuccess": "Queued for retry"
+    },
     "signOutTitle": "Sign out",
     "signOutMessage": "Are you sure you want to sign out?",
     "signOutConfirm": "Sign out",
@@ -339,6 +349,7 @@
     "schemaValidation": "Response validation failed",
     "generic": "Something went wrong. Try again.",
     "syncFailed": "Some changes couldn't sync. Check the error log.",
+    "syncFailedQueue": "A change couldn't sync. Check the offline queue.",
     "requestFailed": "Request failed",
     "offline": {
       "message": "No internet connection. Some changes are pending."

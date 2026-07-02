@@ -14,9 +14,9 @@ import { Pressable } from '~/components/ui/pressable';
 import { ScrollView } from '~/components/ui/scroll-view';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
-import { API_URL } from '~/lib/api';
+import { API_URL, syncPendingMutations } from '~/lib/api';
 import { queryClient } from '~/lib/query-client';
-import { resetOfflineQueue } from '~/lib/offline-queue';
+import { resetOfflineQueue, getFailedMutations, retryMutation, clearMutation, type PendingMutation } from '~/lib/offline-queue';
 import { authenticateBiometric, BIOMETRIC_ENABLED_KEY, isBiometricAvailable } from '~/lib/biometric';
 import { showToast } from '~/hooks/use-toast';
 import { PUSH_ENABLED_KEY, requestPushPermissionsAsync, registerPushTokenAsync } from '~/lib/notifications';
@@ -33,6 +33,9 @@ export default function SettingsScreen() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [offlineQueueExpanded, setOfflineQueueExpanded] = useState(false);
+  const [failedMutations, setFailedMutations] = useState<PendingMutation[]>([]);
+  const [isLoadingQueue, setIsLoadingQueue] = useState(false);
 
   useEffect(() => {
     const loadPreferences = async () => {
@@ -50,6 +53,22 @@ export default function SettingsScreen() {
 
     void loadPreferences();
   }, []);
+
+  useEffect(() => {
+    if (!offlineQueueExpanded) return;
+
+    const loadFailed = async () => {
+      setIsLoadingQueue(true);
+      try {
+        const mutations = await getFailedMutations();
+        setFailedMutations(mutations);
+      } finally {
+        setIsLoadingQueue(false);
+      }
+    };
+
+    void loadFailed();
+  }, [offlineQueueExpanded]);
 
   const handlePushToggle = async (value: boolean) => {
     if (value) {
@@ -132,6 +151,23 @@ export default function SettingsScreen() {
   const email = user?.primaryEmailAddress?.emailAddress ?? '';
   const privacyUrl = `${API_URL}/privacy`;
   const termsUrl = `${API_URL}/terms`;
+
+  const handleRetryMutation = async (id: string) => {
+    await retryMutation(id);
+    setFailedMutations((prev) => prev.filter((m) => m.id !== id));
+    showToast(t('settings.offlineQueue.retrySuccess'), 'success');
+    try {
+      await syncPendingMutations(getToken);
+    } catch {
+      // syncPendingMutations already surfaces relevant auth errors via toast.
+    }
+  };
+
+  const handleDeleteMutation = async (id: string) => {
+    await clearMutation(id);
+    setFailedMutations((prev) => prev.filter((m) => m.id !== id));
+    showToast(t('settings.offlineQueue.cleared'), 'info');
+  };
 
   return (
     <ScrollView className="flex-1 bg-background">
@@ -229,6 +265,72 @@ export default function SettingsScreen() {
             </SettingsRow>
           </Card>
         )}
+
+        <Card>
+          <Pressable
+            onPress={() => setOfflineQueueExpanded((v) => !v)}
+            accessibilityRole="button"
+            accessibilityLabel={offlineQueueExpanded ? t('settings.offlineQueue.collapse') : t('settings.offlineQueue.expand')}
+            accessibilityState={{ expanded: offlineQueueExpanded }}
+            className="flex-row items-center justify-between py-1"
+          >
+            <Text className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('settings.offlineQueue.title')}
+            </Text>
+            <Text className="text-lg text-muted-foreground">
+              {offlineQueueExpanded ? '▲' : '▼'}
+            </Text>
+          </Pressable>
+
+          {offlineQueueExpanded && (
+            <View className="mt-3 gap-3">
+              {isLoadingQueue ? (
+                <ActivityIndicator color="#9ca3af" />
+              ) : failedMutations.length === 0 ? (
+                <Text className="text-sm text-muted-foreground">{t('settings.offlineQueue.empty')}</Text>
+              ) : (
+                failedMutations.map((mutation) => {
+                  const payloadPreview = mutation.payload
+                    ? `${mutation.method} ${mutation.endpoint}`
+                    : `${mutation.method} ${mutation.endpoint}`;
+                  return (
+                    <View
+                      key={mutation.id}
+                      className="gap-2 py-2 border-b border-border last:border-b-0"
+                    >
+                      <Text className="text-sm text-foreground" numberOfLines={1}>
+                        {payloadPreview}
+                      </Text>
+                      <Text className="text-xs text-muted-foreground">
+                        {mutation.retries} {t('common.retry')?.toLowerCase() ?? 'retry'}
+                      </Text>
+                      <View className="flex-row gap-2 mt-1">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onPress={() => handleRetryMutation(mutation.id)}
+                          className="flex-1"
+                          accessibilityLabel={t('settings.offlineQueue.retry')}
+                        >
+                          <Text className="text-foreground font-medium">{t('settings.offlineQueue.retry')}</Text>
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onPress={() => handleDeleteMutation(mutation.id)}
+                          className="flex-1"
+                          accessibilityLabel={t('settings.offlineQueue.delete')}
+                        >
+                          <Text className="text-destructive-foreground font-medium">{t('settings.offlineQueue.delete')}</Text>
+                        </Button>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </View>
+          )}
+        </Card>
 
         <Card>
           <Text className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">

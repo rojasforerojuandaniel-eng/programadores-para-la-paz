@@ -171,7 +171,7 @@ describe('api offline behavior', () => {
     expect(allRows[0].status).toBe('failed_permanently');
     expect(allRows[0].retries).toBeGreaterThanOrEqual(3);
     expect(showToast).toHaveBeenCalledWith(
-      'Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.',
+      'Un cambio no pudo sincronizarse. Revisa la cola offline.',
       'error'
     );
   });
@@ -194,7 +194,7 @@ describe('api offline behavior', () => {
     const pending = await offlineQueue.getPendingMutations();
     expect(pending).toHaveLength(0);
     expect(showToast).toHaveBeenCalledWith(
-      'Algunos cambios no pudieron sincronizarse. Revisa el registro de errores.',
+      'Un cambio no pudo sincronizarse. Revisa la cola offline.',
       'error'
     );
   });

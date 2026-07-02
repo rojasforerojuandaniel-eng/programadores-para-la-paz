@@ -257,7 +257,7 @@ export async function syncPendingMutations(
   for (const mutation of mutations) {
     if (mutation.retries >= MAX_RETRIES) {
       await markDeadLetter(mutation.id);
-      showToast(i18n.t('errors.syncFailed'), 'error');
+      showToast(i18n.t('errors.syncFailedQueue'), 'error');
       continue;
     }
 
@@ -307,7 +307,7 @@ export async function syncPendingMutations(
 
       if (nextRetry >= MAX_RETRIES) {
         await markDeadLetter(mutation.id);
-        showToast(i18n.t('errors.syncFailed'), 'error');
+        showToast(i18n.t('errors.syncFailedQueue'), 'error');
       }
     }
   }
