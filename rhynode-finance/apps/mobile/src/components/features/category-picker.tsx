@@ -117,6 +117,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
               onPress={() => setOpen(false)}
               style={styles.closeButton}
               accessibilityLabel={t('common.close')}
+              accessibilityRole="button"
             >
               <X size={24} color="#9ca3af" strokeWidth={1.5} />
             </Pressable>
@@ -147,6 +148,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
                       value === category && styles.chipSelected,
                     ]}
                     accessibilityLabel={category}
+                    accessibilityRole="button"
                     accessibilityState={{ selected: value === category }}
                   >
                     <Text
@@ -175,6 +177,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
                   value === item && styles.listRowSelected,
                 ]}
                 accessibilityLabel={item}
+                accessibilityRole="button"
                 accessibilityState={{ selected: value === item }}
               >
                 <Text
@@ -217,13 +220,19 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   closeButton: {
-    padding: 8,
+    minWidth: 48,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chip: {
     backgroundColor: '#26272b',
     borderRadius: 9999,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipSelected: {
     backgroundColor: colors.primary,
@@ -233,6 +242,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
+    minHeight: 48,
+    justifyContent: 'center',
   },
   listRowSelected: {
     backgroundColor: colors.primary,

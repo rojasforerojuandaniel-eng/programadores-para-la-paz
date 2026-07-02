@@ -15,6 +15,9 @@ export function HealthScoreRing({ score }: HealthScoreRingProps) {
     <Card className="items-center justify-center">
       <View
         className="rounded-full items-center justify-center"
+        accessibilityRole="progressbar"
+        accessibilityLabel={t('dashboard.healthScore.label')}
+        accessibilityValue={{ min: 0, max: 100, now: score }}
         style={{
           width: 120,
           height: 120,
