@@ -77,6 +77,11 @@
     <fields>;
 }
 
+# Sentry
+-keep class io.sentry.** { *; }
+-keep class io.sentry.android.** { *; }
+-dontwarn io.sentry.**
+
 # Remove verbose logging in release.
 -assumenosideeffects class android.util.Log {
     public static int v(...);

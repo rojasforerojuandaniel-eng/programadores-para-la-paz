@@ -28,3 +28,6 @@ ios/build/
 
 # Built APKs
 *.apk
+
+# Vendor directory used for pnpm workarounds (not source code)
+vendor/
