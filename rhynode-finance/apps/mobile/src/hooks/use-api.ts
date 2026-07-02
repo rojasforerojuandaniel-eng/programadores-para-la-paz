@@ -18,7 +18,7 @@ export function useApi(): ApiClient {
         token = await getToken();
       } catch (error) {
         router.replace('/(auth)/sign-in');
-        throw new AuthError(t('auth.tokenRefreshFailed'), error);
+        throw new AuthError(t('auth.tokenRefreshFailed'), { cause: error });
       }
 
       if (!token) {

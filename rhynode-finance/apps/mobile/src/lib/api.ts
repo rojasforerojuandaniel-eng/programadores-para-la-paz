@@ -56,12 +56,17 @@ export class OfflineError extends Error {
 }
 
 export class AuthError extends Error {
+  readonly cause?: unknown;
+  readonly shouldSignOut: boolean;
+
   constructor(
     message: string,
-    public readonly cause?: unknown
+    options: { cause?: unknown; shouldSignOut?: boolean } = {}
   ) {
     super(message);
     this.name = 'AuthError';
+    this.cause = options.cause;
+    this.shouldSignOut = options.shouldSignOut ?? false;
   }
 }
 
@@ -188,6 +193,9 @@ async function request<T>(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    if (response.status === 401 || response.status === 403) {
+      throw new AuthError(text || i18n.t('auth.sessionExpired'), { shouldSignOut: true });
+    }
     throw new ApiError(text || i18n.t('errors.generic'), response.status);
   }
 
@@ -212,6 +220,10 @@ export function createApiClient(token?: string | null) {
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 
+export function isAuthError(error: unknown): error is AuthError {
+  return error instanceof AuthError;
+}
+
 const MAX_RETRIES = 3;
 
 function parseStoredHeaders(headers: string | null): Record<string, string> {
@@ -232,7 +244,7 @@ export async function syncPendingMutations(
   try {
     token = await getToken();
   } catch (error) {
-    throw new AuthError(i18n.t('auth.tokenRefreshFailed'), error);
+    throw new AuthError(i18n.t('auth.tokenRefreshFailed'), { cause: error });
   }
 
   if (!token) {
@@ -280,12 +292,16 @@ export async function syncPendingMutations(
 
       if (!response.ok) {
         const text = await response.text().catch(() => '');
+        if (response.status === 401 || response.status === 403) {
+          throw new AuthError(text || i18n.t('auth.sessionExpired'), { shouldSignOut: true });
+        }
         throw new Error(text || i18n.t('errors.requestFailed'));
       }
 
       await clearMutation(mutation.id);
       hasSuccess = true;
-    } catch {
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
       const nextRetry = mutation.retries + 1;
       await incrementRetry(mutation.id);
 
