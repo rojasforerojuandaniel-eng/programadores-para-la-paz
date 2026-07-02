@@ -19,6 +19,10 @@ interface ToastStore {
 }
 
 let idCounter = 0;
+let lastMessage = '';
+let lastType: ToastType = 'info';
+let lastTime = 0;
+const DEDUP_MS = 500;
 
 function createToast(message: string, type: ToastType): Toast {
   idCounter += 1;
@@ -30,6 +34,15 @@ export const useToast = create<ToastStore>((set, get) => ({
   toasts: [],
   queue: [],
   show: (message, type = 'info') => {
+    const now = Date.now();
+    if (message === lastMessage && type === lastType && now - lastTime < DEDUP_MS) {
+      return;
+    }
+
+    lastMessage = message;
+    lastType = type;
+    lastTime = now;
+
     const toast = createToast(message, type);
 
     set((state) => {

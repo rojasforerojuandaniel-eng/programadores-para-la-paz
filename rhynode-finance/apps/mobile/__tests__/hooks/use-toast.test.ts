@@ -92,4 +92,14 @@ describe('useToast', () => {
     const ids = useToast.getState().toasts.map((toast) => toast.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it('deduplicates identical messages within 500ms', () => {
+    showToast('Duplicate', 'info');
+    showToast('Duplicate', 'info');
+    showToast('Duplicate', 'error');
+
+    const state = useToast.getState();
+    expect(state.toasts).toHaveLength(2);
+    expect(state.queue).toHaveLength(0);
+  });
 });

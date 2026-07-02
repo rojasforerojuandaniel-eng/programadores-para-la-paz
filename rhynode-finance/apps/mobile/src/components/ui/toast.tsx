@@ -14,10 +14,11 @@ const toastStyles: Record<ToastType, string> = {
   info: 'bg-secondary',
 };
 
-function ToastItem({ id, message, type }: { id: string; message: string; type: ToastType }) {
+function ToastItem({ id, message, type, index }: { id: string; message: string; type: ToastType; index: number }) {
   const { t } = useTranslation();
   const dismiss = useToast((state) => state.dismiss);
   const reducedMotion = useReducedMotion();
+  const baseY = index * 8;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTimeRef = useRef<number>(0);
   const remainingRef = useRef<number>(DISMISS_DELAY_MS);
@@ -68,8 +69,9 @@ function ToastItem({ id, message, type }: { id: string; message: string; type: T
         'w-full min-h-[48px] justify-center rounded-2xl px-4 py-3 shadow-lg',
         toastStyles[type]
       )}
-      from={{ opacity: 0, translateY: -20, scale: 0.95 }}
-      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+      style={{ zIndex: 50 + index }}
+      from={{ opacity: 0, translateY: baseY - 20, scale: 0.95 }}
+      animate={{ opacity: 1, translateY: baseY, scale: 1 }}
       exit={{ opacity: 0, translateX: 100 }}
       transition={reducedMotion ? { type: 'timing', duration: 0 } : { type: 'timing', duration: 200 }}
       accessibilityRole="alert"
@@ -97,12 +99,13 @@ export function ToastProvider() {
       pointerEvents="box-none"
     >
       <AnimatePresence>
-        {toasts.map((toast) => (
+        {toasts.map((toast, index) => (
           <ToastItem
             key={toast.id}
             id={toast.id}
             message={toast.message}
             type={toast.type}
+            index={index}
           />
         ))}
       </AnimatePresence>
