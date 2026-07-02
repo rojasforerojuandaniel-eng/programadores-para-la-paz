@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { clerkUserIdFromRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 const validTypes = new Set([
@@ -14,6 +15,13 @@ const validTypes = new Set([
   "calendar",
   "categories",
 ]);
+
+function parsePagination(searchParams: URLSearchParams) {
+  const rawLimit = searchParams.get("limit");
+  const limit = Math.min(100, Math.max(1, Number(rawLimit) || 50));
+  const cursor = searchParams.get("cursor");
+  return { limit, cursor };
+}
 
 export const GET = withRateLimit(
   async (request: Request) => {
@@ -29,6 +37,15 @@ export const GET = withRateLimit(
         return NextResponse.json({ error: "Invalid type" }, { status: 400 });
       }
 
+      const { limit, cursor } = parsePagination(searchParams);
+      const cursorClause: { cursor?: { id: string }; skip?: number; take: number } = {
+        take: limit,
+      };
+      if (cursor) {
+        cursorClause.cursor = { id: cursor };
+        cursorClause.skip = 1;
+      }
+
       const { profile, org } = auth;
 
       switch (type) {
@@ -36,6 +53,7 @@ export const GET = withRateLimit(
           const accounts = await prisma.account.findMany({
             where: { userId: profile.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ accounts });
         }
@@ -44,6 +62,7 @@ export const GET = withRateLimit(
             where: { userId: profile.id },
             include: { category: true },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ budgets });
         }
@@ -51,6 +70,7 @@ export const GET = withRateLimit(
           const goals = await prisma.goal.findMany({
             where: { userId: profile.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ goals });
         }
@@ -58,6 +78,7 @@ export const GET = withRateLimit(
           const debts = await prisma.debt.findMany({
             where: { userId: profile.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ debts });
         }
@@ -65,6 +86,7 @@ export const GET = withRateLimit(
           const recurring = await prisma.recurringTransaction.findMany({
             where: { userId: profile.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ recurring });
         }
@@ -72,6 +94,7 @@ export const GET = withRateLimit(
           const subscriptions = await prisma.detectedSubscription.findMany({
             where: { userId: profile.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ subscriptions });
         }
@@ -81,9 +104,9 @@ export const GET = withRateLimit(
           end.setMonth(end.getMonth() + 2);
 
           const [debts, goals, recurring] = await Promise.all([
-            prisma.debt.findMany({ where: { userId: profile.id, dueDate: { gte: start, lte: end } } }),
-            prisma.goal.findMany({ where: { userId: profile.id, deadline: { gte: start, lte: end } } }),
-            prisma.recurringTransaction.findMany({ where: { userId: profile.id } }),
+            prisma.debt.findMany({ where: { userId: profile.id, dueDate: { gte: start, lte: end } }, orderBy: { createdAt: "desc" }, ...cursorClause }),
+            prisma.goal.findMany({ where: { userId: profile.id, deadline: { gte: start, lte: end } }, orderBy: { createdAt: "desc" }, ...cursorClause }),
+            prisma.recurringTransaction.findMany({ where: { userId: profile.id }, orderBy: { createdAt: "desc" }, ...cursorClause }),
           ]);
 
           return NextResponse.json({ debts, goals, recurring });
@@ -92,6 +115,7 @@ export const GET = withRateLimit(
           const categories = await prisma.category.findMany({
             where: { userId: profile.id },
             orderBy: { name: "asc" },
+            ...cursorClause,
           });
           return NextResponse.json({ categories });
         }
@@ -103,5 +127,10 @@ export const GET = withRateLimit(
       return NextResponse.json({ error: "Failed to load personal data" }, { status: 500 });
     }
   },
-  { key: "mobile-personal-data", maxRequests: 60, windowMs: 60000 }
+  {
+    key: "mobile-personal-data",
+    maxRequests: 60,
+    windowMs: 60000,
+    identifier: clerkUserIdFromRequest,
+  }
 );

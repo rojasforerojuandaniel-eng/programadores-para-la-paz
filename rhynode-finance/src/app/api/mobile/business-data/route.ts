@@ -2,9 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
 import { withRateLimit } from "@/lib/with-rate-limit";
+import { clerkUserIdFromRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 const validTypes = new Set(["invoices", "clients", "projects"]);
+
+function parsePagination(searchParams: URLSearchParams) {
+  const rawLimit = searchParams.get("limit");
+  const limit = Math.min(100, Math.max(1, Number(rawLimit) || 50));
+  const cursor = searchParams.get("cursor");
+  return { limit, cursor };
+}
 
 export const GET = withRateLimit(
   async (request: Request) => {
@@ -20,6 +28,15 @@ export const GET = withRateLimit(
         return NextResponse.json({ error: "Invalid type" }, { status: 400 });
       }
 
+      const { limit, cursor } = parsePagination(searchParams);
+      const cursorClause: { cursor?: { id: string }; skip?: number; take: number } = {
+        take: limit,
+      };
+      if (cursor) {
+        cursorClause.cursor = { id: cursor };
+        cursorClause.skip = 1;
+      }
+
       const { org } = auth;
 
       switch (type) {
@@ -27,7 +44,7 @@ export const GET = withRateLimit(
           const invoices = await prisma.invoice.findMany({
             where: { organizationId: org.id },
             orderBy: { createdAt: "desc" },
-            take: 50,
+            ...cursorClause,
           });
           return NextResponse.json({ invoices });
         }
@@ -35,6 +52,7 @@ export const GET = withRateLimit(
           const clients = await prisma.client.findMany({
             where: { organizationId: org.id },
             orderBy: { name: "asc" },
+            ...cursorClause,
           });
           return NextResponse.json({ clients });
         }
@@ -42,6 +60,7 @@ export const GET = withRateLimit(
           const projects = await prisma.project.findMany({
             where: { organizationId: org.id },
             orderBy: { createdAt: "desc" },
+            ...cursorClause,
           });
           return NextResponse.json({ projects });
         }
@@ -53,5 +72,10 @@ export const GET = withRateLimit(
       return NextResponse.json({ error: "Failed to load business data" }, { status: 500 });
     }
   },
-  { key: "mobile-business-data", maxRequests: 60, windowMs: 60000 }
+  {
+    key: "mobile-business-data",
+    maxRequests: 60,
+    windowMs: 60000,
+    identifier: clerkUserIdFromRequest,
+  }
 );
