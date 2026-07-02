@@ -21,6 +21,17 @@ The real `.env` file is **never committed**. Only `.env.example` (this template)
 | `EXPO_PUBLIC_POSTHOG_KEY` | Product analytics key | PostHog → Project settings | EAS dashboard / `eas.json` |
 | `EXPO_PUBLIC_POSTHOG_HOST` | PostHog ingestion host | `https://us.i.posthog.com` (default) or `https://eu.i.posthog.com` | EAS dashboard / `eas.json` |
 
+## Web Push / VAPID (production backend)
+
+Push notifications for the mobile app use Expo push tokens, but the backend also supports web push subscriptions via the `web-push` library. The following VAPID keys are required for web push to work and must be configured in **Vercel production** (and in `apps/mobile/.env` only if you run the backend locally):
+
+| Variable | What it does | Where to get it | Where to configure |
+|---|---|---|---|
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public VAPID key shared with browsers/clients | Generate a VAPID key pair (e.g. `npx web-push generate-vapid-keys`) | Vercel production environment variables |
+| `VAPID_PRIVATE_KEY` | Private VAPID key used by `src/lib/notifications.ts` to sign web push requests | Same generated pair, keep secret | Vercel production environment variables (encrypted) |
+
+The backend reads these keys at runtime in `src/lib/notifications.ts` and calls `webpush.setVapidDetails(...)`. If they are missing, web push notifications will fail silently on the server.
+
 ## Build-time behavior
 
 `EXPO_PUBLIC_*` variables are baked into the JavaScript bundle at build time. Changing them requires a new native build (APK/AAB) via EAS, not just an OTA update.
