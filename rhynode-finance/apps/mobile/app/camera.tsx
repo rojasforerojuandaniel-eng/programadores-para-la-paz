@@ -8,7 +8,7 @@ import { Pressable } from '~/components/ui/pressable';
 import { useAuth } from '@clerk/clerk-expo';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
-import { createApiClient, OfflineError, safeJson } from '~/lib/api';
+import { API_URL, createApiClient, OfflineError, safeJson } from '~/lib/api';
 import { showToast } from '~/hooks/use-toast';
 import { ocrResultSchema, uploadReceiptResponseSchema } from '~/schemas/dashboard';
 import { compressImage } from '~/lib/image-compress';
@@ -70,7 +70,7 @@ export default function CameraScreen() {
         uploadReceiptResponseSchema
       );
 
-      const ocrRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL ?? 'https://rhynode-finance.vercel.app'}/api/ai/ocr`, {
+      const ocrRes = await fetch(`${API_URL}/api/ai/ocr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ imageUrl: url }),
