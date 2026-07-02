@@ -9,6 +9,48 @@ Checklist manual de flujo crítico para validar una build antes de release. Ejec
 - Cuenta de prueba con credenciales válidas.
 - Permisos de cámara concedidos (para escanear recibo).
 
+## APK release local listo para instalar
+
+La build release firmada está lista en:
+
+```
+rhynode-finance/apps/mobile/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+```
+
+También disponible como copia de fácil acceso:
+
+```
+rhynode-finance/apps/mobile/app-release-arm64.apk
+```
+
+### Instalar en Android físico
+
+1. Conectar el teléfono por USB con **depuración USB habilitada**.
+2. Ejecutar:
+   ```bash
+   cd rhynode-finance/apps/mobile
+   adb install android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+   ```
+3. Alternativa sin adb: copiar el APK al teléfono y abrirlo con un gestor de archivos (puede requerir "Instalar apps de fuentes desconocidas").
+
+### Variantes disponibles
+
+| APK | Arquitectura | Tamaño aprox. |
+|-----|--------------|---------------|
+| `app-arm64-v8a-release.apk` | ARM 64-bit (la mayoría de Androids modernos) | ~35 MB |
+| `app-armeabi-v7a-release.apk` | ARM 32-bit | ~28 MB |
+| `app-x86_64-release.apk` | Emuladores x86_64 | ~36 MB |
+
+### Firma
+
+El APK está firmado con el keystore de producción `rhynode-release.keystore`. Las credenciales se guardan en:
+
+```
+rhynode-finance/apps/mobile/android/app/rhynode-release.credentials.properties
+```
+
+(archivo gitignored, nunca versionar).
+
 ## Flujo crítico
 
 | Paso | Acción | Resultado esperado |

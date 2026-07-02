@@ -25,6 +25,7 @@ ios/build/
 # Android signing keystores and credentials (never commit)
 *.keystore
 *.jks
+*.credentials.properties
 
 # Built APKs
 *.apk
