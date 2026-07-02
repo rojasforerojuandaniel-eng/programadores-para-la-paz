@@ -27,6 +27,6 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-native/js-polyfills|expo|@expo|nativewind|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|class-variance-authority|clsx|tailwind-merge)/)',
+    'node_modules/(?!.pnpm/)',
   ],
 };

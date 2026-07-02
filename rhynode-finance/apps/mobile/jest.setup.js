@@ -8,6 +8,39 @@ jest.mock('expo-localization', () => ({
   getLocales: jest.fn(() => [{ languageCode: 'es', languageTag: 'es-CO', regionCode: 'CO' }]),
 }));
 
+jest.mock('expo/virtual/env.js', () => ({
+  env: process.env,
+}));
+
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(() => Promise.resolve(null)),
+  setItemAsync: jest.fn(() => Promise.resolve()),
+  deleteItemAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('expo-web-browser', () => ({
+  __esModule: true,
+  openBrowserAsync: jest.fn(() => Promise.resolve({ type: 'dismiss' })),
+  maybeCompleteAuthSession: jest.fn(),
+  dismissBrowser: jest.fn(() => Promise.resolve({ type: 'dismiss' })),
+  WebBrowserResultType: { DISMISS: 'dismiss', LOCKED: 'locked', OPENED: 'opened', CANCEL: 'cancel' },
+}));
+
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  wrap: (Component) => Component,
+}));
+
+jest.mock('posthog-react-native', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    capture: jest.fn(),
+    optOut: jest.fn(),
+  })),
+}));
+
 const mockI18n = require('i18next');
 const { initReactI18next } = require('react-i18next');
 const es = require('./src/locales/es.json');
