@@ -179,7 +179,11 @@
         }
       },
       "calendar": {
-        "title": "Calendario"
+        "title": "Calendario",
+        "empty": {
+          "title": "No hay eventos próximos",
+          "subtitle": "Agrega deudas o metas con fecha para verlos aquí."
+        }
       }
     },
     "projectsTitle": "Proyectos",

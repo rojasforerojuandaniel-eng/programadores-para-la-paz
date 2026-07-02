@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'expo-router';
 import { Target } from 'lucide-react-native';
-import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
@@ -8,6 +8,7 @@ import { View } from '~/components/ui/view';
 import { hapticNotification } from '~/lib/haptics';
 import { usePersonalData } from '~/hooks/use-personal-data';
 import { Goal } from '~/schemas/personal-data';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 
 function GoalCompletionHaptic({ complete }: { complete: boolean }) {
   const triggered = useRef(false);
@@ -24,7 +25,8 @@ function GoalCompletionHaptic({ complete }: { complete: boolean }) {
 
 export default function GoalsScreen() {
   const { t } = useTranslation();
-  const { data, isLoading } = usePersonalData('goals');
+  const router = useRouter();
+  const { data, isLoading, isError, error, refetch } = usePersonalData('goals');
 
   const percent = (g: Goal) => Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
 
@@ -33,9 +35,13 @@ export default function GoalsScreen() {
       title={t('dashboard.personal.goals.title')}
       items={data?.goals}
       isLoading={isLoading}
+      isError={isError}
+      error={error}
+      refetch={refetch}
       emptyIcon={Target}
       emptyTitle={t('dashboard.personal.goals.empty.title')}
       emptySubtitle={t('dashboard.personal.goals.empty.subtitle')}
+      action={{ label: t('common.actions.addTransaction'), onPress: () => router.push('/(tabs)/add') }}
       renderItem={(goal) => {
         const complete = percent(goal) >= 100;
         return (

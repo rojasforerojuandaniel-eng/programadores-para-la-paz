@@ -1,15 +1,17 @@
+import { useRouter } from 'expo-router';
 import { PiggyBank } from 'lucide-react-native';
-import { localizedFormatCurrency } from '~/lib/i18n-locale';
 import { useTranslation } from 'react-i18next';
 import { PersonalList } from '~/components/features/personal-list';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { usePersonalData } from '~/hooks/use-personal-data';
 import { Budget } from '~/schemas/personal-data';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 
 export default function BudgetsScreen() {
   const { t } = useTranslation();
-  const { data, isLoading } = usePersonalData('budgets');
+  const router = useRouter();
+  const { data, isLoading, isError, error, refetch } = usePersonalData('budgets');
 
   const percent = (b: Budget) => Math.min(100, Math.round((b.spent / b.amount) * 100));
 
@@ -18,9 +20,13 @@ export default function BudgetsScreen() {
       title={t('dashboard.personal.budgets.title')}
       items={data?.budgets}
       isLoading={isLoading}
+      isError={isError}
+      error={error}
+      refetch={refetch}
       emptyIcon={PiggyBank}
       emptyTitle={t('dashboard.personal.budgets.empty.title')}
       emptySubtitle={t('dashboard.personal.budgets.empty.subtitle')}
+      action={{ label: t('common.actions.addTransaction'), onPress: () => router.push('/(tabs)/add') }}
       renderItem={(budget) => (
         <View className="bg-card rounded-2xl p-4">
           <Text className="text-foreground font-medium">{budget.name}</Text>

@@ -179,7 +179,11 @@
         }
       },
       "calendar": {
-        "title": "Calendar"
+        "title": "Calendar",
+        "empty": {
+          "title": "No upcoming events",
+          "subtitle": "Add debts or goals with a due date to see them here."
+        }
       }
     },
     "projectsTitle": "Projects",

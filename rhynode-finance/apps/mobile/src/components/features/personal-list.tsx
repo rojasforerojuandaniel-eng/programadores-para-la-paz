@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { AnimatedListItem } from '~/components/ui/animated-list-item';
 import { EmptyState } from '~/components/ui/empty-state';
+import { ErrorState } from '~/components/ui/error-state';
 import { Pressable } from '~/components/ui/pressable';
 import { ScrollView } from '~/components/ui/scroll-view';
 import { Skeleton, SkeletonGroup } from '~/components/ui/skeleton';
@@ -13,9 +14,13 @@ interface PersonalListProps<T> {
   title: string;
   items?: T[];
   isLoading: boolean;
+  isError?: boolean;
+  error?: Error | null | unknown;
+  refetch?: () => void;
   emptyIcon: LucideIcon;
   emptyTitle: string;
   emptySubtitle?: string;
+  action?: { label: string; onPress: () => void };
   renderItem: (item: T, index: number) => React.ReactNode;
 }
 
@@ -23,9 +28,13 @@ export function PersonalList<T>({
   title,
   items,
   isLoading,
+  isError,
+  error,
+  refetch,
   emptyIcon,
   emptyTitle,
   emptySubtitle,
+  action,
   renderItem,
 }: PersonalListProps<T>) {
   const { t } = useTranslation();
@@ -44,8 +53,10 @@ export function PersonalList<T>({
           <Skeleton variant="card" className="h-24" />
           <Skeleton variant="card" className="h-24" />
         </SkeletonGroup>
+      ) : isError ? (
+        <ErrorState message={t('errors.loadFailed')} onRetry={refetch} error={error} />
       ) : items?.length === 0 ? (
-        <EmptyState icon={emptyIcon} title={emptyTitle} subtitle={emptySubtitle} />
+        <EmptyState icon={emptyIcon} title={emptyTitle} subtitle={emptySubtitle} action={action} />
       ) : (
         items?.map((item, index) => (
           <AnimatedListItem key={index} index={index}>
