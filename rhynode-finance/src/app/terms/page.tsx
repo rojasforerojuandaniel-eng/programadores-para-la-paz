@@ -72,7 +72,7 @@ function TermsEs() {
         <CardContent className="space-y-6 p-6 text-sm leading-relaxed text-muted-foreground">
           <Section title="1. Las partes">
             <p>
-              Rhynode es operado por <strong>[Razón social del responsable — completar]</strong>,
+              Rhynode es operado por <strong>Rhynode Tecnología Financiera SAS [completar razón social oficial]</strong>,
               NIT <strong>[NIT — completar]</strong>, domiciliado en Colombia (en adelante,
               «Rhynode»). Al registrarte y usar la plataforma, celebras un contrato con
               Rhynode en tu condición de «Usuario».
@@ -244,7 +244,7 @@ function TermsEn() {
         <CardContent className="space-y-6 p-6 text-sm leading-relaxed text-muted-foreground">
           <Section title="1. The parties">
             <p>
-              Rhynode is operated by <strong>[Legal name of the controller — to be completed]</strong>,
+              Rhynode is operated by <strong>Rhynode Tecnología Financiera SAS [complete official legal name]</strong>,
               NIT <strong>[NIT — to be completed]</strong>, domiciled in Colombia
               (hereinafter, “Rhynode”). By registering and using the platform, you enter
               into a contract with Rhynode in your capacity as a “User”.

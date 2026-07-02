@@ -79,7 +79,7 @@ function PrivacyEs() {
           <Section title="1. Responsable del tratamiento">
             <p>
               El responsable del tratamiento de los datos personales es{" "}
-              <strong>[Razón social del responsable — completar]</strong>, con NIT{" "}
+              <strong>Rhynode Tecnología Financiera SAS [completar razón social oficial]</strong>, con NIT{" "}
               <strong>[NIT — completar]</strong>, domiciliado en Colombia, en adelante
               «Rhynode». Para efectos del tratamiento actúa también como encargado de
               los datos que administra en nombre de sus usuarios.
@@ -259,7 +259,7 @@ function PrivacyEn() {
           <Section title="1. Data controller">
             <p>
               The controller of personal data processing is{" "}
-              <strong>[Legal name of the controller — to be completed]</strong>, with NIT{" "}
+              <strong>Rhynode Tecnología Financiera SAS [complete official legal name]</strong>, with NIT{" "}
               <strong>[NIT — to be completed]</strong>, domiciled in Colombia, hereinafter
               “Rhynode”. For processing purposes, it also acts as processor of the data it
               manages on behalf of its users.
