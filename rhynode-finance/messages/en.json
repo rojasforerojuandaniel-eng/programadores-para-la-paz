@@ -3309,7 +3309,16 @@
     "trustHecho": "Built for Colombia",
     "trustDian": "Ready for DIAN invoicing",
     "trustEncryption": "Data encryption",
-    "trustBanks": "Connect your Colombian banks"
+    "trustBanks": "Connect your Colombian banks",
+    "dashboard": {
+      "totalBalance": "Total balance",
+      "thisMonth": "this month",
+      "income": "Income",
+      "expense": "Expense",
+      "invoicePaid": "Invoice paid",
+      "aiAlert": "AI alert",
+      "overspend": "High spend detected"
+    }
   },
   "trustBadges": {
     "encryption": "AES-256 encryption",

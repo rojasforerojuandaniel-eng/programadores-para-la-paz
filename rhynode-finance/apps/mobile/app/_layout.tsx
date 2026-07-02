@@ -1,6 +1,7 @@
 import '../global.css';
 import '~/lib/i18n';
 import { useEffect, useRef } from 'react';
+import * as Sentry from '@sentry/react-native';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -12,12 +13,14 @@ import { syncPendingMutations } from '~/lib/api';
 import { createAsyncStoragePersister, queryClient } from '~/lib/query-client';
 import { ThemeProvider, useTheme } from '~/lib/theme';
 import {
+  getPushConsentAsync,
   registerPushTokenAsync,
   setupNotificationListeners,
 } from '~/lib/notifications';
 import { useNetworkListener, useNetworkStore } from '~/hooks/use-network';
 import { ToastProvider } from '~/components/ui/toast';
 import { OfflineBanner } from '~/components/features/offline-banner';
+import { initSentryAsync } from '~/lib/sentry';
 import { useTranslation } from 'react-i18next';
 
 const persister = createAsyncStoragePersister();
@@ -32,6 +35,9 @@ function PushNotificationsSetup() {
     let cleanup: (() => void) | undefined;
 
     const init = async () => {
+      const pushConsent = await getPushConsentAsync();
+      if (pushConsent !== 'granted') return;
+
       await registerPushTokenAsync(getToken);
       cleanup = setupNotificationListeners(router);
     };
@@ -100,7 +106,11 @@ function MissingClerkKeyScreen() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
+  useEffect(() => {
+    void initSentryAsync();
+  }, []);
+
   if (!CLERK_PUBLISHABLE_KEY) {
     return <MissingClerkKeyScreen />;
   }
@@ -132,3 +142,5 @@ export default function RootLayout() {
     </ClerkProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

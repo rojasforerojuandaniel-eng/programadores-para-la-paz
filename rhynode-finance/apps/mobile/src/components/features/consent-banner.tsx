@@ -12,6 +12,7 @@ import {
   getConsentAsync,
   setConsentAsync,
 } from '~/lib/consent';
+import { setSentryEnabled } from '~/lib/sentry';
 import {
   getPushConsentAsync,
   PUSH_ENABLED_KEY,
@@ -56,6 +57,8 @@ export function ConsentBanner({ onComplete, getToken, testID }: ConsentBannerPro
       setPushConsentAsync(pushEnabled ? 'granted' : 'denied'),
       AsyncStorage.setItem(PUSH_ENABLED_KEY, pushEnabled ? 'true' : 'false'),
     ]);
+
+    setSentryEnabled(analyticsEnabled);
 
     if (pushEnabled && getToken) {
       const granted = await requestPushPermissionsAsync();

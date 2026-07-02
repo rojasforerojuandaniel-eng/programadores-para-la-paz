@@ -3309,7 +3309,16 @@
     "trustHecho": "Hecho para Colombia",
     "trustDian": "Preparado para facturación DIAN",
     "trustEncryption": "Encriptación de datos",
-    "trustBanks": "Conecta tus bancos colombianos"
+    "trustBanks": "Conecta tus bancos colombianos",
+    "dashboard": {
+      "totalBalance": "Balance total",
+      "thisMonth": "este mes",
+      "income": "Ingreso",
+      "expense": "Gasto",
+      "invoicePaid": "Factura pagada",
+      "aiAlert": "Alerta IA",
+      "overspend": "Gasto alto detectado"
+    }
   },
   "trustBadges": {
     "encryption": "Encriptación AES-256",
