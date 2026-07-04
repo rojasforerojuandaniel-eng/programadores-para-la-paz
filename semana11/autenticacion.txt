@@ -1,0 +1,7 @@
+Autenticación — Semana 11
+
+El login es el proceso que permite identificar a un usuario antes de darle acceso a ciertas funciones de una aplicación. Generalmente pide correo y contraseña, y si son correctas el sistema crea una sesión segura que reconoce al usuario durante su visita.
+
+Algunas rutas deben estar protegidas porque pueden contener información privada, registros internos o acciones que no deberían estar disponibles para cualquier persona. Por ejemplo, un ciudadano puede ver causas y apoyarlas, pero solo un coordinador debería poder cambiar el estado de una causa o exportar reportes.
+
+No se deben exponer públicamente contraseñas, documentos de identidad, teléfonos, direcciones, tokens, claves de API ni datos sensibles de la comunidad. Tampoco se deben mostrar nombres completos de quienes apoyan una causa si no han dado permiso; lo recomendable es mostrar solo un contador público y mantener los identificadores internos ocultos.

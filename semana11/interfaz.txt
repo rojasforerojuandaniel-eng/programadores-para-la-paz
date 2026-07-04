@@ -1,0 +1,32 @@
+Interfaz básica — Semana 11
+Plataforma: Causas comunitarias ciudadanas
+
+1. Formulario para crear una causa
+   Campos:
+   - Título (input de texto corto)
+   - Descripción (textarea)
+   - Categoría (selector: medio ambiente, seguridad, infraestructura, salud, otros)
+   - Zona (input de texto: barrio o localidad)
+   - Botón: "Publicar causa"
+   Validación: todos los campos son obligatorios excepto descripción, que debe tener al menos 20 caracteres.
+
+2. Vista de causas disponibles
+   - Lista de causas ordenadas por fecha de creación.
+   - Cada causa muestra: título, categoría, zona, descripción resumida, estado y cantidad de apoyos.
+   - Al hacer clic se abre el detalle completo de la causa.
+
+3. Botón para apoyar una causa
+   - Visible en la tarjeta y en el detalle de cada causa.
+   - Solo aparece si el usuario ha iniciado sesión.
+   - Al hacer clic se registra el apoyo y el contador aumenta en uno.
+   - Un mismo usuario no puede apoyar dos veces la misma causa.
+
+4. Contador de apoyos
+   - Número visible junto al botón de apoyo.
+   - Se actualiza después de cada nuevo apoyo.
+   - No muestra nombres ni datos de quienes apoyaron, solo el total.
+
+5. Consideraciones de privacidad
+   - La interfaz no expone correos, teléfonos ni direcciones.
+   - Los comentarios opcionales pasan por revisión antes de publicarse.
+   - El diseño es claro, sencillo y accesible desde dispositivos móviles.

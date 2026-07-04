@@ -1,0 +1,45 @@
+Modelo de datos — Semana 11
+Plataforma: Causas comunitarias ciudadanas
+
+Entidad: Causa
+
+Campos principales:
+- id (identificador único, generado por la base de datos)
+- titulo (título corto de la causa)
+- descripcion (explicación detallada de la necesidad o propuesta)
+- categoria (ej: medio ambiente, seguridad, infraestructura, salud)
+- zona (barrio o localidad afectada)
+- fecha_creacion (fecha en que se registra la causa)
+- estado (activa, en revisión, cerrada)
+- creado_por (identificador del usuario que la registró, sin nombre público)
+
+Propósito:
+Guardar las causas comunitarias que serán visibles en la plataforma para que la comunidad las conozca y pueda apoyar.
+
+---
+
+Entidad: Apoyo
+
+Campos principales:
+- id (identificador único)
+- causa_id (relación con la causa apoyada)
+- usuario_id (identificador del usuario que apoya, sin nombre público)
+- fecha (fecha y hora del apoyo)
+- comentario_opcional (mensaje corto opcional, revisado antes de publicarse)
+
+Propósito:
+Registrar los apoyos que recibe cada causa para hacer seguimiento a la participación ciudadana y mostrar un contador público.
+
+---
+
+Entidad: Usuario
+
+Campos principales:
+- id (identificador único)
+- correo (para login, no se muestra públicamente)
+- hash_contrasena (contraseña encriptada, nunca en texto plano)
+- rol (ciudadano, coordinador, administrador)
+- fecha_registro
+
+Propósito:
+Autenticar a las personas y definir qué acciones pueden realizar dentro de la plataforma.
