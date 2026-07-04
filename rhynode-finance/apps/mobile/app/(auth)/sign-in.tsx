@@ -2,33 +2,23 @@ import { useRef, useState } from 'react';
 import { useSignIn, useSSO } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import {
-  View,
-  Text,
-  Pressable,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   Linking,
-  StyleSheet,
   type TextInput as RNTextInput,
 } from 'react-native';
+import { Text } from '~/components/ui/text';
 import { Apple, AlertCircle, TrendingUp } from 'lucide-react-native';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { TextInput } from '~/components/ui/text-input';
+import { Button } from '~/components/ui/button';
+import { Pressable } from '~/components/ui/pressable';
+import { View } from '~/components/ui/view';
+import { Card } from '~/components/ui/card';
 import { GoogleIcon } from '~/components/ui/google-icon';
 import { hapticImpact } from '~/lib/haptics';
-import { colors } from '~/theme/colors';
-
-const COLORS = {
-  background: '#08090e',
-  foreground: '#fafafa',
-  card: '#0d0e13',
-  muted: '#9ca3af',
-  primary: colors.primary,
-  border: '#26272b',
-  destructive: '#dc2626',
-};
 
 export default function SignInScreen() {
   const { t } = useTranslation();
@@ -109,124 +99,151 @@ export default function SignInScreen() {
     }
   };
 
+  const submitDisabled = loading || !email || !password;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
+      className="flex-1 bg-background"
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.inner}>
-          <View style={styles.logoWrap}>
-            <View style={styles.logoBox}>
-              <TrendingUp color={COLORS.foreground} size={28} />
+        <View className="flex-1 justify-center px-6 py-12">
+          <View className="items-center mb-10">
+            <View className="h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-4">
+              <TrendingUp className="h-8 w-8 text-primary-foreground" />
             </View>
-            <Text style={styles.logoText}>{t('common.appName')}</Text>
+            <Text className="text-2xl font-bold tracking-tight text-foreground">
+              {t('common.appName')}
+            </Text>
           </View>
 
-          <Text style={styles.title}>{t('auth.signIn.title')}</Text>
-          <Text style={styles.subtitle}>{t('auth.signIn.subtitle')}</Text>
+          <Text className="text-3xl font-bold text-center text-foreground mb-2">
+            {t('auth.signIn.title')}
+          </Text>
+          <Text className="text-base text-center text-muted-foreground mb-8">
+            {t('auth.signIn.subtitle')}
+          </Text>
 
           {error ? (
-            <View style={styles.errorBox} accessibilityLiveRegion="assertive">
-              <AlertCircle color={COLORS.destructive} size={18} />
-              <Text style={styles.errorText}>{error}</Text>
+            <View
+              className="flex-row items-center gap-2 rounded-2xl border p-4 mb-6"
+              style={{
+                backgroundColor: 'rgba(220, 38, 38, 0.12)',
+                borderColor: 'rgba(220, 38, 38, 0.3)',
+              }}
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+            >
+              <AlertCircle className="text-destructive" size={18} />
+              <Text className="flex-1 text-sm text-foreground">{error}</Text>
             </View>
           ) : null}
 
-          <TextInput
-            label={t('auth.signIn.emailLabel')}
-            placeholderTextColor={COLORS.muted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            returnKeyType="next"
-            blurOnSubmit={false}
-            onSubmitEditing={() => passwordRef.current?.focus()}
-            value={email}
-            onChangeText={(value) => {
-              setEmail(value);
-              if (emailError) validateEmail(value);
-            }}
-            onBlur={() => validateEmail(email)}
-          />
-          {emailError ? (
-            <View style={styles.fieldErrorBox}>
-              <Text style={styles.fieldErrorText}>{emailError}</Text>
-            </View>
-          ) : null}
+          <Card className="bg-card border border-border p-5 mb-6">
+            <TextInput
+              label={t('auth.signIn.emailLabel')}
+              className="min-h-[52px] bg-background border border-border"
+              placeholderTextColor="#9ca3af"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              value={email}
+              onChangeText={(value) => {
+                setEmail(value);
+                if (emailError) validateEmail(value);
+              }}
+              onBlur={() => validateEmail(email)}
+            />
 
-          <TextInput
-            ref={passwordRef}
-            label={t('auth.signIn.passwordLabel')}
-            placeholder={t('auth.signIn.passwordPlaceholder')}
-            placeholderTextColor={COLORS.muted}
-            secureTextEntry
-            textContentType="password"
-            returnKeyType="done"
-            blurOnSubmit
-            onSubmitEditing={() => {
-              void hapticImpact();
-              void onSignIn();
-            }}
-            value={password}
-            onChangeText={setPassword}
-          />
+            {emailError ? (
+              <View className="mt-2 mb-2 px-1">
+                <Text className="text-sm text-destructive">{emailError}</Text>
+              </View>
+            ) : (
+              <View className="h-4" />
+            )}
 
-          <Pressable
+            <TextInput
+              ref={passwordRef}
+              label={t('auth.signIn.passwordLabel')}
+              className="min-h-[52px] bg-background border border-border"
+              placeholder={t('auth.signIn.passwordPlaceholder')}
+              placeholderTextColor="#9ca3af"
+              secureTextEntry
+              textContentType="password"
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={() => {
+                void hapticImpact();
+                void onSignIn();
+              }}
+              value={password}
+              onChangeText={setPassword}
+            />
+          </Card>
+
+          <Button
             testID="sign-in-submit"
-            accessibilityLabel={t('a11y.signIn.submit')}
-            accessibilityRole="button"
+            size="lg"
+            className="w-full rounded-2xl"
             onPress={() => {
               void hapticImpact();
               void onSignIn();
             }}
-            disabled={loading || !email || !password}
-            style={[
-              styles.button,
-              (loading || !email || !password) && styles.buttonDisabled,
-            ]}
+            disabled={submitDisabled}
+            loading={loading}
+            accessibilityLabel={t('a11y.signIn.submit')}
           >
-            <Text style={styles.buttonText}>
+            <Text className="text-base font-semibold text-primary-foreground">
               {loading ? t('auth.signIn.submitLoading') : t('auth.signIn.submit')}
             </Text>
-          </Pressable>
+          </Button>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>{t('auth.signIn.divider')}</Text>
-            <View style={styles.dividerLine} />
+          <View className="flex-row items-center gap-3 my-8">
+            <View className="h-px flex-1 bg-border" />
+            <Text className="text-sm text-muted-foreground">{t('auth.signIn.divider')}</Text>
+            <View className="h-px flex-1 bg-border" />
           </View>
 
-          <View style={styles.socialRow}>
+          <View className="gap-3">
             <Pressable
-              accessibilityLabel={t('a11y.signIn.google')}
-              accessibilityRole="button"
+              className="h-14 flex-row items-center justify-center gap-3 rounded-2xl border border-border bg-card active:bg-secondary"
               onPress={() => onSocialSignIn('oauth_google')}
               disabled={!!socialLoading}
-              style={styles.socialButton}
+              accessibilityLabel={t('a11y.signIn.google')}
+              accessibilityHint={t('auth.signIn.google')}
             >
               <GoogleIcon />
-              <Text style={styles.socialButtonText}>{t('auth.signIn.google')}</Text>
+              <Text className="text-base font-semibold text-foreground">
+                {t('auth.signIn.google')}
+              </Text>
             </Pressable>
+
             {Platform.OS === 'ios' ? (
               <Pressable
-                accessibilityLabel={t('a11y.signIn.apple')}
-                accessibilityRole="button"
+                className="h-14 flex-row items-center justify-center gap-3 rounded-2xl border border-border bg-card active:bg-secondary"
                 onPress={() => onSocialSignIn('oauth_apple')}
                 disabled={!!socialLoading}
-                style={styles.socialButton}
+                accessibilityLabel={t('a11y.signIn.apple')}
+                accessibilityHint={t('auth.signIn.apple')}
               >
-                <Apple color={COLORS.foreground} size={20} />
-                <Text style={styles.socialButtonText}>{t('auth.signIn.apple')}</Text>
+                <Apple className="text-foreground" size={20} />
+                <Text className="text-base font-semibold text-foreground">
+                  {t('auth.signIn.apple')}
+                </Text>
               </Pressable>
             ) : null}
           </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
+          <View className="flex-row justify-center items-center mt-10">
+            <Text className="text-sm text-muted-foreground">{t('auth.signIn.noAccount')}</Text>
             <Pressable
               onPress={() =>
                 Linking.openURL('https://rhynode-finance.vercel.app/sign-up')
@@ -234,7 +251,9 @@ export default function SignInScreen() {
               accessibilityLabel={t('a11y.signIn.signUp')}
               accessibilityRole="link"
             >
-              <Text style={styles.footerLink}>{t('auth.signIn.signUp')}</Text>
+              <Text className="text-sm font-semibold text-primary ml-1">
+                {t('auth.signIn.signUp')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -242,151 +261,3 @@ export default function SignInScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  logoWrap: {
-    alignItems: 'center',
-    marginBottom: 40,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  logoBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.foreground,
-    letterSpacing: -0.5,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.foreground,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.muted,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.foreground,
-  },
-  fieldErrorBox: {
-    marginTop: -12,
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  fieldErrorText: {
-    fontSize: 13,
-    color: COLORS.destructive,
-  },
-  button: {
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonPressed: {
-    opacity: 0.9,
-  },
-  buttonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: COLORS.foreground,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 28,
-  },
-  dividerLine: {
-    height: 1,
-    flex: 1,
-    backgroundColor: COLORS.border,
-  },
-  dividerText: {
-    fontSize: 14,
-    color: COLORS.muted,
-  },
-  socialRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  socialButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    height: 52,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.card,
-  },
-  socialButtonPressed: {
-    backgroundColor: COLORS.border,
-  },
-  socialButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.foreground,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 32,
-  },
-  footerText: {
-    fontSize: 15,
-    color: COLORS.muted,
-  },
-  footerLink: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-});

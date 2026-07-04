@@ -1,6 +1,9 @@
 import '../global.css';
 import '~/lib/i18n';
+import { SplashScreen } from 'expo-router';
 import { useEffect, useRef } from 'react';
+
+SplashScreen.preventAutoHideAsync();
 import * as Sentry from '@sentry/react-native';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { Stack, useRouter } from 'expo-router';

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
 import { ActivityIndicator, AppState, View } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import { SplashScreen, useRouter, useSegments } from 'expo-router';
@@ -9,14 +10,15 @@ import { PinLock } from '~/components/features/pin-lock';
 import { Text } from '~/components/ui/text';
 import { colors } from '~/theme/colors';
 
-SplashScreen.preventAutoHideAsync();
-
-function SplashLoader() {
+function SplashLoader({ reason }: { reason: string }) {
   const { t } = useTranslation();
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <ActivityIndicator size="large" color={colors.primary} />
       <Text className="mt-4 text-muted-foreground">{t('common.appName')}</Text>
+      {__DEV__ ? (
+        <Text className="mt-2 text-xs text-muted-foreground">{reason}</Text>
+      ) : null}
     </View>
   );
 }
@@ -28,6 +30,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [biometricPassed, setBiometricPassed] = useState(false);
   const [showPinLock, setShowPinLock] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -40,10 +49,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (isSignedIn && inAuthGroup) {
+    if (isSignedIn && inAuthGroup && biometricPassed) {
       router.replace('/(tabs)');
     }
-  }, [isLoaded, isSignedIn, segments, router]);
+  }, [isLoaded, isSignedIn, segments, router, biometricPassed]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn || biometricPassed || showPinLock) return;
@@ -51,15 +60,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     const unlock = async () => {
       const enabled = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
       if (enabled !== 'true') {
-        setBiometricPassed(true);
-        await SplashScreen.hideAsync();
+        if (isMounted.current) {
+          setBiometricPassed(true);
+          await SplashScreen.hideAsync();
+        }
         return;
       }
 
       const available = await isBiometricAvailable();
       if (!available) {
-        setShowPinLock(true);
-        await SplashScreen.hideAsync();
+        if (isMounted.current) {
+          setShowPinLock(true);
+          await SplashScreen.hideAsync();
+        }
         return;
       }
 
@@ -69,12 +82,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         disableDeviceCredentials: true,
       });
 
-      if (ok) {
-        setBiometricPassed(true);
-      } else {
-        setShowPinLock(true);
+      if (isMounted.current) {
+        if (ok) {
+          setBiometricPassed(true);
+        } else {
+          setShowPinLock(true);
+        }
+        await SplashScreen.hideAsync();
       }
-      await SplashScreen.hideAsync();
     };
 
     void unlock();
@@ -84,14 +99,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active') {
         setBiometricPassed(false);
-        setShowPinLock(false);
       }
     });
     return () => subscription.remove();
   }, []);
 
   if (!isLoaded) {
-    return <SplashLoader />;
+    return <SplashLoader reason="loading auth" />;
   }
 
   if (isSignedIn && !biometricPassed) {
@@ -103,7 +117,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         />
       );
     }
-    return <SplashLoader />;
+    return <SplashLoader reason="auth gate" />;
   }
 
   return <>{children}</>;

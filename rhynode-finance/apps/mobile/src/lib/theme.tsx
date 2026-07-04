@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
-      <View className={cn('flex-1', resolvedTheme === 'dark' ? 'dark' : '')}>
+      <View className={cn('flex-1', resolvedTheme === 'dark' && 'dark')}>
         {children}
       </View>
     </ThemeContext.Provider>
