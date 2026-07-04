@@ -1,0 +1,21 @@
+Automatización simple con n8n y Telegram — Semana 10
+
+1. ¿Qué evento activa el flujo?
+   Evento: un ciudadano registra un nuevo reporte en la plataforma de veeduría y este se guarda en la base de datos.
+
+2. ¿Qué mensaje se enviaría a Telegram?
+   Mensaje: "Nuevo reporte recibido en la plataforma de veeduría. ID: {{ $json.reportId }}. Categoría: {{ $json.category }}. Zona: {{ $json.zone }}. Revisar sistema para asignar seguimiento."
+
+3. Flujo en n8n (descripción paso a paso):
+   Paso 1: Trigger "Postgres / MySQL / Webhook" que escucha cuando se inserta un nuevo registro en la tabla de reportes.
+   Paso 2: Nodo "Set" que formatea el mensaje con datos no sensibles (ID, categoría, zona).
+   Paso 3: Nodo "Telegram" (Send Message) que envía el mensaje al grupo o chat de coordinadores.
+   Paso 4: Nodo "No Operation, do nothing" opcional para registrar que la notificación fue enviada.
+
+4. ¿Qué información no debería enviarse por seguridad?
+   - Nombres completos del ciudadano.
+   - Documentos de identidad, números de teléfono o correos electrónicos.
+   - Direcciones exactas o ubicaciones precisas que identifiquen a una persona.
+   - Fotografías que muestren rostros o matrículas de vehículos.
+   - Tokens, claves de API o credenciales del sistema.
+   - Observaciones personales, comentarios privados o datos de salud.

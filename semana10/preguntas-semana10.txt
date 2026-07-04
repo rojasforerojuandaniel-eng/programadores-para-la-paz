@@ -1,0 +1,11 @@
+Pregunta 1 — ¿Qué es un backlog en un proyecto de software?
+Respuesta: Una lista priorizada de tareas o funcionalidades por desarrollar.
+
+Pregunta 2 — ¿Qué describe mejor una historia de usuario?
+Respuesta: Una forma breve de expresar qué necesita un usuario y para qué lo necesita.
+
+Pregunta 3 — ¿Cuál es el propósito principal de n8n en esta semana?
+Respuesta: Automatizar tareas repetitivas y notificaciones de seguimiento no sensibles.
+
+Pregunta 4 — ¿Para qué puede servir Telegram en esta semana?
+Respuesta: Como canal de coordinación, convocatoria y notificación comunitaria.

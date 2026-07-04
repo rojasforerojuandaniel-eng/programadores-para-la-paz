@@ -1,0 +1,18 @@
+Backlog — Semana 10
+Solución: Plataforma comunitaria de veeduría ciudadana local
+Historias de usuario ordenadas de mayor a menor prioridad:
+
+1. Como ciudadano quiero registrar una incidencia en la plataforma para dejar evidencia pública de un problema en mi comunidad.
+   Prioridad: Alta. Es la razón de ser del sistema; sin reportes no hay veeduría.
+
+2. Como coordinador quiero recibir una alerta en Telegram cada vez que se registre un nuevo reporte para revisarlo oportunamente.
+   Prioridad: Alta. Permite respuesta rápida y trazabilidad de las incidencias.
+
+3. Como ciudadano quiero consultar el estado de mi reporte para saber si está en revisión, en proceso o resuelto.
+   Prioridad: Media. Genera confianza y transparencia en el proceso.
+
+4. Como administrador quiero visualizar un listado de reportes por zona y prioridad para planificar recursos y seguimiento.
+   Prioridad: Media. Apoya la toma de decisiones y la coordinación con entidades.
+
+5. Como miembro de la comunidad quiero suscribirme a notificaciones por zona de interés para enterarme de nuevas incidencias o actualizaciones.
+   Prioridad: Baja. Es una mejora que amplía la participación, pero depende de los reportes básicos.
