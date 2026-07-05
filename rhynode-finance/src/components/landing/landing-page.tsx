@@ -17,6 +17,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleSwitcher } from "./locale-switcher";
 import { PricingCards } from "./pricing-cards";
+import { HeroV3 } from "./hero-v3";
 import {
   Wallet,
   PiggyBank,
@@ -26,12 +27,9 @@ import {
   FileText,
   Calculator,
   ShieldCheck,
-  Zap,
-  ArrowRight,
   Smartphone,
   Menu,
   X,
-  Landmark,
   FileCheck,
   Lock,
   Star,
@@ -182,81 +180,6 @@ function Navbar() {
         </Sheet>
       </div>
     </header>
-  );
-}
-
-function Hero() {
-  const t = useTranslations("hero");
-  const trustItems = [
-    { icon: ShieldCheck, label: t("trustHecho") },
-    { icon: FileCheck, label: t("trustDian") },
-    { icon: Lock, label: t("trustEncryption") },
-    { icon: Landmark, label: t("trustBanks") },
-  ];
-
-  return (
-    <section className="relative overflow-hidden px-4 pt-24 pb-10 md:pt-32 md:pb-16">
-      <div className="mx-auto max-w-5xl text-center">
-        <Badge
-          variant="secondary"
-          className="mb-4 px-3 py-1 text-xs font-medium md:mb-6"
-        >
-          <ShieldCheck className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          {t("badge")}
-        </Badge>
-
-        <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-          {t("title")}
-          <span className="text-primary">{t("titleHighlight")}</span>
-        </h1>
-
-        <p className="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg md:mt-6">
-          {t("subtitle")}
-        </p>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:mt-8">
-          {trustItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.label}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-                <span>{item.label}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button
-            size="lg"
-            className="group h-12 w-full gap-2 text-base sm:w-auto"
-            asChild
-          >
-            <Link href="/sign-up">
-              <Zap className="h-4 w-4" aria-hidden="true" />
-              {t("ctaPrimary")}
-              <ArrowRight
-                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="h-12 w-full text-base sm:w-auto"
-            asChild
-          >
-            <Link href="#pricing">{t("ctaSecondary")}</Link>
-          </Button>
-        </div>
-
-        <p className="mt-4 text-xs text-muted-foreground">{t("fineprint")}</p>
-      </div>
-    </section>
   );
 }
 
@@ -790,7 +713,7 @@ export function LandingPageV2() {
     >
       <LandingSchema />
       <Navbar />
-      <Hero />
+      <HeroV3 />
       <TrustBadges />
       <StatsSection />
       <BanksStrip />
