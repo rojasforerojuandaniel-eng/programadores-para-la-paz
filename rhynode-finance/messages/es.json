@@ -1,4 +1,73 @@
 {
+  "healthScore": {
+    "title": "Health Score",
+    "subtitle": "Salud financiera general",
+    "recommendationsTitle": "Recomendaciones",
+    "toggle": {
+      "hide": "Ocultar detalles",
+      "show": "Ver detalles y recomendaciones"
+    },
+    "factors": {
+      "savings": {
+        "name": "Ahorro",
+        "description": "Capacidad de ahorro medida como porcentaje de ingresos que queda libre después de gastos."
+      },
+      "debt": {
+        "name": "Deuda",
+        "description": "Nivel de endeudamiento en relación con los ingresos y progreso de amortización."
+      },
+      "liquidity": {
+        "name": "Liquidez",
+        "description": "Reserva de efectivo disponible para cubrir gastos sin recurrir a deuda."
+      },
+      "budget": {
+        "name": "Presupuestos",
+        "description": "Cumplimiento de los límites definidos en presupuestos mensuales."
+      },
+      "diversification": {
+        "name": "Diversificación",
+        "description": "Distribución del patrimonio entre múltiples cuentas e instrumentos de inversión."
+      }
+    },
+    "recommendations": {
+      "overall": {
+        "title": "¡Excelente salud financiera!",
+        "description": "Todos tus factores están por encima de 85. Mantén el ritmo y revisa periódicamente.",
+        "action": "Programa una revisión mensual de tus metas."
+      },
+      "savings": {
+        "title": "Aumenta tu tasa de ahorro",
+        "description": "Actualmente ahorras el {rate}% de tus ingresos. El ideal mínimo es 20%.",
+        "action": "Revisa gastos hormiga y suscripciones; automatiza una transferencia de nómina a ahorros."
+      },
+      "debt": {
+        "title": "Reduce tu carga de deuda",
+        "description": "Tu deuda pendiente representa el {ratio}% de tus ingresos mensuales.",
+        "action": "Prioriza pagar deudas con mayor interés (avalancha) o consolida pagos para reducir la carga."
+      },
+      "liquidity": {
+        "title": "Fortalece tu colchón de liquidez",
+        "description": "Cuentas con {months} meses de gastos cubiertos. Se recomiendan al menos 3-6.",
+        "action": "Destina un porcentaje fijo de ingresos a una cuenta de emergencia hasta alcanzar 6 meses."
+      },
+      "budget": {
+        "title": "Revisa tus presupuestos",
+        "description": "Algunos presupuestos están sobre pasados. Identifica las categorías que más se desvían.",
+        "action": "Ajusta los límites a niveles realistas y configura alertas antes de completar el 80% de gasto."
+      },
+      "diversification": {
+        "title": "Diversifica tu patrimonio",
+        "description": "Tienes alta concentración en pocas cuentas o tipos de inversión, lo que aumenta el riesgo.",
+        "actionNoInvestments": "Abre una segunda cuenta de ahorros o inversión con objetivo distinto.",
+        "actionWithInvestments": "Rebalancea entre clases de activos (renta fija, variable, liquidez)."
+      },
+      "default": {
+        "title": "Revisa este indicador",
+        "description": "Hay margen de mejora en este factor.",
+        "action": "Profundiza en la sección correspondiente del dashboard."
+      }
+    }
+  },
   "dashboard": {
     "nav": {
       "home": "Inicio",
@@ -194,6 +263,30 @@
         "pdf": "Exportar PDF",
         "errorGenerate": "Error al generar el archivo",
         "networkError": "Error de red al descargar"
+      },
+      "categories": {
+        "transportationDelivery": "Transporte / Delivery",
+        "transportation": "Transporte",
+        "entertainment": "Entretenimiento",
+        "coffee": "Café",
+        "market": "Mercado",
+        "restaurant": "Restaurante",
+        "telecommunications": "Telecomunicaciones",
+        "utilities": "Servicios públicos",
+        "insurance": "Seguros",
+        "health": "Salud",
+        "education": "Educación",
+        "financeTransfer": "Transferencia/Finanzas",
+        "clothing": "Ropa",
+        "travel": "Viajes",
+        "pets": "Mascotas",
+        "shopping": "Compras",
+        "sales": "Ventas",
+        "payroll": "Nómina",
+        "services": "Servicios",
+        "materials": "Materiales",
+        "marketing": "Marketing",
+        "other": "Otros"
       }
     },
     "clients": {
@@ -487,6 +580,24 @@
         "toastImportError": "Error al importar transacciones",
         "toastImported": "{count} transacciones importadas",
         "toastImportNetworkError": "Error de red al importar"
+      },
+      "template": {
+        "date": "Fecha",
+        "description": "Descripcion",
+        "debit": "Debito",
+        "credit": "Credito",
+        "category": "Categoria",
+        "filename": "plantilla-transacciones-rhynode.csv",
+        "example": {
+          "payroll": "Pago de nomina",
+          "supermarket": "Supermercado exito",
+          "transport": "Transporte uber"
+        },
+        "categories": {
+          "payroll": "Nómina",
+          "market": "Mercado",
+          "transport": "Transporte / Delivery"
+        }
       },
       "createDialog": {
         "triggerButton": "Nueva Cuenta",
@@ -1695,6 +1806,14 @@
           "icaBogota": "Bogotá (9.66/1000)",
           "icaMedellin": "Medellín (13.8/1000)"
         }
+      },
+      "icaCities": {
+        "bogota": "Bogotá",
+        "medellin": "Medellín",
+        "cali": "Cali",
+        "barranquilla": "Barranquilla",
+        "cartagena": "Cartagena",
+        "bucaramanga": "Bucaramanga"
       }
     },
     "scope": {

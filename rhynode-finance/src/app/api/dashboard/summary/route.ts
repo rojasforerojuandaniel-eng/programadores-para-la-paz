@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { getPrisma } from "@/lib/prisma";
 import { requireAuthFromRequest } from "@/lib/auth-from-request";
+import { clerkUserIdFromRequest } from "@/lib/auth";
 import { decimalToNumber } from "@/lib/decimal";
 import { calculateHealthScore } from "@/lib/health-score";
 import { logger } from "@/lib/logger";
+import { withRateLimit } from "@/lib/with-rate-limit";
 
 async function computeDashboardSummary(organizationId: string, profileId: string, currency: string) {
   const prisma = getPrisma();
@@ -53,14 +55,17 @@ async function computeDashboardSummary(organizationId: string, profileId: string
       type: "dueDate" in item ? "debt" : "goal",
     }));
 
-  const healthScore = calculateHealthScore({
-    income,
-    expense,
-    accounts: personalAccounts.map((a) => ({ balance: decimalToNumber(a.balance), type: a.type })),
-    budgets: budgets.map((b) => ({ amount: decimalToNumber(b.amount), spent: decimalToNumber(b.spent) })),
-    goals: goals.map((g) => ({ currentAmount: decimalToNumber(g.currentAmount), targetAmount: decimalToNumber(g.targetAmount) })),
-    debts: debts.map((d) => ({ principalAmount: decimalToNumber(d.principalAmount), remainingAmount: decimalToNumber(d.remainingAmount) })),
-  });
+  const healthScore = calculateHealthScore(
+    {
+      income,
+      expense,
+      accounts: personalAccounts.map((a) => ({ balance: decimalToNumber(a.balance), type: a.type })),
+      budgets: budgets.map((b) => ({ amount: decimalToNumber(b.amount), spent: decimalToNumber(b.spent) })),
+      goals: goals.map((g) => ({ currentAmount: decimalToNumber(g.currentAmount), targetAmount: decimalToNumber(g.targetAmount) })),
+      debts: debts.map((d) => ({ principalAmount: decimalToNumber(d.principalAmount), remainingAmount: decimalToNumber(d.remainingAmount) })),
+    },
+    (key) => key
+  );
 
   return {
     totalBalance,
@@ -72,7 +77,7 @@ async function computeDashboardSummary(organizationId: string, profileId: string
   };
 }
 
-export async function GET(request: Request) {
+async function getDashboardSummary(request: Request) {
   try {
     const auth = await requireAuthFromRequest(request);
     if (!auth?.org || !auth.profile) {
@@ -97,3 +102,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to load dashboard summary" }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getDashboardSummary, {
+  key: "dashboard-summary",
+  maxRequests: 60,
+  windowMs: 60000,
+  identifier: clerkUserIdFromRequest,
+});

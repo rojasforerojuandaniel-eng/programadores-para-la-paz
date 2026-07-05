@@ -20,6 +20,11 @@ jest.mock('react-native', () => {
     KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),
     ScrollView: mockComponent('ScrollView'),
     Platform: { OS: 'ios' },
+    Appearance: {
+      getColorScheme: jest.fn(() => 'dark'),
+      addChangeListener: jest.fn(),
+      removeChangeListener: jest.fn(),
+    },
     StyleSheet: {
       create: (styles: Record<string, unknown>) => styles,
       flatten: (...styles: Array<Record<string, unknown> | undefined>) => Object.assign({}, ...styles),
@@ -33,6 +38,49 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
   NotificationFeedbackType: { Success: 'success' },
 }));
+
+jest.mock('~/components/ui/button', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    Button: (props: Record<string, unknown>) => mockReact.createElement('Button', props),
+  };
+});
+
+jest.mock('~/components/ui/pressable', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    Pressable: (props: Record<string, unknown>) => mockReact.createElement('Pressable', props),
+  };
+});
+
+jest.mock('~/components/ui/text', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    Text: (props: Record<string, unknown>) => mockReact.createElement('Text', props),
+  };
+});
+
+jest.mock('~/components/ui/view', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    View: (props: Record<string, unknown>) => mockReact.createElement('View', props),
+  };
+});
+
+jest.mock('~/components/ui/keyboard-avoiding-view', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    KeyboardAvoidingView: (props: Record<string, unknown>) =>
+      mockReact.createElement('KeyboardAvoidingView', props),
+  };
+});
+
+jest.mock('~/components/ui/scroll-view', () => {
+  const mockReact = jest.requireActual('react');
+  return {
+    ScrollView: (props: Record<string, unknown>) => mockReact.createElement('ScrollView', props),
+  };
+});
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),

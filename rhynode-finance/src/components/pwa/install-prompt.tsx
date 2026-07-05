@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { trackEvent } from "@/lib/analytics";
 
 const DISMISS_KEY = "rhynode-pwa-install-dismissed-v2";
@@ -62,10 +63,7 @@ function logPwaEvent(
 
   trackEvent(event, properties ?? undefined);
 
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log("[PWA Analytics]", payload);
-  }
+  logger.info("pwa analytics", payload);
 }
 
 export default function InstallPrompt() {

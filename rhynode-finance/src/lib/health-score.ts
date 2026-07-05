@@ -78,16 +78,10 @@ const FACTOR_WEIGHTS = {
   diversification: 0.15,
 } as const;
 
-const FACTOR_DESCRIPTIONS: Record<string, string> = {
-  savings:
-    "Capacidad de ahorro medida como porcentaje de ingresos que queda libre después de gastos.",
-  debt: "Nivel de endeudamiento en relación con los ingresos y progreso de amortización.",
-  liquidity:
-    "Reserva de efectivo disponible para cubrir gastos sin recurrir a deuda.",
-  budget: "Cumplimiento de los límites definidos en presupuestos mensuales.",
-  diversification:
-    "Distribución del patrimonio entre múltiples cuentas e instrumentos de inversión.",
-};
+export type HealthScoreTranslator = (
+  key: string,
+  values?: Record<string, string | number>
+) => string;
 
 function clamp(value: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, value));
@@ -210,7 +204,10 @@ export function calculateDiversificationScore(
   return clamp(accounts!.length * 25);
 }
 
-export function calculateHealthScore(inputs: HealthScoreInputs): HealthScoreResult {
+export function calculateHealthScore(
+  inputs: HealthScoreInputs,
+  t: HealthScoreTranslator
+): HealthScoreResult {
   const income = toNumber(inputs.income);
   const expense = toNumber(inputs.expense);
 
@@ -236,38 +233,38 @@ export function calculateHealthScore(inputs: HealthScoreInputs): HealthScoreResu
   const factors: HealthFactor[] = [
     {
       id: "savings",
-      name: "Ahorro",
+      name: t("healthScore.factors.savings.name"),
       score: savingsScore,
       weight: FACTOR_WEIGHTS.savings,
-      description: FACTOR_DESCRIPTIONS.savings,
+      description: t("healthScore.factors.savings.description"),
     },
     {
       id: "debt",
-      name: "Deuda",
+      name: t("healthScore.factors.debt.name"),
       score: debtScore,
       weight: FACTOR_WEIGHTS.debt,
-      description: FACTOR_DESCRIPTIONS.debt,
+      description: t("healthScore.factors.debt.description"),
     },
     {
       id: "liquidity",
-      name: "Liquidez",
+      name: t("healthScore.factors.liquidity.name"),
       score: liquidityScore,
       weight: FACTOR_WEIGHTS.liquidity,
-      description: FACTOR_DESCRIPTIONS.liquidity,
+      description: t("healthScore.factors.liquidity.description"),
     },
     {
       id: "budget",
-      name: "Presupuestos",
+      name: t("healthScore.factors.budget.name"),
       score: budgetScore,
       weight: FACTOR_WEIGHTS.budget,
-      description: FACTOR_DESCRIPTIONS.budget,
+      description: t("healthScore.factors.budget.description"),
     },
     {
       id: "diversification",
-      name: "Diversificación",
+      name: t("healthScore.factors.diversification.name"),
       score: diversificationScore,
       weight: FACTOR_WEIGHTS.diversification,
-      description: FACTOR_DESCRIPTIONS.diversification,
+      description: t("healthScore.factors.diversification.description"),
     },
   ];
 
@@ -278,13 +275,17 @@ export function calculateHealthScore(inputs: HealthScoreInputs): HealthScoreResu
   const overallScore = round(weightedSum);
   const grade = getGrade(overallScore);
 
-  const recommendations = buildRecommendations(factors, {
-    income,
-    expense,
-    liquidBalance,
-    totalDebt: debts.reduce((sum, d) => sum + toNumber(d.remainingAmount), 0),
-    investmentCount: (inputs.investments ?? []).length,
-  });
+  const recommendations = buildRecommendations(
+    factors,
+    {
+      income,
+      expense,
+      liquidBalance,
+      totalDebt: debts.reduce((sum, d) => sum + toNumber(d.remainingAmount), 0),
+      investmentCount: (inputs.investments ?? []).length,
+    },
+    t
+  );
 
   return {
     overallScore,
@@ -328,7 +329,8 @@ interface RecommendationContext {
 
 function buildRecommendations(
   factors: HealthFactor[],
-  ctx: RecommendationContext
+  ctx: RecommendationContext,
+  t: HealthScoreTranslator
 ): HealthRecommendation[] {
   const sorted = [...factors]
     .filter((f) => f.score < 85)
@@ -340,16 +342,15 @@ function buildRecommendations(
       {
         priority: 1,
         factorId: "overall",
-        title: "¡Excelente salud financiera!",
-        description:
-          "Todos tus factores están por encima de 85. Mantén el ritmo y revisa periódicamente.",
-        action: "Programa una revisión mensual de tus metas.",
+        title: t("healthScore.recommendations.overall.title"),
+        description: t("healthScore.recommendations.overall.description"),
+        action: t("healthScore.recommendations.overall.action"),
       },
     ];
   }
 
   return sorted.map((factor, index) => {
-    const rec = recommendationForFactor(factor.id, factor.score, ctx);
+    const rec = recommendationForFactor(factor.id, factor.score, ctx, t);
     return { ...rec, priority: index + 1, factorId: factor.id };
   });
 }
@@ -357,62 +358,62 @@ function buildRecommendations(
 function recommendationForFactor(
   factorId: string,
   _score: number,
-  ctx: RecommendationContext
+  ctx: RecommendationContext,
+  t: HealthScoreTranslator
 ): Omit<HealthRecommendation, "priority" | "factorId"> {
   switch (factorId) {
     case "savings": {
       const savingsRate = ctx.income > 0 ? ((ctx.income - ctx.expense) / ctx.income) * 100 : 0;
       return {
-        title: "Aumenta tu tasa de ahorro",
-        description: `Actualmente ahorras el ${savingsRate.toFixed(1)}% de tus ingresos. El ideal mínimo es 20%.`,
-        action:
-          "Revisa gastos hormiga y suscripciones; automatiza una transferencia de nómina a ahorros.",
+        title: t("healthScore.recommendations.savings.title"),
+        description: t("healthScore.recommendations.savings.description", {
+          rate: savingsRate.toFixed(1),
+        }),
+        action: t("healthScore.recommendations.savings.action"),
       };
     }
     case "debt": {
       const debtRatio =
         ctx.income > 0 ? ((ctx.totalDebt / ctx.income) * 100).toFixed(1) : "N/A";
       return {
-        title: "Reduce tu carga de deuda",
-        description: `Tu deuda pendiente representa el ${debtRatio}% de tus ingresos mensuales.`,
-        action:
-          "Prioriza pagar deudas con mayor interés (avalancha) o consolida pagos para reducir la carga.",
+        title: t("healthScore.recommendations.debt.title"),
+        description: t("healthScore.recommendations.debt.description", {
+          ratio: debtRatio,
+        }),
+        action: t("healthScore.recommendations.debt.action"),
       };
     }
     case "liquidity": {
       const months = ctx.expense > 0 ? ctx.liquidBalance / ctx.expense : 0;
       return {
-        title: "Fortalece tu colchón de liquidez",
-        description: `Cuentas con ${months.toFixed(1)} meses de gastos cubiertos. Se recomiendan al menos 3-6.`,
-        action:
-          "Destina un porcentaje fijo de ingresos a una cuenta de emergencia hasta alcanzar 6 meses.",
+        title: t("healthScore.recommendations.liquidity.title"),
+        description: t("healthScore.recommendations.liquidity.description", {
+          months: months.toFixed(1),
+        }),
+        action: t("healthScore.recommendations.liquidity.action"),
       };
     }
     case "budget": {
       return {
-        title: "Revisa tus presupuestos",
-        description:
-          "Algunos presupuestos están sobre pasados. Identifica las categorías que más se desvían.",
-        action:
-          "Ajusta los límites a niveles realistas y configura alertas antes de completar el 80% de gasto.",
+        title: t("healthScore.recommendations.budget.title"),
+        description: t("healthScore.recommendations.budget.description"),
+        action: t("healthScore.recommendations.budget.action"),
       };
     }
     case "diversification": {
       return {
-        title: "Diversifica tu patrimonio",
-        description:
-          "Tienes alta concentración en pocas cuentas o tipos de inversión, lo que aumenta el riesgo.",
-        action:
-          ctx.investmentCount === 0
-            ? "Abre una segunda cuenta de ahorros o inversión con objetivo distinto."
-            : "Rebalancea entre clases de activos (renta fija, variable, liquidez).",
+        title: t("healthScore.recommendations.diversification.title"),
+        description: t("healthScore.recommendations.diversification.description"),
+        action: ctx.investmentCount === 0
+          ? t("healthScore.recommendations.diversification.actionNoInvestments")
+          : t("healthScore.recommendations.diversification.actionWithInvestments"),
       };
     }
     default:
       return {
-        title: "Revisa este indicador",
-        description: "Hay margen de mejora en este factor.",
-        action: "Profundiza en la sección correspondiente del dashboard.",
+        title: t("healthScore.recommendations.default.title"),
+        description: t("healthScore.recommendations.default.description"),
+        action: t("healthScore.recommendations.default.action"),
       };
   }
 }

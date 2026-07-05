@@ -1,4 +1,4 @@
-/* eslint-disable no-console -- this is a CLI script whose purpose is to print keys. */
+/* eslint-disable no-console -- CLI script. */
 import webpush from "web-push";
 
 /**

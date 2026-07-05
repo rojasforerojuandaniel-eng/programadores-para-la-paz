@@ -29,6 +29,7 @@ export type TransactionDetail = z.infer<typeof transactionDetailSchema>;
 
 export const transactionsResponseSchema = z.object({
   transactions: z.array(transactionSchema),
+  nextCursor: z.string().nullable().optional(),
 });
 
 export const transactionMutationResponseSchema = z.object({

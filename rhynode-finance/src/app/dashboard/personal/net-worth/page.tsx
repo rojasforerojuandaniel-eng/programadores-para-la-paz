@@ -3,7 +3,7 @@ import { getPrisma } from "@/lib/prisma";
 import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getLocale, type Locale } from "@/lib/locale-server";
+import { getLocale } from "@/lib/locale-server";
 import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

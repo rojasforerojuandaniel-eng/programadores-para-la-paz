@@ -1,4 +1,73 @@
 {
+  "healthScore": {
+    "title": "Health Score",
+    "subtitle": "Overall financial health",
+    "recommendationsTitle": "Recommendations",
+    "toggle": {
+      "hide": "Hide details",
+      "show": "View details and recommendations"
+    },
+    "factors": {
+      "savings": {
+        "name": "Savings",
+        "description": "Saving capacity measured as the percentage of income left free after expenses."
+      },
+      "debt": {
+        "name": "Debt",
+        "description": "Debt level relative to income and amortization progress."
+      },
+      "liquidity": {
+        "name": "Liquidity",
+        "description": "Cash reserve available to cover expenses without resorting to debt."
+      },
+      "budget": {
+        "name": "Budgets",
+        "description": "Compliance with the limits defined in monthly budgets."
+      },
+      "diversification": {
+        "name": "Diversification",
+        "description": "Distribution of wealth across multiple accounts and investment instruments."
+      }
+    },
+    "recommendations": {
+      "overall": {
+        "title": "Excellent financial health!",
+        "description": "All your factors are above 85. Keep up the pace and review periodically.",
+        "action": "Schedule a monthly review of your goals."
+      },
+      "savings": {
+        "title": "Increase your savings rate",
+        "description": "You currently save {rate}% of your income. The minimum ideal is 20%.",
+        "action": "Review ant expenses and subscriptions; automate a payroll transfer to savings."
+      },
+      "debt": {
+        "title": "Reduce your debt burden",
+        "description": "Your outstanding debt represents {ratio}% of your monthly income.",
+        "action": "Prioritize paying debts with the highest interest (avalanche) or consolidate payments to reduce the burden."
+      },
+      "liquidity": {
+        "title": "Strengthen your liquidity cushion",
+        "description": "You have {months} months of expenses covered. At least 3-6 are recommended.",
+        "action": "Allocate a fixed percentage of income to an emergency account until you reach 6 months."
+      },
+      "budget": {
+        "title": "Review your budgets",
+        "description": "Some budgets are over their limits. Identify the categories that deviate the most.",
+        "action": "Adjust limits to realistic levels and set alerts before reaching 80% of spending."
+      },
+      "diversification": {
+        "title": "Diversify your wealth",
+        "description": "You have high concentration in few accounts or investment types, which increases risk.",
+        "actionNoInvestments": "Open a second savings or investment account with a different goal.",
+        "actionWithInvestments": "Rebalance across asset classes (fixed income, variable, liquidity)."
+      },
+      "default": {
+        "title": "Review this indicator",
+        "description": "There is room for improvement in this factor.",
+        "action": "Dive deeper into the corresponding section of the dashboard."
+      }
+    }
+  },
   "dashboard": {
     "nav": {
       "home": "Home",
@@ -194,6 +263,30 @@
         "pdf": "Export PDF",
         "errorGenerate": "Error generating file",
         "networkError": "Network error downloading"
+      },
+      "categories": {
+        "transportationDelivery": "Transport / Delivery",
+        "transportation": "Transport",
+        "entertainment": "Entertainment",
+        "coffee": "Coffee",
+        "market": "Groceries",
+        "restaurant": "Restaurant",
+        "telecommunications": "Telecommunications",
+        "utilities": "Utilities",
+        "insurance": "Insurance",
+        "health": "Health",
+        "education": "Education",
+        "financeTransfer": "Transfer/Finance",
+        "clothing": "Clothing",
+        "travel": "Travel",
+        "pets": "Pets",
+        "shopping": "Shopping",
+        "sales": "Sales",
+        "payroll": "Payroll",
+        "services": "Services",
+        "materials": "Materials",
+        "marketing": "Marketing",
+        "other": "Other"
       }
     },
     "clients": {
@@ -487,6 +580,24 @@
         "toastImportError": "Error importing transactions",
         "toastImported": "{count} transactions imported",
         "toastImportNetworkError": "Network error importing"
+      },
+      "template": {
+        "date": "Date",
+        "description": "Description",
+        "debit": "Debit",
+        "credit": "Credit",
+        "category": "Category",
+        "filename": "rhynode-transactions-template.csv",
+        "example": {
+          "payroll": "Payroll payment",
+          "supermarket": "Grocery store",
+          "transport": "Uber ride"
+        },
+        "categories": {
+          "payroll": "Payroll",
+          "market": "Groceries",
+          "transport": "Transport / Delivery"
+        }
       },
       "createDialog": {
         "triggerButton": "New Account",
@@ -1695,6 +1806,14 @@
           "icaBogota": "Bogotá (9.66/1000)",
           "icaMedellin": "Medellín (13.8/1000)"
         }
+      },
+      "icaCities": {
+        "bogota": "Bogotá",
+        "medellin": "Medellín",
+        "cali": "Cali",
+        "barranquilla": "Barranquilla",
+        "cartagena": "Cartagena",
+        "bucaramanga": "Bucaramanga"
       }
     },
     "scope": {

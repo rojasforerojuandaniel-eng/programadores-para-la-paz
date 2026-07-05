@@ -115,9 +115,10 @@ async function getHealthScores(
   userId: string | undefined,
   orgId: string,
   scope: UserScope,
+  t: (key: string, values?: Record<string, string | number>) => string,
 ) {
   if (!userId || (scope !== "PERSONAL" && scope !== "BOTH")) {
-    return calculateHealthScore({ income: 0, expense: 0 });
+    return calculateHealthScore({ income: 0, expense: 0 }, t);
   }
 
   const prisma = getPrisma();
@@ -162,22 +163,25 @@ async function getHealthScores(
     }),
   ]);
 
-  return calculateHealthScore({
-    income: decimalToNumber(incomeAgg._sum.amount),
-    expense: decimalToNumber(expenseAgg._sum.amount),
-    debts: debts.map((d) => ({
-      principalAmount: decimalToNumber(d.principalAmount),
-      remainingAmount: decimalToNumber(d.remainingAmount),
-    })),
-    budgets: budgets.map((b) => ({
-      amount: decimalToNumber(b.amount),
-      spent: decimalToNumber(b.spent),
-    })),
-    accounts: accounts.map((a) => ({
-      balance: decimalToNumber(a.balance),
-      type: a.type,
-    })),
-  });
+  return calculateHealthScore(
+    {
+      income: decimalToNumber(incomeAgg._sum.amount),
+      expense: decimalToNumber(expenseAgg._sum.amount),
+      debts: debts.map((d) => ({
+        principalAmount: decimalToNumber(d.principalAmount),
+        remainingAmount: decimalToNumber(d.remainingAmount),
+      })),
+      budgets: budgets.map((b) => ({
+        amount: decimalToNumber(b.amount),
+        spent: decimalToNumber(b.spent),
+      })),
+      accounts: accounts.map((a) => ({
+        balance: decimalToNumber(a.balance),
+        type: a.type,
+      })),
+    },
+    t
+  );
 }
 
 async function UpcomingEvents({
@@ -336,6 +340,7 @@ export default async function DashboardPage() {
   const locale = await getLocale();
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "dashboard.home" });
+  const tHealth = await getTranslations({ locale, namespace: "healthScore" });
 
   const profile = await getUserProfile();
   const scope = (profile?.scope ?? "PERSONAL") as UserScope;
@@ -344,7 +349,7 @@ export default async function DashboardPage() {
   const xp = profile?.xp ?? 0;
   const streakDays = profile?.streakDays ?? 0;
 
-  const healthScores = await getHealthScores(profile?.id, org.id, scope);
+  const healthScores = await getHealthScores(profile?.id, org.id, scope, tHealth);
 
   const indicatorsData = await fetchEconomicIndicators(locale);
 

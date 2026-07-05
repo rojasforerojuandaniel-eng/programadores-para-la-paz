@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -29,30 +29,7 @@ import type { Locale } from "@/lib/locale";
 import { LevelBadge } from "@/components/dashboard/level-badge";
 import { ClientAvatar } from "@/components/dashboard/client-avatar";
 import { EmptyStateCard } from "@/components/dashboard/empty-state-card";
-
-type Period = "week" | "month" | "all";
-
-interface LeaderboardEntry {
-  id: string;
-  rank: number;
-  name: string;
-  level: number;
-  xp: number;
-  title: string | null;
-  streakDays: number;
-}
-
-interface LeaderboardStats {
-  transactionsCount: number;
-  activeUsers: number;
-  avgStreak: number;
-}
-
-interface LeaderboardResponse {
-  entries: LeaderboardEntry[];
-  myRank?: LeaderboardEntry;
-  stats: LeaderboardStats;
-}
+import { useLeaderboard, type Period, type LeaderboardEntry, type LeaderboardStats } from "@/hooks/use-dashboard-data";
 
 const periodKeys: Record<Period, string> = {
   week: "periods.week",
@@ -363,29 +340,14 @@ function LeaderboardTable({
 
 export default function LeaderboardPage() {
   const t = useTranslations("dashboard.leaderboard");
-  const locale = useLocale() as Locale;
-  const [data, setData] = useState<LeaderboardResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("all");
+  const { data, isLoading: loading, error: queryError } = useLeaderboard(period);
 
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/personal/leaderboard?period=${period}`);
-        if (!res.ok) throw new Error(t("errors.load"));
-        const json = (await res.json()) as LeaderboardResponse;
-        setData(json);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t("errors.unknown"));
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchLeaderboard();
-  }, [period, t]);
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : t("errors.unknown")
+    : null;
 
   const top20 = data?.entries.slice(0, 20) ?? [];
   const myRank = data?.myRank;

@@ -24,6 +24,7 @@ function getReteFuenteRate(amount: number): number {
   return 0.04;
 }
 
+// Public, intentionally unauthenticated tax calculator. Rate-limited to prevent abuse.
 export const POST = withRateLimit(async function POST(request: Request) {
   try {
     const body = await request.json();

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getLocale, type Locale } from "@/lib/locale-server";
+import { getLocale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
 import { Lightbulb, ArrowRight, TrendingUp, AlertTriangle, PiggyBank } from "lucide-react";
 

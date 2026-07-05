@@ -9,7 +9,6 @@ import { getOccurrencesInRange } from "@/app/dashboard/personal/subscriptions/su
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { getLocale } from "@/lib/locale-server";
 import { formatCurrency as fmtCurrency } from "@/lib/format";
-import type { Locale } from "@/lib/locale";
 
 const querySchema = z.object({
   from: z.coerce.date().optional(),

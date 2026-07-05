@@ -1,5 +1,7 @@
 # Memory Index
 
+- [Rhynode Finance Arregla y Mejora 2026-07-05](rhynode-finance-arregla-mejora-2026-07-05.md) — Plan ejecutivo post-auditoría: i18n core, tipos compartidos, refactor onboarding, mobile polish, error states, calidad. Plan en `rhynode-finance/.claude/plans/arregla-mejora-2026-07-05.md`.
+
 - [Feedback Preferences](feedback-preferences.md) — Spanish, direct, auto-activate everything, senior code quality. Zero friction.
 - [Auto-Activation Audit](auto-activation-audit.md) — ALL skills/plugins/agents configured for auto-activation
 - [Open Design](open-design-setup.md) — 108 skills, 151 design systems, `/data/open-design`, `open-design start-bg`
@@ -62,6 +64,7 @@
 - [MARC 200 Pitches Ready 2026-06-27](marc-200-pitches-ready-2026-06-27.md) — 200 pitches personalizados generados en local, listos para autorizar en `/sales-autopilot/pending`.
 - [Rhynode Web Fase 2 Deploy 2026-06-28](rhynode-web-fase2-deploy-2026-06-28.md) — Fase 2 de rhynode.com completada y deployada: performance, Labs/Finance, conversion UX, contenido SEO/IA, schemas y breadcrumbs.
 - [Rhynode Finance Native Android 2026-06-28](rhynode-finance-native-android-2026-06-28.md) — App Android nativa real con Expo Router: 6 fases completas, backend deployado, listo para EAS build y Play Console.
+- [MARC Sales Autopilot v3 Completed 2026-07-05](marc-sales-autopilot-v3-completed-2026-07-05.md) — Sales Autopilot v3 listo: búsquedas en vivo, multi-categoría, web search, email guesser, WhatsApp universal Rhy, inbox, bulk email + inbound replies, calendario anti-solapamiento. 110 tests pass, build 0 errores.
 - [Rhynode Finance Waydroid Switch 2026-06-29](rhynode-finance-waydroid-android-2026-06-29.md) — Reemplazo Android Studio emulator (OOM) por Waydroid + EAS Build; limpieza completa hecha, falta login EAS para ver app.
 - [Rhynode Finance Android Build Fix 2026-06-29](rhynode-finance-android-build-fix-2026-06-29.md) — APK debug generado localmente; fix: quitar `expo-dev-client` y `victory-native` por incompatibilidad Kotlin, regenerar android/. Waydroid container sigue sin arrancar.
 - [Rhynode Finance Android Login Fix 2026-06-29](rhynode-finance-android-login-fix-2026-06-29.md) — Login de Rhynode Finance Android arreglado con sign-in ticket fallback para MFA residual de Clerk.

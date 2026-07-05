@@ -13,6 +13,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import {
   getGrade,
   getScoreColorClass,
@@ -137,13 +138,14 @@ function FactorRow({ factor }: { factor: HealthFactor }) {
 }
 
 function Recommendations({ recommendations }: { recommendations: HealthRecommendation[] }) {
+  const t = useTranslations("healthScore");
   if (recommendations.length === 0) return null;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Lightbulb className="h-4 w-4 text-yellow-400" />
-        Recomendaciones
+        {t("recommendationsTitle")}
       </div>
       <ul className="space-y-2">
         {recommendations.map((rec) => (
@@ -162,6 +164,7 @@ function Recommendations({ recommendations }: { recommendations: HealthRecommend
 }
 
 export function HealthScore({ result }: HealthScoreProps) {
+  const t = useTranslations("healthScore");
   const [expanded, setExpanded] = useState(false);
   const { overallScore, factors, recommendations } = result;
 
@@ -169,8 +172,8 @@ export function HealthScore({ result }: HealthScoreProps) {
     <div className="surface-elevated-2 rounded-xl border border-border p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="heading-card">Health Score</h3>
-          <p className="body-small mt-1">Salud financiera general</p>
+          <h3 className="heading-card">{t("title")}</h3>
+          <p className="body-small mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className={cn("text-3xl font-bold", getScoreColorClass(overallScore))}>
@@ -196,7 +199,7 @@ export function HealthScore({ result }: HealthScoreProps) {
         aria-controls="health-score-details"
         className="mt-5 flex w-full items-center justify-center gap-1 rounded-lg border border-border py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
       >
-        {expanded ? "Ocultar detalles" : "Ver detalles y recomendaciones"}
+        {expanded ? t("toggle.hide") : t("toggle.show")}
         {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
 

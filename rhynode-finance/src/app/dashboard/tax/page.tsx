@@ -49,47 +49,44 @@ interface TaxReport {
   dueDate?: string;
 }
 
-const statusConfig: Record<
-  string,
-  { labelKey: string; className: string; icon: typeof CheckCircle }
-> = {
+const statusConfig = {
   PENDING: { labelKey: "statuses.PENDING", className: "bg-amber-500/10 text-amber-400", icon: Clock },
   FILED: { labelKey: "statuses.FILED", className: "bg-blue-500/10 text-blue-400", icon: CheckCircle },
   APPROVED: { labelKey: "statuses.APPROVED", className: "bg-emerald-500/10 text-emerald-400", icon: CheckCircle },
   REJECTED: { labelKey: "statuses.REJECTED", className: "bg-red-500/10 text-red-400", icon: AlertTriangle },
   OVERDUE: { labelKey: "statuses.OVERDUE", className: "bg-red-500/10 text-red-400", icon: AlertTriangle },
-};
+} as const;
 
-const authorityLabelKeys: Record<string, string> = {
+const authorityLabelKeys = {
   DIAN: "createReportDialog.authorities.DIAN",
   SAT: "createReportDialog.authorities.SAT",
   AFIP: "createReportDialog.authorities.AFIP",
   SII: "createReportDialog.authorities.SII",
   SUNAT: "createReportDialog.authorities.SUNAT",
-};
+} as const;
 
-const exampleTypeLabelKeys: Record<string, string> = {
+const exampleTypeLabelKeys = {
   IVA: "calculator.regime.taxTypes.IVA",
   ReteFuente: "calculator.regime.taxTypes.ReteFuente",
   ICA: "calculator.regime.taxTypes.ICA",
-};
+} as const;
 
-const exampleNoteKeys: Record<string, string> = {
+const exampleNoteKeys = {
   ivaGeneral: "examples.notes.ivaGeneral",
   reteFuenteGeneral: "examples.notes.reteFuenteGeneral",
   reteFuenteHigh: "examples.notes.reteFuenteHigh",
   icaBogota: "examples.notes.icaBogota",
   icaMedellin: "examples.notes.icaMedellin",
-};
+} as const;
 
-const typeLabelKeys: Record<string, string> = {
+const typeLabelKeys = {
   IVA: "types.IVA",
   ISR: "types.ISR",
   RETENTION: "types.RETENTION",
   ICA: "types.ICA",
   RENTA: "types.RENTA",
   DIAN_ELECTRONIC: "types.DIAN_ELECTRONIC",
-};
+} as const;
 
 interface TaxExample {
   type: string;
@@ -178,7 +175,7 @@ export default function TaxPage() {
       .finally(() => setLoadingReport(false));
 
     return () => controller.abort();
-  }, [year, month, periodType]);
+  }, [year, month, periodType, t]);
 
   const exampleColumns = [
     { key: "type", header: t("exampleColumns.type") },
@@ -206,12 +203,12 @@ export default function TaxPage() {
   function renderExampleRow(ex: TaxExample) {
     return (
       <>
-        <TableCell className="font-medium">{t(exampleTypeLabelKeys[ex.type] as never) || ex.type}</TableCell>
+        <TableCell className="font-medium">{t(exampleTypeLabelKeys[ex.type as keyof typeof exampleTypeLabelKeys]) || ex.type}</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.base, locale)}</TableCell>
         <TableCell className="text-right font-mono">{ex.rate}%</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.tax, locale)}</TableCell>
         <TableCell className="text-right font-mono">{formatCOP(ex.total, locale)}</TableCell>
-        <TableCell className="text-sm text-muted-foreground">{t(exampleNoteKeys[ex.noteKey] as never)}</TableCell>
+        <TableCell className="text-sm text-muted-foreground">{t(exampleNoteKeys[ex.noteKey as keyof typeof exampleNoteKeys])}</TableCell>
       </>
     );
   }
@@ -220,7 +217,7 @@ export default function TaxPage() {
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="font-medium">{t(exampleTypeLabelKeys[ex.type] as never) || ex.type}</span>
+          <span className="font-medium">{t(exampleTypeLabelKeys[ex.type as keyof typeof exampleTypeLabelKeys]) || ex.type}</span>
           <span className="font-mono text-sm">{ex.rate}%</span>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -237,18 +234,18 @@ export default function TaxPage() {
             <div className="font-mono font-semibold">{formatCOP(ex.total, locale)}</div>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">{t(exampleNoteKeys[ex.noteKey] as never)}</div>
+        <div className="text-xs text-muted-foreground">{t(exampleNoteKeys[ex.noteKey as keyof typeof exampleNoteKeys])}</div>
       </div>
     );
   }
 
   function StatusBadge({ status }: { status: string }) {
-    const config = statusConfig[status] || statusConfig.PENDING;
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
     const Icon = config.icon;
     return (
       <Badge variant="outline" className={config.className}>
         <Icon className="mr-1 h-3 w-3" />
-        {t(config.labelKey as never)}
+        {t(config.labelKey)}
       </Badge>
     );
   }
@@ -256,8 +253,8 @@ export default function TaxPage() {
   function renderReportRow(report: TaxReport) {
     return (
       <>
-        <TableCell className="text-sm">{t(authorityLabelKeys[report.authority] as never) || report.authority}</TableCell>
-        <TableCell className="text-sm">{t(typeLabelKeys[report.type] as never) || report.type}</TableCell>
+        <TableCell className="text-sm">{t(authorityLabelKeys[report.authority as keyof typeof authorityLabelKeys]) || report.authority}</TableCell>
+        <TableCell className="text-sm">{t(typeLabelKeys[report.type as keyof typeof typeLabelKeys]) || report.type}</TableCell>
         <TableCell className="font-mono text-sm">{periodLabel(report)}</TableCell>
         <TableCell><StatusBadge status={report.status} /></TableCell>
         <TableCell className="text-sm text-muted-foreground">
@@ -272,8 +269,8 @@ export default function TaxPage() {
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate font-medium">{t(typeLabelKeys[report.type] as never) || report.type}</div>
-            <div className="text-sm text-muted-foreground">{t(authorityLabelKeys[report.authority] as never) || report.authority}</div>
+            <div className="truncate font-medium">{t(typeLabelKeys[report.type as keyof typeof typeLabelKeys]) || report.type}</div>
+            <div className="text-sm text-muted-foreground">{t(authorityLabelKeys[report.authority as keyof typeof authorityLabelKeys]) || report.authority}</div>
           </div>
           <StatusBadge status={report.status} />
         </div>

@@ -92,7 +92,7 @@ export function TransactionForm({
     setOcrItems([]);
     setOcrConfidence(null);
     setAppliedSuggestionIds(new Set());
-  }, []);
+  }, [defaultType, defaultCategory, defaultDescription, defaultAmount]);
 
   const handleAiSuggest = useCallback(
     async (description: string, amount: number) => {

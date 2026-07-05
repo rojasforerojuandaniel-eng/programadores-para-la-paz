@@ -33,22 +33,8 @@ import { useSearchParams } from "next/navigation";
 import { PlanLimitUpgradeCard } from "@/components/dashboard/plan-limit-upgrade-card";
 import { InvoiceActions } from "@/components/dashboard/invoice-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { Invoice } from "@/components/dashboard/edit-invoice-dialog";
+import type { InvoiceWithItems } from "@/types";
 import type { Locale } from "@/lib/locale";
-
-interface InvoiceItem {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  taxRate: number;
-  taxAmount?: number;
-  total?: number;
-}
-
-interface InvoiceWithItems extends Invoice {
-  clientId?: string;
-  items: InvoiceItem[];
-}
 
 const CreateInvoiceSheet = dynamic(
   () =>

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
-import { getLocale, type Locale } from "@/lib/locale-server";
+import { getLocale } from "@/lib/locale-server";
 import { formatCurrency, formatDate as formatDateLocale } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { ServerDataTable } from "@/components/dashboard/server-data-table";

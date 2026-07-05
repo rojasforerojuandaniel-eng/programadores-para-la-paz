@@ -537,7 +537,7 @@ export function ScenariosClient({
       }
     }
     loadForecast();
-  }, [monthsToProject, includeAguinaldo, includePrima, includeIva, retryCount]);
+  }, [monthsToProject, includeAguinaldo, includePrima, includeIva, retryCount, t]);
 
   const chartData: ScenarioData[] = useMemo(() => {
     if (!forecast) return [];

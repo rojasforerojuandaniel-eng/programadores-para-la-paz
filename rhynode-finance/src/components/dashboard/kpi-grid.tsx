@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getLocale, type Locale } from "@/lib/locale-server";
+import { getLocale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
 import { decimalToNumber } from "@/lib/decimal";
 import { getPrisma } from "@/lib/prisma";

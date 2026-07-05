@@ -46,7 +46,7 @@ export const GET = withRateLimit(
         cursorClause.skip = 1;
       }
 
-      const { profile, org } = auth;
+      const { profile } = auth;
 
       switch (type) {
         case "accounts": {

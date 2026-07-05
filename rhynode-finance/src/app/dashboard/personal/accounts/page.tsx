@@ -12,7 +12,7 @@ import { TableCell } from "@/components/ui/table";
 import { CreateAccountDialog } from "./create-dialog";
 import { Wallet, Landmark } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getLocale, type Locale } from "@/lib/locale-server";
+import { getLocale } from "@/lib/locale-server";
 import { formatCurrency } from "@/lib/format";
 
 export async function generateMetadata(): Promise<Metadata> {

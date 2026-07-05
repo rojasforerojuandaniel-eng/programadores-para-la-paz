@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Locale } from "@/lib/locale";
 import {
   Landmark,
   Calculator,
@@ -21,6 +20,7 @@ import {
   Unplug,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useIntegrationWaitlist, type WaitlistEntry } from "@/hooks/use-dashboard-data";
 
 type IntegrationStatus = "connected" | "available" | "coming-soon";
 type IntegrationCategory = "banks" | "accounting" | "payments" | "automation";
@@ -32,12 +32,6 @@ interface Integration {
   status: IntegrationStatus;
   initials: string;
   color: string;
-}
-
-interface WaitlistEntry {
-  name: string;
-  email: string;
-  joinedAt: string;
 }
 
 interface WaitlistFormState {
@@ -143,33 +137,25 @@ function isValidEmail(email: string) {
 
 export default function IntegrationsPage() {
   const t = useTranslations("dashboard.integrations");
-  const locale = useLocale() as Locale;
   const [integrations, setIntegrations] =
     useState<Integration[]>(integrationsSeed);
-  const [waitlist, setWaitlist] = useState<Record<string, WaitlistEntry>>({});
+  const [localWaitlist, setLocalWaitlist] = useState<Record<string, WaitlistEntry>>({});
   const [expandedWaitlist, setExpandedWaitlist] = useState<string | null>(null);
   const [waitlistForm, setWaitlistForm] = useState<WaitlistFormState>({
     name: "",
     email: "",
   });
+  const { data: preferences } = useIntegrationWaitlist();
 
-  useEffect(() => {
-    fetch("/api/personal/preferences")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: unknown) => {
-        if (
-          data &&
-          typeof data === "object" &&
-          "integrationWaitlist" in data &&
-          data.integrationWaitlist &&
-          typeof data.integrationWaitlist === "object" &&
-          !Array.isArray(data.integrationWaitlist)
-        ) {
-          setWaitlist(data.integrationWaitlist as Record<string, WaitlistEntry>);
-        }
-      })
-      .catch(() => null);
-  }, []);
+  const serverWaitlist = useMemo(() => {
+    const list = preferences?.integrationWaitlist;
+    return list && typeof list === "object" && !Array.isArray(list) ? list : {};
+  }, [preferences]);
+
+  const waitlist = useMemo(
+    () => ({ ...serverWaitlist, ...localWaitlist }),
+    [serverWaitlist, localWaitlist]
+  );
 
   function handleConnect(id: string) {
     setIntegrations((prev) =>
@@ -216,7 +202,7 @@ export default function IntegrationsPage() {
     };
 
     const next = { ...waitlist, [id]: entry };
-    setWaitlist(next);
+    setLocalWaitlist(next);
     fetch("/api/personal/preferences", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

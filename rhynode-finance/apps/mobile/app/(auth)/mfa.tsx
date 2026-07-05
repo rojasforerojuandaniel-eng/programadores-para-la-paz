@@ -1,30 +1,17 @@
 import { useState } from 'react';
 import { useSignIn } from '@clerk/clerk-expo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  View,
-  Text,
-  Pressable,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
-  StyleSheet,
-} from 'react-native';
+import { Platform } from 'react-native';
 import { AlertCircle, TrendingUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { MfaCodeInput } from '~/components/features/mfa-code-input';
+import { Button } from '~/components/ui/button';
+import { KeyboardAvoidingView } from '~/components/ui/keyboard-avoiding-view';
+import { Pressable } from '~/components/ui/pressable';
+import { ScrollView } from '~/components/ui/scroll-view';
+import { Text } from '~/components/ui/text';
+import { View } from '~/components/ui/view';
 import { hapticImpact } from '~/lib/haptics';
-import { colors } from '~/theme/colors';
-
-const COLORS = {
-  background: '#08090e',
-  foreground: '#fafafa',
-  card: '#0d0e13',
-  muted: '#9ca3af',
-  primary: colors.primary,
-  border: '#26272b',
-  destructive: '#dc2626',
-};
 
 export default function MfaScreen() {
   const { t } = useTranslation();
@@ -77,31 +64,44 @@ export default function MfaScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
+      className="flex-1 bg-background"
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.inner}>
-          <View style={styles.logoWrap}>
-            <View style={styles.logoBox}>
-              <TrendingUp color={COLORS.foreground} size={28} />
+        <View className="flex-1 justify-center px-6 py-12">
+          <View className="items-center mb-10 flex-row justify-center gap-3">
+            <View className="h-14 w-14 rounded-2xl bg-primary items-center justify-center">
+              <TrendingUp className="h-7 w-7 text-primary-foreground" />
             </View>
-            <Text style={styles.logoText}>{t('common.appName')}</Text>
+            <Text className="text-2xl font-bold tracking-tight text-foreground">
+              {t('common.appName')}
+            </Text>
           </View>
 
-          <Text style={styles.title}>{t('auth.mfa.title')}</Text>
-          <Text style={styles.subtitle}>
+          <Text className="text-3xl font-bold text-center text-foreground mb-2">
+            {t('auth.mfa.title')}
+          </Text>
+          <Text className="text-base text-center text-muted-foreground mb-8">
             {identifier
               ? t('auth.mfa.subtitleWithIdentifier', { identifier })
               : t('auth.mfa.subtitle')}
           </Text>
 
           {error ? (
-            <View style={styles.errorBox}>
-              <AlertCircle color={COLORS.destructive} size={18} />
-              <Text style={styles.errorText}>{error}</Text>
+            <View
+              className="flex-row items-center gap-2 rounded-2xl border p-4 mb-6"
+              style={{
+                backgroundColor: 'rgba(220, 38, 38, 0.12)',
+                borderColor: 'rgba(220, 38, 38, 0.3)',
+              }}
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+            >
+              <AlertCircle className="text-destructive" size={18} />
+              <Text className="flex-1 text-sm text-foreground">{error}</Text>
             </View>
           ) : null}
 
@@ -120,24 +120,21 @@ export default function MfaScreen() {
             placeholder={t('auth.mfa.totpPlaceholder')}
           />
 
-          <Pressable
+          <Button
             testID="mfa-verify-button"
-            accessibilityLabel={t('a11y.mfa.verify')}
-            accessibilityRole="button"
+            size="lg"
+            className="w-full rounded-2xl"
             onPress={() => {
               void hapticImpact();
               void onVerify();
             }}
             disabled={loading || code.length === 0}
-            style={[
-              styles.button,
-              (loading || code.length === 0) && styles.buttonDisabled,
-            ]}
+            accessibilityLabel={t('a11y.mfa.verify')}
           >
-            <Text style={styles.buttonText}>
+            <Text className="text-base font-semibold text-primary-foreground">
               {loading ? t('auth.mfa.verifyLoading') : t('auth.mfa.verify')}
             </Text>
-          </Pressable>
+          </Button>
 
           <Pressable
             testID="mfa-toggle-backup"
@@ -146,15 +143,14 @@ export default function MfaScreen() {
                 ? t('a11y.mfa.useTotp')
                 : t('a11y.mfa.useBackupCode')
             }
-            accessibilityRole="button"
             onPress={() => {
               setIsBackupCode((prev) => !prev);
               setCode('');
               setError('');
             }}
-            style={styles.toggle}
+            className="items-center mt-6 py-2"
           >
-            <Text style={styles.toggleText}>
+            <Text className="text-sm font-semibold text-primary">
               {isBackupCode
                 ? t('auth.mfa.useTotp')
                 : t('auth.mfa.useBackupCode')}
@@ -197,95 +193,3 @@ function isNetworkError(err: unknown): boolean {
     /network|fetch|timeout|abort|offline|no se pudo conectar/i.test(err.message)
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  logoWrap: {
-    alignItems: 'center',
-    marginBottom: 40,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  logoBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.foreground,
-    letterSpacing: -0.5,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.foreground,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.muted,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.foreground,
-  },
-  button: {
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: COLORS.foreground,
-  },
-  toggle: {
-    alignItems: 'center',
-    marginTop: 24,
-    paddingVertical: 8,
-  },
-  toggleText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-});

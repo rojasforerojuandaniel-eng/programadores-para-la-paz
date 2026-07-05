@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import type { Locale } from "@/lib/locale";
 
 const typeLabelKeys: Record<string, string> = {
   CHECKING: "dialog.types.CHECKING",
@@ -35,7 +34,6 @@ const typeLabelKeys: Record<string, string> = {
 
 export function CreateAccountDialog() {
   const t = useTranslations("dashboard.personalAccounts");
-  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();

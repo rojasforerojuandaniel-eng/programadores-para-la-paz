@@ -111,19 +111,24 @@ describe("calculateDiversificationScore", () => {
   });
 });
 
+const identityT = (key: string, _values?: Record<string, string | number>) => key;
+
 describe("calculateHealthScore", () => {
   it("calculates a balanced result", () => {
-    const result = calculateHealthScore({
-      income: d(10000),
-      expense: d(6000),
-      debts: [{ principalAmount: d(10000), remainingAmount: d(4000) }],
-      budgets: [{ amount: d(2000), spent: d(1800) }],
-      accounts: [{ balance: d(12000), type: "CHECKING" }],
-      investments: [
-        { investmentType: "STOCKS", balance: d(5000), investedAmount: d(5000) },
-        { investmentType: "BONDS", balance: d(5000), investedAmount: d(5000) },
-      ],
-    });
+    const result = calculateHealthScore(
+      {
+        income: d(10000),
+        expense: d(6000),
+        debts: [{ principalAmount: d(10000), remainingAmount: d(4000) }],
+        budgets: [{ amount: d(2000), spent: d(1800) }],
+        accounts: [{ balance: d(12000), type: "CHECKING" }],
+        investments: [
+          { investmentType: "STOCKS", balance: d(5000), investedAmount: d(5000) },
+          { investmentType: "BONDS", balance: d(5000), investedAmount: d(5000) },
+        ],
+      },
+      identityT
+    );
 
     expect(result.overallScore).toBeGreaterThan(0);
     expect(result.overallScore).toBeLessThanOrEqual(100);
@@ -132,19 +137,22 @@ describe("calculateHealthScore", () => {
   });
 
   it("returns all-clear recommendation when all factors are strong", () => {
-    const result = calculateHealthScore({
-      income: d(20000),
-      expense: d(6000),
-      debts: [{ principalAmount: d(10000), remainingAmount: d(0) }],
-      budgets: [{ amount: d(2000), spent: d(1500) }],
-      accounts: [{ balance: d(50000), type: "CHECKING" }],
-      investments: [
-        { investmentType: "STOCKS", balance: d(5000), investedAmount: d(5000) },
-        { investmentType: "BONDS", balance: d(5000), investedAmount: d(5000) },
-        { investmentType: "CRYPTO", balance: d(5000), investedAmount: d(5000) },
-        { investmentType: "REAL_ESTATE", balance: d(5000), investedAmount: d(5000) },
-      ],
-    });
+    const result = calculateHealthScore(
+      {
+        income: d(20000),
+        expense: d(6000),
+        debts: [{ principalAmount: d(10000), remainingAmount: d(0) }],
+        budgets: [{ amount: d(2000), spent: d(1500) }],
+        accounts: [{ balance: d(50000), type: "CHECKING" }],
+        investments: [
+          { investmentType: "STOCKS", balance: d(5000), investedAmount: d(5000) },
+          { investmentType: "BONDS", balance: d(5000), investedAmount: d(5000) },
+          { investmentType: "CRYPTO", balance: d(5000), investedAmount: d(5000) },
+          { investmentType: "REAL_ESTATE", balance: d(5000), investedAmount: d(5000) },
+        ],
+      },
+      identityT
+    );
 
     expect(result.recommendations[0].factorId).toBe("overall");
   });

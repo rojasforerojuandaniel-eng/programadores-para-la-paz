@@ -34,6 +34,8 @@ const eslintConfig = [
       "src/**/*.{ts,tsx}",
       "apps/mobile/**/*.{ts,tsx}",
       "packages/shared/**/*.{ts,tsx}",
+      "scripts/generate-vapid-keys.ts",
+      "scripts/reset-user-data.ts",
     ],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",

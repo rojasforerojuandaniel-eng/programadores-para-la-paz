@@ -3,7 +3,7 @@ import { requireAuth, getUserProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLocale, type Locale } from "@/lib/locale-server";
-import { formatCurrency as fmtCur, formatDate as fmtDate, formatNumber as fmtNum } from "@/lib/format";
+import { formatNumber as fmtNum } from "@/lib/format";
 import { dashboardMetadataLocale } from "@/lib/dashboard-metadata";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";

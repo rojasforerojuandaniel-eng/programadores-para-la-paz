@@ -102,18 +102,45 @@ describe('useTransactions', () => {
       },
     ];
     const api = createMockApi({
-      get: jest.fn().mockResolvedValue({ transactions }),
+      get: jest.fn().mockResolvedValue({ transactions, nextCursor: null }),
     });
     mockedUseApi.mockReturnValue(api);
 
     const { list } = renderHooks();
 
-    await waitFor(() => !list.current.isLoading && list.current.data !== undefined);
+    await waitFor(() => !list.current.isLoading && list.current.transactions.length > 0);
 
     expect(list.current.isError).toBe(false);
-    expect(list.current.data?.transactions).toHaveLength(1);
-    expect(list.current.data?.transactions[0].description).toBe('Lunch');
+    expect(list.current.transactions).toHaveLength(1);
+    expect(list.current.transactions[0].description).toBe('Lunch');
     expect(api.get).toHaveBeenCalledWith('/api/personal/transactions', expect.anything());
+  });
+
+  it('accumulates pages and exposes hasMore', async () => {
+    const pageOne = [
+      { id: 'txn-1', type: 'EXPENSE', category: 'Food', description: 'Lunch', amount: 20, currency: 'COP', date: new Date().toISOString() },
+    ];
+    const pageTwo = [
+      { id: 'txn-2', type: 'INCOME', category: 'Salary', description: 'Pay', amount: 1000, currency: 'COP', date: new Date().toISOString() },
+    ];
+    const get = jest.fn().mockResolvedValueOnce({ transactions: pageOne, nextCursor: 'cursor-1' }).mockResolvedValueOnce({ transactions: pageTwo, nextCursor: null });
+    const api = createMockApi({ get });
+    mockedUseApi.mockReturnValue(api);
+
+    const { list } = renderHooks();
+
+    await waitFor(() => list.current.transactions.length === 1 && !list.current.isLoading);
+    expect(list.current.hasMore).toBe(true);
+
+    await renderer.act(async () => {
+      list.current.loadMore();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => list.current.transactions.length === 2);
+    expect(list.current.hasMore).toBe(false);
+    expect(list.current.transactions[1].description).toBe('Pay');
+    expect(get).toHaveBeenLastCalledWith('/api/personal/transactions?cursor=cursor-1', expect.anything());
   });
 
   it('returns error when listing fails', async () => {

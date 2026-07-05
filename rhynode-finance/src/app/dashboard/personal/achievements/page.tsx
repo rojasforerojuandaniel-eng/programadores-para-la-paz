@@ -36,35 +36,11 @@ import { useTranslations, useLocale } from "next-intl";
 import { formatDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
-
-interface UnlockedAchievement {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  icon: string | null;
-  xpAwarded: number;
-  unlockedAt: string;
-}
-
-interface PendingAchievement {
-  type: string;
-  name: string;
-  description: string;
-  icon: string;
-  xpAwarded: number;
-  category: "starter" | "consistency" | "advanced";
-}
-
-interface AchievementsResponse {
-  unlocked: UnlockedAchievement[];
-  pending: PendingAchievement[];
-  stats: {
-    total: number;
-    unlocked: number;
-    xpEarned: number;
-  };
-}
+import {
+  useAchievements,
+  type UnlockedAchievement,
+  type PendingAchievement,
+} from "@/hooks/use-dashboard-data";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   Trophy,
@@ -316,25 +292,13 @@ function AchievementGrid({
 
 export default function AchievementsPage() {
   const t = useTranslations("dashboard.achievements");
-  const [data, setData] = React.useState<AchievementsResponse | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+  } = useAchievements();
 
-  React.useEffect(() => {
-    async function fetchAchievements() {
-      try {
-        const res = await fetch("/api/personal/achievements");
-        if (!res.ok) throw new Error(t("errors.loadError"));
-        const json = (await res.json()) as AchievementsResponse;
-        setData(json);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t("errors.unknown"));
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAchievements();
-  }, [t]);
+  const error = queryError ? (queryError instanceof Error ? queryError.message : t("errors.unknown")) : null;
 
   const { unlocked, pending, all } = React.useMemo(() => {
     const unlockedList = data?.unlocked ?? [];

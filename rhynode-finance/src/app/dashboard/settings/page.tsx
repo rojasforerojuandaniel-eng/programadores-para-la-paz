@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
@@ -23,6 +23,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { subscribeToPush, sendSubscriptionToServer } from "@/lib/push";
+import {
+  useNotificationPreferences,
+  useOrganization,
+  useSubscriptionPlan,
+  useOrganizationMembers,
+  usePaymentsHistory,
+  type NotificationPreferences,
+  type Organization,
+  type Plan,
+} from "@/hooks/use-dashboard-data";
 import { ProfileSection } from "@/components/dashboard/settings/profile-section";
 import { CompanySection } from "@/components/dashboard/settings/company-section";
 import { LocalizationSection } from "@/components/dashboard/settings/localization-section";
@@ -31,44 +41,34 @@ import { NotificationsSection } from "@/components/dashboard/settings/notificati
 import { SecuritySection } from "@/components/dashboard/settings/security-section";
 import { MembersSection } from "@/components/dashboard/settings/members-section";
 
-interface Organization {
-  name: string;
-  taxId: string;
-  country: string;
-  currency: string;
-  timezone: string;
-}
-
-interface Plan {
-  name: string;
-  invoicesUsed: number;
-  invoicesLimit: number;
-  usersUsed: number;
-  usersLimit: number;
-}
-
-interface PaymentItem {
-  id: string;
-  amount: number;
-  currency: string;
-  method: string;
-  status: string;
-  paidAt: string | null;
-  createdAt: string;
-}
-
-interface NotificationPreferences {
-  budgets: boolean;
-  subscriptions: boolean;
-  weeklySummary: boolean;
-}
-
 interface TabItem {
   id: string;
   labelKey: string;
   icon: typeof User;
   href?: string;
 }
+
+const defaultOrg: Organization = {
+  name: "",
+  taxId: "",
+  country: "CO",
+  currency: "COP",
+  timezone: "America/Bogota",
+};
+
+const defaultPlan: Plan = {
+  name: "Starter",
+  invoicesUsed: 0,
+  invoicesLimit: 10,
+  usersUsed: 1,
+  usersLimit: 1,
+};
+
+const defaultNotifPrefs: NotificationPreferences = {
+  budgets: true,
+  subscriptions: true,
+  weeklySummary: false,
+};
 
 const tabConfig: TabItem[] = [
   { id: "profile", labelKey: "tabs.profile", icon: User },
@@ -86,42 +86,51 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const t = useTranslations("dashboard.settings");
 
-  const [org, setOrg] = useState<Organization>({
-    name: "",
-    taxId: "",
-    country: "CO",
-    currency: "COP",
-    timezone: "America/Bogota",
-  });
-  const [loading, setLoading] = useState(true);
+  const { data: orgData, isLoading: loading } = useOrganization();
+  const { data: planData } = useSubscriptionPlan();
+  const { data: membersData } = useOrganizationMembers();
+  const { data: paymentsData, isLoading: paymentsLoading } = usePaymentsHistory();
+  const { data: notifData, isLoading: notifLoading } = useNotificationPreferences();
+
+  const [orgDraft, setOrgDraft] = useState<Partial<Organization>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const [plan, setPlan] = useState<Plan>({
-    name: "Starter",
-    invoicesUsed: 0,
-    invoicesLimit: 10,
-    usersUsed: 1,
-    usersLimit: 1,
-  });
   const [upgrading, setUpgrading] = useState(false);
-
-  const [payments, setPayments] = useState<PaymentItem[]>([]);
-  const [paymentsLoading, setPaymentsLoading] = useState(true);
 
   const { theme, setTheme } = useTheme();
   const mounted = useIsClient();
 
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>({
-    budgets: true,
-    subscriptions: true,
-    weeklySummary: false,
-  });
-  const [notifLoading, setNotifLoading] = useState(true);
+  const [notifDraft, setNotifDraft] = useState<Partial<NotificationPreferences>>({});
   const [notifSaving, setNotifSaving] = useState(false);
 
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+
+  const membersCount = useMemo(() => {
+    const members = Array.isArray(membersData?.members) ? membersData.members : [];
+    return 1 + members.filter((m: { status?: string }) => m.status === "ACTIVE").length;
+  }, [membersData]);
+
+  const org = useMemo(
+    () => ({ ...defaultOrg, ...orgData?.organization, ...orgDraft }),
+    [orgData, orgDraft]
+  );
+
+  const plan = useMemo(
+    () => ({ ...defaultPlan, ...planData?.plan, usersUsed: membersCount }),
+    [planData, membersCount]
+  );
+
+  const payments = useMemo(
+    () => (Array.isArray(paymentsData?.payments) ? paymentsData.payments : []),
+    [paymentsData]
+  );
+
+  const notifPrefs = useMemo(
+    () => ({ ...defaultNotifPrefs, ...notifData, ...notifDraft }),
+    [notifData, notifDraft]
+  );
 
   useEffect(() => {
     const success = searchParams.get("success") === "true";
@@ -134,23 +143,6 @@ export default function SettingsPage() {
   }, [searchParams, router]);
 
   useEffect(() => {
-    fetch("/api/notifications/preferences")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed");
-        return r.json();
-      })
-      .then((data) => {
-        setNotifPrefs({
-          budgets: data.budgets ?? true,
-          subscriptions: data.subscriptions ?? true,
-          weeklySummary: data.weeklySummary ?? false,
-        });
-        setNotifLoading(false);
-      })
-      .catch(() => setNotifLoading(false));
-  }, []);
-
-  useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
     navigator.serviceWorker.ready.then((reg) => {
@@ -158,67 +150,6 @@ export default function SettingsPage() {
         setPushEnabled(!!sub);
       });
     });
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/organization")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.organization) {
-          setOrg(data.organization);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/subscribe/plan")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed");
-        return r.json();
-      })
-      .then((data) => {
-        if (data.plan) setPlan(data.plan);
-      })
-      .catch(() => {
-        // Plan endpoint not implemented yet, keep defaults
-      });
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/organization/members")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed");
-        return r.json();
-      })
-      .then((data) => {
-        const members = Array.isArray(data.members) ? data.members : [];
-        setPlan((prev) => ({
-          ...prev,
-          usersUsed: 1 + members.filter((m: { status?: string }) => m.status === "ACTIVE").length,
-        }));
-      })
-      .catch(() => {
-        // Members endpoint not available, keep default user count
-      });
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/payments/history")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed");
-        return r.json();
-      })
-      .then((data) => {
-        setPayments(Array.isArray(data.payments) ? data.payments : []);
-      })
-      .catch(() => {
-        setPayments([]);
-      })
-      .finally(() => {
-        setPaymentsLoading(false);
-      });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -233,7 +164,7 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setOrg(data.organization);
+        setOrgDraft({ ...data.organization });
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       } else {
@@ -248,7 +179,7 @@ export default function SettingsPage() {
 
   async function updateNotifPrefs(key: keyof NotificationPreferences, value: boolean) {
     const updated = { ...notifPrefs, [key]: value };
-    setNotifPrefs(updated);
+    setNotifDraft(updated);
     setNotifSaving(true);
     try {
       const res = await fetch("/api/notifications/preferences", {
@@ -260,7 +191,7 @@ export default function SettingsPage() {
       toast.success(t("toast.prefsSaved"));
     } catch {
       toast.error(t("toast.prefsError"));
-      setNotifPrefs(notifPrefs);
+      setNotifDraft({});
     } finally {
       setNotifSaving(false);
     }
@@ -385,11 +316,11 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="company">
-            <CompanySection org={org} onChange={setOrg} saving={saving} />
+            <CompanySection org={org} onChange={setOrgDraft} saving={saving} />
           </TabsContent>
 
           <TabsContent value="localization">
-            <LocalizationSection org={org} onChange={setOrg} saving={saving} />
+            <LocalizationSection org={org} onChange={setOrgDraft} saving={saving} />
           </TabsContent>
 
           <TabsContent value="billing">

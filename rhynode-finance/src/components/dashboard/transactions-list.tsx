@@ -81,20 +81,8 @@ import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
 
-type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
-
-export interface Transaction {
-  id: string;
-  date: string;
-  type: TransactionType;
-  category?: string;
-  description: string;
-  amount: number;
-  currency: string;
-  isRecurring: boolean;
-  bankAccountName?: string;
-  bankAccountId?: string;
-}
+import type { Transaction, TransactionType } from "@/types";
+export type { Transaction } from "@/types";
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -102,52 +90,54 @@ interface TransactionsListProps {
   filterOptions: TransactionFilterOptions;
 }
 
-const typeConfig: Record<
-  TransactionType,
-  { labelKey: string; className: string }
-> = {
+const typeConfig = {
   INCOME: { labelKey: "types.INCOME", className: "bg-success/10 text-success" },
   EXPENSE: { labelKey: "types.EXPENSE", className: "bg-danger/10 text-danger" },
   TRANSFER: { labelKey: "types.TRANSFER", className: "bg-info/10 text-info" },
   ADJUSTMENT: { labelKey: "types.ADJUSTMENT", className: "bg-muted text-muted-foreground" },
-};
+} as const;
 
-const categoryStyles: Record<string, { icon: LucideIcon; className: string }> = {
+const categoryStyles = {
   "Transporte / Delivery": {
     icon: Bus,
     className: "bg-blue-500/10 text-blue-600",
+    labelKey: "categories.transportationDelivery",
   },
-  Transporte: { icon: Bus, className: "bg-blue-500/10 text-blue-600" },
-  Entretenimiento: { icon: Film, className: "bg-purple-500/10 text-purple-600" },
-  Café: { icon: Coffee, className: "bg-amber-700/10 text-amber-700" },
-  Mercado: { icon: ShoppingCart, className: "bg-green-500/10 text-green-600" },
-  Restaurante: { icon: Utensils, className: "bg-orange-500/10 text-orange-600" },
-  Telecomunicaciones: { icon: Wifi, className: "bg-cyan-500/10 text-cyan-600" },
+  Transporte: { icon: Bus, className: "bg-blue-500/10 text-blue-600", labelKey: "categories.transportation" },
+  Entretenimiento: { icon: Film, className: "bg-purple-500/10 text-purple-600", labelKey: "categories.entertainment" },
+  Café: { icon: Coffee, className: "bg-amber-700/10 text-amber-700", labelKey: "categories.coffee" },
+  Mercado: { icon: ShoppingCart, className: "bg-green-500/10 text-green-600", labelKey: "categories.market" },
+  Restaurante: { icon: Utensils, className: "bg-orange-500/10 text-orange-600", labelKey: "categories.restaurant" },
+  Telecomunicaciones: { icon: Wifi, className: "bg-cyan-500/10 text-cyan-600", labelKey: "categories.telecommunications" },
   "Servicios públicos": {
     icon: Zap,
     className: "bg-yellow-500/10 text-yellow-600",
+    labelKey: "categories.utilities",
   },
-  Seguros: { icon: ShieldCheck, className: "bg-indigo-500/10 text-indigo-600" },
-  Salud: { icon: Heart, className: "bg-rose-500/10 text-rose-600" },
-  Educación: { icon: GraduationCap, className: "bg-teal-500/10 text-teal-600" },
+  Seguros: { icon: ShieldCheck, className: "bg-indigo-500/10 text-indigo-600", labelKey: "categories.insurance" },
+  Salud: { icon: Heart, className: "bg-rose-500/10 text-rose-600", labelKey: "categories.health" },
+  Educación: { icon: GraduationCap, className: "bg-teal-500/10 text-teal-600", labelKey: "categories.education" },
   "Transferencia/Finanzas": {
     icon: Building2,
     className: "bg-slate-500/10 text-slate-600",
+    labelKey: "categories.financeTransfer",
   },
-  Ropa: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
-  Viajes: { icon: Plane, className: "bg-sky-500/10 text-sky-600" },
-  Mascotas: { icon: Dog, className: "bg-emerald-500/10 text-emerald-600" },
-  Compras: { icon: ShoppingCart, className: "bg-violet-500/10 text-violet-600" },
-  Ventas: { icon: Briefcase, className: "bg-success/10 text-success" },
-  Nómina: { icon: Briefcase, className: "bg-primary/10 text-primary" },
-  Servicios: { icon: Briefcase, className: "bg-blue-500/10 text-blue-600" },
-  Materiales: { icon: Tag, className: "bg-orange-500/10 text-orange-600" },
-  Marketing: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
-  Otros: { icon: Tag, className: "bg-muted text-muted-foreground" },
-};
+  Ropa: { icon: Tag, className: "bg-pink-500/10 text-pink-600", labelKey: "categories.clothing" },
+  Viajes: { icon: Plane, className: "bg-sky-500/10 text-sky-600", labelKey: "categories.travel" },
+  Mascotas: { icon: Dog, className: "bg-emerald-500/10 text-emerald-600", labelKey: "categories.pets" },
+  Compras: { icon: ShoppingCart, className: "bg-violet-500/10 text-violet-600", labelKey: "categories.shopping" },
+  Ventas: { icon: Briefcase, className: "bg-success/10 text-success", labelKey: "categories.sales" },
+  Nómina: { icon: Briefcase, className: "bg-primary/10 text-primary", labelKey: "categories.payroll" },
+  Servicios: { icon: Briefcase, className: "bg-blue-500/10 text-blue-600", labelKey: "categories.services" },
+  Materiales: { icon: Tag, className: "bg-orange-500/10 text-orange-600", labelKey: "categories.materials" },
+  Marketing: { icon: Tag, className: "bg-pink-500/10 text-pink-600", labelKey: "categories.marketing" },
+  Otros: { icon: Tag, className: "bg-muted text-muted-foreground", labelKey: "categories.other" },
+} as const;
 
-function getCategoryMeta(category?: string) {
-  return categoryStyles[category ?? ""] ?? categoryStyles.Otros;
+type CategoryStyle = (typeof categoryStyles)[keyof typeof categoryStyles];
+
+function getCategoryMeta(category?: string): CategoryStyle {
+  return (categoryStyles as Record<string, CategoryStyle>)[category ?? ""] ?? categoryStyles.Otros;
 }
 
 function Checkbox({
@@ -176,6 +166,9 @@ function Checkbox({
 function CategoryBadge({ category }: { category?: string }) {
   const t = useTranslations("dashboard.transactions");
   const meta = getCategoryMeta(category);
+  const label = meta.labelKey
+    ? t(meta.labelKey)
+    : category || t("list.noCategory");
   return (
     <span
       className={cn(
@@ -184,7 +177,7 @@ function CategoryBadge({ category }: { category?: string }) {
       )}
     >
       <meta.icon className="h-3 w-3" />
-      {category || t("list.noCategory")}
+      {label}
     </span>
   );
 }
@@ -194,7 +187,7 @@ function TypeBadge({ type }: { type: TransactionType }) {
   const config = typeConfig[type] ?? typeConfig.ADJUSTMENT;
   return (
     <Badge variant="outline" className={cn(config.className)}>
-      {t(config.labelKey as never)}
+      {t(config.labelKey)}
     </Badge>
   );
 }
@@ -351,10 +344,10 @@ function EditTransactionDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="INCOME">{t("types.INCOME" as never)}</SelectItem>
-                  <SelectItem value="EXPENSE">{t("types.EXPENSE" as never)}</SelectItem>
-                  <SelectItem value="TRANSFER">{t("types.TRANSFER" as never)}</SelectItem>
-                  <SelectItem value="ADJUSTMENT">{t("types.ADJUSTMENT" as never)}</SelectItem>
+                  <SelectItem value="INCOME">{t("types.INCOME")}</SelectItem>
+                  <SelectItem value="EXPENSE">{t("types.EXPENSE")}</SelectItem>
+                  <SelectItem value="TRANSFER">{t("types.TRANSFER")}</SelectItem>
+                  <SelectItem value="ADJUSTMENT">{t("types.ADJUSTMENT")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -675,7 +668,7 @@ export function TransactionsList({
                             <meta.icon className="h-3.5 w-3.5" />
                           </div>
                           <span className="text-sm">
-                            {tx.category || "—"}
+                            {meta.labelKey ? t(meta.labelKey) : tx.category || "—"}
                           </span>
                         </div>
                       </TableCell>

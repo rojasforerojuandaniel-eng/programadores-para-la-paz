@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +23,9 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { executeMutation } from "@/lib/offline-queue";
-import type { Locale } from "@/lib/locale";
 
 export function CreateProjectDialog() {
   const t = useTranslations("dashboard.projects");
-  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({

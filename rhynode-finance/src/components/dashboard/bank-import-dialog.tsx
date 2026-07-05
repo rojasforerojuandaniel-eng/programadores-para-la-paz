@@ -71,13 +71,6 @@ interface BankImportDialogProps {
   children?: React.ReactNode;
 }
 
-const CSV_TEMPLATE_ROWS = [
-  ["Fecha", "Descripcion", "Debito", "Credito", "Categoria"],
-  ["2026-01-15", "Pago de nomina", "", "2500000", "Nómina"],
-  ["2026-01-16", "Supermercado exito", "180000", "", "Mercado"],
-  ["2026-01-17", "Transporte uber", "24000", "", "Transporte / Delivery"],
-];
-
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 function isValidImportFile(file: File): boolean {
@@ -86,13 +79,13 @@ function isValidImportFile(file: File): boolean {
   return validExtensions.some((ext) => lowerName.endsWith(ext));
 }
 
-function downloadCsvTemplate() {
-  const csv = CSV_TEMPLATE_ROWS.map((row) => row.join(",")).join("\n");
+function downloadCsvTemplate(rows: string[][], filename: string) {
+  const csv = rows.map((row) => row.join(",")).join("\n");
   const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "plantilla-transacciones-rhynode.csv";
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -115,6 +108,40 @@ export function BankImportDialog({
   const [defaultAccountId, setDefaultAccountId] = useState("");
   const [defaultCategory, setDefaultCategory] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+
+  const csvTemplateRows = useMemo(
+    () => [
+      [
+        t("bankImport.template.date"),
+        t("bankImport.template.description"),
+        t("bankImport.template.debit"),
+        t("bankImport.template.credit"),
+        t("bankImport.template.category"),
+      ],
+      [
+        "2026-01-15",
+        t("bankImport.template.example.payroll"),
+        "",
+        "2500000",
+        t("bankImport.template.categories.payroll"),
+      ],
+      [
+        "2026-01-16",
+        t("bankImport.template.example.supermarket"),
+        "180000",
+        "",
+        t("bankImport.template.categories.market"),
+      ],
+      [
+        "2026-01-17",
+        t("bankImport.template.example.transport"),
+        "24000",
+        "",
+        t("bankImport.template.categories.transport"),
+      ],
+    ],
+    [t]
+  );
 
   const reset = useCallback(() => {
     setFile(null);
@@ -151,7 +178,7 @@ export function BankImportDialog({
     setFile(selected);
     setPreview(null);
     setRowState({});
-  }, []);
+  }, [t]);
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,7 +244,7 @@ export function BankImportDialog({
     } finally {
       setPreviewLoading(false);
     }
-  }, [file, bankAccounts, defaultCategory]);
+  }, [file, bankAccounts, defaultCategory, t]);
 
   const handleApplyDefaults = useCallback(() => {
     setRowState((prev) => {
@@ -297,7 +324,7 @@ export function BankImportDialog({
     } finally {
       setImportLoading(false);
     }
-  }, [preview, selectedRows, rowState, onImport, reset]);
+  }, [preview, selectedRows, rowState, onImport, reset, t]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -387,7 +414,7 @@ export function BankImportDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={downloadCsvTemplate}
+                onClick={() => downloadCsvTemplate(csvTemplateRows, t("bankImport.template.filename"))}
                 className="gap-2"
               >
                 <Download className="h-4 w-4" />

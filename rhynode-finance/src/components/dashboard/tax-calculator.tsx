@@ -42,14 +42,30 @@ import {
 
 type TFn = (key: string, values?: Record<string, string | number>) => string;
 
-const icaRates: Record<string, { label: string; perThousand: number }> = {
-  bogota: { label: "Bogotá", perThousand: 9.66 },
-  medellin: { label: "Medellín", perThousand: 13.8 },
-  cali: { label: "Cali", perThousand: 10.2 },
-  barranquilla: { label: "Barranquilla", perThousand: 7.0 },
-  cartagena: { label: "Cartagena", perThousand: 8.2 },
-  bucaramanga: { label: "Bucaramanga", perThousand: 11.0 },
+const ICA_CITY_KEYS = {
+  bogota: "icaCities.bogota",
+  medellin: "icaCities.medellin",
+  cali: "icaCities.cali",
+  barranquilla: "icaCities.barranquilla",
+  cartagena: "icaCities.cartagena",
+  bucaramanga: "icaCities.bucaramanga",
+} as const;
+
+type IcaCityKey = keyof typeof ICA_CITY_KEYS;
+
+const icaRates: Record<IcaCityKey, { perThousand: number }> = {
+  bogota: { perThousand: 9.66 },
+  medellin: { perThousand: 13.8 },
+  cali: { perThousand: 10.2 },
+  barranquilla: { perThousand: 7.0 },
+  cartagena: { perThousand: 8.2 },
+  bucaramanga: { perThousand: 11.0 },
 };
+
+function getIcaCityLabel(city: IcaCityKey | string, t: (key: string) => string): string {
+  const key = ICA_CITY_KEYS[city as IcaCityKey];
+  return key ? t(key) : city;
+}
 
 const MAX_SLIDER_AMOUNT = 50_000_000;
 const SLIDER_STEP = 100_000;
@@ -66,7 +82,7 @@ function getReteFuenteRate(amount: number): number {
   return 0.04;
 }
 
-function formatRate(rate: number, taxType: TaxType, city?: string): string {
+function formatRate(rate: number, taxType: TaxType, city?: IcaCityKey): string {
   if (taxType === "ICA") {
     const perThousand = city ? icaRates[city]?.perThousand : undefined;
     return perThousand ? `${perThousand}‰` : "9.66‰";
@@ -120,7 +136,7 @@ interface CalculationResult {
   deductions: number;
   taxableBase: number;
   taxType: TaxType;
-  city?: string;
+  city?: IcaCityKey;
   rate: number;
   rateLabel: string;
   tax: number;
@@ -133,7 +149,7 @@ function calculate(
   base: number,
   deductions: number,
   taxType: TaxType,
-  city?: string
+  city?: IcaCityKey
 ): CalculationResult {
   const safeBase = Math.max(0, base);
   const safeDeductions = Math.max(0, Math.min(deductions, safeBase));
@@ -199,7 +215,7 @@ export function TaxCalculator() {
   const [taxType, setTaxType] = useState<TaxType>("IVA");
   const [baseAmount, setBaseAmount] = useState("");
   const [deductions, setDeductions] = useState("");
-  const [city, setCity] = useState<string>("bogota");
+  const [city, setCity] = useState<IcaCityKey>("bogota");
   const [result, setResult] = useState<CalculationResult | null>(null);
 
   const baseNumeric = clampAmount(baseAmount);
@@ -272,7 +288,7 @@ export function TaxCalculator() {
               {steps.map((s) => {
                 const active = s.id === step;
                 const completed = s.id < step;
-                const stepLabel = t(s.labelKey as never);
+                const stepLabel = t(s.labelKey);
                 return (
                   <li key={s.id} className="flex flex-1 flex-col items-center">
                     <button
@@ -484,16 +500,16 @@ export function TaxCalculator() {
                     <Label htmlFor="tax-city">
                       {t("calculator.regime.cityLabel")}
                     </Label>
-                    <Select value={city} onValueChange={setCity}>
+                    <Select value={city} onValueChange={(value) => setCity(value as IcaCityKey)}>
                       <SelectTrigger id="tax-city">
                         <SelectValue
                           placeholder={t("calculator.regime.cityPlaceholder")}
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(icaRates).map(([key, { label }]) => (
+                        {Object.entries(icaRates).map(([key, { perThousand }]) => (
                           <SelectItem key={key} value={key}>
-                            {label} ({icaRates[key].perThousand}‰)
+                            {getIcaCityLabel(key, t)} ({perThousand}‰)
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -511,7 +527,7 @@ export function TaxCalculator() {
                     t("calculator.regime.summaryReteFuente")}
                   {taxType === "ICA" &&
                     t("calculator.regime.summaryICA", {
-                      city: icaRates[city].label,
+                      city: getIcaCityLabel(city, t),
                       rate: icaRates[city].perThousand,
                     })}
                 </div>
@@ -886,7 +902,7 @@ async function exportCalculationPdf(
   if (result.city) {
     lines.push([
       t("calculator.pdf.rows.icaCity"),
-      icaRates[result.city]?.label ?? result.city,
+      getIcaCityLabel(result.city, t),
     ]);
   }
 
@@ -945,7 +961,7 @@ async function exportCalculationExcel(
       ? [
           {
             Concepto: t("calculator.pdf.rows.icaCity"),
-            Valor: icaRates[result.city]?.label ?? result.city,
+            Valor: getIcaCityLabel(result.city, t),
           },
         ]
       : []),

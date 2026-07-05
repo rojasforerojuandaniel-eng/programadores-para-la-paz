@@ -44,38 +44,7 @@ import { EditInvoiceDialog } from "./edit-invoice-dialog";
 import { formatDate as fmtDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
 
-interface InvoiceItem {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  taxRate: number;
-  taxAmount?: number;
-  total?: number;
-}
-
-interface InvoiceWithItems {
-  id: string;
-  number: string;
-  status: string;
-  currency: string;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  issueDate: string;
-  dueDate?: string | null;
-  notes?: string | null;
-  terms?: string | null;
-  clientId?: string;
-  client?: {
-    id?: string;
-    name?: string;
-    email?: string | null;
-    address?: string | null;
-  };
-  project?: { name?: string };
-  items?: InvoiceItem[];
-}
+import type { InvoiceItem, InvoiceWithItems } from "@/types";
 
 interface InvoiceActionsProps {
   invoice: InvoiceWithItems;

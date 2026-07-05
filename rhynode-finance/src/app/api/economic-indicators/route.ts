@@ -4,6 +4,7 @@ import { getLocale } from "@/lib/locale-server";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
 
+// Public, intentionally unauthenticated indicators feed. Rate-limited to prevent abuse.
 export const GET = withRateLimit(async function GET() {
   try {
     const locale = await getLocale();

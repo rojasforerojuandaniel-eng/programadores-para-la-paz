@@ -21,22 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export interface Invoice {
-  id: string;
-  number: string;
-  status: string;
-  currency: string;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  total: number;
-  issueDate: string;
-  dueDate?: string | null;
-  notes?: string | null;
-  terms?: string | null;
-  client?: { name?: string };
-  project?: { name?: string };
-}
+import type { Invoice } from "@/types";
 
 const statusOptions = ["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED", "PARTIAL"];
 

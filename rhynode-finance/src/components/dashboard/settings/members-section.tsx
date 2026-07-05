@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { useOrganizationRole } from "@/hooks/use-organization-role";
 import { usePlanLimit } from "@/hooks/use-plan-limit";
 import type { OrganizationRole } from "@/lib/organization";
-import type { Locale } from "@/lib/locale";
 import { Users, Mail, RefreshCw, Trash2, Plus, Loader2 } from "lucide-react";
 
 interface Member {
@@ -35,7 +34,6 @@ interface Member {
 
 export function MembersSection() {
   const t = useTranslations("dashboard.settings");
-  const locale = useLocale() as Locale;
   const { user } = useUser();
   const { isAdmin } = useOrganizationRole();
   const {

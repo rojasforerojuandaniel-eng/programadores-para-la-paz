@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import type { ScenarioType } from "@/lib/scenarios";
-import type { Locale } from "@/lib/locale";
 
 interface ScenarioFormData {
   name: string;
@@ -48,7 +47,6 @@ export function ScenarioForm({
   isSubmitting = false,
 }: ScenarioFormProps) {
   const t = useTranslations("dashboard.scenarios");
-  const locale = useLocale() as Locale;
   const [name, setName] = useState("");
   const [type, setType] = useState<ScenarioType>("base");
   const [incomeAdjustment, setIncomeAdjustment] = useState([0]);
