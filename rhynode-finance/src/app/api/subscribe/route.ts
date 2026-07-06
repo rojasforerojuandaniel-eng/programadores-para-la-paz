@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { stripe, PLANS } from "@/lib/stripe";
-import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canAdmin } from "@/lib/organization";
+import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
 
 export const POST = withRateLimit(
   async (request: Request) => {
     try {
-      const org = await requireAuth();
-      if (!org) {
+      const clerkSession = await auth();
+      const userId = clerkSession?.userId;
+      if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const ctx = await getCurrentOrganization(userId);
+      if (!ctx || !canAdmin(ctx.role)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
       const { plan } = await request.json();
@@ -22,15 +29,15 @@ export const POST = withRateLimit(
       }
 
       // Upsert Stripe customer
-      const sub = await prisma.subscription.findUnique({
-        where: { organizationId: org.id },
+      const sub = await getPrisma().subscription.findUnique({
+        where: { organizationId: ctx.org.id },
       });
 
       let customerId = sub?.stripeCustomerId;
       if (!customerId) {
         const customer = await stripe.customers.create({
-          name: org.name,
-          metadata: { organizationId: org.id },
+          name: ctx.org.name,
+          metadata: { organizationId: ctx.org.id },
         });
         customerId = customer.id;
       }
@@ -41,9 +48,9 @@ export const POST = withRateLimit(
         mode: "subscription",
         success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
-        metadata: { organizationId: org.id, plan: planKey },
+        metadata: { organizationId: ctx.org.id, plan: planKey },
         subscription_data: {
-          metadata: { organizationId: org.id, plan: planKey },
+          metadata: { organizationId: ctx.org.id, plan: planKey },
         },
       });
 

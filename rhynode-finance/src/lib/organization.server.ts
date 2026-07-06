@@ -18,23 +18,36 @@ export async function getCurrentOrganization(
 
   const membership = await prisma.organizationMember.findFirst({
     where: { userId: clerkUserId },
-    include: { organization: { select: { id: true, name: true, plan: true } } },
+    include: { organization: { select: { id: true, name: true, plan: true, userId: true } } },
   });
 
   if (membership) {
     return {
-      org: membership.organization,
+      org: {
+        id: membership.organization.id,
+        name: membership.organization.name,
+        plan: membership.organization.plan,
+        userId: membership.organization.userId,
+      },
       role: normalizeRole(membership.role),
     };
   }
 
   const owned = await prisma.organization.findFirst({
     where: { slug: clerkUserId },
-    select: { id: true, name: true, plan: true },
+    select: { id: true, name: true, plan: true, userId: true },
   });
 
   if (owned) {
-    return { org: owned, role: "ADMIN" };
+    return {
+      org: {
+        id: owned.id,
+        name: owned.name,
+        plan: owned.plan,
+        userId: owned.userId,
+      },
+      role: "ADMIN",
+    };
   }
 
   return null;

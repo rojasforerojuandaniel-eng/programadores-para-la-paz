@@ -1,20 +1,27 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
-import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canAdmin } from "@/lib/organization";
+import { getPrisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { logger } from "@/lib/logger";
 
 export const POST = withRateLimit(
   async () => {
     try {
-      const org = await requireAuth();
-      if (!org) {
+      const session = await auth();
+      const userId = session?.userId;
+      if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+      const ctx = await getCurrentOrganization(userId);
+      if (!ctx || !canAdmin(ctx.role)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
 
-      const sub = await prisma.subscription.findUnique({
-        where: { organizationId: org.id },
+      const sub = await getPrisma().subscription.findUnique({
+        where: { organizationId: ctx.org.id },
       });
 
       if (!sub?.stripeCustomerId) {

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { getPrisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canAdmin } from "@/lib/organization";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -30,11 +31,16 @@ const createSchema = z.object({
 
 export const GET = withRateLimit(async function GET() {
   try {
-    const org = await requireAuth();
-    if (!org) {
+    const session = await auth();
+    const userId = session?.userId;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.json({ organization: org });
+    const ctx = await getCurrentOrganization(userId);
+    if (!ctx || !canAdmin(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.json({ organization: ctx.org });
   } catch (error) {
     logger.error("Failed to fetch organization", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
@@ -61,7 +67,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
       );
     }
 
-    const existing = await prisma.organization.findFirst({
+    const existing = await getPrisma().organization.findFirst({
       where: { slug: userId },
     });
 
@@ -73,13 +79,13 @@ export const POST = withRateLimit(async function POST(request: Request) {
     }
 
     // Ensure UserProfile exists
-    let profile = await prisma.userProfile.findUnique({
+    let profile = await getPrisma().userProfile.findUnique({
       where: { clerkId: userId },
     });
 
     if (!profile) {
       const email = session?.sessionClaims?.email as string | undefined;
-      profile = await prisma.userProfile.create({
+      profile = await getPrisma().userProfile.create({
         data: {
           clerkId: userId,
           email: email || "",
@@ -90,7 +96,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
       });
     }
 
-    const org = await prisma.organization.create({
+    const org = await getPrisma().organization.create({
       data: {
         name: parsed.data.name,
         slug: userId,
@@ -106,7 +112,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
     });
 
     // Update UserProfile scope
-    await prisma.userProfile.update({
+    await getPrisma().userProfile.update({
       where: { id: profile.id },
       data: {
         scope: parsed.data.scope ?? profile.scope,
@@ -115,7 +121,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
     });
 
     // Create a default subscription record
-    await prisma.subscription.create({
+    await getPrisma().subscription.create({
       data: {
         organizationId: org.id,
         plan: "STARTER",
@@ -135,9 +141,14 @@ export const POST = withRateLimit(async function POST(request: Request) {
 
 export const PUT = withRateLimit(async function PUT(request: Request) {
   try {
-    const org = await requireAuth();
-    if (!org) {
+    const session = await auth();
+    const userId = session?.userId;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const ctx = await getCurrentOrganization(userId);
+    if (!ctx || !canAdmin(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -149,18 +160,18 @@ export const PUT = withRateLimit(async function PUT(request: Request) {
       );
     }
 
-    const updated = await prisma.organization.update({
-      where: { id: org.id },
+    const updated = await getPrisma().organization.update({
+      where: { id: ctx.org.id },
       data: parsed.data,
     });
 
     // Sync UserProfile if scope/hasBusiness changed
     if (parsed.data.scope !== undefined || parsed.data.hasBusiness !== undefined) {
-      const profile = await prisma.userProfile.findUnique({
-        where: { id: org.userId ?? undefined },
+      const profile = await getPrisma().userProfile.findUnique({
+        where: { id: ctx.org.userId ?? undefined },
       });
       if (profile) {
-        await prisma.userProfile.update({
+        await getPrisma().userProfile.update({
           where: { id: profile.id },
           data: {
             scope: parsed.data.scope ?? profile.scope,

@@ -4,6 +4,7 @@ export interface MinimalOrganization {
   id: string;
   name: string;
   plan: string;
+  userId: string | null;
 }
 
 export interface MinimalOrganizationMember {
