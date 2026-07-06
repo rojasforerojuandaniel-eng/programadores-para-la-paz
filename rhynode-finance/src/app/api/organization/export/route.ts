@@ -5,6 +5,8 @@ import { Prisma } from "@/generated/prisma/client";
 import { getUserProfile } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canAdmin } from "@/lib/organization";
 import { decimalToNumber } from "@/lib/decimal";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
@@ -122,6 +124,11 @@ export async function GET(request: Request) {
       );
     }
 
+    const ctx = await getCurrentOrganization(clerkId);
+    if (!ctx || !canAdmin(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const userProfile = await getUserProfile();
     if (!userProfile) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -129,18 +136,9 @@ export async function GET(request: Request) {
 
     const prisma = getPrisma();
 
-    let organization = await prisma.organization.findFirst({
-      where: { slug: clerkId },
+    const organization = await prisma.organization.findUnique({
+      where: { id: ctx.org.id },
     });
-
-    if (!organization) {
-      const membership = await prisma.organizationMember.findFirst({
-        where: { userId: clerkId },
-        include: { organization: true },
-      });
-      organization = membership?.organization ?? null;
-    }
-
     if (!organization) {
       return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
@@ -188,7 +186,7 @@ export async function GET(request: Request) {
       prisma.notification.findMany({ where: { userId: profileId } }),
       prisma.notificationPreference.findUnique({ where: { userId: profileId } }),
       prisma.receipt.findMany({ where: { userId: profileId } }),
-      prisma.transaction.findMany({ where: { organizationId } }),
+      prisma.transaction.findMany({ where: { organizationId, scope: "BUSINESS" } }),
       prisma.client.findMany({ where: { organizationId } }),
       prisma.project.findMany({ where: { organizationId } }),
       prisma.invoice.findMany({ where: { organizationId } }),
