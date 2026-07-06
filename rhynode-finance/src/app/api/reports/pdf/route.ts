@@ -1,7 +1,7 @@
 import { decimalToNumber } from "@/lib/decimal";
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, getUserProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -16,10 +16,21 @@ export const GET = withRateLimit(async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const locale: Locale = await getLocale();
 
     const transactions = await prisma.transaction.findMany({
-      where: { organizationId: org.id },
+      where: {
+        organizationId: org.id,
+        OR: [
+          { scope: "BUSINESS" },
+          { scope: "PERSONAL", userId: profile.id },
+        ],
+      },
       orderBy: { date: "asc" },
     });
 
