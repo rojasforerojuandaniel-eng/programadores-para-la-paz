@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
+import { getPrisma } from "@/lib/prisma";
+import { getUserProfile } from "@/lib/auth";
+import { canEdit } from "@/lib/organization";
+import { getCurrentOrganization } from "@/lib/organization.server";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -21,8 +24,21 @@ export const PATCH = withRateLimit(async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const org = await requireAuth();
-    if (!org) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ctx = await getCurrentOrganization(clerkUserId);
+    if (!ctx || !canEdit(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { id } = await params;
 
     const body = await request.json();
@@ -31,15 +47,27 @@ export const PATCH = withRateLimit(async function PATCH(
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
+    const existing = await getPrisma().transaction.findUnique({
+      where: { id, organizationId: ctx.org.id },
+      select: { scope: true, userId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+    }
+    if (existing.scope === "PERSONAL" && existing.userId !== profile.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     auditLog({
-      userId: org.id,
+      userId: profile.id,
       action: "UPDATE_TRANSACTION",
       resource: "transaction",
       resourceId: id,
       metadata: parsed.data,
     });
-    const transaction = await prisma.transaction.update({
-      where: { id, organizationId: org.id },
+
+    const transaction = await getPrisma().transaction.update({
+      where: { id, organizationId: ctx.org.id, scope: existing.scope, ...(existing.scope === "PERSONAL" ? { userId: profile.id } : {}) },
       data: parsed.data,
     });
 
@@ -67,17 +95,44 @@ export const DELETE = withRateLimit(async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const org = await requireAuth();
-    if (!org) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const profile = await getUserProfile();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ctx = await getCurrentOrganization(clerkUserId);
+    if (!ctx || !canEdit(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { id } = await params;
 
+    const existing = await getPrisma().transaction.findUnique({
+      where: { id, organizationId: ctx.org.id },
+      select: { scope: true, userId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+    }
+    if (existing.scope === "PERSONAL" && existing.userId !== profile.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     auditLog({
-      userId: org.id,
+      userId: profile.id,
       action: "DELETE_TRANSACTION",
       resource: "transaction",
       resourceId: id,
     });
-    await prisma.transaction.delete({ where: { id, organizationId: org.id } });
+
+    await getPrisma().transaction.delete({
+      where: { id, organizationId: ctx.org.id, scope: existing.scope, ...(existing.scope === "PERSONAL" ? { userId: profile.id } : {}) },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     logger.error("Failed to delete transaction", { error: error instanceof Error ? error.message : String(error) });
