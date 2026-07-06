@@ -94,6 +94,20 @@ export const POST = withRateLimit(
 
       const { type, category, description, amount, currency, date, accountId, bankAccountId } = parsed.data;
 
+      if (accountId) {
+        const account = await prisma.account.findUnique({ where: { id: accountId } });
+        if (!account || account.userId !== auth.profile.id) {
+          return NextResponse.json({ error: "Invalid account" }, { status: 400 });
+        }
+      }
+
+      if (bankAccountId) {
+        const bankAccount = await prisma.bankAccount.findUnique({ where: { id: bankAccountId } });
+        if (!bankAccount || bankAccount.organizationId !== auth.org.id) {
+          return NextResponse.json({ error: "Invalid bank account" }, { status: 400 });
+        }
+      }
+
       const transaction = await prisma.transaction.create({
         data: {
           organizationId: auth.org.id,
