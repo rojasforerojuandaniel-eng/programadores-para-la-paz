@@ -20,7 +20,11 @@
       "distribution": "store",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://rhynode-finance.vercel.app"
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "${EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}",
+        "EXPO_PUBLIC_API_URL": "https://rhynode-finance.vercel.app",
+        "EXPO_PUBLIC_SENTRY_DSN": "${EXPO_PUBLIC_SENTRY_DSN}",
+        "EXPO_PUBLIC_POSTHOG_KEY": "${EXPO_PUBLIC_POSTHOG_KEY}",
+        "EXPO_PUBLIC_POSTHOG_HOST": "${EXPO_PUBLIC_POSTHOG_HOST}"
       },
       "android": {
         "buildType": "app-bundle"

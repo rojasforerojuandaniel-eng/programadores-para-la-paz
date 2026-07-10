@@ -30,5 +30,8 @@ ios/build/
 # Built APKs
 *.apk
 
+# Firebase Android configuration (contains API keys; never commit)
+google-services.json
+
 # Vendor directory used for pnpm workarounds (not source code)
 vendor/
