@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,15 @@ export function SecuritySection() {
   const [format, setFormat] = useState<ExportFormat>("json");
   const [isExporting, setIsExporting] = useState(false);
   const t = useTranslations("dashboard.settings");
+  const revokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (revokeTimeoutRef.current) {
+        clearTimeout(revokeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   async function handleExport() {
     setIsExporting(true);
@@ -50,7 +59,9 @@ export function SecuritySection() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      revokeTimeoutRef.current = setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
     } catch {
       toast.error(t("security.data.exportError"));
     } finally {

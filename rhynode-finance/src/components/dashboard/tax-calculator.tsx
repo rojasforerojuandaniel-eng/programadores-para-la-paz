@@ -92,13 +92,14 @@ function formatRate(rate: number, taxType: TaxType, city?: IcaCityKey): string {
 }
 
 function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
+  link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(link.href);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function clampAmount(value: string): number {

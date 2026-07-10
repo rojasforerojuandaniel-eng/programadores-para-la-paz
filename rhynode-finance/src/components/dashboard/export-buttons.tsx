@@ -30,7 +30,7 @@ async function downloadFile(
     document.body.appendChild(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(link.href);
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   } catch {
     toast.error(networkError);
   }
