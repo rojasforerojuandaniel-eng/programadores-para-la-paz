@@ -1,6 +1,8 @@
 # Memory Index
 
+- [WhatsApp Perfection 2026-07-05](whatsapp-perfection-2026-07-05.md) — MARC WhatsApp: local perfecto, Vercel DATABASE_URL corregido a Neon `marc-db`, deploy prod exitoso, health OK. Pendiente final: EVOLUTION_API_URL/Webhook Secret del usuario (instancia pública de Evolution API).
 - [Rhynode Finance Arregla y Mejora 2026-07-05](rhynode-finance-arregla-mejora-2026-07-05.md) — Plan ejecutivo post-auditoría: i18n core, tipos compartidos, refactor onboarding, mobile polish, error states, calidad. Plan en `rhynode-finance/.claude/plans/arregla-mejora-2026-07-05.md`.
+- [Rhynode Finance Perfection 2026-07-09](rhynode-finance-perfection-2026-07-09.md) — Plan 2026-07-06-arregla-todo ejecutado y deployado: 16 commits, 307 root tests, 227 mobile tests, build limpio, prod live. Pendiente: aplicar migración DB para `ai_conversations`/`ai_messages`.
 
 - [Feedback Preferences](feedback-preferences.md) — Spanish, direct, auto-activate everything, senior code quality. Zero friction.
 - [Auto-Activation Audit](auto-activation-audit.md) — ALL skills/plugins/agents configured for auto-activation
@@ -19,6 +21,7 @@
 - [MARC v3 Fase 2 Completada](marc-v3-fase2-completada-2026-06-06.md) — Sistema de Tool Calls nativas: 5 tools (weather, calculator, web_search, set_reminder, get_time) + registry + integración en chat pipeline + 18 tests.
 - [MARC v3 Fase 3 Completada](marc-v3-fase3-completada-2026-06-06.md) — 5 tool calls avanzadas (file_read, db_query, send_email, image_generate, code_execute) + auth context + seguridad sandboxed + 26 tests.
 - [MARC v3 Fase 4 Completada](marc-v3-fase4-completada-2026-06-06.md) — Autonomous agent loop: max 3 iteraciones de tool calls automáticas + tool_start/tool_result stream events + ToolUseBlock UI visualization en chat.
+- [MARC Daily OS Plan 2026-07-06](rhynode-finance-marc-daily-os-plan-2026-07-06.md) — Plan DEFINITIVO v4 para convertir MARC en asistente diario Jarvis. 22 tareas: rutina, modos de trabajo, calendario, recordatorios contextuales, WhatsApp booking con conflictos, voz mejorada con spike de huggingface/speech-to-speech, finanzas personales/Rhynode, proactive engine, skills, War Room dashboard, redesign v2 con FLUX UI motion, Next.js 16 opts, integración mobile, importación de agency-agents como skills, human-in-the-loop, prospección outbound, generador de mensajes de outreach, WhatsApp campaign manager, automatización de navegador con dev-browser para prospección y QA. Integra lo mejor de repos actuales. Pendiente de ejecución.
 - [MARC v3 Fase 5 Completada](marc-v3-fase5-completada-2026-06-06.md) — Cost tracker: latencia, success rate, cost estimates por tool + API `/api/tools/metrics` + dashboard UI.
 - [MARC v3 Fase 6 Completada](marc-v3-fase6-completada-2026-06-06.md) — Tool Reflection & Self-Improvement: análisis de patrones de ejecución, detección de errores/lentitud/costos + insights API + UI dashboard.
 - [MARC v3 Perfeccionamiento Jun 13](marc-v3-perfeccionamiento-2026-06-13.md) — Sesion nocturna autonoma: 60 errores TS → 0, 15 tests → 0, RAM dashboard 5.1GB → 288MB, next.config optimizado, WebVitals RUM, standalone build en systemd.
@@ -70,3 +73,4 @@
 - [Rhynode Finance Android Login Fix 2026-06-29](rhynode-finance-android-login-fix-2026-06-29.md) — Login de Rhynode Finance Android arreglado con sign-in ticket fallback para MFA residual de Clerk.
 - [Plan Isabel](plan-isabel.md) — Mega plan para dejar Rhynode Finance Mobile lista para producción real. 8 fases, activation phrase "plan isabel". Archivo en `rhynode-finance/.claude/plans/plan-isabel.md`.
 - [Plan Isabel Completado](plan-isabel-completado-2026-07-02.md) — Plan Isabel ejecutado y APK release firmado listo para instalar en Android. 35 suites/226 tests mobile, 183 tests root, ESLint 0 errores, expo doctor 17/17, build release exitoso. APK en `rhynode-finance/apps/mobile/app-release-arm64.apk`.
+- [MARC Daily OS v4 Completado 2026-07-07](marc-daily-os-v4-completado-2026-07-07.md) — Daily OS v4 100% completado: 15 tareas del completion plan implementadas, WhatsApp real verificado (instancia RHYNODE state=open, mensaje enviado), /today y mobile API en producción.
