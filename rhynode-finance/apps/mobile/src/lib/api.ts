@@ -248,7 +248,7 @@ export async function syncPendingMutations(
   }
 
   if (!token) {
-    throw new AuthError(i18n.t('auth.requiredForSync'));
+    return;
   }
 
   const mutations = await getPendingMutations();

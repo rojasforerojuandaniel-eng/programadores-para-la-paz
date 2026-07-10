@@ -211,13 +211,12 @@ describe('api offline behavior', () => {
     );
   });
 
-  it('syncPendingMutations throws AuthError when no token is available', async () => {
+  it('syncPendingMutations returns gracefully when no token is available', async () => {
     setOnline(true);
     const getToken = jest.fn().mockResolvedValue(null);
 
-    await expect(apiModule.syncPendingMutations(getToken)).rejects.toBeInstanceOf(
-      apiModule.AuthError
-    );
+    await expect(apiModule.syncPendingMutations(getToken)).resolves.toBeUndefined();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('syncPendingMutations propagates auth errors from the server', async () => {
