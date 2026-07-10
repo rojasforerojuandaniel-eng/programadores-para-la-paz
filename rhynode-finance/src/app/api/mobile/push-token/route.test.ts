@@ -214,6 +214,32 @@ describe("push-token route", () => {
       expect(body.error).toBe("Invalid input");
     });
 
+    it("returns 409 and does not transfer ownership when the token already exists for another user", async () => {
+      const otherUserId = "user-456";
+      const { client, store } = createFakePrisma([
+        {
+          id: "token-owned-by-other",
+          userId: otherUserId,
+          token: "expo-token-conflict",
+          createdAt: new Date("2026-01-01T00:00:00.000Z"),
+        },
+      ]);
+      vi.mocked(getPrisma).mockReturnValue(client as unknown as ReturnType<typeof getPrisma>);
+
+      const response = await POST(mockRequest({ token: "expo-token-conflict" }));
+      const body = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(body).toEqual({ error: "Token already registered to another user" });
+      expect(store).toHaveLength(1);
+      expect(store[0]).toMatchObject({
+        id: "token-owned-by-other",
+        userId: otherUserId,
+        token: "expo-token-conflict",
+      });
+      expect(client.expoPushToken.upsert).not.toHaveBeenCalled();
+    });
+
     it("returns 500 when Prisma throws", async () => {
       const { client } = createFakePrisma();
       client.$transaction.mockRejectedValue(new Error("DB down"));

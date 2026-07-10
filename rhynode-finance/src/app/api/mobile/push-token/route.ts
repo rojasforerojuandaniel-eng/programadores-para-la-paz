@@ -30,11 +30,20 @@ export const POST = withRateLimit(async function POST(request: Request) {
     const { token } = parsed.data;
     const prisma = getPrisma();
 
-    await prisma.$transaction(async (tx) => {
-      const existing = await tx.expoPushToken.findUnique({
-        where: { token },
-      });
+    // Prevent one user from hijacking another user's push token.
+    // Run outside the transaction so we can return a 409 directly.
+    const existing = await prisma.expoPushToken.findUnique({
+      where: { token },
+    });
 
+    if (existing && existing.userId !== profile.id) {
+      return NextResponse.json(
+        { error: "Token already registered to another user" },
+        { status: 409 }
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
       // Only enforce the cap when we are actually adding a new token for this user.
       if (!existing) {
         const count = await tx.expoPushToken.count({
@@ -61,7 +70,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
 
       await tx.expoPushToken.upsert({
         where: { token },
-        update: { userId: profile.id },
+        update: { userId: profile.id, updatedAt: new Date() },
         create: { userId: profile.id, token },
       });
     });
