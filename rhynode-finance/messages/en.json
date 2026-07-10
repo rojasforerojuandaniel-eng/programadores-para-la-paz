@@ -288,6 +288,7 @@
         "errorGenerate": "Error generating file",
         "networkError": "Network error downloading"
       },
+      "import": "Import",
       "categories": {
         "transportationDelivery": "Transport / Delivery",
         "transportation": "Transport",
@@ -3347,6 +3348,7 @@
       "copilot": {
         "title": "Financial copilot",
         "refreshAria": "Refresh insights",
+        "loadError": "Could not load insights",
         "emptyTitle": "All in order",
         "emptyDescription": "No important alerts right now. Keep logging transactions to receive proactive insights.",
         "dismissAria": "Dismiss {title}"

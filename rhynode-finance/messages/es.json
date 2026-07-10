@@ -288,6 +288,7 @@
         "errorGenerate": "Error al generar el archivo",
         "networkError": "Error de red al descargar"
       },
+      "import": "Importar",
       "categories": {
         "transportationDelivery": "Transporte / Delivery",
         "transportation": "Transporte",
@@ -3347,6 +3348,7 @@
       "copilot": {
         "title": "Copiloto financiero",
         "refreshAria": "Refrescar insights",
+        "loadError": "No se pudieron cargar los insights",
         "emptyTitle": "Todo en orden",
         "emptyDescription": "No hay alertas importantes ahora. Sigue registrando movimientos para recibir insights proactivos.",
         "dismissAria": "Ocultar {title}"

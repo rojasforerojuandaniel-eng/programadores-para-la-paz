@@ -116,7 +116,7 @@ export default function RulesClient({
   async function refreshRules() {
     try {
       const res = await fetch("/api/personal/rules");
-      if (!res.ok) throw new Error("Failed to fetch rules");
+      if (!res.ok) throw new Error(t("toasts.reloadError"));
       const data = (await res.json()) as { rules: Rule[] };
       setRules(data.rules ?? []);
     } catch {
@@ -138,7 +138,7 @@ export default function RulesClient({
           condition: { type: form.conditionType, value: form.conditionValue },
         }),
       });
-      if (!res.ok) throw new Error("Preview failed");
+      if (!res.ok) throw new Error(t("toasts.previewError"));
       const data = (await res.json()) as { transactions: PreviewTransaction[] };
       setPreviewTransactions(data.transactions ?? []);
     } catch {
@@ -220,7 +220,7 @@ export default function RulesClient({
       const res = await fetch(`/api/personal/rules?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Error eliminando regla");
+      if (!res.ok) throw new Error(t("toasts.deleteError"));
       await refreshRules();
       if (editingId === id) resetForm();
       toast.success(t("toasts.deleted"));
@@ -237,7 +237,7 @@ export default function RulesClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
       });
-      if (!res.ok) throw new Error("Error cambiando estado");
+      if (!res.ok) throw new Error(t("toasts.toggleError"));
       await refreshRules();
     } catch {
       toast.error(t("toasts.toggleError"));

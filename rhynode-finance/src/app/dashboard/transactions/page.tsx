@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { ExportButtons } from "@/components/dashboard/export-buttons";
+import { BankImportRefreshButton } from "@/components/dashboard/bank-import-dialog";
 import {
   TransactionsList,
   type Transaction,
@@ -40,21 +41,6 @@ const CreateTransactionButton = dynamic(
     import("@/components/dashboard/create-transaction-button").then(
       (mod) => mod.CreateTransactionButton,
     ),
-);
-
-const BankImportRefreshButton = dynamic(
-  () =>
-    import("@/components/dashboard/bank-import-dialog").then(
-      (mod) => mod.BankImportRefreshButton,
-    ),
-  {
-    loading: () => (
-      <Button variant="outline" className="gap-2" disabled>
-        <Upload className="h-4 w-4" />
-        Importar
-      </Button>
-    ),
-  },
 );
 
 function scopeFilter(scope: UserScope) {
@@ -276,7 +262,16 @@ async function HeaderSection({
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <ExportButtons />
-        <BankImportRefreshButton bankAccounts={bankAccounts} />
+        <Suspense
+          fallback={
+            <Button variant="outline" className="gap-2" disabled>
+              <Upload className="h-4 w-4" />
+              {t("import")}
+            </Button>
+          }
+        >
+          <BankImportRefreshButton bankAccounts={bankAccounts} />
+        </Suspense>
         <Suspense
           fallback={
             <Button className="gap-2" disabled>

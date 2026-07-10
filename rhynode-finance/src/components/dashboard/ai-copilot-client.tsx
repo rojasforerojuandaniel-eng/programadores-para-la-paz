@@ -82,7 +82,7 @@ export function AiCopilotClient({
     setLoading(true);
     try {
       const res = await fetch("/api/personal/insights");
-      if (!res.ok) throw new Error("Error al cargar insights");
+      if (!res.ok) throw new Error(t("copilot.loadError"));
       const data = await res.json();
       setNudges(Array.isArray(data.insights) ? (data.insights as Nudge[]) : []);
     } finally {

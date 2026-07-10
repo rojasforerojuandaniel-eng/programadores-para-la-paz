@@ -167,14 +167,18 @@ function getRange(view: View, date: Date) {
   return { from: startOfMonth(date), to: endOfMonth(date) };
 }
 
-async function loadEvents(view: View, date: Date): Promise<CalendarEvent[]> {
+async function loadEvents(
+  view: View,
+  date: Date,
+  t: (key: string) => string,
+): Promise<CalendarEvent[]> {
   const { from, to } = getRange(view, date);
   const params = new URLSearchParams({
     from: from.toISOString(),
     to: to.toISOString(),
   });
   const res = await fetch(`/api/personal/calendar?${params.toString()}`);
-  if (!res.ok) throw new Error("Error al cargar eventos");
+  if (!res.ok) throw new Error(t("view.errors.loadEvents"));
   const data = (await res.json()) as { events?: CalendarEvent[] };
   return data.events ?? [];
 }
@@ -456,7 +460,7 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
     let cancelled = false;
     const load = async () => {
       try {
-        const data = await loadEvents(view, currentDate);
+        const data = await loadEvents(view, currentDate, t);
         if (!cancelled) setEvents(data);
       } catch {
         if (!cancelled) {
@@ -479,9 +483,9 @@ export function CalendarView({ orgCurrency }: CalendarViewProps) {
       const res = await fetch(`/api/personal/calendar/${event.id}/pay`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Error al marcar como pagado");
+      if (!res.ok) throw new Error(t("view.errors.markPaid"));
       toast.success(t("view.actions.markedResolved", { title: event.title }));
-      const data = await loadEvents(view, currentDate);
+      const data = await loadEvents(view, currentDate, t);
       setEvents(data);
     } catch {
       toast.error(t("view.errors.markPaidToast"));
