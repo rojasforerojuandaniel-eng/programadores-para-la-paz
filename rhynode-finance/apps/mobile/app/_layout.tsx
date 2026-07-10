@@ -22,9 +22,11 @@ import {
 } from '~/lib/notifications';
 import { useNetworkListener, useNetworkStore } from '~/hooks/use-network';
 import { ToastProvider } from '~/components/ui/toast';
+import { showToast } from '~/hooks/use-toast';
 import { OfflineBanner } from '~/components/features/offline-banner';
 import { initSentryAsync } from '~/lib/sentry';
 import { useTranslation } from 'react-i18next';
+import i18n from '~/lib/i18n';
 
 const persister = createAsyncStoragePersister();
 
@@ -56,7 +58,7 @@ function PushNotificationsSetup() {
 }
 
 function SyncManager() {
-  const { getToken } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
   const isOnline = useNetworkStore((state) => state.isOnline);
   const wasOffline = useNetworkStore((state) => state.wasOffline);
   const resetWasOffline = useNetworkStore((state) => state.resetWasOffline);
@@ -64,18 +66,27 @@ function SyncManager() {
 
   useNetworkListener();
 
-  useEffect(() => {
-    if (!hasInitialSynced.current && isOnline) {
-      hasInitialSynced.current = true;
-      void syncPendingMutations(getToken);
+  const runSync = async () => {
+    try {
+      await syncPendingMutations(getToken);
+    } catch (error) {
+      Sentry.captureException(error);
+      showToast(i18n.t('errors.syncFailed'), 'error');
     }
-  }, [getToken, isOnline]);
+  };
 
   useEffect(() => {
-    if (isOnline && wasOffline) {
-      void syncPendingMutations(getToken).then(() => resetWasOffline());
+    if (!hasInitialSynced.current && isOnline && isSignedIn) {
+      hasInitialSynced.current = true;
+      void runSync();
     }
-  }, [isOnline, wasOffline, getToken, resetWasOffline]);
+  }, [getToken, isOnline, isSignedIn]);
+
+  useEffect(() => {
+    if (isOnline && wasOffline && isSignedIn) {
+      void runSync().then(() => resetWasOffline());
+    }
+  }, [isOnline, wasOffline, getToken, resetWasOffline, isSignedIn]);
 
   return null;
 }
@@ -89,6 +100,9 @@ const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function MissingClerkKeyScreen() {
   const { t } = useTranslation();
+  useEffect(() => {
+    void SplashScreen.hideAsync();
+  }, []);
   return (
     <View
       style={{
