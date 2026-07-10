@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2 } from "lucide-react";
 
 export function SeedDemoButton() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -15,7 +17,7 @@ export function SeedDemoButton() {
       const data = (await res.json()) as { seeded: boolean; message: string };
       setMessage(data.message);
       if (data.seeded) {
-        setTimeout(() => window.location.reload(), 900);
+        setTimeout(() => router.refresh(), 900);
       }
     } catch {
       setMessage("No se pudieron cargar los datos demo. Intenta de nuevo.");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -16,6 +17,7 @@ export function UpdateSnapshotButton({
   currency: string;
 }) {
   const t = useTranslations("dashboard.netWorth.updateButton");
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -27,7 +29,7 @@ export function UpdateSnapshotButton({
         body: JSON.stringify({ totalAssets, totalLiabilities, currency }),
       });
       if (!res.ok) throw new Error(t("errorSave"));
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : t("errorUnknown");
       toast.error(message);

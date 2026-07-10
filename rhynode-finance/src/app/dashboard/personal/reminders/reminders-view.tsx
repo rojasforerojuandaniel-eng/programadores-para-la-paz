@@ -27,7 +27,7 @@ const repeatLabelKeys: Record<ReminderRow["repeat"], string> = {
   NONE: "repeats.NONE",
 };
 
-function EmptyState({ defaultOpen }: { defaultOpen?: boolean }) {
+function EmptyState({ defaultOpen, onSuccess }: { defaultOpen?: boolean; onSuccess: () => void }) {
   const t = useTranslations("dashboard.reminders");
   return (
     <EmptyStateCard
@@ -36,7 +36,7 @@ function EmptyState({ defaultOpen }: { defaultOpen?: boolean }) {
       title={t("empty.title")}
       description={t("empty.description")}
       hint={t("empty.hint")}
-      action={<ReminderDialog onSuccess={() => window.location.reload()} defaultOpen={defaultOpen} />}
+      action={<ReminderDialog onSuccess={onSuccess} defaultOpen={defaultOpen} />}
     />
   );
 }
@@ -45,12 +45,10 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
   const t = useTranslations("dashboard.reminders");
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const [items, setItems] = useState(reminders);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function refresh() {
     router.refresh();
-    window.location.reload();
   }
 
   function formatScheduled(iso: string) {
@@ -67,11 +65,6 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
   }
 
   async function toggleActive(id: string, active: boolean) {
-    const original = items.find((r) => r.id === id);
-    if (!original) return;
-
-    setItems((prev) => prev.map((r) => (r.id === id ? { ...r, active } : r)));
-
     try {
       const res = await fetch(`/api/personal/reminders/${id}`, {
         method: "PATCH",
@@ -80,8 +73,8 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
       });
       if (!res.ok) throw new Error("Update failed");
       toast.success(active ? t("toast.activated") : t("toast.deactivated"));
+      refresh();
     } catch {
-      setItems((prev) => prev.map((r) => (r.id === id ? { ...r, active: original.active } : r)));
       toast.error(t("toast.toggleError"));
     }
   }
@@ -91,8 +84,8 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
     try {
       const res = await fetch(`/api/personal/reminders/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
-      setItems((prev) => prev.filter((r) => r.id !== id));
       toast.success(t("toast.deleted"));
+      refresh();
     } catch {
       toast.error(t("toast.deleteError"));
     } finally {
@@ -109,7 +102,7 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
     { key: "actions", header: t("columns.actions") },
   ];
 
-  const activeCount = items.filter((r) => r.active).length;
+  const activeCount = reminders.filter((r) => r.active).length;
 
   return (
     <div className="space-y-6">
@@ -121,14 +114,14 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
         <ReminderDialog onSuccess={refresh} defaultOpen={defaultOpen} />
       </div>
 
-      {items.length > 0 && (
+      {reminders.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Bell className="h-4 w-4" aria-hidden="true" />
               {t("stats.total")}
             </div>
-            <p className="mt-1 text-2xl font-bold">{items.length}</p>
+            <p className="mt-1 text-2xl font-bold">{reminders.length}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -142,8 +135,8 @@ export function RemindersView({ reminders, defaultOpen }: RemindersViewProps) {
 
       <ServerDataTable
         columns={columns}
-        data={items}
-        emptyState={<EmptyState />}
+        data={reminders}
+        emptyState={<EmptyState onSuccess={refresh} />}
         renderRow={(reminder) => {
           const status = reminder.read ? t("status.completed") : reminder.active ? t("status.active") : t("status.inactive");
           return (

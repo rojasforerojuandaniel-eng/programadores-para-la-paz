@@ -136,6 +136,7 @@ export default function TaxPage() {
   const [report, setReport] = useState<ColombianTaxReport | null>(null);
   const [loadingReport, setLoadingReport] = useState(true);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const years = useMemo(() => {
     const current = new Date().getFullYear();
@@ -150,7 +151,7 @@ export default function TaxPage() {
       .catch(() => setReports([]))
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, []);
+  }, [refreshKey]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -175,7 +176,7 @@ export default function TaxPage() {
       .finally(() => setLoadingReport(false));
 
     return () => controller.abort();
-  }, [year, month, periodType, t]);
+  }, [year, month, periodType, t, refreshKey]);
 
   const exampleColumns = [
     { key: "type", header: t("exampleColumns.type") },
@@ -293,7 +294,7 @@ export default function TaxPage() {
           <h1 className="heading-section">{t("title")}</h1>
           <p className="body-default mt-1">{t("subtitle")}</p>
         </div>
-        <CreateTaxReportDialog onCreate={() => window.location.reload()} />
+        <CreateTaxReportDialog onCreate={() => setRefreshKey((k) => k + 1)} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
@@ -525,7 +526,7 @@ export default function TaxPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="heading-card">{t("reportsTitle")}</CardTitle>
-            <CreateTaxReportDialog onCreate={() => window.location.reload()} />
+            <CreateTaxReportDialog onCreate={() => setRefreshKey((k) => k + 1)} />
           </div>
         </CardHeader>
         <CardContent>
@@ -547,7 +548,7 @@ export default function TaxPage() {
                   title={t("empty.title")}
                   description={t("empty.description")}
                   hint={t("empty.hint")}
-                  action={<CreateTaxReportDialog onCreate={() => window.location.reload()} />}
+                  action={<CreateTaxReportDialog onCreate={() => setRefreshKey((k) => k + 1)} />}
                 />
               }
             />

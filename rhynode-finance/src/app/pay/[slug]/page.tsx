@@ -251,7 +251,7 @@ function LimitReachedState() {
   );
 }
 
-function ErrorState({ message }: { message: string }) {
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
@@ -261,7 +261,7 @@ function ErrorState({ message }: { message: string }) {
         message={message}
       >
         <Button
-          onClick={() => window.location.reload()}
+          onClick={onRetry}
           variant="outline"
           className="w-full gap-2"
         >
@@ -304,7 +304,7 @@ function SuccessState({ link }: { link: PaymentLinkData | null }) {
   );
 }
 
-function CanceledState() {
+function CanceledState({ onRetry }: { onRetry: () => void }) {
   const t = useTranslations("pay");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 pb-safe">
@@ -314,7 +314,7 @@ function CanceledState() {
         message={t("canceled.message")}
       >
         <Button
-          onClick={() => window.location.reload()}
+          onClick={onRetry}
           variant="outline"
           className="w-full gap-2"
         >
@@ -504,6 +504,33 @@ export default function PayPage() {
       });
   }, [slug, t]);
 
+  function handleRetry() {
+    setStatus("loading");
+    setStatusMessage(null);
+    if (!slug) return;
+    fetch(`/api/payment-links/public/${slug}`)
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw new PaymentLinkError(
+            resolveErrorStatus(r.status, data.error),
+            data.error || t("error.load")
+          );
+        }
+        setLink(data);
+        setStatus("active");
+      })
+      .catch((err) => {
+        if (err instanceof PaymentLinkError) {
+          setStatus(err.status);
+          setStatusMessage(err.message);
+        } else {
+          setStatus("error");
+          setStatusMessage(t("error.network"));
+        }
+      });
+  }
+
   async function handleStripePayment() {
     if (!link) return;
     setPayingStripe(true);
@@ -558,7 +585,7 @@ export default function PayPage() {
   }
 
   if (canceled) {
-    return <CanceledState />;
+    return <CanceledState onRetry={handleRetry} />;
   }
 
   if (status === "loading") {
@@ -578,11 +605,11 @@ export default function PayPage() {
   }
 
   if (status === "error") {
-    return <ErrorState message={statusMessage || t("error.load")} />;
+    return <ErrorState message={statusMessage || t("error.load")} onRetry={handleRetry} />;
   }
 
   if (!link) {
-    return <ErrorState message={t("error.load")} />;
+    return <ErrorState message={t("error.load")} onRetry={handleRetry} />;
   }
 
   return (

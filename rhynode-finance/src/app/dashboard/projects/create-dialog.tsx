@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -26,6 +27,7 @@ import { executeMutation } from "@/lib/offline-queue";
 
 export function CreateProjectDialog() {
   const t = useTranslations("dashboard.projects");
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -68,7 +70,7 @@ export function CreateProjectDialog() {
               budget: "",
               color: "#3b82f6",
             });
-            window.location.reload();
+            router.refresh();
           },
           onError: (err) => {
             toast.error(err.message || t("createDialog.errorCreate"));

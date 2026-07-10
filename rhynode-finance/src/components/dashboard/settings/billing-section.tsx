@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -138,6 +140,8 @@ export function BillingSection({
 }: BillingSectionProps) {
   const t = useTranslations("dashboard.settings");
   const locale = useLocale() as Locale;
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   function StatusBadge({ status }: { status: string }) {
     const labelKey = STATUS_LABEL_KEYS[status.toUpperCase()];
@@ -176,7 +180,9 @@ export function BillingSection({
       if (res.ok) {
         trackEvent("subscription_cancel_marked");
         toast.success(t("billing.toasts.cancelSuccess"));
-        window.location.reload();
+        queryClient.invalidateQueries({ queryKey: ["subscription", "plan"] });
+        queryClient.invalidateQueries({ queryKey: ["payments", "history"] });
+        router.refresh();
       } else {
         toast.error(t("billing.toasts.cancelError"));
       }

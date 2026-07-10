@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ const investmentTypes = [
 
 export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode } = {}) {
   const t = useTranslations("dashboard.investments");
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -70,7 +72,7 @@ export function CreateInvestmentDialog({ trigger }: { trigger?: React.ReactNode 
       }
 
       setOpen(false);
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("createDialog.toast.unknownError"));
     } finally {
