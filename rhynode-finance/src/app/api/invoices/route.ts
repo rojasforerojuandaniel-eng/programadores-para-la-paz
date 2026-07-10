@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canEdit, canView } from "@/lib/organization";
 import { checkPlanLimit } from "@/lib/subscription";
 import { withRateLimit } from "@/lib/with-rate-limit";
 import { z } from "zod";
@@ -37,13 +39,18 @@ const createSchema = z.object({
 export const GET = withRateLimit(
   async () => {
     try {
-      const org = await requireAuth();
-      if (!org) {
+      const { userId: clerkUserId } = await auth();
+      if (!clerkUserId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
+      const ctx = await getCurrentOrganization(clerkUserId);
+      if (!ctx || !canView(ctx.role)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
       const invoices = await prisma.invoice.findMany({
-        where: { organizationId: org.id },
+        where: { organizationId: ctx.org.id },
         include: { client: true, items: true, project: true },
         orderBy: { createdAt: "desc" },
       });
@@ -63,12 +70,17 @@ export const GET = withRateLimit(
 export const POST = withRateLimit(
   async (request: Request) => {
     try {
-      const org = await requireAuth();
-      if (!org) {
+      const { userId: clerkUserId } = await auth();
+      if (!clerkUserId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      const limitCheck = await checkPlanLimit(org.id, "invoices");
+      const ctx = await getCurrentOrganization(clerkUserId);
+      if (!ctx || !canEdit(ctx.role)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      const limitCheck = await checkPlanLimit(ctx.org.id, "invoices");
       if (!limitCheck.allowed) {
         return NextResponse.json(
           {
@@ -109,7 +121,7 @@ export const POST = withRateLimit(
       const client = await prisma.client.findUnique({
         where: { id: clientId },
       });
-      if (!client || client.organizationId !== org.id) {
+      if (!client || client.organizationId !== ctx.org.id) {
         return NextResponse.json(
           { error: "Invalid client" },
           { status: 400 }
@@ -120,7 +132,7 @@ export const POST = withRateLimit(
         const project = await prisma.project.findUnique({
           where: { id: projectId },
         });
-        if (!project || project.organizationId !== org.id) {
+        if (!project || project.organizationId !== ctx.org.id) {
           return NextResponse.json(
             { error: "Invalid project" },
             { status: 400 }
@@ -129,7 +141,7 @@ export const POST = withRateLimit(
       }
 
       // Auto-generate invoice number if not provided
-      const number = providedNumber || (await generateInvoiceNumber(org.id));
+      const number = providedNumber || (await generateInvoiceNumber(ctx.org.id));
 
       // Calculate totals from items if not provided
       let computedSubtotal = subtotal;
@@ -147,14 +159,14 @@ export const POST = withRateLimit(
       }
 
       auditLog({
-        userId: org.id,
+        userId: ctx.org.id,
         action: "CREATE_INVOICE",
         resource: "invoice",
         metadata: { number, clientId, total: computedTotal, currency },
       });
       const invoice = await prisma.invoice.create({
         data: {
-          organizationId: org.id,
+          organizationId: ctx.org.id,
           clientId,
           projectId: projectId || null,
           number,

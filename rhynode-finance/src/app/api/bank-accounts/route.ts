@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentOrganization } from "@/lib/organization.server";
+import { canEdit, canView } from "@/lib/organization";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { withRateLimit } from "@/lib/with-rate-limit";
@@ -17,13 +19,18 @@ const createSchema = z.object({
 
 export const GET = withRateLimit(async function GET() {
   try {
-    const org = await requireAuth();
-    if (!org) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const ctx = await getCurrentOrganization(clerkUserId);
+    if (!ctx || !canView(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const accounts = await prisma.bankAccount.findMany({
-      where: { organizationId: org.id },
+      where: { organizationId: ctx.org.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -39,9 +46,14 @@ export const GET = withRateLimit(async function GET() {
 
 export const POST = withRateLimit(async function POST(request: Request) {
   try {
-    const org = await requireAuth();
-    if (!org) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ctx = await getCurrentOrganization(clerkUserId);
+    if (!ctx || !canEdit(ctx.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -55,7 +67,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
     }
 
     auditLog({
-      userId: org.id,
+      userId: ctx.org.id,
       action: "CREATE_BANK_ACCOUNT",
       resource: "bankAccount",
       metadata: {
@@ -67,7 +79,7 @@ export const POST = withRateLimit(async function POST(request: Request) {
     });
     const account = await prisma.bankAccount.create({
       data: {
-        organizationId: org.id,
+        organizationId: ctx.org.id,
         ...parsed.data,
         type: parsed.data.type || "CHECKING",
         currency: parsed.data.currency || "COP",
