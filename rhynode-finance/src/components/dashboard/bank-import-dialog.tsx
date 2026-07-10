@@ -42,7 +42,10 @@ import {
 } from "@/components/dashboard/bank-import-preview";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
-import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
+import {
+  CATEGORY_KEYS,
+  CATEGORY_I18N_KEYS,
+} from "@/lib/transaction-categories";
 import type { ParsedBankRow } from "@/lib/bank-import";
 import { cn } from "@/lib/utils";
 import {
@@ -89,7 +92,7 @@ function downloadCsvTemplate(rows: string[][], filename: string) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function BankImportDialog({
@@ -98,6 +101,7 @@ export function BankImportDialog({
   children,
 }: BankImportDialogProps) {
   const t = useTranslations("dashboard.accounts");
+  const tCat = useTranslations("transactionCategories");
   const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -601,9 +605,9 @@ export function BankImportDialog({
                       <SelectValue placeholder={t("bankImport.selectCategoryPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {COMMON_CATEGORIES.map((cat: string) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                      {CATEGORY_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {tCat(CATEGORY_I18N_KEYS[key])}
                         </SelectItem>
                       ))}
                     </SelectContent>

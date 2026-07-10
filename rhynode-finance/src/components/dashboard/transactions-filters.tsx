@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  CATEGORY_I18N_KEYS,
+  normalizeCategoryToKey,
+} from "@/lib/transaction-categories";
 
 export interface TransactionFiltersState {
   q: string;
@@ -67,6 +71,7 @@ export function TransactionFilters({
   className,
 }: TransactionFiltersProps) {
   const t = useTranslations("dashboard.transactions");
+  const tCat = useTranslations("transactionCategories");
   const update = useCallback(
     <K extends keyof TransactionFiltersState>(key: K, value: TransactionFiltersState[K]) => {
       onChange({ ...filters, [key]: value });
@@ -105,15 +110,20 @@ export function TransactionFilters({
             </SelectContent>
           </Select>
 
-          <Select value={filters.category} onValueChange={(value) => update("category", value)}>
+          <Select
+            value={filters.category ? normalizeCategoryToKey(filters.category) : ""}
+            onValueChange={(value) => update("category", value)}
+          >
             <SelectTrigger className="w-[180px]" aria-label={t("filters.categoryAria")}>
               <SelectValue placeholder={t("filters.categoryPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">{t("filters.allCategories")}</SelectItem>
-              {options.categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {Array.from(
+                new Set(options.categories.map((c) => normalizeCategoryToKey(c))),
+              ).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {tCat(CATEGORY_I18N_KEYS[key])}
                 </SelectItem>
               ))}
             </SelectContent>

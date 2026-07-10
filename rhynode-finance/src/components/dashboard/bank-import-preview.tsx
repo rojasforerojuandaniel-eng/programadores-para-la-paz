@@ -21,7 +21,10 @@ import { AlertCircle, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
-import { COMMON_CATEGORIES } from "@/components/dashboard/transaction-form";
+import {
+  CATEGORY_KEYS,
+  CATEGORY_I18N_KEYS,
+} from "@/lib/transaction-categories";
 import type { ParsedBankRow } from "@/lib/bank-import";
 
 export interface BankAccount {
@@ -59,6 +62,7 @@ export function BankImportPreview({
   toggleAll,
 }: BankImportPreviewProps) {
   const t = useTranslations("dashboard.accounts");
+  const tCat = useTranslations("transactionCategories");
   const locale = useLocale() as Locale;
   return (
     <>
@@ -170,9 +174,9 @@ export function BankImportPreview({
                                 <SelectValue placeholder={t("bankImport.table.category")} />
                               </SelectTrigger>
                               <SelectContent>
-                                {COMMON_CATEGORIES.map((cat: string) => (
-                                  <SelectItem key={cat} value={cat}>
-                                    {cat}
+                                {CATEGORY_KEYS.map((key) => (
+                                  <SelectItem key={key} value={key}>
+                                    {tCat(CATEGORY_I18N_KEYS[key])}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -296,9 +300,9 @@ export function BankImportPreview({
                                 <SelectValue placeholder={t("bankImport.table.category")} />
                               </SelectTrigger>
                               <SelectContent>
-                                {COMMON_CATEGORIES.map((cat: string) => (
-                                  <SelectItem key={cat} value={cat}>
-                                    {cat}
+                                {CATEGORY_KEYS.map((key) => (
+                                  <SelectItem key={key} value={key}>
+                                    {tCat(CATEGORY_I18N_KEYS[key])}
                                   </SelectItem>
                                 ))}
                               </SelectContent>

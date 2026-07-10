@@ -105,7 +105,7 @@ export const POST = withRateLimit(
       }
 
       const profile = await getUserProfile();
-      const initialCategory = category || (type === "INCOME" ? "Ventas" : "Gastos");
+      const initialCategory = category || (type === "INCOME" ? "sales" : "other");
       auditLog({
         userId: profile?.id,
         action: "CREATE_TRANSACTION",

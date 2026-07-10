@@ -68,6 +68,30 @@
       }
     }
   },
+  "transactionCategories": {
+    "sales": "Ventas",
+    "payroll": "Nómina",
+    "services": "Servicios",
+    "materials": "Materiales",
+    "marketing": "Marketing",
+    "transport_delivery": "Transporte / Delivery",
+    "entertainment": "Entretenimiento",
+    "coffee": "Café",
+    "groceries": "Mercado",
+    "restaurant": "Restaurante",
+    "transport": "Transporte",
+    "telecommunications": "Telecomunicaciones",
+    "utilities": "Servicios públicos",
+    "insurance": "Seguros",
+    "health": "Salud",
+    "education": "Educación",
+    "transfer_finance": "Transferencia/Finanzas",
+    "clothing": "Ropa",
+    "travel": "Viajes",
+    "pets": "Mascotas",
+    "shopping": "Compras",
+    "other": "Otros"
+  },
   "dashboard": {
     "nav": {
       "home": "Inicio",

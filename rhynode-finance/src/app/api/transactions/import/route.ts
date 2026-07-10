@@ -197,7 +197,7 @@ export const PUT = withRateLimit(
           : suggestCategory(tx.description, tx.amount);
         const category =
           tx.category ||
-          (suggested && suggested.confidence >= 0.5 ? suggested.category : tx.type === "INCOME" ? "Ventas" : "Gastos");
+          (suggested && suggested.confidence >= 0.5 ? suggested.category : tx.type === "INCOME" ? "sales" : "other");
 
         return {
           organizationId: org.id,

@@ -80,6 +80,11 @@ import {
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate as fmtDate } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
+import {
+  getCategoryI18nKey,
+  isKnownCategory,
+  normalizeCategoryToKey,
+} from "@/lib/transaction-categories";
 
 import type { Transaction, TransactionType } from "@/types";
 export type { Transaction } from "@/types";
@@ -97,47 +102,39 @@ const typeConfig = {
   ADJUSTMENT: { labelKey: "types.ADJUSTMENT", className: "bg-muted text-muted-foreground" },
 } as const;
 
-const categoryStyles = {
-  "Transporte / Delivery": {
-    icon: Bus,
-    className: "bg-blue-500/10 text-blue-600",
-    labelKey: "categories.transportationDelivery",
-  },
-  Transporte: { icon: Bus, className: "bg-blue-500/10 text-blue-600", labelKey: "categories.transportation" },
-  Entretenimiento: { icon: Film, className: "bg-purple-500/10 text-purple-600", labelKey: "categories.entertainment" },
-  Café: { icon: Coffee, className: "bg-amber-700/10 text-amber-700", labelKey: "categories.coffee" },
-  Mercado: { icon: ShoppingCart, className: "bg-green-500/10 text-green-600", labelKey: "categories.market" },
-  Restaurante: { icon: Utensils, className: "bg-orange-500/10 text-orange-600", labelKey: "categories.restaurant" },
-  Telecomunicaciones: { icon: Wifi, className: "bg-cyan-500/10 text-cyan-600", labelKey: "categories.telecommunications" },
-  "Servicios públicos": {
-    icon: Zap,
-    className: "bg-yellow-500/10 text-yellow-600",
-    labelKey: "categories.utilities",
-  },
-  Seguros: { icon: ShieldCheck, className: "bg-indigo-500/10 text-indigo-600", labelKey: "categories.insurance" },
-  Salud: { icon: Heart, className: "bg-rose-500/10 text-rose-600", labelKey: "categories.health" },
-  Educación: { icon: GraduationCap, className: "bg-teal-500/10 text-teal-600", labelKey: "categories.education" },
-  "Transferencia/Finanzas": {
-    icon: Building2,
-    className: "bg-slate-500/10 text-slate-600",
-    labelKey: "categories.financeTransfer",
-  },
-  Ropa: { icon: Tag, className: "bg-pink-500/10 text-pink-600", labelKey: "categories.clothing" },
-  Viajes: { icon: Plane, className: "bg-sky-500/10 text-sky-600", labelKey: "categories.travel" },
-  Mascotas: { icon: Dog, className: "bg-emerald-500/10 text-emerald-600", labelKey: "categories.pets" },
-  Compras: { icon: ShoppingCart, className: "bg-violet-500/10 text-violet-600", labelKey: "categories.shopping" },
-  Ventas: { icon: Briefcase, className: "bg-success/10 text-success", labelKey: "categories.sales" },
-  Nómina: { icon: Briefcase, className: "bg-primary/10 text-primary", labelKey: "categories.payroll" },
-  Servicios: { icon: Briefcase, className: "bg-blue-500/10 text-blue-600", labelKey: "categories.services" },
-  Materiales: { icon: Tag, className: "bg-orange-500/10 text-orange-600", labelKey: "categories.materials" },
-  Marketing: { icon: Tag, className: "bg-pink-500/10 text-pink-600", labelKey: "categories.marketing" },
-  Otros: { icon: Tag, className: "bg-muted text-muted-foreground", labelKey: "categories.other" },
-} as const;
+const categoryStyles: Record<
+  string,
+  { icon: LucideIcon; className: string }
+> = {
+  transport_delivery: { icon: Bus, className: "bg-blue-500/10 text-blue-600" },
+  transport: { icon: Bus, className: "bg-blue-500/10 text-blue-600" },
+  entertainment: { icon: Film, className: "bg-purple-500/10 text-purple-600" },
+  coffee: { icon: Coffee, className: "bg-amber-700/10 text-amber-700" },
+  groceries: { icon: ShoppingCart, className: "bg-green-500/10 text-green-600" },
+  restaurant: { icon: Utensils, className: "bg-orange-500/10 text-orange-600" },
+  telecommunications: { icon: Wifi, className: "bg-cyan-500/10 text-cyan-600" },
+  utilities: { icon: Zap, className: "bg-yellow-500/10 text-yellow-600" },
+  insurance: { icon: ShieldCheck, className: "bg-indigo-500/10 text-indigo-600" },
+  health: { icon: Heart, className: "bg-rose-500/10 text-rose-600" },
+  education: { icon: GraduationCap, className: "bg-teal-500/10 text-teal-600" },
+  transfer_finance: { icon: Building2, className: "bg-slate-500/10 text-slate-600" },
+  clothing: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
+  travel: { icon: Plane, className: "bg-sky-500/10 text-sky-600" },
+  pets: { icon: Dog, className: "bg-emerald-500/10 text-emerald-600" },
+  shopping: { icon: ShoppingCart, className: "bg-violet-500/10 text-violet-600" },
+  sales: { icon: Briefcase, className: "bg-success/10 text-success" },
+  payroll: { icon: Briefcase, className: "bg-primary/10 text-primary" },
+  services: { icon: Briefcase, className: "bg-blue-500/10 text-blue-600" },
+  materials: { icon: Tag, className: "bg-orange-500/10 text-orange-600" },
+  marketing: { icon: Tag, className: "bg-pink-500/10 text-pink-600" },
+  other: { icon: Tag, className: "bg-muted text-muted-foreground" },
+};
 
-type CategoryStyle = (typeof categoryStyles)[keyof typeof categoryStyles];
+type CategoryStyle = (typeof categoryStyles)["other"];
 
 function getCategoryMeta(category?: string): CategoryStyle {
-  return (categoryStyles as Record<string, CategoryStyle>)[category ?? ""] ?? categoryStyles.Otros;
+  const key = normalizeCategoryToKey(category);
+  return categoryStyles[key] ?? categoryStyles.other;
 }
 
 function Checkbox({
@@ -164,11 +161,13 @@ function Checkbox({
 }
 
 function CategoryBadge({ category }: { category?: string }) {
-  const t = useTranslations("dashboard.transactions");
+  const t = useTranslations();
   const meta = getCategoryMeta(category);
-  const label = meta.labelKey
-    ? t(meta.labelKey)
-    : category || t("list.noCategory");
+  const key = normalizeCategoryToKey(category);
+  const label =
+    key !== "other" || category?.trim() === "other"
+      ? t(getCategoryI18nKey(category))
+      : category || t("dashboard.transactions.list.noCategory");
   return (
     <span
       className={cn(
@@ -421,6 +420,7 @@ export function TransactionsList({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("dashboard.transactions");
+  const tCat = useTranslations("transactionCategories");
   const locale = useLocale() as Locale;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -668,7 +668,9 @@ export function TransactionsList({
                             <meta.icon className="h-3.5 w-3.5" />
                           </div>
                           <span className="text-sm">
-                            {meta.labelKey ? t(meta.labelKey) : tx.category || "—"}
+                            {isKnownCategory(tx.category)
+                              ? tCat(getCategoryI18nKey(tx.category))
+                              : tx.category || "—"}
                           </span>
                         </div>
                       </TableCell>

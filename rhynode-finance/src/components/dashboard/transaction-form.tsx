@@ -18,11 +18,13 @@ import { useTranslations, useLocale } from "next-intl";
 import { type Suggestion, type Rule, applyRules } from "@/lib/rules-engine";
 import { trackEvent } from "@/lib/analytics";
 import { executeMutation } from "@/lib/offline-queue";
-import { COMMON_CATEGORIES } from "@/lib/transaction-categories";
+import {
+  CATEGORY_KEYS,
+  CATEGORY_I18N_KEYS,
+  normalizeCategoryToKey,
+} from "@/lib/transaction-categories";
 import { formatNumber } from "@/lib/format";
 import type { Locale } from "@/lib/locale";
-
-export { COMMON_CATEGORIES };
 
 interface OcrItem {
   description: string;
@@ -57,6 +59,7 @@ export function TransactionForm({
   defaultCategory = "",
 }: TransactionFormProps) {
   const t = useTranslations("dashboard.transactions");
+  const tCat = useTranslations("transactionCategories");
   const locale = useLocale() as Locale;
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -68,9 +71,11 @@ export function TransactionForm({
     new Set(),
   );
   const [rules, setRules] = useState<Rule[]>([]);
+  const initialCategory = normalizeCategoryToKey(defaultCategory);
+
   const [form, setForm] = useState({
     type: defaultType as "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT",
-    category: defaultCategory,
+    category: initialCategory,
     description: defaultDescription,
     amount: defaultAmount,
     currency: "COP",
@@ -81,7 +86,7 @@ export function TransactionForm({
   const resetForm = useCallback(() => {
     setForm({
       type: defaultType,
-      category: defaultCategory,
+      category: initialCategory,
       description: defaultDescription,
       amount: defaultAmount,
       currency: "COP",
@@ -92,7 +97,7 @@ export function TransactionForm({
     setOcrItems([]);
     setOcrConfidence(null);
     setAppliedSuggestionIds(new Set());
-  }, [defaultType, defaultCategory, defaultDescription, defaultAmount]);
+  }, [defaultType, initialCategory, defaultDescription, defaultAmount]);
 
   const handleAiSuggest = useCallback(
     async (description: string, amount: number) => {
@@ -111,7 +116,7 @@ export function TransactionForm({
           if (data.category) {
             setForm((prev) => ({
               ...prev,
-              category: data.category ?? prev.category,
+              category: normalizeCategoryToKey(data.category ?? prev.category),
             }));
             setAiConfidence(data.confidence ?? null);
           }
@@ -174,7 +179,10 @@ export function TransactionForm({
   function applySuggestion(suggestion: Suggestion) {
     switch (suggestion.action.type) {
       case "setCategory":
-        setForm((prev) => ({ ...prev, category: suggestion.action.value }));
+        setForm((prev) => ({
+          ...prev,
+          category: normalizeCategoryToKey(suggestion.action.value),
+        }));
         setAiConfidence(null);
         break;
       case "setProject":
@@ -193,8 +201,11 @@ export function TransactionForm({
 
   function getSuggestionLabel(suggestion: Suggestion): string {
     switch (suggestion.action.type) {
-      case "setCategory":
-        return t("form.suggestionLabelCategory", { value: suggestion.action.value });
+      case "setCategory": {
+        const key = normalizeCategoryToKey(suggestion.action.value);
+        const label = tCat(CATEGORY_I18N_KEYS[key]);
+        return t("form.suggestionLabelCategory", { value: label });
+      }
       case "setProject":
         return t("form.suggestionLabelProject", { value: suggestion.action.value });
       case "addTag":
@@ -215,6 +226,7 @@ export function TransactionForm({
         {
           ...form,
           amount: Number(form.amount),
+          category: normalizeCategoryToKey(form.category),
         },
         {
           onSuccess: () => {
@@ -289,7 +301,7 @@ export function TransactionForm({
         description: data.merchant || prev.description,
         amount: data.total ? String(data.total) : prev.amount,
         date: data.date ? data.date.split("T")[0] : prev.date,
-        category,
+        category: normalizeCategoryToKey(category),
         type: "EXPENSE",
       }));
 
@@ -475,7 +487,7 @@ export function TransactionForm({
           <Select
             value={form.category}
             onValueChange={(value) => {
-              setForm({ ...form, category: value });
+              setForm({ ...form, category: normalizeCategoryToKey(value) });
               setAiConfidence(null);
             }}
           >
@@ -483,9 +495,9 @@ export function TransactionForm({
               <SelectValue placeholder={t("form.categoryPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              {COMMON_CATEGORIES.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {CATEGORY_KEYS.map((key) => (
+                <SelectItem key={key} value={key}>
+                  {tCat(CATEGORY_I18N_KEYS[key])}
                 </SelectItem>
               ))}
             </SelectContent>

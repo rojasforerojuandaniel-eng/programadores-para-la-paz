@@ -15,22 +15,22 @@ interface KeywordRule {
 }
 
 const keywordRules: KeywordRule[] = [
-  { keywords: ["rappi", "domicilio", "uber", "didi"], category: "Transporte / Delivery" },
-  { keywords: ["netflix", "spotify", "youtube", "disney", "hbo", "prime"], category: "Entretenimiento" },
-  { keywords: ["cafe", "tinto", "starbucks", "juan valdez"], category: "Café" },
-  { keywords: ["mercado", "exito", "carulla", "olimpica", "d1", "ara"], category: "Mercado" },
-  { keywords: ["restaurante", "almuerzo", "desayuno", "cena", "mcdonald", "burguer"], category: "Restaurante" },
-  { keywords: ["gasolina", "terpel", "texaco", "shell", "mobil"], category: "Transporte" },
-  { keywords: ["claro", "movistar", "tigo", "avantel"], category: "Telecomunicaciones" },
-  { keywords: ["electricidad", "gas", "agua", "acueducto", "eaab"], category: "Servicios públicos" },
-  { keywords: ["seguro", "sura", "colpatria", "bolivar"], category: "Seguros" },
-  { keywords: ["gimnasio", "gym", "smartfit", "bodytech"], category: "Salud" },
-  { keywords: ["universidad", "colegio", "coursera", "udemy"], category: "Educación" },
-  { keywords: ["bancolombia", "davivienda", "nequi", "nu", "rappipay"], category: "Transferencia/Finanzas" },
-  { keywords: ["salud", "medico", "farmacia", "drogas", "colsubsidio"], category: "Salud" },
-  { keywords: ["ropa", "zara", "h&m", "adidas", "nike"], category: "Ropa" },
-  { keywords: ["viaje", "avianca", "latam", "booking", "airbnb"], category: "Viajes" },
-  { keywords: ["mascota", "veterinaria", "pet"], category: "Mascotas" },
+  { keywords: ["rappi", "domicilio", "uber", "didi"], category: "transport_delivery" },
+  { keywords: ["netflix", "spotify", "youtube", "disney", "hbo", "prime"], category: "entertainment" },
+  { keywords: ["cafe", "tinto", "starbucks", "juan valdez"], category: "coffee" },
+  { keywords: ["mercado", "exito", "carulla", "olimpica", "d1", "ara"], category: "groceries" },
+  { keywords: ["restaurante", "almuerzo", "desayuno", "cena", "mcdonald", "burguer"], category: "restaurant" },
+  { keywords: ["gasolina", "terpel", "texaco", "shell", "mobil"], category: "transport" },
+  { keywords: ["claro", "movistar", "tigo", "avantel"], category: "telecommunications" },
+  { keywords: ["electricidad", "gas", "agua", "acueducto", "eaab"], category: "utilities" },
+  { keywords: ["seguro", "sura", "colpatria", "bolivar"], category: "insurance" },
+  { keywords: ["gimnasio", "gym", "smartfit", "bodytech"], category: "health" },
+  { keywords: ["universidad", "colegio", "coursera", "udemy"], category: "education" },
+  { keywords: ["bancolombia", "davivienda", "nequi", "nu", "rappipay"], category: "transfer_finance" },
+  { keywords: ["salud", "medico", "farmacia", "drogas", "colsubsidio"], category: "health" },
+  { keywords: ["ropa", "zara", "h&m", "adidas", "nike"], category: "clothing" },
+  { keywords: ["viaje", "avianca", "latam", "booking", "airbnb"], category: "travel" },
+  { keywords: ["mascota", "veterinaria", "pet"], category: "pets" },
 ];
 
 export function suggestCategory(
@@ -54,20 +54,20 @@ export function suggestCategory(
   // Amount-based fallback
   if (bestConfidence < 0.7) {
     if (amount < 5000 && /tinto|cafe|pan/.test(normalized)) {
-      bestCategory = "Café";
+      bestCategory = "coffee";
       bestConfidence = 0.72;
     } else if (amount >= 2000 && amount <= 15000 && /uber|taxi|didi|trans/.test(normalized)) {
-      bestCategory = "Transporte";
+      bestCategory = "transport";
       bestConfidence = 0.68;
     } else if (amount > 50000) {
-      bestCategory = "Compras";
+      bestCategory = "shopping";
       bestConfidence = 0.45;
     }
   }
 
   // Generic fallback
   if (!bestCategory) {
-    bestCategory = "Otros";
+    bestCategory = "other";
     bestConfidence = 0.35;
   }
 
