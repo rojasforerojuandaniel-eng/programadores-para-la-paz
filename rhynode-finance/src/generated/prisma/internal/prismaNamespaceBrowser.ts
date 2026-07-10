@@ -88,7 +88,9 @@ export const ModelName = {
   Integration: 'Integration',
   SplitGroup: 'SplitGroup',
   SplitMember: 'SplitMember',
-  SplitExpense: 'SplitExpense'
+  SplitExpense: 'SplitExpense',
+  AiConversation: 'AiConversation',
+  AiMessage: 'AiMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -770,6 +772,29 @@ export const SplitExpenseScalarFieldEnum = {
 } as const
 
 export type SplitExpenseScalarFieldEnum = (typeof SplitExpenseScalarFieldEnum)[keyof typeof SplitExpenseScalarFieldEnum]
+
+
+export const AiConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  title: 'title',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiConversationScalarFieldEnum = (typeof AiConversationScalarFieldEnum)[keyof typeof AiConversationScalarFieldEnum]
+
+
+export const AiMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  createdAt: 'createdAt'
+} as const
+
+export type AiMessageScalarFieldEnum = (typeof AiMessageScalarFieldEnum)[keyof typeof AiMessageScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -821,3 +821,31 @@ model SplitExpense {
   @@index([paidByMemberId])
   @@map("split_expenses")
 }
+
+model AiConversation {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  organizationId String?  @map("organization_id")
+  title          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  messages       AiMessage[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@index([role])
+  @@index([createdAt])
+  @@map("ai_messages")
+}

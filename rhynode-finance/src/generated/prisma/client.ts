@@ -231,3 +231,13 @@ export type SplitMember = Prisma.SplitMemberModel
  * 
  */
 export type SplitExpense = Prisma.SplitExpenseModel
+/**
+ * Model AiConversation
+ * 
+ */
+export type AiConversation = Prisma.AiConversationModel
+/**
+ * Model AiMessage
+ * 
+ */
+export type AiMessage = Prisma.AiMessageModel

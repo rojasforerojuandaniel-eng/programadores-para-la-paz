@@ -17,16 +17,58 @@ import { logger } from "@/lib/logger";
 
 const chatSchema = z.object({
   message: z.string().min(1).max(4000),
+  conversationId: z.string().min(1).optional(),
   history: z
     .array(
       z.object({
-        role: z.enum(["user", "assistant"]),
+        role: z.string(),
         content: z.string().max(8000),
       })
     )
     .max(50)
     .optional(),
 });
+
+type ValidHistoryItem = { role: "user"; content: string };
+
+function sanitizeHistory(
+  history: Array<{ role: string; content: string }> | undefined
+): ValidHistoryItem[] {
+  return (history || []).filter((item): item is ValidHistoryItem => item.role === "user");
+}
+
+async function buildUserHistory(
+  conversationId: string | undefined,
+  userId: string,
+  clientHistory: ValidHistoryItem[]
+): Promise<ValidHistoryItem[]> {
+  if (!conversationId) return clientHistory;
+
+  const prisma = getPrisma();
+  const conversation = await prisma.aiConversation.findFirst({
+    where: { id: conversationId, userId },
+    include: {
+      messages: {
+        where: { role: "user" },
+        orderBy: { createdAt: "asc" },
+        select: { role: true, content: true },
+      },
+    },
+  });
+
+  if (!conversation) {
+    // Unknown/invalid conversationId: treat as a new conversation rather than
+    // leaking existence or failing the request.
+    return [];
+  }
+
+  return conversation.messages
+    .filter(
+      (message): message is { role: "user"; content: string } =>
+        message.role === "user" && typeof message.content === "string"
+    )
+    .map((message) => ({ role: message.role, content: message.content }));
+}
 
 type AnthropicTextBlock = { type: "text"; text: string };
 type AnthropicToolUseBlock = {
@@ -202,11 +244,18 @@ export const POST = withRateLimit(
       );
     }
 
-    const { message: userMessage, history = [] } = parseResult.data;
+    const { message: userMessage, history, conversationId } = parseResult.data;
+    const validatedHistory = sanitizeHistory(history);
 
     const locale = await getLocale();
 
     const prisma = getPrisma();
+    const userHistory = await buildUserHistory(
+      conversationId,
+      profile.id,
+      validatedHistory
+    );
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(
@@ -330,7 +379,7 @@ Contexto del usuario:
 Responde en español, sé conciso y práctico. No des consejos genéricos — usa los datos reales del usuario.`;
 
     const messages: AnthropicMessage[] = [
-      ...(history || []),
+      ...userHistory,
       { role: "user", content: userMessage },
     ];
 
@@ -340,7 +389,7 @@ Responde en español, sé conciso y práctico. No des consejos genéricos — us
     // emitting the same SSE events the client expects — no LLM round-trip.
     // Only applied to the latest message with no conversation history, so we
     // never misread a follow-up that depends on prior context.
-    if (history.length === 0) {
+    if (userHistory.length === 0) {
       const intent = detectIntent(userMessage);
       if (intent) {
         const fastStream = new ReadableStream({
