@@ -16,6 +16,7 @@ const csp = [
   "base-uri 'self'",
   "frame-ancestors 'none'",
   "manifest-src 'self'",
+  "worker-src 'self' blob:",
 ].join("; ");
 
 const nextConfig: NextConfig = {
