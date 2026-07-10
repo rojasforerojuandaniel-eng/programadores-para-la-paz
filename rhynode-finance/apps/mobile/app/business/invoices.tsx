@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
-import { formatCurrency, formatDate } from '@rhynode/shared';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
+import { localizedFormatCurrency, localizedFormatDate } from '~/lib/i18n-locale';
 
 export default function InvoicesScreen() {
   const { t } = useTranslation();
@@ -25,11 +25,11 @@ export default function InvoicesScreen() {
           <Text className="text-foreground font-medium">{invoice.number}</Text>
           <Text className="text-muted-foreground text-sm">{invoice.clientName ?? t('dashboard.noClient')}</Text>
           <Text className="text-foreground text-lg font-bold mt-1">
-            {formatCurrency(invoice.total, invoice.currency, 'es')}
+            {localizedFormatCurrency(invoice.total, invoice.currency)}
           </Text>
           <Text className="text-muted-foreground text-sm capitalize">
-            {invoice.status.toLowerCase()}
-            {invoice.dueDate ? ` · ${t('dashboard.invoices.due', { date: formatDate(invoice.dueDate, 'es') })}` : ''}
+            {t(`dashboard.status.${invoice.status.toLowerCase()}`, { defaultValue: invoice.status.toLowerCase() })}
+            {invoice.dueDate ? ` · ${t('dashboard.invoices.due', { date: localizedFormatDate(invoice.dueDate) })}` : ''}
           </Text>
         </View>
       ))}

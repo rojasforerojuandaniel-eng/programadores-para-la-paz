@@ -3,17 +3,18 @@ import {
   AccessibilityInfo,
   FlatList,
   Modal,
-  Pressable,
-  StyleSheet,
   Text as RNText,
+  StyleSheet,
   type AccessibilityRole,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Tag, X } from 'lucide-react-native';
-import { colors } from '~/theme/colors';
+import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { TextInput } from '~/components/ui/text-input';
 import { View } from '~/components/ui/view';
+import { cn } from '~/lib/utils';
+import { useTheme } from '~/lib/theme';
 
 interface CategoryPickerProps {
   value: string;
@@ -21,8 +22,16 @@ interface CategoryPickerProps {
   recent?: string[];
 }
 
+const themeColors = (resolvedTheme: 'light' | 'dark') => ({
+  foreground: resolvedTheme === 'dark' ? '#fafafa' : '#18181b',
+  mutedForeground: resolvedTheme === 'dark' ? '#9ca3af' : '#71717a',
+  placeholder: resolvedTheme === 'dark' ? '#6b7280' : '#a1a1aa',
+});
+
 export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const theme = themeColors(resolvedTheme);
   const commonCategories = useMemo(
     () => [
       t('transactions.categories.food'),
@@ -83,13 +92,13 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
     <>
       <Pressable
         onPress={() => setOpen(true)}
-        style={styles.row}
+        className="flex-row items-center gap-3 rounded-2xl bg-card px-4 py-4"
         accessibilityLabel={t('transactions.categoryPicker.currentValue', { category: value })}
         accessibilityRole="button"
       >
-        <Tag size={20} color="#9ca3af" strokeWidth={1.5} />
+        <Tag size={20} color={theme.mutedForeground} strokeWidth={1.5} />
         <Text className="flex-1 text-foreground">{value}</Text>
-        <ChevronDown size={20} color="#9ca3af" strokeWidth={1.5} />
+        <ChevronDown size={20} color={theme.mutedForeground} strokeWidth={1.5} />
       </Pressable>
 
       <Modal
@@ -108,18 +117,18 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
           <View className="mb-4 flex-row items-center justify-between">
             <RNText
               ref={titleRef}
-              style={styles.title}
+              style={[styles.title, { color: theme.foreground }]}
               accessibilityRole="header"
             >
               {t('transactions.categoryPicker.title')}
             </RNText>
             <Pressable
               onPress={() => setOpen(false)}
-              style={styles.closeButton}
+              className="h-12 w-12"
               accessibilityLabel={t('common.close')}
               accessibilityRole="button"
             >
-              <X size={24} color="#9ca3af" strokeWidth={1.5} />
+              <X size={24} color={theme.mutedForeground} strokeWidth={1.5} />
             </Pressable>
           </View>
 
@@ -128,7 +137,7 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
               label={t('transactions.categoryPicker.searchLabel')}
               className="text-foreground"
               placeholder={t('transactions.categoryPicker.searchPlaceholder')}
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={theme.placeholder}
               value={query}
               onChangeText={setQuery}
               autoFocus
@@ -143,10 +152,10 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
                   <Pressable
                     key={category}
                     onPress={() => select(category)}
-                    style={[
-                      styles.chip,
-                      value === category && styles.chipSelected,
-                    ]}
+                    className={cn(
+                      'rounded-full px-3 py-2 min-h-12 items-center justify-center',
+                      value === category && 'bg-primary'
+                    )}
                     accessibilityLabel={category}
                     accessibilityRole="button"
                     accessibilityState={{ selected: value === category }}
@@ -172,10 +181,10 @@ export function CategoryPicker({ value, onChange, recent }: CategoryPickerProps)
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => select(item)}
-                style={[
-                  styles.listRow,
-                  value === item && styles.listRowSelected,
-                ]}
+                className={cn(
+                  'rounded-xl px-4 py-3.5 min-h-12 justify-center',
+                  value === item && 'bg-primary'
+                )}
                 accessibilityLabel={item}
                 accessibilityRole="button"
                 accessibilityState={{ selected: value === item }}
@@ -208,44 +217,5 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fafafa',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#0d0e13',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  closeButton: {
-    minWidth: 48,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chip: {
-    backgroundColor: '#26272b',
-    borderRadius: 9999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chipSelected: {
-    backgroundColor: colors.primary,
-  },
-  listRow: {
-    backgroundColor: '#0d0e13',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  listRowSelected: {
-    backgroundColor: colors.primary,
   },
 });

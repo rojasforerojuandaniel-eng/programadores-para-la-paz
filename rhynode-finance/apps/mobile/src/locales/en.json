@@ -13,7 +13,9 @@
     "actions": {
       "addTransaction": "Add transaction",
       "back": "← Back",
-      "backShort": "Back"
+      "backShort": "Back",
+      "cancel": "Cancel",
+      "send": "Send"
     },
     "menu": {
       "invoices": "Invoices",
@@ -193,6 +195,20 @@
     "noClient": "No client",
     "invoices": {
       "due": "Due {{date}}"
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled",
+      "planning": "Planning",
+      "in_progress": "In progress",
+      "on_hold": "On hold",
+      "completed": "Completed",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending"
     }
   },
   "transactions": {

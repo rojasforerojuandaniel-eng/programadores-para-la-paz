@@ -12,6 +12,7 @@ import { parseLocaleAmount } from '~/lib/parse-amount';
 import { showToast } from '~/hooks/use-toast';
 import { useCreateTransaction } from '~/hooks/use-transactions';
 import { useUpdateTransaction } from '~/hooks/use-transaction';
+import { useTheme } from '~/lib/theme';
 import { CategoryPicker } from './category-picker';
 
 interface QuickAddFormProps {
@@ -39,6 +40,10 @@ function isOfflineError(error: unknown): error is { name: 'OfflineError'; messag
   );
 }
 
+const themeColors = (resolvedTheme: 'light' | 'dark') => ({
+  placeholder: resolvedTheme === 'dark' ? '#6b7280' : '#a1a1aa',
+});
+
 export function QuickAddForm({
   initialMerchant,
   initialTotal,
@@ -49,6 +54,8 @@ export function QuickAddForm({
   initialCurrency,
 }: QuickAddFormProps) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const theme = themeColors(resolvedTheme);
   const router = useRouter();
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType ?? 'EXPENSE');
   const [description, setDescription] = useState(initialMerchant ?? '');
@@ -153,7 +160,7 @@ export function QuickAddForm({
         testID="transaction-description"
         label={t('transactions.form.descriptionLabel')}
         placeholder={t('transactions.form.descriptionPlaceholder')}
-        placeholderTextColor="#6b7280"
+        placeholderTextColor={theme.placeholder}
         value={description}
         onChangeText={setDescription}
         returnKeyType="next"
@@ -166,7 +173,7 @@ export function QuickAddForm({
         ref={amountRef}
         label={t('transactions.form.amountLabel')}
         placeholder={t('transactions.form.amountPlaceholder')}
-        placeholderTextColor="#6b7280"
+        placeholderTextColor={theme.placeholder}
         keyboardType="decimal-pad"
         value={amount}
         onChangeText={setAmount}

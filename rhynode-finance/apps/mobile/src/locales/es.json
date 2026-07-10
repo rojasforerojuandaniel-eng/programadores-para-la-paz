@@ -13,7 +13,9 @@
     "actions": {
       "addTransaction": "Agregar movimiento",
       "back": "← Volver",
-      "backShort": "Volver"
+      "backShort": "Volver",
+      "cancel": "Cancelar",
+      "send": "Enviar"
     },
     "menu": {
       "invoices": "Facturas",
@@ -193,6 +195,20 @@
     "noClient": "Sin cliente",
     "invoices": {
       "due": "Vence {{date}}"
+    },
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviada",
+      "paid": "Pagada",
+      "overdue": "Vencida",
+      "cancelled": "Cancelada",
+      "planning": "Planificación",
+      "in_progress": "En progreso",
+      "on_hold": "En espera",
+      "completed": "Completado",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "pending": "Pendiente"
     }
   },
   "transactions": {

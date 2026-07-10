@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
-import { formatCurrency } from '@rhynode/shared';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 import { useBusinessData } from '~/hooks/use-business-data';
+import { localizedFormatCurrency } from '~/lib/i18n-locale';
 
 export default function ProjectsScreen() {
   const { t } = useTranslation();
@@ -24,11 +24,11 @@ export default function ProjectsScreen() {
         <View key={project.id} className="bg-card rounded-2xl p-4 mb-3">
           <Text className="text-foreground font-medium">{project.name}</Text>
           <Text className="text-muted-foreground text-sm capitalize">
-            {project.status.toLowerCase()}
+            {t(`dashboard.status.${project.status.toLowerCase()}`, { defaultValue: project.status.toLowerCase() })}
           </Text>
           {project.budget ? (
             <Text className="text-foreground text-lg font-bold mt-1">
-              {formatCurrency(project.budget, project.currency, 'es')}
+              {localizedFormatCurrency(project.budget, project.currency)}
             </Text>
           ) : null}
         </View>

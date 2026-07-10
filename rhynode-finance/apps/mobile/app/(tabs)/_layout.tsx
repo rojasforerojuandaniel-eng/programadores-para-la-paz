@@ -1,15 +1,21 @@
 import { Tabs } from 'expo-router';
 import { Home, List, PlusCircle, Target, Menu } from 'lucide-react-native';
-import { useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '~/theme/colors';
+import { useTheme } from '~/lib/theme';
+
+const tabBarTheme = {
+  dark: { background: '#0A0A0F', inactive: '#6b7280' },
+  light: { background: '#ffffff', inactive: '#71717a' },
+};
 
 export default function TabsLayout() {
   const { t } = useTranslation();
-  const scheme = useColorScheme();
+  const { resolvedTheme } = useTheme();
   const tint = colors.primary;
-  const barBg = scheme === 'dark' ? '#0A0A0F' : '#ffffff';
-  const inactive = '#6b7280';
+  const theme = tabBarTheme[resolvedTheme];
+  const barBg = theme.background;
+  const inactive = theme.inactive;
 
   return (
     <Tabs
