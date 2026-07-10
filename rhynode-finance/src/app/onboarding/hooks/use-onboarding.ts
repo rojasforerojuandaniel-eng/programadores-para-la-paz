@@ -186,7 +186,7 @@ export function useOnboarding() {
   }
 
   function back() {
-    setStep((prev) => ((prev - 1) as StepNumber));
+    setStep((prev) => Math.max(1, prev - 1) as StepNumber);
     setErrors({});
   }
 
