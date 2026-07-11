@@ -1,0 +1,8 @@
+flows:
+  - "flows/**/*.yml"
+executionOrder:
+  - continueOnFailure: false
+  flowsOrder:
+    - flows/launch-app.yml
+    - flows/login-and-see-dashboard.yml
+    - flows/add-transaction.yml
