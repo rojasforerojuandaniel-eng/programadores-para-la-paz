@@ -37,10 +37,10 @@ jobs:
 
       - name: Install monorepo dependencies
         working-directory: ./rhynode-finance
-        run: pnpm install --frozen-lockfile --config.onlyBuiltDependencies=true
+        run: pnpm install --frozen-lockfile --config.strict-dep-builds=false
 
       - name: Ensure babel-preset-expo is in mobile node_modules
-        run: pnpm add -D babel-preset-expo --config.onlyBuiltDependencies=true
+        run: pnpm add -D babel-preset-expo --config.strict-dep-builds=false
 
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
