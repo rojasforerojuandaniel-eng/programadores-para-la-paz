@@ -1,4 +1,4 @@
-appId: com.rhynode.finance.mobile
+appId: com.rhynode.finance
 ---
 - launchApp:
     clearState: true

@@ -12,7 +12,9 @@
     "android:dev": "eas build --profile development --platform android",
     "ios:build": "eas build --profile production --platform ios",
     "test": "jest --no-coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "maestro:test": "maestro test .maestro/flows/",
+    "maestro:record": "maestro record .maestro/flows/"
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.0.0",

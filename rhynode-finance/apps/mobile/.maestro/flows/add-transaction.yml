@@ -1,0 +1,17 @@
+appId: com.rhynode.finance
+---
+- runFlow: login-and-see-dashboard.yml
+- tapOn:
+    id: "tab-add"
+- tapOn:
+    id: "transaction-description"
+- inputText: "Maestro test coffee"
+- tapOn:
+    id: "transaction-amount"
+- inputText: "25000"
+- tapOn:
+    id: "transaction-save"
+- extendedWaitUntil:
+    visible: "Maestro test coffee"
+    timeout: 15000
+- assertVisible: "Maestro test coffee"

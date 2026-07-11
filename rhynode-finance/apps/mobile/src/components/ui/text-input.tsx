@@ -16,7 +16,7 @@ const StyledTextInput = cssInterop(RNTextInput, { className: 'style' }) as React
 >;
 
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput(
-  { className, label, ...props },
+  { className, label, testID, ...props },
   ref
 ) {
   return (
@@ -26,6 +26,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
       </Text>
       <StyledTextInput
         ref={ref}
+        testID={testID}
         className={cn(
           'min-h-[48px] bg-card text-foreground rounded-2xl px-4 py-3',
           className

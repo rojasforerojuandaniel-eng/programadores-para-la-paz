@@ -145,6 +145,7 @@ export default function SignInScreen() {
 
           <Card className="bg-card border border-border p-5 mb-6">
             <TextInput
+              testID="sign-in-email"
               label={t('auth.signIn.emailLabel')}
               className="min-h-[52px] bg-background border border-border"
               placeholderTextColor="#9ca3af"
@@ -171,6 +172,7 @@ export default function SignInScreen() {
             )}
 
             <TextInput
+              testID="sign-in-password"
               ref={passwordRef}
               label={t('auth.signIn.passwordLabel')}
               className="min-h-[52px] bg-background border border-border"

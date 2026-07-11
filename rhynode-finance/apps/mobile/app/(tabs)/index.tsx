@@ -31,7 +31,7 @@ export default function HomeTab() {
         <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.primary} />
       }
     >
-      <Text className="text-foreground text-2xl font-bold mb-2">{t('dashboard.title')}</Text>
+      <Text testID="dashboard-title" className="text-foreground text-2xl font-bold mb-2">{t('dashboard.title')}</Text>
 
       {isLoading && !data ? (
         <DashboardSkeleton />

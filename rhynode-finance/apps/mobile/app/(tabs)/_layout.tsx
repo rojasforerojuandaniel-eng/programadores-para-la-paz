@@ -31,6 +31,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('common.tabs.home'),
+          tabBarButtonTestID: 'tab-index',
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
@@ -38,6 +39,7 @@ export default function TabsLayout() {
         name="transactions"
         options={{
           title: t('common.tabs.transactions'),
+          tabBarButtonTestID: 'tab-transactions',
           tabBarIcon: ({ color, size }) => <List color={color} size={size} />,
         }}
       />
@@ -45,6 +47,7 @@ export default function TabsLayout() {
         name="add"
         options={{
           title: t('common.tabs.add'),
+          tabBarButtonTestID: 'tab-add',
           tabBarIcon: ({ color, size }) => <PlusCircle color={color} size={size} />,
         }}
       />
@@ -52,6 +55,7 @@ export default function TabsLayout() {
         name="plan"
         options={{
           title: t('common.tabs.plan'),
+          tabBarButtonTestID: 'tab-plan',
           tabBarIcon: ({ color, size }) => <Target color={color} size={size} />,
         }}
       />
@@ -59,6 +63,7 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: t('common.tabs.more'),
+          tabBarButtonTestID: 'tab-more',
           tabBarIcon: ({ color, size }) => <Menu color={color} size={size} />,
         }}
       />
