@@ -1,0 +1,44 @@
+name: Rhynode Finance iOS Build (ios-builder)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: ./rhynode-finance/apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Install ios-builder
+        run: go install github.com/MobAI-App/ios-builder/cmd/builder@latest
+
+      - name: Initialize ios-builder workflow
+        run: builder init --non-interactive --owner ${{ github.repository_owner }} --repo ${{ github.event.repository.name }}
+
+      - name: Build iOS via generated workflow
+        run: builder ios build --unsigned
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhynode-ios-unsigned
+          path: rhynode-finance/apps/mobile/dist/*.ipa
+          retention-days: 7
