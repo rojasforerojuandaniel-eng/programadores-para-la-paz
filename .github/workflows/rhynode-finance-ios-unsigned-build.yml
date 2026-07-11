@@ -39,11 +39,8 @@ jobs:
         working-directory: ./rhynode-finance
         run: pnpm install --frozen-lockfile
 
-      - name: Verify babel-preset-expo plugin
-        working-directory: ./rhynode-finance/apps/mobile
-        run: |
-          ls node_modules/babel-preset-expo/build/expo-router-plugin.js || \
-          ls ../../node_modules/babel-preset-expo/build/expo-router-plugin.js
+      - name: Ensure babel-preset-expo is in mobile node_modules
+        run: pnpm add -D babel-preset-expo
 
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
