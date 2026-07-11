@@ -17,7 +17,7 @@ export function SignUpForm() {
       subtitle={t("subtitle")}
     >
       <SignUp
-        fallbackRedirectUrl="/dashboard"
+        fallbackRedirectUrl="/onboarding"
         signInUrl="/sign-in"
         routing="hash"
         appearance={getClerkAppearance(isDark)}
