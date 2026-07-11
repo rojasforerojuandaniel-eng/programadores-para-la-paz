@@ -3910,6 +3910,12 @@
     }
   },
   "auth": {
+    "common": {
+      "signInTitle": "Inicia sesión en Rhynode",
+      "signUpTitle": "Crea tu cuenta en Rhynode",
+      "subtitle": "Gestiona tu dinero en minutos",
+      "backToHome": "Volver al inicio"
+    },
     "signUp": {
       "title": "Crear cuenta gratis",
       "description": "Regístrate gratis en Rhynode. Controla tu dinero, ahorra con inteligencia y gestiona tu negocio en Colombia. Soporte Wompi y facturación DIAN.",

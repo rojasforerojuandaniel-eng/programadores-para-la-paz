@@ -3910,6 +3910,12 @@
     }
   },
   "auth": {
+    "common": {
+      "signInTitle": "Sign in to Rhynode",
+      "signUpTitle": "Create your Rhynode account",
+      "subtitle": "Manage your money in minutes",
+      "backToHome": "Back to home"
+    },
     "signUp": {
       "title": "Create your free account",
       "description": "Sign up free on Rhynode. Take control of your money, save smartly, and manage your business in Colombia. Wompi support and DIAN invoicing.",
