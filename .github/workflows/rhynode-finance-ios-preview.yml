@@ -34,7 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install EAS CLI
-        run: pnpm add -D eas-cli
+        run: pnpm add -D -w eas-cli
 
       - name: Build iOS preview
         working-directory: ./rhynode-finance/apps/mobile
