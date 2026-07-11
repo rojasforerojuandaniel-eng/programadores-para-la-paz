@@ -1,0 +1,84 @@
+name: Mobile E2E (Maestro)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/mobile-maestro.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/mobile-maestro.yml"
+
+jobs:
+  maestro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/mobile
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_CLERK_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_CLERK_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Cache AVD
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ runner.os }}-api-34
+
+      - name: Create AVD and launch emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            adb wait-for-device
+            adb shell input keyevent 82
+
+      - name: Build Expo Android locally for tests
+        run: |
+          echo "Build step placeholder: run eas build --local or prebuild + gradle assemble."
+          echo "APK path must be set to MAESTRO_APP_PATH env var for maestro to install it."
+        env:
+          MAESTRO_APP_PATH: ""
+
+      - name: Run Maestro tests
+        run: |
+          if [ -z "$E2E_EMAIL" ] || [ -z "$E2E_PASSWORD" ]; then
+            echo "E2E Clerk credentials not configured; skipping."
+            exit 0
+          fi
+          maestro test .maestro/flows/ --format junit
+
+      - name: Upload Maestro report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-report
+          path: apps/mobile/.maestro/logs/
+          retention-days: 7
