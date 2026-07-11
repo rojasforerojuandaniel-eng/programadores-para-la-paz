@@ -28,8 +28,25 @@ jobs:
       - name: Install ios-builder
         run: go install github.com/MobAI-App/ios-builder/cmd/builder@latest
 
-      - name: Initialize ios-builder
-        run: builder init
+      - name: Create builder.json config
+        run: |
+          cat > builder.json <<'JSON'
+          {
+            "projectName": "rhynode-finance-mobile",
+            "repo": "rojasforerojuandaniel-eng/programadores-para-la-paz",
+            "branch": "main",
+            "workflowFile": "rhynode-finance-ios-build.yml",
+            "ios": {
+              "scheme": "Rhynode",
+              "configuration": "Release",
+              "exportOptions": {
+                "method": "development",
+                "teamID": "",
+                "provisioningProfiles": {}
+              }
+            }
+          }
+          JSON
 
       - name: Build iOS via generated workflow
         run: builder ios build --unsigned
