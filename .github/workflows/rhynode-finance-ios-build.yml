@@ -32,19 +32,10 @@ jobs:
         run: |
           cat > builder.json <<'JSON'
           {
-            "projectName": "rhynode-finance-mobile",
+            "project": "rhynode-finance-mobile",
             "repo": "rojasforerojuandaniel-eng/programadores-para-la-paz",
             "branch": "main",
-            "workflowFile": "rhynode-finance-ios-build.yml",
-            "ios": {
-              "scheme": "Rhynode",
-              "configuration": "Release",
-              "exportOptions": {
-                "method": "development",
-                "teamID": "",
-                "provisioningProfiles": {}
-              }
-            }
+            "workflowFile": "rhynode-finance-ios-build.yml"
           }
           JSON
 
