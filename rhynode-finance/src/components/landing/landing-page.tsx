@@ -38,7 +38,6 @@ import {
   BadgeCheck,
   Mail,
   ExternalLink,
-  HelpCircle,
   Building2,
 } from "lucide-react";
 
@@ -96,10 +95,10 @@ function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Logo href="/" />
 
-        <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
           {links.map((link) => (
             <a
               key={link.href}
@@ -134,8 +133,8 @@ function Navbar() {
             </Button>
           </SheetTrigger>
           <SheetContent
-            side="top"
-            className="w-full border-b border-border/50 bg-background/95 backdrop-blur-md"
+            side="left"
+            className="w-80 border-r border-border/50 bg-background/95 backdrop-blur-md"
           >
             <SheetTitle className="sr-only">{t("menuTitle")}</SheetTitle>
             <div className="flex flex-col gap-6 py-6">
@@ -290,7 +289,7 @@ function FeaturesGrid() {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURE_KEYS.map((f) => {
             const Icon = f.icon;
             const title = t(`items.${f.key}.title`);
@@ -303,8 +302,8 @@ function FeaturesGrid() {
               >
                 <CardContent className="p-5">
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <Badge
                       variant={f.audience === "business" ? "outline" : "secondary"}
@@ -335,13 +334,13 @@ function HowItWorks() {
           {t("title")}
         </h2>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3">
           {STEP_KEYS.map((step) => (
             <div
               key={step}
               className="relative rounded-2xl border border-border/50 bg-card p-6 dark:border-border"
             >
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
+              <span className="text-5xl font-bold text-primary/20">
                 {step}
               </span>
               <h3 className="mt-4 text-lg font-semibold text-card-foreground">
@@ -523,15 +522,7 @@ function Footer() {
       ],
     },
     {
-      categoryKey: "legal" as const,
-      links: [
-        { labelKey: "privacy", href: "/privacy" },
-        { labelKey: "terms", href: "/terms" },
-        { labelKey: "cookies", href: "/cookies" },
-      ],
-    },
-    {
-      categoryKey: "support" as const,
+      categoryKey: "company" as const,
       links: [
         { labelKey: "help", href: "/support" },
         { labelKey: "contact", href: "/support" },
@@ -539,11 +530,19 @@ function Footer() {
       ],
     },
     {
-      categoryKey: "social" as const,
+      categoryKey: "resources" as const,
       links: [
         { labelKey: "twitter", href: "https://twitter.com/rhynode", external: true },
         { labelKey: "linkedin", href: "https://linkedin.com/company/rhynode", external: true },
         { labelKey: "instagram", href: "https://instagram.com/rhynode", external: true },
+      ],
+    },
+    {
+      categoryKey: "legal" as const,
+      links: [
+        { labelKey: "privacy", href: "/privacy" },
+        { labelKey: "terms", href: "/terms" },
+        { labelKey: "cookies", href: "/cookies" },
       ],
     },
   ];
@@ -551,8 +550,8 @@ function Footer() {
   return (
     <footer className="border-t border-border/50 bg-background px-4 py-12">
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="lg:col-span-2">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-4">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <TrendingUp className="h-5 w-5" aria-hidden="true" />
@@ -626,9 +625,10 @@ function Footer() {
           <p className="text-center text-sm text-muted-foreground md:text-left">
             {t("copyright", { year: new Date().getFullYear() })}
           </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <HelpCircle className="h-4 w-4" aria-hidden="true" />
-            <span>{t("doubts")}</span>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <Link href="/privacy">{t("links.privacy")}</Link>
+            <Link href="/terms">{t("links.terms")}</Link>
+            <Link href="/cookies">{t("links.cookies")}</Link>
           </div>
         </div>
       </div>
@@ -639,8 +639,8 @@ function Footer() {
 function StickyMobileCta() {
   const t = useTranslations();
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 p-4 backdrop-blur-md md:hidden">
-      <Button size="lg" className="h-12 w-full text-base" asChild>
+    <div className="fixed inset-x-0 bottom-0 z-50 h-16 border-t border-border/50 bg-background/95 px-4 py-2 backdrop-blur-xl md:hidden">
+      <Button size="lg" className="h-full w-full text-base" asChild>
         <Link href="/sign-up">{t("stickyCta")}</Link>
       </Button>
     </div>
@@ -709,7 +709,7 @@ export function LandingPageV2() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="min-h-screen bg-background pb-20 md:pb-0"
+      className="min-h-screen bg-background pb-24 md:pb-0"
     >
       <LandingSchema />
       <Navbar />

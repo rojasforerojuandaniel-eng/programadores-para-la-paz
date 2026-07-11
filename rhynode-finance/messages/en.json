@@ -3661,9 +3661,9 @@
     "copyright": "© {year} Rhynode. Made in Colombia.",
     "categories": {
       "product": "Product",
-      "legal": "Legal",
-      "support": "Support",
-      "social": "Social"
+      "company": "Company",
+      "resources": "Resources",
+      "legal": "Legal"
     },
     "links": {
       "features": "Features",

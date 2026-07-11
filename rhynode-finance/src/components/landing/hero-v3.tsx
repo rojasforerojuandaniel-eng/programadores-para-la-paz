@@ -83,7 +83,7 @@ function DashboardMockup() {
 
   return (
     <div className="relative mx-auto w-full max-w-lg animate-float-delayed lg:mx-0">
-      <Card className="relative overflow-hidden border-border/60 bg-card/80 shadow-2xl backdrop-blur-sm dark:bg-card/60">
+      <Card className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur-sm dark:bg-card/60">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-chart-2 to-chart-5" />
         <CardContent className="p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
@@ -138,7 +138,7 @@ function DashboardMockup() {
         </CardContent>
       </Card>
 
-      <Card className="absolute -right-4 top-12 hidden w-44 animate-float border border-border/60 bg-card/90 shadow-lg backdrop-blur-sm dark:bg-card/70 lg:block">
+      <Card className="absolute -right-4 top-12 hidden w-44 animate-float rounded-xl border border-border/60 bg-card/90 shadow-lg backdrop-blur-sm dark:bg-card/70 lg:block">
         <CardContent className="p-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-success">
@@ -152,7 +152,7 @@ function DashboardMockup() {
         </CardContent>
       </Card>
 
-      <Card className="absolute -left-4 bottom-16 hidden w-40 animate-float border border-border/60 bg-card/90 shadow-lg backdrop-blur-sm dark:bg-card/70 lg:block">
+      <Card className="absolute -left-4 bottom-16 hidden w-40 animate-float rounded-xl border border-border/60 bg-card/90 shadow-lg backdrop-blur-sm dark:bg-card/70 lg:block">
         <CardContent className="p-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chart-5/10 text-chart-5">
@@ -178,11 +178,11 @@ function FloatingStats() {
   ];
 
   return (
-    <div className="mt-8 grid grid-cols-3 gap-2 border-t border-border/40 pt-6 sm:gap-4 sm:pt-8 lg:mt-10">
+    <div className="mt-10 grid grid-cols-3 gap-4 border-t border-border/40 pt-8 lg:mt-12">
       {stats.map((stat) => (
         <div key={stat.label} className="text-center">
-          <div className="text-lg font-bold text-foreground sm:text-2xl">{stat.value}</div>
-          <div className="text-[10px] text-muted-foreground sm:text-xs">{stat.label}</div>
+          <div className="text-2xl font-bold text-foreground sm:text-3xl">{stat.value}</div>
+          <div className="text-xs text-muted-foreground sm:text-sm">{stat.label}</div>
         </div>
       ))}
     </div>
@@ -196,7 +196,7 @@ export function HeroV3() {
     <section className="relative overflow-hidden px-4 pt-28 pb-16 md:pt-36 md:pb-24 lg:pt-40 lg:pb-32">
       <AnimatedBackground />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
         <div className="max-w-2xl text-center lg:text-left">
           <HeroBadge />
 
@@ -207,7 +207,7 @@ export function HeroV3() {
             </span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-xl text-balance text-base text-muted-foreground sm:text-lg md:mt-6 lg:mx-0">
+          <p className="mx-auto mt-5 max-w-xl text-balance text-base text-muted-foreground sm:text-lg md:mt-6 md:text-xl lg:mx-0">
             {t("subtitle")}
           </p>
 
