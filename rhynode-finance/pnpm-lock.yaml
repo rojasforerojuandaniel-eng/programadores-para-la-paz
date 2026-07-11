@@ -316,6 +316,9 @@ importers:
       '@types/react':
         specifier: ~19.0.0
         version: 19.0.14
+      babel-preset-expo:
+        specifier: ~13.2.5
+        version: 13.2.5(@babel/core@7.29.7)
       jest-expo:
         specifier: ^53.0.14
         version: 53.0.14(@babel/core@7.29.7)(bufferutil@4.1.0)(expo@53.0.27(@babel/core@7.29.7)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6)))(bufferutil@4.1.0)(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6))(react@19.0.0))(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6))(react@19.0.0)(utf-8-validate@6.0.6))(jest@29.7.0(@types/node@20.19.43)(babel-plugin-macros@3.1.0))(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6))(react@19.0.0)(utf-8-validate@6.0.6)

@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: ./rhynode-finance/apps/mobile
@@ -35,9 +35,15 @@ jobs:
         with:
           version: 11.2.2
 
-      - name: Install dependencies
+      - name: Install monorepo dependencies
         working-directory: ./rhynode-finance
         run: pnpm install --frozen-lockfile
+
+      - name: Verify babel-preset-expo plugin
+        working-directory: ./rhynode-finance/apps/mobile
+        run: |
+          ls node_modules/babel-preset-expo/build/expo-router-plugin.js || \
+          ls ../../node_modules/babel-preset-expo/build/expo-router-plugin.js
 
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
