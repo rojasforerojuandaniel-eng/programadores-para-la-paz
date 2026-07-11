@@ -42,6 +42,12 @@ jobs:
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
 
+      - name: Patch fmt pod for Xcode 26
+        working-directory: ./rhynode-finance/apps/mobile/ios/Pods/fmt
+        run: |
+          sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/' include/fmt/base.h || true
+          sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/' include/fmt/format.h || true
+
       - name: Install CocoaPods
         working-directory: ./rhynode-finance/apps/mobile/ios
         run: pod install --repo-update
