@@ -28,6 +28,9 @@ jobs:
       - name: Install ios-builder
         run: go install github.com/MobAI-App/ios-builder/cmd/builder@latest
 
+      - name: Initialize ios-builder
+        run: builder init
+
       - name: Build iOS via generated workflow
         run: builder ios build --unsigned
         env:
