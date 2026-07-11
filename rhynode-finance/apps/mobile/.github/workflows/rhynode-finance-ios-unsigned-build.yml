@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
     timeout-minutes: 90
     defaults:
       run:
@@ -44,12 +44,6 @@ jobs:
 
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
-
-      - name: Patch fmt pod for Xcode 26
-        working-directory: ./rhynode-finance/apps/mobile/ios/Pods/fmt
-        run: |
-          find include/fmt -type f \( -name "base.h" -o -name "format.h" -o -name "format-inl.h" -o -name "core.h" \) -exec sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/g' {} \;
-          grep -R "FMT_USE_CONSTEVAL" include/fmt | head -5
 
       - name: Install CocoaPods
         working-directory: ./rhynode-finance/apps/mobile/ios
