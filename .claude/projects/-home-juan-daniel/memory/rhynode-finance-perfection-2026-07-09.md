@@ -58,7 +58,8 @@ Ejecuté el plan `rhynode-finance/.claude/plans/2026-07-06-arregla-todo.md` en l
   - Migración aplicada exitosamente: `{"ok":true,"output":"Migration 20250710000000_add_ai_conversation_history applied."}`
   - `/api/health` ahora responde `{"status":"ok","db":"connected"}`.
 - **Deploy final actualizado**: `dpl_GiF8zhagZgtqSUkty2rBkHaJYJQw` alias `https://rhynode-finance.vercel.app`.
-- **Commits locales listos**: 2 commits nuevos en `feat/mobile-android-perfect-2026-06-30` (migration endpoint + memory update).
+- **MobAI free tools integrados** (2026-07-10): Maestro E2E flows, GitHub Actions CI workflow, iOS builder workflow, y docs. Ver detalles en `docs/superpowers/specs/2026-07-10-mobai-free-integration-design.md`.
+- **Commits locales listos**: 8 commits nuevos en `feat/mobile-android-perfect-2026-06-30` (migration endpoint, memory update, Maestro + ios-builder integration).
 - **Push a GitHub bloqueado**: el token OAuth actual (`gho_...VWOPi`) no tiene scope `workflow`, y la branch contiene archivos `.github/workflows/*.yml` nuevos. GitHub rechaza el push con:
   ```
   refusing to allow an OAuth App to create or update workflow `.github/workflows/...` without `workflow` scope
