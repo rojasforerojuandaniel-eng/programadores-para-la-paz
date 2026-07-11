@@ -1,0 +1,74 @@
+name: Rhynode Finance iOS Unsigned IPA Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "feat/web-redesign-2026-07-10"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: ./rhynode-finance/apps/mobile
+    env:
+      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_API_URL: https://rhynode-finance.vercel.app
+      EXPO_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+      SENTRY_DISABLE_AUTO_UPLOAD: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
+
+      - name: Install dependencies
+        working-directory: ./rhynode-finance
+        run: pnpm install --frozen-lockfile
+
+      - name: Prebuild iOS project
+        run: pnpm exec expo prebuild -p ios --clean
+
+      - name: Install CocoaPods
+        working-directory: ./rhynode-finance/apps/mobile/ios
+        run: pod install --repo-update
+
+      - name: Build unsigned iOS archive
+        working-directory: ./rhynode-finance/apps/mobile/ios
+        run: |
+          xcodebuild -workspace Rhynode.xcworkspace \
+            -scheme Rhynode \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath ../build/Rhynode.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package unsigned IPA
+        working-directory: ./rhynode-finance/apps/mobile
+        run: |
+          mkdir -p build/Payload
+          cp -R build/Rhynode.xcarchive/Products/Applications/Rhynode.app build/Payload/Rhynode.app
+          cd build && zip -r Rhynode-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhynode-ios-unsigned-ipa
+          path: rhynode-finance/apps/mobile/build/Rhynode-unsigned.ipa
+          retention-days: 7
