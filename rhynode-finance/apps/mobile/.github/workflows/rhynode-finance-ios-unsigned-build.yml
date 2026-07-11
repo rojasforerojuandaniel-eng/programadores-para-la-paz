@@ -6,11 +6,11 @@ on:
       branch:
         description: "Branch to build"
         required: true
-        default: "feat/web-redesign-2026-07-10"
+        default: "main"
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-14
     timeout-minutes: 90
     defaults:
       run:
@@ -48,6 +48,12 @@ jobs:
       - name: Install CocoaPods
         working-directory: ./rhynode-finance/apps/mobile/ios
         run: pod install --repo-update
+
+      - name: Patch fmt pod for Xcode 26
+        working-directory: ./rhynode-finance/apps/mobile/ios/Pods/fmt
+        run: |
+          find include/fmt -name '*.h' -exec sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/g' {} +
+          echo "Patched FMT_USE_CONSTEVAL in fmt headers"
 
       - name: Build unsigned iOS archive
         working-directory: ./rhynode-finance/apps/mobile/ios
