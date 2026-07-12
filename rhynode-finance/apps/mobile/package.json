@@ -67,6 +67,7 @@
     "babel-preset-expo": "~13.2.5",
     "jest-expo": "^53.0.14",
     "react-native-css-interop": "0.2.6",
+    "react-native-worklets": "^0.10.2",
     "typescript": "~5.8.3"
   }
 }
