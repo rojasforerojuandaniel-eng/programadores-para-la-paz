@@ -57,6 +57,7 @@
     "react-native-webview": "13.13.5",
     "tailwind-merge": "^3.0.0",
     "victory-native": "^41.26.0",
+    "whatwg-fetch": "^3.6.20",
     "zod": "^4.4.3",
     "zustand": "^5.0.0"
   },
