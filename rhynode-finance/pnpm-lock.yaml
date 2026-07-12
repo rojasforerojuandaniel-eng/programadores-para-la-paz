@@ -174,6 +174,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@babel/runtime':
+        specifier: ^8.0.0
+        version: 8.0.0
       '@clerk/clerk-expo':
         specifier: ^2.0.0
         version: 2.19.31(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(@types/react@19.0.14)(bs58@6.0.0)(bufferutil@4.1.0)(expo-auth-session@56.0.14(expo@53.0.27)(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6))(react@19.0.0))(expo-crypto@56.0.4(expo@53.0.27))(expo-local-authentication@16.0.5(expo@53.0.27))(expo-secure-store@14.2.4(expo@53.0.27))(expo-web-browser@56.0.5(expo@53.0.27)(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6)))(immer@11.1.8)(react-dom@19.2.4(react@19.0.0))(react-native@0.79.6(@babel/core@7.29.7)(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.0.0)(utf-8-validate@6.0.6))(react@19.0.0)(typescript@5.8.3)(use-sync-external-store@1.6.0(react@19.0.0))(utf-8-validate@6.0.6)(zod@4.4.3)
@@ -1059,6 +1062,9 @@ packages:
   '@babel/runtime@7.29.7':
     resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
     engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@8.0.0':
+    resolution: {integrity: sha512-sL6cvO2IfkSu/iU+zs2S/w01B7A8V7suXSIKEN4hPFFdZoiPGxrj5pAG0lCaqLWiEIrjKzdznIWuaLcxPR53qw==}
 
   '@babel/template@7.29.7':
     resolution: {integrity: sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg==}
@@ -11381,6 +11387,8 @@ snapshots:
       - supports-color
 
   '@babel/runtime@7.29.7': {}
+
+  '@babel/runtime@8.0.0': {}
 
   '@babel/template@7.29.7':
     dependencies:
