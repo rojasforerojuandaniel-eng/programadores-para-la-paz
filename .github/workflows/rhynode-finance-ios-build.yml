@@ -41,7 +41,7 @@ jobs:
 
       - name: Install monorepo dependencies
         working-directory: ./rhynode-finance
-        run: pnpm install --frozen-lockfile --strict-dep-builds=false
+        run: pnpm install --frozen-lockfile
 
       - name: Prebuild iOS project
         run: pnpm exec expo prebuild -p ios --clean
