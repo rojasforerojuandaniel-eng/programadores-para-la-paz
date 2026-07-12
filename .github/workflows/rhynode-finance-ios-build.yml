@@ -1,4 +1,4 @@
-name: Rhynode Finance iOS Build (ios-builder)
+name: Rhynode Finance iOS Build (unsigned IPA)
 
 on:
   workflow_dispatch:
@@ -6,39 +6,82 @@ on:
       branch:
         description: "Branch to build"
         required: true
-        default: "main"
+        default: "feat/web-redesign-2026-07-10"
+
+permissions:
+  contents: read
+  actions: write
 
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: ./rhynode-finance/apps/mobile
+    env:
+      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_API_URL: https://rhynode-finance.vercel.app
+      EXPO_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+      SENTRY_DISABLE_AUTO_UPLOAD: true
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          go-version: "1.22"
+          node-version: "22"
 
-      - name: Install ios-builder
-        run: go install github.com/MobAI-App/ios-builder/cmd/builder@latest
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
 
-      - name: Initialize ios-builder workflow
-        run: builder init --non-interactive --owner ${{ github.repository_owner }} --repo ${{ github.event.repository.name }}
+      - name: Install monorepo dependencies
+        working-directory: ./rhynode-finance
+        run: pnpm install --frozen-lockfile --strict-dep-builds=false
 
-      - name: Build iOS via generated workflow
-        run: builder ios build --unsigned
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prebuild iOS project
+        run: pnpm exec expo prebuild -p ios --clean
+
+      - name: Install CocoaPods
+        working-directory: ./rhynode-finance/apps/mobile/ios
+        run: pod install --repo-update
+
+      - name: Patch fmt pod for Xcode 26
+        working-directory: ./rhynode-finance/apps/mobile/ios/Pods/fmt
+        run: |
+          sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/' include/fmt/base.h || true
+          sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/' include/fmt/format.h || true
+
+      - name: Build unsigned iOS archive
+        working-directory: ./rhynode-finance/apps/mobile/ios
+        run: |
+          xcodebuild -workspace Rhynode.xcworkspace \
+            -scheme Rhynode \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath ../build/Rhynode.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Package unsigned IPA
+        working-directory: ./rhynode-finance/apps/mobile
+        run: |
+          mkdir -p build/Payload
+          cp -R build/Rhynode.xcarchive/Products/Applications/Rhynode.app build/Payload/Rhynode.app
+          cd build && zip -r Rhynode-unsigned.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: rhynode-ios-unsigned
-          path: rhynode-finance/apps/mobile/dist/*.ipa
+          path: rhynode-finance/apps/mobile/build/Rhynode-unsigned.ipa
           retention-days: 7
