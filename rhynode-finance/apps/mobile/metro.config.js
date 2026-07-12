@@ -1,27 +1,25 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
-const config = getDefaultConfig(__dirname);
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
 
-// Force Metro/project discovery to use apps/mobile as the root.
-config.projectRoot = __dirname;
+const config = getDefaultConfig(projectRoot);
 
-// Limit Metro workers to avoid saturating the available RAM.
-config.maxWorkers = 2;
+config.projectRoot = projectRoot;
+config.watchFolders = [workspaceRoot, path.resolve(projectRoot, '../../packages/shared')];
 
-// pnpm uses symlinks in node_modules; Metro must follow them.
 config.resolver.unstable_enableSymlinks = true;
 config.resolver.nodeModulesPaths = [
-  path.resolve(__dirname, 'node_modules'),
-  path.resolve(__dirname, '../../node_modules'),
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(workspaceRoot, 'node_modules'),
 ];
-
-config.watchFolders = [
-  path.resolve(__dirname, '../../packages/shared'),
-];
+config.resolver.disableHierarchicalLookup = true;
 
 config.resolver.extraNodeModules = {
-  '@rhynode/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+  '@rhynode/shared': path.resolve(projectRoot, '../../packages/shared/src/index.ts'),
 };
+
+config.maxWorkers = 2;
 
 module.exports = config;
