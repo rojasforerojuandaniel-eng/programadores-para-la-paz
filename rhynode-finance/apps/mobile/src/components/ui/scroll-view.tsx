@@ -1,6 +1,6 @@
 import { ScrollView as RNScrollView, type ScrollViewProps } from 'react-native';
-import { cssInterop } from 'nativewind';
+import { TwComponent } from '~/lib/tw';
 
 type StyledScrollViewProps = ScrollViewProps & { className?: string };
 
-export const ScrollView = cssInterop(RNScrollView, { className: 'style' }) as React.ComponentType<StyledScrollViewProps>;
+export const ScrollView = TwComponent(RNScrollView) as React.ComponentType<StyledScrollViewProps>;

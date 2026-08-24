@@ -1,6 +1,6 @@
 import { Pressable as RNPressable, type PressableProps } from 'react-native';
-import { cssInterop } from 'nativewind';
+import { TwComponent } from '~/lib/tw';
 
 type StyledPressableProps = PressableProps & { className?: string };
 
-export const Pressable = cssInterop(RNPressable, { className: 'style' }) as React.ComponentType<StyledPressableProps>;
+export const Pressable = TwComponent(RNPressable) as React.ComponentType<StyledPressableProps>;

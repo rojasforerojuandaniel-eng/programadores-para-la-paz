@@ -38,14 +38,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const ok = await authenticateBiometric('Desbloquea Rhynode');
-      if (ok) {
-        setBiometricPassed(true);
-      } else {
-        // On Android real devices we do not block the app if the user cancels
-        // biometric; fall back to the device credential / PIN on the next attempt.
-        setBiometricPassed(true);
-      }
+      await authenticateBiometric('Desbloquea Rhynode');
+      setBiometricPassed(true);
       SplashScreen.hideAsync();
     };
 

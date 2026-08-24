@@ -1,10 +1,10 @@
 import { View as RNView, type ViewProps as RNViewProps } from 'react-native';
-import { cssInterop } from 'nativewind';
 import { cn } from '~/lib/utils';
+import { TwComponent } from '~/lib/tw';
 
 type ViewProps = RNViewProps & { className?: string };
 
-const StyledView = cssInterop(RNView, { className: 'style' }) as React.ComponentType<ViewProps>;
+const StyledView = TwComponent(RNView) as React.ComponentType<ViewProps>;
 
 export function Card({ className, children, ...props }: ViewProps) {
   return (

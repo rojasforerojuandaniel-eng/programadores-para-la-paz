@@ -1,12 +1,12 @@
 import { Pressable, type PressableProps } from 'react-native';
-import { cssInterop } from 'nativewind';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 import { hapticImpact } from '~/lib/haptics';
+import { TwComponent } from '~/lib/tw';
 
 type StyledPressableProps = PressableProps & { className?: string };
 
-const StyledPressable = cssInterop(Pressable, { className: 'style' }) as React.ComponentType<StyledPressableProps>;
+const StyledPressable = TwComponent(Pressable) as React.ComponentType<StyledPressableProps>;
 
 const buttonVariants = cva(
   'flex-row items-center justify-center rounded-2xl px-5 py-3 active:opacity-90',

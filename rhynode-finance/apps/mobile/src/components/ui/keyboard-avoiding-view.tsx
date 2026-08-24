@@ -1,6 +1,6 @@
-import { cssInterop } from 'nativewind';
-import { KeyboardAvoidingView as RNKeyboardAvoidingView } from 'react-native';
+import { KeyboardAvoidingView as RNKeyboardAvoidingView, type KeyboardAvoidingViewProps } from 'react-native';
+import { TwComponent } from '~/lib/tw';
 
-export const KeyboardAvoidingView = cssInterop(RNKeyboardAvoidingView, {
-  className: 'style',
-});
+type StyledKeyboardAvoidingViewProps = KeyboardAvoidingViewProps & { className?: string };
+
+export const KeyboardAvoidingView = TwComponent(RNKeyboardAvoidingView) as React.ComponentType<StyledKeyboardAvoidingViewProps>;

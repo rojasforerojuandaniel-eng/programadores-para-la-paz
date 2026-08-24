@@ -1,6 +1,6 @@
 import { TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from 'react-native';
-import { cssInterop } from 'nativewind';
+import { TwComponent } from '~/lib/tw';
 
 type TextInputProps = RNTextInputProps & { className?: string };
 
-export const TextInput = cssInterop(RNTextInput, { className: 'style' }) as React.ComponentType<TextInputProps>;
+export const TextInput = TwComponent(RNTextInput) as React.ComponentType<TextInputProps>;

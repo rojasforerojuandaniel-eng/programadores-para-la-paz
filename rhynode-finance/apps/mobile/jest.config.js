@@ -16,8 +16,8 @@ module.exports = {
     '^~/src/(.*)$': '<rootDir>/src/$1',
     '^~/(.*)$': '<rootDir>/src/$1',
     '^@rhynode/shared$': '<rootDir>/../../packages/shared/src/index.ts',
-    '^react$': '<rootDir>/node_modules/react',
-    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^react$': '<rootDir>/../../node_modules/react',
+    '^react-dom$': '<rootDir>/../../node_modules/react-dom',
   },
   transform: {
     '\\.[jt]sx?$': [
@@ -30,6 +30,6 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|nativewind|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|victory-native)/)',
+    'node_modules/(?!(react-native|@react-native|expo|@expo|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|react-native-svg|@react-navigation|lucide-react-native|moti|victory-native)/)',
   ],
 };

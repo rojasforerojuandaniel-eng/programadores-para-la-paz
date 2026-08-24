@@ -1,4 +1,4 @@
-import { Text as RNText } from 'react-native';
-import { cssInterop } from 'nativewind';
+import { Text as RNText, type TextProps } from 'react-native';
+import { TwComponent } from '~/lib/tw';
 
-export const Text = cssInterop(RNText, { className: 'style' });
+export const Text = TwComponent(RNText) as React.ComponentType<TextProps & { className?: string }>;

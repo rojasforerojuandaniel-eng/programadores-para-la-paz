@@ -41,9 +41,10 @@ jest.mock('react-native', () => {
   };
 });
 
-jest.mock('nativewind', () => ({
-  cssInterop: (Component: React.ComponentType) => Component,
-}));
+jest.mock('~/lib/tw', () => {
+  const TwComponent = (C: React.ComponentType<unknown>) => C;
+  return { __esModule: true, TwComponent };
+});
 
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';

@@ -1,4 +1,4 @@
-import { View as RNView } from 'react-native';
-import { cssInterop } from 'nativewind';
+import { View as RNView, type ViewProps } from 'react-native';
+import { TwComponent } from '~/lib/tw';
 
-export const View = cssInterop(RNView, { className: 'style' });
+export const View = TwComponent(RNView) as React.ComponentType<ViewProps & { className?: string }>;

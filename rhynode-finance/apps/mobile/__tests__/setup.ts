@@ -49,11 +49,15 @@ jest.mock('react-native', () => {
 });
 
 /* ------------------------------------------------------------------ */
-/*  NativeWind mock                                                   */
+/*  twrnc mock                                                        */
 /* ------------------------------------------------------------------ */
-jest.mock('nativewind', () => ({
-  cssInterop: (Component: React.ComponentType) => Component,
-}));
+jest.mock('~/lib/tw', () => {
+  const twFn = () => ({});
+  const TwComponent = (C: React.ComponentType<unknown>) => C;
+  return { __esModule: true, tw: twFn, TwComponent };
+});
+
+
 
 /* ------------------------------------------------------------------ */
 /*  Expo modules mock                                                 */
