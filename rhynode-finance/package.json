@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "postinstall": "rm -rf node_modules/@types/minimatch 2>/dev/null || true"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -97,5 +98,9 @@
     "prisma",
     "sharp",
     "unrs-resolver"
+  ],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ]
 }

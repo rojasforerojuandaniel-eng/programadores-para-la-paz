@@ -5,13 +5,13 @@ import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
 
 const items = [
-  { label: 'Cuentas', route: '/personal/accounts' as const, icon: CreditCard },
-  { label: 'Presupuestos', route: '/personal/budgets' as const, icon: Target },
-  { label: 'Metas', route: '/personal/goals' as const, icon: PiggyBank },
-  { label: 'Deudas', route: '/personal/debts' as const, icon: Scale },
-  { label: 'Recurrentes', route: '/personal/recurring' as const, icon: Repeat },
-  { label: 'Suscripciones', route: '/personal/subscriptions' as const, icon: Sparkles },
-  { label: 'Calendario', route: '/personal/calendar' as const, icon: Calendar },
+  { label: 'Cuentas', route: '/(tabs)/personal/accounts' as const, icon: CreditCard },
+  { label: 'Presupuestos', route: '/(tabs)/personal/budgets' as const, icon: Target },
+  { label: 'Metas', route: '/(tabs)/personal/goals' as const, icon: PiggyBank },
+  { label: 'Deudas', route: '/(tabs)/personal/debts' as const, icon: Scale },
+  { label: 'Recurrentes', route: '/(tabs)/personal/recurring' as const, icon: Repeat },
+  { label: 'Suscripciones', route: '/(tabs)/personal/subscriptions' as const, icon: Sparkles },
+  { label: 'Calendario', route: '/(tabs)/personal/calendar' as const, icon: Calendar },
 ];
 
 export default function PlanTab() {

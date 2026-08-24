@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { FileText, Users, FolderOpen, Brain, Settings } from 'lucide-react-native';
+import { FileText, Users, FolderOpen, Brain, Settings, Camera } from 'lucide-react-native';
 import { Pressable } from '~/components/ui/pressable';
 import { Text } from '~/components/ui/text';
 import { View } from '~/components/ui/view';
@@ -9,6 +9,7 @@ const items = [
   { label: 'Clientes', route: '/business/clients' as const, icon: Users },
   { label: 'Proyectos', route: '/business/projects' as const, icon: FolderOpen },
   { label: 'Asesor IA', route: '/advisor' as const, icon: Brain },
+  { label: 'Cámara OCR', route: '/camera' as const, icon: Camera },
   { label: 'Ajustes', route: '/settings' as const, icon: Settings },
 ];
 

@@ -3,19 +3,21 @@ module.exports = {
   testEnvironment: 'node',
   rootDir: '.',
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[tj]s?(x)'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/app/'],
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/app/', '<rootDir>/__tests__/setup.ts'],
   setupFiles: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['ios.js', 'android.js', 'native.js', 'js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'json', 'node'],
   haste: {
     defaultPlatform: 'ios',
     platforms: ['android', 'ios', 'native'],
   },
-  resolver: '@react-native/jest-preset/jest/resolver.js',
+
   moduleNameMapper: {
+    '^~/app/(.*)$': '<rootDir>/app/$1',
+    '^~/src/(.*)$': '<rootDir>/src/$1',
     '^~/(.*)$': '<rootDir>/src/$1',
     '^@rhynode/shared$': '<rootDir>/../../packages/shared/src/index.ts',
-    '^react-test-renderer$':
-      '<rootDir>/../../node_modules/.pnpm/react-test-renderer@19.2.3_react@19.0.0/node_modules/react-test-renderer',
+    '^react$': '<rootDir>/node_modules/react',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
   },
   transform: {
     '\\.[jt]sx?$': [

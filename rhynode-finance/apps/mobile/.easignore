@@ -1,0 +1,49 @@
+# Dependencies (EAS installs them)
+node_modules
+
+# Build artifacts
+dist
+build
+.next
+*.tsbuildinfo
+.expo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Tests
+coverage
+test-results
+__tests__
+
+# Android build artifacts (keep native source, exclude build output)
+android/app/build
+android/build
+android/.gradle
+android/.cxx
+android/.kotlin
+android/local.properties
+
+# Sensitive dirs from parent workspace
+.buffy-wallet
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Git
+.git
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# APK artifacts
+*.apk
+app-release-*.apk
