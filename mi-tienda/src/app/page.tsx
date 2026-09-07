@@ -137,13 +137,9 @@ export default function HomePage() {
     let sawIframe = false;
     let attempts = 0;
     let disappearCount = 0;
-    // Gracia de 120s para redirects PSE/banco: el usuario es redirigido a la
-    // página del banco, confirma el pago, y regresa a Wompi. Esto puede tardar
-    // 1-2 minutos. 240 intentos × 500ms = 120 segundos.
-    // El cron de 30 min limpia pedidos abandonedos, así que no hay riesgo de
-    // dejar boletas apartadas para siempre.
-    const DISAPPEAR_THRESHOLD = 240;
-    // Máximo tiempo total del watcher: 5 minutos (para no correr para siempre).
+    // NO cancelamos automáticamente cuando el iframe desaparece.
+    // Solo reseteamos el botón después de 5 minutos (600 × 500ms).
+    // El cron de 30 min en el servidor limpia pedidos abandonedos.
     const MAX_ATTEMPTS = 600;
     widgetWatcherRef.current = window.setInterval(() => {
       attempts += 1;
@@ -176,14 +172,19 @@ export default function HomePage() {
         }
         return;
       }
-      // El iframe desapareció (posible redirect PSE/banco).
-      // Dar gracia de 30s antes de cancelar para no romper pagos en curso.
+      // El iframe desapareció. NO cancelamos automáticamente:
+      // 1. Puede ser un redirect PSE/banco (tarda 1-2 min)
+      // 2. Puede ser que el widget abrió en otra pestaña
+      // 3. El cron de 30 min limpia pedidos abandonedos
+      // Solo reseteamos el botón si pasaron 5 minutos sin que el callback corra.
       disappearCount += 1;
-      if (disappearCount >= DISAPPEAR_THRESHOLD) {
+      if (disappearCount >= 600) {
+        // 5 minutos sin iframe = probablemente el usuario cerró sin pagar.
+        // El usuario puede volver a intentar.
         clearWidgetWatcher();
         purchaseActiveRef.current = false;
-        cancelPendingOrder();
         setPurchasing(false);
+        addToast("No se detectó actividad en el widget. Intenta de nuevo.", "error");
       }
     }, 500);
   };
