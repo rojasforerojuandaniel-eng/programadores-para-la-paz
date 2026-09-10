@@ -92,6 +92,9 @@ export default function HomePage() {
   const [form, setForm] = useState({ name: "", phone: "", address: "", email: "" });
   const [purchasing, setPurchasing] = useState(false);
   const [success, setSuccess] = useState(false);
+  // true cuando el widget de Wompi tarda más de ~4s en abrir (red lenta /
+  // Turso en frío). Muestra una pista al usuario para que no insista ni se vaya.
+  const [widgetSlow, setWidgetSlow] = useState(false);
   const [assignedTickets, setAssignedTickets] = useState<{ number: number; status: string }[]>([]);
   const { addToast } = useToast();
 
@@ -126,17 +129,34 @@ export default function HomePage() {
       window.clearInterval(widgetWatcherRef.current);
       widgetWatcherRef.current = null;
     }
+    setWidgetSlow(false);
   };
 
   // Flag para evitar que el watcher cancele después de que el callback ya procesó.
   const callbackFiredRef = useRef(false);
 
+  // Timer independiente para la pista de "Wompi está tardando": se activa a los
+  // 4s sin iframe y se limpia junto con el watcher.
+  const slowHintTimerRef = useRef<number | null>(null);
+  const clearSlowHintTimer = () => {
+    if (slowHintTimerRef.current !== null) {
+      window.clearTimeout(slowHintTimerRef.current);
+      slowHintTimerRef.current = null;
+    }
+  };
+
   const startWidgetWatcher = () => {
     clearWidgetWatcher();
+    setWidgetSlow(false);
+    clearSlowHintTimer();
     callbackFiredRef.current = false;
     let sawIframe = false;
     let attempts = 0;
     let disappearCount = 0;
+    // A los 4s sin iframe, avisar al usuario que el pago está cargando.
+    slowHintTimerRef.current = window.setTimeout(() => {
+      if (!callbackFiredRef.current) setWidgetSlow(true);
+    }, 4000);
     // NO cancelamos automáticamente cuando el iframe desaparece.
     // Solo reseteamos el botón después de 5 minutos (600 × 500ms).
     // El cron de 30 min en el servidor limpia pedidos abandonedos.
@@ -148,8 +168,9 @@ export default function HomePage() {
         clearWidgetWatcher();
         return;
       }
-      // Si se pasó del tiempo máximo, limpiar.
+      // Si se pasó del tiempo máximo, limpiar (incluye el timer de la pista).
       if (attempts > MAX_ATTEMPTS) {
+        clearSlowHintTimer();
         clearWidgetWatcher();
         return;
       }
@@ -158,6 +179,7 @@ export default function HomePage() {
       );
       if (iframe) {
         sawIframe = true;
+        setWidgetSlow(false);
         disappearCount = 0;
         return;
       }
@@ -207,6 +229,7 @@ export default function HomePage() {
         window.clearInterval(widgetWatcherRef.current);
         widgetWatcherRef.current = null;
       }
+      clearSlowHintTimer();
     };
   }, []);
 
@@ -251,6 +274,7 @@ export default function HomePage() {
 
   const closeWidget = () => {
     purchaseActiveRef.current = false;
+    clearSlowHintTimer();
     clearWidgetWatcher();
     setShowWidget(false);
     setPurchasing(false);
@@ -342,6 +366,7 @@ export default function HomePage() {
         // Marcar que el callback se disparó ANTES de procesar.
         // Esto previene que el watcher cancele un pago que ya se procesó.
         callbackFiredRef.current = true;
+        clearSlowHintTimer();
         clearWidgetWatcher();
         try {
           if (result?.transaction === "APPROVED" && result.id) {
@@ -421,6 +446,7 @@ export default function HomePage() {
     } catch (err) {
       addToast(err instanceof Error ? err.message : "Error al procesar", "error");
       // Si el pedido ya se creó pero falló la firma o el widget, liberamos las boletas
+      clearSlowHintTimer();
       clearWidgetWatcher();
       cancelPendingOrder();
       setPurchasing(false);
@@ -737,6 +763,12 @@ export default function HomePage() {
                       <span className="text-gray-500">Total</span>
                       <span className="text-2xl font-bold text-gray-900">{formatCurrency(totalCost)}</span>
                     </div>
+                  )}
+
+                  {widgetSlow && (
+                    <p className="text-center text-amber-600 text-xs mb-3" role="status">
+                      Conectando con Wompi… esto puede tardar unos segundos. No cierres ni recargues.
+                    </p>
                   )}
 
                   <button
